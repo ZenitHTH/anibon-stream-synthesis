@@ -223,7 +223,7 @@ Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific pr
 
 **Antigravity CLI** — loaded automatically from `~/.gemini/config/plugins/`.
 
-**OpenCode** — copy the plugin to `~/.config/opencode/skills/synthesizing-knowledge/` (all skills are synced there automatically).
+**OpenCode** — copy the plugin to `~/.config/opencode/skills/anibon-stream-synthesis/` (all skills are synced there automatically).
 
 **Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
 
