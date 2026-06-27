@@ -1,0 +1,27 @@
+---
+description: Anibon Stream Synthesis. Auto-transcripts, stream timestamping, sensitive masking, and FGO/YGO SQLite card lookup.
+globs:
+alwaysApply: true
+---
+
+# Anibon Stream Synthesis Plugin Rules
+
+This plugin provides tools for processing YouTube stream transcripts, normalizing/cleaning texts, applying sensitive masking (Thai political/royal news), and running local SQLite databases to lookup FGO (Fate/Grand Order) and YGO (Yu-Gi-Oh!) card names/IDs.
+
+When this ruleset is active:
+
+1. **⚡ Database Bootstrap (FGO / YGO)**:
+   - Before querying any FGO or YGO entities, you MUST check if the SQLite database is ready by running:
+     - FGO: `python3 scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db"`
+     - YGO: `python3 scripts/fetch_ygo_db.py --check --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"`
+   - If the check returns exit code `1`, bootstrap the DB by running the same script without `--check`.
+   - Re-use the lightweight offline databases instead of shipping/committing massive raw JSON dumps.
+
+2. **🛠️ Transcript Cleaning**:
+   - Always run `scripts/clean_transcript.py` to normalize whitespace, handle OCR mismatches, and filter out noise.
+
+3. **🛡️ Sensitive Content Masking**:
+   - Check stream content against `skills/masking-royal-news/SKILL.md` rules. Mask specific Thai royal names/One Piece analogies where legally sensitive before publishing timestamps.
+
+4. **📖 References**:
+   - Read `README.md` and `skills/anibon-timestamper/SKILL.md` for specific rules regarding speaker "Boat", MapReduce chunking (5-min intervals with 30s overlap), and the 5,000-character comment limit.
