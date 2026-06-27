@@ -307,6 +307,13 @@ Copy-Item timestamp_VIDEO_ID.md "C:\Users\SMTE-PC\.gemini\antigravity-cli\brain\
 ```
 Then use the `write_to_file` tool with `Overwrite=true` to register it as an artifact (if your environment supports it).
 
+#### Sub-step 6e: Missing Segment & Topic Gap Verification (MANDATORY)
+
+Before completing the task, you MUST perform a gap analysis check on the output `timestamp_<video_id>.md` to ensure nothing was missed:
+1. **Sequence Check**: Verify that the chunk files processed cover the entire video timeline sequentially (e.g., from 00:00:00 to the end of the stream) without leaving gaps (e.g., a missing 15-minute chunk).
+2. **High-Value Gaps**: Scan the final list for any time jump of more than **10 minutes** without a timestamp. If such a gap exists, doublecheck the raw transcript for that time period to ensure no major event (like a new game switch, a gacha pull, or a topic change) was missed.
+3. **Missing Tag Check**: Ensure that if FGO or YGO topics were discussed (as verified by the DB download triggers), the corresponding `[Gacha]`, `[Gameplay]`, or `[PatchNote]` tags exist in the output.
+
 ---
 
 ## Iron Rules
@@ -318,3 +325,4 @@ Then use the `write_to_file` tool with `Overwrite=true` to register it as an art
 - **PRE-SPLIT IN STEP 5**: Talk session > 30 min or Gaming session > 90 min → plan A/B split before assembly. Catching it late means extra editing work.
 - **TOPIC SCAN BEFORE ASSEMBLY**: Always run Step 5 (Topic Scan) before Step 6 (Assembly). Never concatenate blindly without knowing where topic boundaries are.
 - **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format shown in Step 6b. Do not improvise with `---`, `###`, or plain text.
+- **NO GAPS / MISSING SEGMENTS**: Never allow gaps of more than 10 minutes without a timestamp unless the transcript is verified to be silent or pure repetition. Check sequence file lists to ensure no chunk was skipped during assembly.

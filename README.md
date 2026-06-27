@@ -20,6 +20,18 @@ git clone https://github.com/zenithth/anibon-stream-synthesis.git
 
 ---
 
+## 📺 Who is Anibon?
+
+**Anibon** (specifically **Pu Boat** or "บ๊อต" from **Anibon Official**) is a prominent Thai content creator, streamer, and pop-culture/gaming commentator. His content covers gacha games (e.g., FGO, Honkai Impact/Star Rail), anime discussions, tokusatsu franchise watch parties, and patch-note theorycrafting.
+
+### Why was `anibon-timestamper` created?
+
+Boat's live streams are exceptionally long (often spanning **2 to 10+ hours**) and highly unstructured. During a single stream, he might transition chaotically from a game's gacha pulls to discussing recent Thai news (often masked in One Piece lore and metaphors), reading patch notes, and hosting watch parties.
+
+Manually timestamping these massive, unpredictable streams is extremely time-consuming and prone to missing key transitions. The `anibon-timestamper` skill was created to automate this via a **hierarchical MapReduce workflow**—splitting long streams, cleaning transcription noise, auto-routing content chunks to specialized sub-skills, and ensuring formatting and safety compliance constraints are met without missing crucial moments.
+
+---
+
 ## 🛠️ Skills
 
 | Skill | Purpose | Key Integrations |
