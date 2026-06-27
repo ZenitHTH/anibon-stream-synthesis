@@ -1,4 +1,4 @@
-# 📚 Synthesizing Knowledge Plugin
+# 📚 Anibon Stream Synthesis Plugin
 
 A suite of skills for deep research, transcript processing, and content synthesis. Works across **Antigravity CLI**, **Claude Code**, and **OpenCode**. Uses hierarchical MapReduce, censorship/masking pipes, and centralized script utilities.
 
