@@ -1,0 +1,39 @@
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# IDE/Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Local SQLite databases (bootstrapped on-demand)
+# We ignore the database files themselves so they don't get uploaded to GitHub
+skills/anibon-timestamper/skills/reference/FGO and DATA/atlas.db
+skills/anibon-timestamper/skills/reference/FGO and DATA/atlas_fgo.db
+skills/anibon-timestamper/skills/reference/Yu-Gi-Oh DATA/ygo_cards.db
+
+# Old massive JSON files for FGO
+skills/anibon-timestamper/skills/reference/FGO and DATA/FGO JP Data/
+
+# Local workspace directories created during video preparation
+anibon_*_workspace/
+anibon_*_chunks/
+cleaned_transcript.json
+raw_transcript.json
+*.log

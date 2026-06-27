@@ -1,0 +1,121 @@
+{
+  "mappings": [
+    {
+      "correct": "Resident Evil: Code Veronica",
+      "patterns": ["veronica", "venomica", "venonica", "เบโรนิ", "เโรica"]
+    },
+    {
+      "correct": "Mighty Cuphead Adventure",
+      "patterns": ["cuphead", "คัพเฮด", "คฮส", "คอปเฮด", "คาเฟ่พิว"]
+    },
+    {
+      "correct": "Alien: Isolation 2",
+      "patterns": ["alien", "isolation", "เอเลี่ยน"]
+    },
+    {
+      "correct": "genATLAS",
+      "patterns": ["genatlas"]
+    },
+    {
+      "correct": "Stranger Than Heaven (Snoop Dogg / Tupac)",
+      "patterns": ["stranger than heaven", "stranger heaven", "snoop", "tupac", "ทูแพ็ค", "ทูผัก", "สนูป", "ทูpค", "สนูดdoอก", "สนุปดอก", "สนุกตัวสูง"]
+    },
+    {
+      "correct": "Assassin's Creed: Black Flag Resynced",
+      "patterns": ["black flag", "black fack", "black fash", "resin", "รีซิ", "รีซิโร", "แบล็คแฟลก"]
+    },
+    {
+      "correct": "TMNT: The Last Ronin",
+      "patterns": ["last ronin", "โรนิน"],
+      "exclude_if_contains": ["เบโรนิน"]
+    },
+    {
+      "correct": "Virtua Fighter: Crossroads",
+      "patterns": ["virtua fighter", "virtual fighter", "เวอร์ชวล"]
+    },
+    {
+      "correct": "1666 Amsterdam",
+      "patterns": ["1666", "amsterdam", "อัมสเตอร์ดัม", "อัมตัม", "อัมเตรอร์ดั", "อสเตอร์ดัม", "อัมเสตเตอร์ดัม", "อัมตอร์ดัม", "อัมเสตอร์ดัม", "อสูดั 66"]
+    },
+    {
+      "correct": "Final Fantasy VII Revelation",
+      "patterns": ["revelation", "รีเวเล", "รีเวเลชัน"]
+    },
+    {
+      "correct": "Roscaelifer (ZZZ 3.0)",
+      "patterns": ["roscaelifer", "เกาะลอย", "เกาะลอยฟ้า", "ไบโอช็อค", "bioshock", "เมืองลอย", "เมืองลอยฟ้า"]
+    },
+    {
+      "correct": "Code [BEYONDTHECLOUDS]",
+      "patterns": ["beyond the cloud", "beyondtheclouds"]
+    },
+    {
+      "correct": "Velina & Norma (ZZZ)",
+      "patterns": ["velina", "เวลินา", "norma", "นอร์มา", "เวนิตา"]
+    },
+    {
+      "correct": "Pyrois (ZZZ free S-Rank)",
+      "patterns": ["pyrois", "ไพรอิส", "ไพรีเ่า", "ไพรี"]
+    },
+    {
+      "correct": "Marvel's Wolverine",
+      "patterns": ["wolverine", "วูล์ฟ", "วูฟี", "วูรี"]
+    },
+    {
+      "correct": "Marvel Tōkon: Fighting Souls",
+      "patterns": ["tokon", "โทคอน", "โทคน", "โทก", "toโก", "fighting souls"]
+    },
+    {
+      "correct": "Rayman Legends Retold",
+      "patterns": ["rayman", "เรย์แมน", "เรม"]
+    },
+    {
+      "correct": "Bancho The Chef",
+      "patterns": ["bancho", "บันโช", "บังโช", "บังโฉ", "บังโฉะ"]
+    },
+    {
+      "correct": "Kemuri",
+      "patterns": ["kemuri", "เคมูริ", "โยค"]
+    },
+    {
+      "correct": "Onimusha: Way of the Sword",
+      "patterns": ["onimusha", "โอนิมู", "โอนิมุ", "อุิมุฉะ", "โอนิมูฉา", "อุิมุฉะ", "โิมชะ", "โอนิมูชะ", "โอนิมุฉา", "อุิมุฉา"]
+    },
+    {
+      "correct": "Silent Hill: Townfall",
+      "patterns": ["silent hill", "townfall", "ไซเลนต์"]
+    },
+    {
+      "correct": "Ace Combat 8: Wings of Theve",
+      "patterns": ["ace combat", "เอสคอมแบท", "is combat"]
+    },
+    {
+      "correct": "Control: Resonant",
+      "patterns": ["control", "คอนโทรล"]
+    },
+    {
+      "correct": "Until Dawn 2",
+      "patterns": ["until dawn", "อันชินดอน", "อันชิลด์", "unchillon", "unchild"]
+    },
+    {
+      "correct": "God of War: Laufey",
+      "patterns": ["laufey", "faye", "เฟย", "เฟย์"]
+    },
+    {
+      "correct": "Life Up (Thai game)",
+      "patterns": ["life up", "ไลฟ์ซับ"]
+    },
+    {
+      "correct": "Limbus Company Chapter 9.5",
+      "patterns": ["limbus", "ริมบัส", "หงลู่", "อึงดู", "เอิงดู", "อิสมาเอล", "เมอร์โซ่", "มือชว่ะ"]
+    },
+    {
+      "correct": "Baphomet",
+      "patterns": ["bฟet", "buffet", "บัฟม", "ฟมate", "บัฟโฟมate", "บัฟโฟม"]
+    },
+    {
+      "correct": "สมศักดิ์เจียม",
+      "patterns": ["ผสมศักดิ์ดี", "สซักเจียม"]
+    }
+  ]
+}
