@@ -2,6 +2,22 @@
 
 A suite of skills for deep research, transcript processing, and content synthesis. Works across **Antigravity CLI**, **Claude Code**, and **OpenCode**. Uses hierarchical MapReduce, censorship/masking pipes, and centralized script utilities.
 
+## 🚀 Installation
+
+**Antigravity CLI (`agy`)** — Install directly from GitHub:
+```bash
+agy plugin install https://github.com/zenithth/anibon-stream-synthesis
+```
+Or clone manually into the auto-discovery plugins directory:
+```bash
+cd ~/.gemini/config/plugins/
+git clone https://github.com/zenithth/anibon-stream-synthesis.git
+```
+
+**OpenCode** — copy the plugin to `~/.config/opencode/skills/anibon-stream-synthesis/` (all skills are synced there automatically).
+
+**Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
+
 ---
 
 ## 🛠️ Skills
@@ -218,22 +234,6 @@ Skills are tool-agnostic. Key conventions:
 | Temp/scratch files | `scratch/` session dir | any session-scoped temp path | any session-scoped temp path |
 
 Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific prefix needed.
-
-### Installation
-
-**Antigravity CLI (`agy`)** — Install directly from GitHub:
-```bash
-agy plugin install https://github.com/zenithth/anibon-stream-synthesis
-```
-Or clone manually into the auto-discovery plugins directory:
-```bash
-cd ~/.gemini/config/plugins/
-git clone https://github.com/zenithth/anibon-stream-synthesis.git
-```
-
-**OpenCode** — copy the plugin to `~/.config/opencode/skills/anibon-stream-synthesis/` (all skills are synced there automatically).
-
-**Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
 
 ---
 
