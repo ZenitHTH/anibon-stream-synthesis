@@ -113,14 +113,47 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    Then query it with sqlite3. See [YGO_DB_Reference.md](skills/reference/Yu-Gi-Oh%20DATA/YGO_DB_Reference.md) for SQL patterns.
    The DB is ~10–20 MB and downloads in ~60–180 seconds. It is **auto-refreshed** when YGOPRODeck releases a new database_version.
 
-   **Canonical Subagent Prompt Template:**
-   Use this template when delegating chunks to subagents:
-   "You are processing Chunk <N>.
-   CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
-   TASK: Scan the transcript for detection signals, identify topics, generate timestamps. Output ONLY the timestamps. Format: `HH:MM:SS - [Tag] Description` (Write the description in <User's Requested Language>).
-   CRITICAL RULES: <Orchestrator: Pre-read the matching sub-skills yourself and inject a distilled 3-4 bullet summary of their Iron Rules here. Do NOT tell the subagent to read files.>
-   TRANSCRIPT:
-   <Orchestrator: Inject the raw text of the 5-minute chunk directly here>"
+    **Canonical Subagent Prompt Template:**
+    Use this template when delegating chunks to subagents:
+    "You are processing Chunk <N>.
+    CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
+    
+    You MUST execute your task following this step-by-step processing workflow:
+    
+    ### Step 1: Scan and Detect Signals
+    Read the transcript text below. Look for specific topics, transitions, or game content.
+    - Standard signals: Gacha pulls, gameplay, talk/news, tokusatsu, watch parties, greetings.
+    - Match card names or game terms against FGO/YGO database records if provided.
+    
+    ### Step 2: Time Alignment
+    For every major transition, game switch, or topic change:
+    - Locate the exact starting time of that event in the transcript.
+    - Format the timestamp as `HH:MM:SS` (or `MM:SS` if the stream is under an hour).
+    
+    ### Step 3: Select the Correct Tag
+    Use only standard tags matching the sub-skill detection rules:
+    - `[Greeting]`: Stream intro / saying hi
+    - `[Talk]`: Generic chatting / chat interaction / story tangents
+    - `[News]`: Reading news or commenting on real-world events (apply safety metaphors!)
+    - `[Gameplay]`: Playing a game / fighting stages
+    - `[Gacha]`: Drawing cards / summoning
+    - `[Boss]`: Boss fight / final stage battles
+    - `[WatchParty]`: Watch along reaction / episode reviews
+    - `[Reaction]`: General reaction to trailers or videos
+    
+    ### Step 4: Write Description
+    - Write a short, descriptive summary of the event in <User's Requested Language>.
+    - Keep it concise, precise, and use correct terms/names from the FGO/YGO databases.
+    
+    ### Step 5: Format Output
+    Output your result using this exact format for every line:
+    `HH:MM:SS - [Tag] Description`
+    
+    Do NOT include any introduction, thinking process, or additional text outside of this format.
+    
+    CRITICAL RULES: <Orchestrator: Pre-read the matching sub-skills yourself and inject a distilled 3-4 bullet summary of their Iron Rules here. Do NOT tell the subagent to read files.>
+    TRANSCRIPT:
+    <Orchestrator: Inject the raw text of the 5-minute chunk directly here>"
 
 4. **Reduce Stage (Final Assembly)**
    
