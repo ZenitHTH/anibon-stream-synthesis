@@ -31,7 +31,13 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 2. **MapReduce Strategy for Long Streams**
    
-   - For streams over 2 hours, **YOU MUST** spawn parallel subagents to process the chunks output by the command above (use whatever parallel task/subagent mechanism the current tool provides: `subagent-driven-development` in Antigravity, `Task` in Claude Code, or concurrent tool calls in OpenCode).
+   - **Parallel Strategy (Cloud Models)**: For streams over 2 hours, if using a large cloud model, you can spawn parallel subagents to process the chunks output by the command above.
+   - **Sequential Subagent Loop (Local Models / Ollama)**: If running on a local AI (e.g., `gemma4` or `qwen2.5-coder` on Ollama) where context window and token limits are strict:
+     - **DO NOT spawn parallel subagents.**
+     - Instead, process chunks **sequentially** using a single-agent loop: Spawn **exactly 1 subagent** to analyze `chunk_00.json`.
+     - Once the subagent returns its output, write it to `chunk_00_output.md`.
+     - Immediately spawn a **new subagent** to process `chunk_01.json`, write to `chunk_01_output.md`, and repeat.
+     - This keeps active context/tokens per turn extremely small, preventing memory overflow while ensuring the local AI does not forget formatting rules.
    - **Low-Context Detection**: ALWAYS verify the maximum context window of the assigned subagent model (e.g., `gemma4:31b` or `e2b` usually have strict 4k-8k limits).
    - **Explicit Parameters for Chunking**: ALWAYS use `--block 300 --overlap 30` (5-min segments). Do NOT invent arbitrary block sizes.
    - **Subagent Scripting Rule**: Subagents shouldn't need to write custom parsing scripts. They can read the generated chunks directly.
@@ -175,14 +181,15 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
   **When Stuck (No Transcript Available)**: Stop and inform the user. Do not invent timestamps.
 
 ### Step 4: Analyze Chunks (The Loop)
-**Action**: Process `chunks/chunk_00.json`, then `chunk_01.json`, sequentially until NO CHUNKS REMAIN. Read ONE chunk file at a time.
-**CRITICAL WRITING & LOOPING RULE FOR LOCAL LLMs**: Your built-in `write` tool OVERWRITES files; it does not append. If you try to write all chunks into one file, you will erase your previous work!
-1. Read ONE chunk file.
-2. Use your `write` tool to save the timestamps into a **SEPARATE, uniquely named file** for that chunk (e.g., `chunk_00_output.md`, `chunk_01_output.md`). 
-3. **Context Flushing**: Once the file is written, forget everything about that chunk. Do not summarize it in your scratchpad. Assume the job for that chunk is 100% complete.
-4. **STOP & WAIT MARKER**: You MUST output exactly `[READY FOR NEXT CHUNK]` and then stop. Do not read the next chunk until the orchestrator replies "continue" or "next chunk".
-**CRITICAL PATH RULE**: File-reading tools DO NOT expand `$HOME` or `~`. You MUST use the true **absolute path**. Run `pwd` or `Get-Location` first to find the exact directory, then append the file path.
-   - **Detect signals first** (see Step 3 Detection Signals table), then pre-read the matching sub-skills from `skills/` and summarize their Iron Rules in your scratchpad before analyzing the chunk.
+**Action**: Process `chunks/chunk_00.json`, then `chunk_01.json`, sequentially until NO CHUNKS REMAIN. Read/process ONE chunk file at a time.
+
+**CRITICAL RULES FOR LOCAL LLMs / OLLAMA**:
+1. **Sequential Subagent Loop**: For local AIs, you MUST spawn exactly 1 subagent for the current chunk. Wait for the subagent to return the timestamps, write the output to `chunk_XX_output.md`, and only then spawn the next subagent for `chunk_XX+1.json`.
+2. **Context/Memory Flushing**: After writing each chunk's output file, forget everything about that chunk's content to keep the active token context small and prevent memory bloat.
+3. **Overwriting Protection**: Your built-in `write` tool OVERWRITES files; it does not append. Always write outputs to separate, uniquely named files (e.g., `chunk_00_output.md`, `chunk_01_output.md`).
+4. **STOP & WAIT MARKER**: After each chunk is processed, output exactly `[READY FOR NEXT CHUNK]` and stop your execution turn. Wait for orchestrator/user confirmation before proceeding.
+5. **Path Resolution**: File-reading tools DO NOT expand `$HOME` or `~`. Run `pwd` or `Get-Location` to find the exact directory, then use absolute paths.
+- **Detect signals first** (see Step 3 Detection Signals table), then pre-read the matching sub-skills from `skills/` and summarize their Iron Rules in your scratchpad before analyzing the chunk.
 
 ### Step 5: Topic Analysis — Identify Major Topic Blocks BEFORE Assembly
 
