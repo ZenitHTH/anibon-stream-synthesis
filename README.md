@@ -14,7 +14,20 @@ cd ~/.gemini/config/plugins/
 git clone https://github.com/zenithth/anibon-stream-synthesis.git
 ```
 
-**OpenCode** — copy the plugin to `~/.config/opencode/skills/anibon-stream-synthesis/` (all skills are synced there automatically).
+**OpenCode** — Clone the repository into your OpenCode plugins directory and link it in your global config:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/zenithth/anibon-stream-synthesis.git ~/.config/opencode/plugins/anibon-stream-synthesis
+   ```
+2. Reference the plugin in your global `~/.config/opencode/opencode.jsonc` config file:
+   ```json
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "plugin": [
+       "./plugins/anibon-stream-synthesis/opencode.json"
+     ]
+   }
+   ```
 
 **Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
 
