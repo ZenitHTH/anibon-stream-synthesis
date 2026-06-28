@@ -190,6 +190,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 3. **Overwriting Protection**: Your built-in `write` tool OVERWRITES files; it does not append. Always write outputs to separate, uniquely named files (e.g., `chunk_00_output.md`, `chunk_01_output.md`).
 4. **Automated Loop execution**: Do NOT wait for user or orchestrator confirmation between chunks. Once the subagent returns the timestamps for the current chunk and you have written `chunk_XX_output.md`, immediately proceed to spawn the next subagent for `chunk_XX+1.json` automatically. Continue this loop until all chunks are processed, then proceed directly to Step 5.
 5. **Path Resolution**: File-reading tools DO NOT expand `$HOME` or `~`. Run `pwd` or `Get-Location` to find the exact directory, then use absolute paths.
+6. **How to resume the loop on callback**: Every time a subagent returns its response (which appears as a new message in your conversation history), you MUST treat it as a trigger to continue the loop. Do NOT stop and wait for the user. Immediately write the received text to `chunk_XX_output.md` and call the subagent tool for the next chunk `chunk_XX+1.json`.
 - **Detect signals first** (see Step 3 Detection Signals table), then pre-read the matching sub-skills from `skills/` and summarize their Iron Rules in your scratchpad before analyzing the chunk.
 
 ### Step 5: Topic Analysis — Identify Major Topic Blocks BEFORE Assembly
