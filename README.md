@@ -48,7 +48,8 @@ Manually timestamping these massive, unpredictable streams is extremely time-con
 | :--- | :--- | :--- |
 | [`synthesizing-knowledge`](skills/synthesizing-knowledge/SKILL.md) | Deep research & report synthesis | Delegates long videos to `youtube-minutes-synthesis` |
 | [`youtube-minutes-synthesis`](skills/youtube-minutes-synthesis/SKILL.md) | Meeting-minutes from YouTube videos | Calls `cleaning-auto-transcripts` first |
-| [`anibon-timestamper`](skills/anibon-timestamper/SKILL.md) | Stream orchestrator — auto-detects stream type & routes to sub-skills | Orchestrates all `anibon-*` sub-skills via transcript signal detection |
+| [`anibon-timestamper`](skills/anibon-timestamper/SKILL.md) | Stream orchestrator — auto-detects stream type & routes to sub-skills | Orchestrates all `anibon-*` sub-skills via parallel signal detection |
+| [`anibon-timestamper-local`](skills/anibon-timestamper-local/SKILL.md) | Local stream orchestrator — sequential loop & goldfish brain rules | For local AIs (Ollama) with restricted context windows |
 | [`cleaning-auto-transcripts`](skills/cleaning-auto-transcripts/SKILL.md) | Transcription noise correction | Powers `anibon-timestamper` and `youtube-minutes-synthesis` |
 | [`masking-royal-news`](skills/masking-royal-news/SKILL.md) | Sensitive political/royal content masking | Single source of truth for public safety compliance |
 | [`building-reusable-cli-tools`](skills/building-reusable-cli-tools/SKILL.md) | CLI tool design guidance | Referenced when writing new processing scripts |
@@ -105,7 +106,9 @@ graph TD
     SK[synthesizing-knowledge] -->|Long video| YMS[youtube-minutes-synthesis]
     YMS -->|Cleanup| CAT[cleaning-auto-transcripts]
     AT[anibon-timestamper] -->|Cleanup| CAT
+    ATL[anibon-timestamper-local] -->|Cleanup| CAT
     AT -.->|"⚠️ Risk detected only"| MRN[masking-royal-news]
+    ATL -.->|"⚠️ Risk detected only"| MRN
 
     subgraph "anibon-timestamper/skills/ — auto-detected per chunk"
         TS[anibon-talk-stream]
@@ -120,6 +123,13 @@ graph TD
     AT -->|Detect: multi-game switches| MS
     AT -->|Detect: patch notes / event| ES
     AT -->|Detect: tokusatsu names / watch party| TK
+    
+    ATL -->|Detect: talk signals| TS
+    ATL -->|Detect: gameplay jargon| GS
+    ATL -->|Detect: multi-game switches| MS
+    ATL -->|Detect: patch notes / event| ES
+    ATL -->|Detect: tokusatsu names / watch party| TK
+    
     TS -.->|"⚠️ Risk detected only"| MRN
     TK -.->|"⚠️ Risk detected only"| MRN
 
@@ -133,7 +143,9 @@ graph TD
     end
     CAT --> CT
     AT --> PV
+    ATL --> PV
     AT --> CS
+    ATL --> CS
 
     subgraph "On-Demand SQLite Databases"
         FGODB["atlas_fgo.db\n~1.9 MB · Atlas Academy API"]
