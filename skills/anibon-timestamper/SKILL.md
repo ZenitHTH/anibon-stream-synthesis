@@ -119,11 +119,11 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 4. **Reduce Stage (Final Assembly)**
    
    - Once all subagents return their timestamps, combine them chronologically.
-   - **Splitting Parts & YouTube Limits**: When a specific game or talk section spans a very long duration, you MUST split it into numbered parts (e.g., "Talk & Gacha Game Discussions - Part 1", "Talk & Gacha Game Discussions - Part 2"). 
-   - **CRITICAL CHARACTER LIMIT**: The YouTube comment character limit is **5,000 characters (Thai language density)**. **NEVER** let a single part block exceed 5,000 characters. If a section would exceed this, you MUST split it **before** assembly:
-     - For a long Gaming section: split every ~4,500 characters into separate sub-parts (2A, 2B, 2C...).
+   - **Splitting Parts & YouTube Limits**: When a specific game or talk section spans a very long duration, you MUST split it into numbered parts (e.g., "Talk & Gacha Game Discussions - Part 1", "Talk & Gacha Game Discussions - Part 2").
+   - **CRITICAL BYTE LIMIT**: YouTube validates comments by **UTF-8 byte size**, not character count. Thai characters are 3 bytes each, so a block with 2,000 Thai characters already costs ~6,000 bytes — exceeding YouTube's ~4,500-byte server cap. **NEVER** let the full pasted block (header + body) exceed **4,500 bytes**. If a section would exceed this, split it **before** assembly:
+     - For a long Gaming or Talk section: split so each block stays under **3,500 bytes** (the WARN threshold — leave margin).
      - Do NOT wait until after assembly to discover the block is too long — estimate during Topic Scan (Step 5).
-     - Rule of thumb: If a session lasts >90 minutes of continuous gameplay, it will likely need at least 2 parts.
+     - Rule of thumb: If a talk session lasts >15 minutes of continuous content, plan at least 2 parts. If a gameplay session lasts >60 minutes, plan at least 2 parts.
    - **DEFAULT FORMAT**: แบ่งตามด่าน/หัวข้อ (by stage/section) with game section headers (e.g., `═══════ 🎮 Stage Name ═══════`). If the user requests a different format, override before assembly.
    - **Length Limits**: See Step 5 of the Step-by-Step Guide.
    - **⚠️ SINGLE FILE RULE**: ALL topic parts MUST go into ONE file. Do NOT create separate files per topic. Use visual separator blocks between topics (see Step 5 for the exact format).
@@ -285,8 +285,11 @@ python "$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name check_se
 ```
 
 The script will:
-- Print each section's char count with ✅ OK / ⚠️ WARN (>4,500) / ❌ OVER (>5,000) status.
+- Print each section's **byte size** (UTF-8) and char count with ✅ OK / ⚠️ WARN (>3,500 B) / ❌ OVER (>4,500 B) status.
+- The check measures the **full pasted block** (separator header + body) — this is what the user actually pastes into YouTube.
 - For any flagged section, print the **exact timestamp to split at** (midpoint of that section).
+
+> **Why bytes?** Thai characters are 3 bytes in UTF-8. YouTube's server enforces a byte cap (~4,500 B empirically), not a character cap. Measuring characters alone will give you false ✅ results and blocks that still fail to paste.
 
 If any section is flagged ⚠️ or ❌, you MUST split it:
   - Rename the header to `📌 ส่วนที่ NA — ...`
@@ -295,9 +298,9 @@ If any section is flagged ⚠️ or ❌, you MUST split it:
   - Keep splitting (NC, ND...) until the script shows ✅ for every section.
 
 **When to pre-split (plan this in Step 5 BEFORE assembly — saves a full re-run)**:
-  - Continuous gameplay session > 90 minutes → plan at least 2 parts.
-  - Continuous talk session > 30 minutes → plan at least 2 parts.
-  - Use the 4,500-char warn threshold as your target ceiling, not 5,000.
+  - Continuous gameplay session > 60 minutes → plan at least 2 parts.
+  - Continuous talk session > 20 minutes → plan at least 2 parts.
+  - Use **3,500 bytes** as your target ceiling — this is the WARN threshold, leaving a safe margin below YouTube's hard limit.
 
 #### Sub-step 6d: Register Artifact
 
@@ -321,8 +324,8 @@ Before completing the task, you MUST perform a gap analysis check on the output 
 - **ALWAYS check video publish date first**.
 - **Use Dynamic Subagent Routing**: Do not guess the stream type for the whole video upfront. Tell the subagents to load the specific sub-skill based on what they see in their 15-minute chunk!
 - **ONE FILE, NOT MANY**: The final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
-- **5,000 CHAR HARD CAP (Thai)**: Each part block MUST be 5,000 chars or fewer. Target 4,500 as your ceiling to leave margin. Run `check_sections.py` after assembly — never check manually. Split until the script shows ✅ for every section.
-- **PRE-SPLIT IN STEP 5**: Talk session > 30 min or Gaming session > 90 min → plan A/B split before assembly. Catching it late means extra editing work.
+- **4,500 BYTE HARD CAP (Thai)**: Each full pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each — a 5,000-char block can be ~15,000 bytes. Target **3,500 bytes** as your ceiling. Run `check_sections.py` after assembly — it now measures bytes of the full block. Split until every section shows ✅.
+- **PRE-SPLIT IN STEP 5**: Talk session > 20 min or Gaming session > 60 min → plan A/B split before assembly. Catching it late means extra editing work.
 - **TOPIC SCAN BEFORE ASSEMBLY**: Always run Step 5 (Topic Scan) before Step 6 (Assembly). Never concatenate blindly without knowing where topic boundaries are.
 - **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format shown in Step 6b. Do not improvise with `---`, `###`, or plain text.
 - **NO GAPS / MISSING SEGMENTS**: Never allow gaps of more than 10 minutes without a timestamp unless the transcript is verified to be silent or pure repetition. Check sequence file lists to ensure no chunk was skipped during assembly.
