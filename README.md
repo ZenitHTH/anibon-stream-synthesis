@@ -14,7 +14,11 @@ cd ~/.gemini/config/plugins/
 git clone https://github.com/zenithth/anibon-stream-synthesis.git
 ```
 
-**OpenCode** — Install directly through OpenCode's plugin manager by adding it to your global `~/.config/opencode/opencode.jsonc` (or project-level `opencode.jsonc`):
+**OpenCode** — Install globally via the OpenCode CLI (recommended):
+```bash
+opencode plugin -g anibon-stream-synthesis@git+https://github.com/ZenitHTH/anibon-stream-synthesis.git
+```
+Or add the plugin directly to your global `~/.config/opencode/opencode.jsonc` (or project-level `opencode.jsonc`):
 ```json
 {
   "plugin": ["anibon-stream-synthesis@git+https://github.com/ZenitHTH/anibon-stream-synthesis.git"]
