@@ -151,6 +151,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 1. **State your current step**: Before taking any action, write down exactly what step you are on (e.g., "I am currently on Step 2. I am going to search for the script.").
 2. **Acknowledge the result**: After a tool finishes, explicitly state what happened (e.g., "The command succeeded. I am now moving to Step 3.").
 3. **Never batch actions**: Do exactly ONE tool call or logical step at a time. Do not try to read, process, and write in a single turn.
+4. **Delegate chunk analysis**: Do NOT read the raw transcript chunks directly in the main orchestrator session. Always spawn a subagent to analyze the chunk. Once the subagent returns the output, save it to the chunk output file. This keeps the main session's context clean and free of huge transcript text tokens.
 
 - You MUST execute ONE step at a time.
 - You MUST complete a step and output its result before reading or attempting the next step.
