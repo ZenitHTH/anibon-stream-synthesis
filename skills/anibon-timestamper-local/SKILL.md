@@ -27,13 +27,13 @@ Verify shell and tools before downloading:
 - Run: `command -v yt-dlp` (Unix) OR `Get-Command yt-dlp` (Windows)
 
 ### Step 2: Download & Chunk Transcript
-Find the `prepare_video.py` script:
+Find the absolute path of the `prepare_video.py` script globally:
+- Unix: `find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "prepare_video.py" 2>/dev/null | head -1`
+- Windows (PowerShell): `Get-ChildItem -Path $env:USERPROFILE -Filter "prepare_video.py" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName`
+
+Run the script using its absolute path to fetch and chunk the transcript (5-min blocks, 30s overlap):
 ```bash
-find . -name "prepare_video.py"
-```
-Run it to fetch and chunk the transcript (5-min blocks, 30s overlap):
-```bash
-python3 scripts/prepare_video.py "VIDEO_URL"
+python3 "/absolute/path/to/prepare_video.py" "VIDEO_URL"
 ```
 *(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
 
