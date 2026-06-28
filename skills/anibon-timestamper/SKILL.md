@@ -174,188 +174,25 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
 
-**CRITICAL**: NEVER build custom CLI tools for searching or dumping JSON. Use native tools like `jq` or Python one-liners.
+## 🧭 Orchestration Workflow (Cloud / Standard)
 
-## STRICT Step-by-Step Guide for Local LLMs
+1. **Environment Check**: Verify `yt-dlp` and `python3` are installed.
+2. **Download & Chunk**: Run `python3 scripts/prepare_video.py <URL>` to chunk the transcript.
+3. **FGO / YGO Databases**: If transcript contains FGO/YGO content, ensure databases are updated:
+   - FGO: `python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"`
+   - YGO: `python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"`
+4. **Parallel Analysis**: Spawn parallel subagents to process the chunks concurrently using the template below.
+5. **Final Assembly**: Concatenate subagent outputs chronologically, split into parts of under 4,500 characters, and verify with `check_sections.py`.
 
-**CRITICAL DIRECTIVE**: You are REQUIRED to follow this guide strictly, step-by-step. Local LLMs (like gemma, llama3, qwen) may struggle with long reasoning chains or complex tool execution. 
-
-**GOLDFISH BRAIN PROTOCOL**: Your working memory is extremely limited. To prevent yourself from getting lost or hallucinating, you MUST "think out loud":
-1. **State your current step**: Before taking any action, write down exactly what step you are on (e.g., "I am currently on Step 2. I am going to search for the script.").
-2. **Acknowledge the result**: After a tool finishes, explicitly state what happened (e.g., "The command succeeded. I am now moving to Step 3.").
-3. **Never batch actions**: Do exactly ONE tool call or logical step at a time. Do not try to read, process, and write in a single turn.
-4. **Delegate chunk analysis**: Do NOT read the raw transcript chunks directly in the main orchestrator session. Always spawn a subagent to analyze the chunk. Once the subagent returns the output, save it to the chunk output file. This keeps the main session's context clean and free of huge transcript text tokens.
-
-- You MUST execute ONE step at a time.
-- You MUST complete a step and output its result before reading or attempting the next step.
-- DO NOT skip ahead under any circumstances.
-
-### Step 1: MANDATORY Environment Check
-
-**DO NOT SKIP**: You MUST run this check and output the result BEFORE attempting Step 2. Do not guess.
-**Action**: Determine if the OS is Linux/macOS or Windows, and if the shell is Bash/Zsh or PowerShell.
-
-- Run `echo $SHELL` and `uname -a` (Unix) OR `$PSVersionTable` (Windows).
-- Run `command -v yt-dlp` (Unix) or `Get-Command yt-dlp` (Windows) to verify tools.
-  **CRITICAL**: You are FORBIDDEN from downloading the transcript until you have verified your shell and tools.
-
-### Step 2: Prepare Workspace, Download, and Chunk Transcript
-
-**Action**: Run the `prepare_video.py` script. This single script automatically handles creating the `youtube_VIDEO_ID_workspace`, downloading the transcript safely, and chunking it into `chunks/chunk_00.json`.
-
-- **Locate and Run the Script**:
-  1. The `prepare_video.py` script is sitting in the home directory of the skill. Find its exact absolute path by restricting your search to the skill/plugin folders: 
-     `find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "prepare_video.py" 2>/dev/null`
-  2. Once you have the absolute path from the output, run the script using Python:
-     `python "/absolute/path/to/prepare_video.py" "VIDEO_URL"`
-
-**When Stuck (YouTube 429 Blocked / Sign-in required)**:
-
-- **Anti-Bot Block Handling**: If the script fails because YouTube blocks it, ask the user which browser they use to append `--cookies-from-browser` (locally) OR ask them to manually upload `raw_transcript.json`.
-  **When Stuck (No Transcript Available)**: Stop and inform the user. Do not invent timestamps.
-
-### Step 4: Analyze Chunks (The Loop)
-**Action**: Process `chunks/chunk_00.json`, then `chunk_01.json`, sequentially until NO CHUNKS REMAIN. Read/process ONE chunk file at a time.
-
-**CRITICAL RULES FOR LOCAL LLMs / OLLAMA**:
-1. **Sequential Subagent Loop**: For local AIs, you MUST spawn exactly 1 subagent for the current chunk. Wait for the subagent to return the timestamps, write the output to `chunk_XX_output.md`, and only then spawn the next subagent for `chunk_XX+1.json`.
-2. **Context/Memory Flushing**: After writing each chunk's output file, forget everything about that chunk's content to keep the active token context small and prevent memory bloat.
-3. **Overwriting Protection**: Your built-in `write` tool OVERWRITES files; it does not append. Always write outputs to separate, uniquely named files (e.g., `chunk_00_output.md`, `chunk_01_output.md`).
-4. **Automated Loop execution**: Do NOT wait for user or orchestrator confirmation between chunks. Once the subagent returns the timestamps for the current chunk and you have written `chunk_XX_output.md`, immediately proceed to spawn the next subagent for `chunk_XX+1.json` automatically. Continue this loop until all chunks are processed, then proceed directly to Step 5.
-5. **Path Resolution**: File-reading tools DO NOT expand `$HOME` or `~`. Run `pwd` or `Get-Location` to find the exact directory, then use absolute paths.
-6. **How to resume the loop on callback**: Every time a subagent returns its response (which appears as a new message in your conversation history), you MUST treat it as a trigger to continue the loop. Do NOT stop and wait for the user. Immediately write the received text to `chunk_XX_output.md` and call the subagent tool for the next chunk `chunk_XX+1.json`.
-- **Detect signals first** (see Step 3 Detection Signals table), then pre-read the matching sub-skills from `skills/` and summarize their Iron Rules in your scratchpad before analyzing the chunk.
-
-### Step 5: Topic Analysis — Identify Major Topic Blocks BEFORE Assembly
-
-**⚠️ THIS STEP IS MANDATORY FOR STREAMS LONGER THAN 1 HOUR. DO NOT SKIP.**
-
-Before concatenating chunk outputs, you MUST do a "Topic Scan" across the assembled raw timestamps. This lets you define where one major topic ends and another begins.
-
-**Why this matters**: YouTube comments have a ~5,000 character limit. A 5-hour stream may produce 3–5 distinct major topic blocks. Each block needs a separator header in the final file so viewers know which comment to paste where.
-
-**HOW TO IDENTIFY TOPIC BLOCKS:**
-
-1. **Quick-scan ALL chunk output files** using a shell command (do NOT read them one by one in your head):
-   - Windows: `Get-Content chunk_*_output.md | Select-String -Pattern "\[WatchParty\]|\[Gameplay\]|\[Greeting\]|\[News\]" | Select-Object -First 30`
-   - Unix: `grep -h '\[WatchParty\]\|\[Gameplay\]\|\[Greeting\]\|\[News\]' chunk_*_output.md | head -30`
-
-2. **Find the first timestamp of each major activity change**. Examples:
-   - If `[Greeting]` appears at `00:00:30` → That's the start of the **Opening/Talk** block.
-   - If `[Gameplay]` first appears at `00:45:00` → That's where **Gaming** begins.
-   - If `[WatchParty]` first appears at `02:10:00` → That's where the **Watch Party** begins.
-
-3. **Write a Topic Map** in your scratchpad BEFORE assembly. Example:
-   ```
-   Topic Map:
-   - Part 1: Opening & Talk     → chunk_00 to chunk_08  (00:00:00 – 00:44:59)
-   - Part 2: Gaming Session     → chunk_09 to chunk_25  (00:45:00 – 02:09:59)
-   - Part 3: Watch Party        → chunk_26 to chunk_40  (02:10:00 – 03:20:00)
-   - Part 4: Closing Talk       → chunk_41 to chunk_48  (03:20:01 – 04:00:00)
-   ```
-
-4. **Decide on Part Names** (in Thai, since that is the target language for Anibon streams). Examples:
-   - `📌 ส่วนที่ 1 — เปิดสตรีม / พูดคุยทั่วไป`
-   - `📌 ส่วนที่ 2 — เล่นเกม: [ชื่อเกม]`
-   - `📌 ส่วนที่ 3 — ดูอนิเมะ / Watch Party: [ชื่อซีรีส์]`
-
----
-
-### Step 6: Final Assembly — ONE FILE, MULTIPLE TOPIC SECTIONS
-
-**Action**: Combine all chunk outputs into ONE final artifact file named exactly `timestamp_<video_id>.md`.
-
-**⚠️ THE GOLDEN RULE**: You are writing ONE file. You are NOT creating one file per topic. Topics are separated by a visual block INSIDE the same file.
-
-#### Sub-step 6a: Raw Concatenation (PowerShell)
-
-First, concatenate all chunk outputs in order:
-```powershell
-Get-Content -Encoding UTF8 (Get-ChildItem chunk_*_output.md | Sort-Object Name) | Set-Content -Encoding UTF8 timestamp_VIDEO_ID.md
+**Subagent Template:**
 ```
-- Replace `VIDEO_ID` with the actual YouTube video ID (e.g., `rP8AHWOIXtI`).
-- Do NOT use `*_output.md` without `Sort-Object Name` — the glob may produce wrong order on Windows.
-
-#### Sub-step 6b: Insert Topic Separator Headers
-
-After concatenation, you MUST insert topic separator blocks at the **exact timestamp boundaries** you found in Step 5.
-
-**SEPARATOR FORMAT** (copy this exactly — do not invent your own):
+You are processing Chunk <N> (MM:SS - MM:SS).
+1. Scan transcript for gameplay, gacha, or talk.
+2. Align timestamps in HH:MM:SS format.
+3. Choose Tag: [Greeting], [Talk], [News], [Gameplay], [Gacha], [Boss], [WatchParty], [Reaction].
+4. Output: "HH:MM:SS - [Tag] Description" (Thai language).
+TRANSCRIPT: <raw transcript text>
 ```
-═══════════════════════════════════════════════════════════
-📌 ส่วนที่ N — [ชื่อหัวข้อ]
-   ⏱ เริ่ม: HH:MM:SS  |  เนื้อหา: [สรุปสั้นๆ]
-═══════════════════════════════════════════════════════════
-```
-
-**HOW TO INSERT**: Open the final file, find the line with the matching timestamp (e.g., `00:45:00`), and paste the separator block **directly above** that line.
-
-**Example of correct final file structure:**
-```
-═══════════════════════════════════════════════════════════
-📌 ส่วนที่ 1 — เปิดสตรีม / พูดคุยทั่วไป
-   ⏱ เริ่ม: 00:00:00  |  เนื้อหา: ทักทาย, คุยข่าว
-═══════════════════════════════════════════════════════════
-00:00:30 - [Greeting] บ๊อตเปิดสตรีม ทักทายแชท
-00:02:10 - [Talk] คุยเรื่องข่าวอนิเมะประจำสัปดาห์
-...
-═══════════════════════════════════════════════════════════
-📌 ส่วนที่ 2 — เล่นเกม: Kakuseihunter Omegahorn
-   ⏱ เริ่ม: 00:45:00  |  เนื้อหา: เล่นเกม, บอส, กาชา
-═══════════════════════════════════════════════════════════
-00:45:00 - [Gameplay] เริ่มเล่น Kakuseihunter Omegahorn
-00:52:30 - [Boss] เจอบอส ด่านที่ 3
-...
-═══════════════════════════════════════════════════════════
-📌 ส่วนที่ 3 — Watch Party: Kamen Rider Zeztz EP 40
-   ⏱ เริ่ม: 02:10:00  |  เนื้อหา: ดูซีรีส์, รีแอค, วิเคราะห์
-═══════════════════════════════════════════════════════════
-02:10:00 - [WatchParty] เริ่ม Watch Party มาสค์ไรเดอร์เซสซึ EP 40
-02:15:44 - [Reaction] บ๊อตรีแอคฉากแอ็กชั่น
-...
-```
-
-#### Sub-step 6c: YouTube Comment Block Size Check
-
-After inserting separators, run **`check_sections.py`** — do NOT count manually:
-```bash
-python "$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name check_sections.py 2>/dev/null | head -1)" timestamp_VIDEO_ID.md
-```
-
-The script will:
-- Print each section's **byte size** (UTF-8) and char count with ✅ OK / ⚠️ WARN (>3,500 B) / ❌ OVER (>4,500 B) status.
-- The check measures the **full pasted block** (separator header + body) — this is what the user actually pastes into YouTube.
-- For any flagged section, print the **exact timestamp to split at** (midpoint of that section).
-
-> **Why bytes?** Thai characters are 3 bytes in UTF-8. YouTube's server enforces a byte cap (~4,500 B empirically), not a character cap. Measuring characters alone will give you false ✅ results and blocks that still fail to paste.
-
-If any section is flagged ⚠️ or ❌, you MUST split it:
-  - Rename the header to `📌 ส่วนที่ NA — ...`
-  - Insert a new separator at the suggested split timestamp: `📌 ส่วนที่ NB — ...`
-  - Re-run `check_sections.py` to confirm all sections pass.
-  - Keep splitting (NC, ND...) until the script shows ✅ for every section.
-
-**When to pre-split (plan this in Step 5 BEFORE assembly — saves a full re-run)**:
-  - Continuous gameplay session > 60 minutes → plan at least 2 parts.
-  - Continuous talk session > 20 minutes → plan at least 2 parts.
-  - Use **3,500 bytes** as your target ceiling — this is the WARN threshold, leaving a safe margin below YouTube's hard limit.
-
-#### Sub-step 6d: Register Artifact
-
-Save the final file to the artifact directory:
-```powershell
-Copy-Item timestamp_VIDEO_ID.md "C:\Users\SMTE-PC\.gemini\antigravity-cli\brain\<conversation-id>\timestamp_VIDEO_ID.md"
-```
-Then use the `write_to_file` tool with `Overwrite=true` to register it as an artifact (if your environment supports it).
-
-#### Sub-step 6e: Missing Segment & Topic Gap Verification (MANDATORY)
-
-Before completing the task, you MUST perform a gap analysis check on the output `timestamp_<video_id>.md` to ensure nothing was missed:
-1. **Sequence Check**: Verify that the chunk files processed cover the entire video timeline sequentially (e.g., from 00:00:00 to the end of the stream) without leaving gaps (e.g., a missing 15-minute chunk).
-2. **High-Value Gaps**: Scan the final list for any time jump of more than **10 minutes** without a timestamp. If such a gap exists, doublecheck the raw transcript for that time period to ensure no major event (like a new game switch, a gacha pull, or a topic change) was missed.
-3. **Missing Tag Check**: Ensure that if FGO or YGO topics were discussed (as verified by the DB download triggers), the corresponding `[Gacha]`, `[Gameplay]`, or `[PatchNote]` tags exist in the output.
-
----
 
 ## Iron Rules
 
