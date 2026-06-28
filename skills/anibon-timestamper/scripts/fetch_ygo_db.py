@@ -40,6 +40,7 @@ import urllib.request
 import urllib.parse
 from pathlib import Path
 from typing import Any
+import concurrent.futures
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -122,30 +123,28 @@ def _local_version(db_path: Path) -> str:
 # ---------------------------------------------------------------------------
 
 def _fetch_all_cards() -> list[dict]:
-    """Fetch the complete card list in paginated batches."""
+    """Fetch the complete card list in paginated batches in parallel."""
+    # First get total rows to plan chunks
+    url = f"{CARDS_URL}?num=1&offset=0&misc=yes"
+    data = _get(url, timeout=30)
+    total = int(data.get("meta", {}).get("total_rows", 0))
+    if not total:
+        return []
+
     all_cards: list[dict] = []
-    offset = 0
-    while True:
-        params = urllib.parse.urlencode({
-            "num":    PAGE_SIZE,
-            "offset": offset,
-            "misc":   "yes",    # includes konami_id, views, etc. (we ignore most)
-        })
-        url = f"{CARDS_URL}?{params}"
-        data = _get(url, timeout=90)
+    offsets = list(range(0, total, PAGE_SIZE))
 
-        cards = data.get("data", [])
-        all_cards.extend(cards)
-        log.info("  Fetched %d cards (total so far: %d)", len(cards), len(all_cards))
+    def fetch_page(offset):
+        params = urllib.parse.urlencode({"num": PAGE_SIZE, "offset": offset, "misc": "yes"})
+        res = _get(f"{CARDS_URL}?{params}", timeout=90)
+        return res.get("data", [])
 
-        meta = data.get("meta", {})
-        total = int(meta.get("total_rows", 0))
-        if total and len(all_cards) >= total:
-            break
-        if len(cards) < PAGE_SIZE:
-            break
-        offset += PAGE_SIZE
-        time.sleep(0.1)   # polite delay — API limit: 20 req/sec
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_offset = {executor.submit(fetch_page, off): off for off in offsets}
+        for future in concurrent.futures.as_completed(future_to_offset):
+            cards = future.result()
+            all_cards.extend(cards)
+            log.info("  Fetched %d cards (total so far: %d/%d)", len(cards), len(all_cards), total)
 
     log.info("→ Total cards fetched: %d", len(all_cards))
     return all_cards

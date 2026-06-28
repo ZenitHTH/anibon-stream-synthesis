@@ -41,6 +41,7 @@ import time
 import urllib.request
 from pathlib import Path
 from typing import Any
+import concurrent.futures
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -338,9 +339,11 @@ def build_db(db_path: Path, force: bool = False) -> None:
 
     # Download all JSON files
     downloaded: dict[str, Any] = {}
-    for endpoint, table, _columns in ENDPOINTS:
-        url = f"{BASE_URL}/{endpoint}"
-        downloaded[endpoint] = _download_json(url)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_endpoint = {executor.submit(_download_json, f"{BASE_URL}/{endpoint}"): endpoint for endpoint, _, _ in ENDPOINTS}
+        for future in concurrent.futures.as_completed(future_to_endpoint):
+            endpoint = future_to_endpoint[future]
+            downloaded[endpoint] = future.result()
 
     # Build DB
     log.info("Writing SQLite DB to: %s", db_path)
@@ -399,19 +402,6 @@ def check_db(db_path: Path) -> bool:
     except Exception as exc:
         log.info("✗ DB check failed: %s", exc)
         return False
-
-
-def ensure_db(db_path: Path | None = None) -> Path:
-    """
-    Called by the skill at runtime: build the DB if it doesn't exist.
-    Returns the path to the valid database.
-    """
-    if db_path is None:
-        db_path = DEFAULT_DB_PATH
-    if not check_db(db_path):
-        log.info("→ DB missing or invalid. Bootstrapping from Atlas Academy API...")
-        build_db(db_path, force=False)
-    return db_path
 
 
 # ---------------------------------------------------------------------------

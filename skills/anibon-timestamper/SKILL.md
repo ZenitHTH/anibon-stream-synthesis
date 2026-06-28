@@ -130,10 +130,6 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 ## Helper Scripts & Writing Code
 
-<PONYTAIL-GATE>
-**BEFORE WRITING ANY NEW SCRIPT CODE**: Ask YAGNI? Does the standard library do it? Can it be one line? Build the absolute minimum that works. A 1-line bash pipe or python snippet is better than 100 lines of `argparse` boilerplate. No unrequested abstractions.
-</PONYTAIL-GATE>
-
 Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`prepare_video.py`** — downloads transcript, cleans, and chunks (Step 2).
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).

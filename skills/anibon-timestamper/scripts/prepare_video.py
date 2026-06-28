@@ -28,10 +28,8 @@ def main():
             "-o", "raw_transcript", url
         ], check=False)
         
-        for f in os.listdir("."):
-            if f.startswith("raw_transcript") and f.endswith(".json3"):
-                shutil.move(f, "raw_transcript.json")
-                break
+        if f := next(Path('.').glob('raw_transcript*.json3'), None):
+            f.rename("raw_transcript.json")
                 
     if not os.path.exists("raw_transcript.json"):
         print("[!] Error: Failed to download transcript. Check URL, yt-dlp, or video availability.", file=sys.stderr)

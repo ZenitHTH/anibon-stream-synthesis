@@ -33,8 +33,7 @@ def clean_transcript_data(transcript, mappings):
         item['text'] = text
     return transcript
 
-def _fmt(s):
-    return f"{int(s//3600):02d}:{int((s%3600)//60):02d}:{int(s%60):02d}"
+
 
 def get_mapreduce_chunks(transcript, block_sec=900, overlap_sec=60):
     """Yields (start_sec, end_sec, text) tuples for MapReduce subagents."""
@@ -42,7 +41,7 @@ def get_mapreduce_chunks(transcript, block_sec=900, overlap_sec=60):
     step = block_sec - overlap_sec
     for start in range(0, total, step):
         end = start + block_sec
-        text = " ".join(f"({_fmt(i['start'])}) {i['text'].strip()}"
+        text = " ".join(f"({int(i['start']//3600):02d}:{int((i['start']%3600)//60):02d}:{int(i['start']%60):02d}) {i['text'].strip()}"
                         for i in transcript if start <= i['start'] < end)
         if text:
             yield start, end, text
