@@ -188,7 +188,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 1. **Sequential Subagent Loop**: For local AIs, you MUST spawn exactly 1 subagent for the current chunk. Wait for the subagent to return the timestamps, write the output to `chunk_XX_output.md`, and only then spawn the next subagent for `chunk_XX+1.json`.
 2. **Context/Memory Flushing**: After writing each chunk's output file, forget everything about that chunk's content to keep the active token context small and prevent memory bloat.
 3. **Overwriting Protection**: Your built-in `write` tool OVERWRITES files; it does not append. Always write outputs to separate, uniquely named files (e.g., `chunk_00_output.md`, `chunk_01_output.md`).
-4. **STOP & WAIT MARKER**: After each chunk is processed, output exactly `[READY FOR NEXT CHUNK]` and stop your execution turn. Wait for orchestrator/user confirmation before proceeding.
+4. **Automated Loop execution**: Do NOT wait for user or orchestrator confirmation between chunks. Once the subagent returns the timestamps for the current chunk and you have written `chunk_XX_output.md`, immediately proceed to spawn the next subagent for `chunk_XX+1.json` automatically. Continue this loop until all chunks are processed, then proceed directly to Step 5.
 5. **Path Resolution**: File-reading tools DO NOT expand `$HOME` or `~`. Run `pwd` or `Get-Location` to find the exact directory, then use absolute paths.
 - **Detect signals first** (see Step 3 Detection Signals table), then pre-read the matching sub-skills from `skills/` and summarize their Iron Rules in your scratchpad before analyzing the chunk.
 
