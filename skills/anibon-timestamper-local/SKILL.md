@@ -16,6 +16,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 2. **One tool per turn**: Never run batch actions.
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
 4. **Delegate raw text**: Do NOT read raw transcript files in this main session. Spawn a subagent to do it.
+5. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
 
 ---
 
