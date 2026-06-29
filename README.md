@@ -109,7 +109,7 @@ graph LR
         ATL["💻 anibon-timestamper-local\n(Ollama / local AI)"]
     end
 
-    subgraph Sub-Skills["Sub-Skills — auto-detected per chunk"]
+    subgraph SubSkills["Sub-Skills — auto-detected per chunk"]
         TS[anibon-talk-stream]
         GS[anibon-gaming-stream]
         MS[anibon-marathon-stream]
@@ -119,7 +119,6 @@ graph LR
 
     subgraph Scripts["Shared Scripts"]
         PV[prepare_video.py]
-        CAT[cleaning-auto-transcripts]
         CT[clean_transcript.py]
         CS[check_sections.py]
     end
@@ -131,23 +130,40 @@ graph LR
         YGODB["ygo_cards.db\n~13.4 MB"]
     end
 
+    KB["📚 Knowledge Base\n13 static .md refs\n(Honkai / Genshin / Arknights\nPokémon / Limbus / WW / ZZZ…)"]
+
+    %% Entry points
     SK[synthesizing-knowledge] -->|Long video| YMS[youtube-minutes-synthesis]
-    YMS --> CAT
-
-    %% Both orchestrators share the same sub-skill routing
-    Orchestrators -->|talk signals| TS
-    Orchestrators -->|gameplay jargon| GS
-    Orchestrators -->|multi-game switches| MS
-    Orchestrators -->|patch notes / event| ES
-    Orchestrators -->|tokusatsu / watch party| TK
-
-    %% Both use shared scripts
-    Orchestrators --> PV
-    Orchestrators --> CS
+    YMS --> CAT[cleaning-auto-transcripts]
     CAT --> CT
 
+    %% Orchestrators → transcript prep & cleanup
+    AT --> PV
+    AT --> CAT
+    AT --> CS
+    ATL --> PV
+    ATL --> CAT
+    ATL --> CS
+
+    %% Orchestrators → sub-skill routing (auto-detected per chunk)
+    AT -->|talk signals| TS
+    AT -->|gameplay jargon| GS
+    AT -->|multi-game switches| MS
+    AT -->|patch notes / event| ES
+    AT -->|tokusatsu / watch party| TK
+    ATL -->|talk signals| TS
+    ATL -->|gameplay jargon| GS
+    ATL -->|multi-game switches| MS
+    ATL -->|patch notes / event| ES
+    ATL -->|tokusatsu / watch party| TK
+
+    %% Sub-skills read static knowledge base
+    GS -.->|reads| KB
+    ES -.->|reads| KB
+    TS -.->|reads| KB
+
     %% ATL-only: handoff for context exhaustion
-    ATL -.->|"context full → save state"| ATH[anibon-timestamper-handoff]
+    ATL -.->|context full| ATH[anibon-timestamper-handoff]
 
     %% Safety masking — only when risk signals detected
     AT -.->|"⚠️ risk detected"| MRN[masking-royal-news]
@@ -155,7 +171,7 @@ graph LR
     TS -.->|"⚠️ risk detected"| MRN
     TK -.->|"⚠️ risk detected"| MRN
 
-    %% DB bootstrap chain
+    %% DB bootstrap chain — triggered by game content detection
     GS -.->|FGO detected| FGOS
     ES -.->|FGO patch note| FGOS
     GS -.->|YGO detected| YGOS
