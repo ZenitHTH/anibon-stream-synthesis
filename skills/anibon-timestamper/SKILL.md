@@ -31,14 +31,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 2. **MapReduce Strategy for Long Streams**
    
-   - **Parallel Strategy (Cloud Models)**: For streams over 2 hours, if using a large cloud model, you can spawn parallel subagents to process the chunks output by the command above.
-   - **Sequential Subagent Loop (Local Models / Ollama)**: If running on a local AI (e.g., `gemma4` or `qwen2.5-coder` on Ollama) where context window and token limits are strict:
-     - **DO NOT spawn parallel subagents.**
-     - Instead, process chunks **sequentially** using a single-agent loop: Spawn **exactly 1 subagent** to analyze `chunk_00.json`.
-     - Once the subagent returns its output, write it to `chunk_00_output.md`.
-     - Immediately spawn a **new subagent** to process `chunk_01.json`, write to `chunk_01_output.md`, and repeat.
-     - This keeps active context/tokens per turn extremely small, preventing memory overflow while ensuring the local AI does not forget formatting rules.
-   - **Low-Context Detection**: ALWAYS verify the maximum context window of the assigned subagent model (e.g., `gemma4:31b` or `e2b` usually have strict 4k-8k limits).
+   - **Parallel Subagent Processing**: For long streams, spawn multiple parallel subagents to process the JSON chunks concurrently. This map-reduce strategy is optimized for cloud models with large context windows. 
    - **Explicit Parameters for Chunking**: ALWAYS use `--block 300 --overlap 30` (5-min segments). Do NOT invent arbitrary block sizes.
    - **Subagent Scripting Rule**: Subagents shouldn't need to write custom parsing scripts. They can read the generated chunks directly.
 
