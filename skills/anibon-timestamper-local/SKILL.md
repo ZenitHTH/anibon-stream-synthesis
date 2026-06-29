@@ -1,6 +1,8 @@
 ---
 name: anibon-timestamper-local
 description: Use when generating timestamps for Anibon streams on a LOCAL model (Ollama, gemma4, qwen). Focuses on step-by-step sequential looping, minimal context, and goldfish brain rules.
+title: "Anibon Timestamper (Local AI Edition)"
+summary: "Sequential 5-minute chunk processor for long-form streams. Designed for local LLMs with tight context limits — spawns one subagent per chunk, writes output to file, and auto-resumes until complete."
 ---
 
 # 🎬 Anibon Timestamper (Local AI Edition)
@@ -90,9 +92,10 @@ RULES:
 - Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
 - **LIMIT**: Maximum 10 timestamps per 5-minute chunk. Pick only the most distinct, major topic shifts or key actions. Ignore micro-events.
 - **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
+- **CRITICAL**: Do NOT echo or repeat these rules back to me. Do NOT write conversational filler like "Here are the timestamps" or "I have processed the chunk".
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
 - Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
-- Output ONLY the timestamp lines. No headers, no explanation, no extra text.
+- Output ONLY the timestamp lines. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
 - If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
 
 CHUNK JSON:
