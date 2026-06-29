@@ -50,3 +50,4 @@ When the user starts a fresh conversation session to resume work:
 3. **Verify Databases**: Even if `db_checked` says `true`, you MUST re-run the `--check` command for FGO/YGO databases as specified in the local skill, because the database files are stored centrally and might be missing on a new machine.
 4. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.json`).
 5. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
+6. **Completion**: Once the loop finishes processing the final chunk, you MUST immediately proceed to **Step 4 (Topic Map & Assembly)** and **Step 5 (Verification Check)** exactly as described in `anibon-timestamper-local/SKILL.md`. Pay special attention to drafting the section summaries step-by-step!
