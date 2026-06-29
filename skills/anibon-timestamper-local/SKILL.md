@@ -57,25 +57,18 @@ Each `chunk_XX.json` file contains:
   "start_sec": 300,
   "end_sec":   600,
   "items": [
-    { "text": "สวัสดีครับทุกคน", "start": 301.4, "duration": 2.1 },
-    { "text": "วันนี้มาเล่น FGO", "start": 305.8, "duration": 1.9 }
+    { "text": "สวัสดีครับทุกคน", "start": 301.4, "duration": 2.1, "timestamp": "00:05:01" },
+    { "text": "วันนี้มาเล่น FGO", "start": 305.8, "duration": 1.9, "timestamp": "00:05:05" }
   ]
 }
 ```
 - `start_sec` / `end_sec` — chunk window in **seconds from stream start**
-- `items[].start` — **absolute seconds from stream start** — use this directly to format `HH:MM:SS`
+- `items[].timestamp` — **pre-calculated HH:MM:SS** — use this directly!
 - The last **30 seconds** of every chunk overlaps with the start of the next chunk (overlap zone)
 
 ---
 
 #### ⏱️ Timing Rules
-
-**Formatting:** Convert `item.start` (float seconds) to `HH:MM:SS`:
-```
-HH = int(start) // 3600
-MM = (int(start) % 3600) // 60
-SS = int(start) % 60
-```
 
 **Overlap cutoff:** Only emit timestamps for events with `item.start < end_sec - 30`. Ignore anything in the last 30 seconds of the chunk — the next chunk will cover it cleanly.
 
@@ -93,7 +86,7 @@ You are processing Chunk <N> (HH:MM:SS – HH:MM:SS).
 chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 30>
 
 RULES:
-- Convert item.start (seconds) to HH:MM:SS using: HH=start//3600, MM=(start%3600)//60, SS=start%60.
+- Use the pre-calculated `item.timestamp` directly. Do NOT calculate the math yourself.
 - Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
 - Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
@@ -125,11 +118,14 @@ When all chunks are finished, concatenate them:
 - Unix: `cat chunk_*_output.md > raw_timestamps.txt`
 - Windows: `Get-Content chunk_*_output.md | Set-Content raw_timestamps.txt`
 
-Review the output to map major topic shifts (Talk, Gameplay, WatchParty) and split the file into parts of **4,500 characters or fewer** (YouTube comment limit is 5,000). Use the separator format:
+Review the output to map major topic shifts (Talk, Gameplay, WatchParty) and split the file into parts of **4,500 characters or fewer** (YouTube comment limit is 5,000). 
+**CRITICAL**: You MUST write a brief summary (1-2 sentences) of what actually happens in this section for the `เนื้อหา:` field in the separator. Do NOT just copy the title.
+
+Use the separator format:
 ```
 ═══════════════════════════════════════════════════════════
 📌 ส่วนที่ N — [ชื่อหัวข้อ]
-   ⏱ เริ่ม: HH:MM:SS  |  เนื้อหา: [สรุปสั้นๆ]
+   ⏱ เริ่ม: HH:MM:SS  |  เนื้อหา: [สรุปภาพรวมของช่วงนี้สั้นๆ 1-2 บรรทัด]
 ═══════════════════════════════════════════════════════════
 ```
 

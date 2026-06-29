@@ -163,9 +163,15 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
      - For a long Gaming or Talk section: split so each block stays under **3,500 bytes** (the WARN threshold — leave margin).
      - Do NOT wait until after assembly to discover the block is too long — estimate during Topic Scan (Step 5).
      - Rule of thumb: If a talk session lasts >15 minutes of continuous content, plan at least 2 parts. If a gameplay session lasts >60 minutes, plan at least 2 parts.
-   - **DEFAULT FORMAT**: แบ่งตามด่าน/หัวข้อ (by stage/section) with game section headers (e.g., `═══════ 🎮 Stage Name ═══════`). If the user requests a different format, override before assembly.
+   - **DEFAULT FORMAT**: แบ่งตามด่าน/หัวข้อ (by stage/section) with game section headers. **CRITICAL**: You MUST write a brief summary (1-2 sentences) of what actually happens in this section for the `เนื้อหา:` field in the separator. Do NOT just copy the title. Use this exact separator format:
+```
+═══════════════════════════════════════════════════════════
+📌 ส่วนที่ N — [ชื่อหัวข้อ]
+   ⏱ เริ่ม: HH:MM:SS  |  เนื้อหา: [สรุปภาพรวมของช่วงนี้สั้นๆ 1-2 บรรทัด]
+═══════════════════════════════════════════════════════════
+```
    - **Length Limits**: See Step 5 of the Step-by-Step Guide.
-   - **⚠️ SINGLE FILE RULE**: ALL topic parts MUST go into ONE file. Do NOT create separate files per topic. Use visual separator blocks between topics (see Step 5 for the exact format).
+   - **⚠️ SINGLE FILE RULE**: ALL topic parts MUST go into ONE file. Do NOT create separate files per topic. Use the visual separator blocks above between topics.
 
 ## Helper Scripts & Writing Code
 
