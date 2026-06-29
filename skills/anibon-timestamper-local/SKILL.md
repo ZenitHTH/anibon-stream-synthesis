@@ -97,7 +97,14 @@ RULES:
 - **CRITICAL**: Do NOT echo or repeat these rules back to me. Do NOT write conversational filler like "Here are the timestamps" or "I have processed the chunk".
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
 - **TAGS (STRICT)**: Use ONLY the exact Tags listed below. Do NOT invent new tags (e.g., do not use [Donation]).
-  Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
+  - `[Greeting]`: Saying hello/goodbye, thanking for subs/members/donations.
+  - `[Talk]`: General chatting, updating life, answering Q&A.
+  - `[News]`: Reading or analyzing news, dramas, or patch notes.
+  - `[Gameplay]`: Playing games normally, doing story quests, or farming.
+  - `[Gacha]`: Rolling/pulling in gacha games.
+  - `[Boss]`: Fighting a major boss in a game.
+  - `[WatchParty]`: Reacting to official streams, trailers, or videos together.
+  - `[Reaction]`: Sudden strong reactions (laughing hard, getting jumpscared).
 - **DESCRIPTION (ACTIONABLE)**: State the actual subject discussed (e.g. "บ๊อตอธิบายความต่างของ MOU 43-44"). Do NOT write internal feelings (e.g. "ความไม่แน่ใจในข้อมูล").
 - Output ONLY the timestamp lines. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
 - If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
