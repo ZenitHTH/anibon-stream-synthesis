@@ -73,8 +73,11 @@ Review the output to map major topic shifts (Talk, Gameplay, WatchParty) and spl
 ```
 
 ### Step 5: Verification Check
-Run `check_sections.py` on the final file to verify character counts and splits:
+Find and run `check_sections.py` on the final file to verify character counts:
 ```bash
-python3 scripts/check_sections.py timestamp_VIDEO_ID.md
+# Find the script (use global find, same as Step 2)
+CHECK_SCRIPT=$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "check_sections.py" 2>/dev/null | head -1)
+python3 "$CHECK_SCRIPT" timestamp_VIDEO_ID.md
 ```
 Split further if any section fails (❌ or ⚠️). Register the final file in your workspace.
+

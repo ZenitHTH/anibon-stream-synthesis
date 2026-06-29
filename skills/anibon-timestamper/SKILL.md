@@ -174,33 +174,20 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
 
-## 🧭 Orchestration Workflow (Cloud / Standard)
+## 🧭 Orchestration Checklist (Cloud)
 
-1. **Environment Check**: Verify `yt-dlp` and `python3` are installed.
-2. **Download & Chunk**: Run `python3 scripts/prepare_video.py <URL>` to chunk the transcript.
-3. **FGO / YGO Databases**: If transcript contains FGO/YGO content, ensure databases are updated:
-   - FGO: `python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"`
-   - YGO: `python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"`
-4. **Parallel Analysis**: Spawn parallel subagents to process the chunks concurrently using the template below.
-5. **Final Assembly**: Concatenate subagent outputs chronologically, split into parts of under 4,500 characters, and verify with `check_sections.py`.
-
-**Subagent Template:**
-```
-You are processing Chunk <N> (MM:SS - MM:SS).
-1. Scan transcript for gameplay, gacha, or talk.
-2. Align timestamps in HH:MM:SS format.
-3. Choose Tag: [Greeting], [Talk], [News], [Gameplay], [Gacha], [Boss], [WatchParty], [Reaction].
-4. Output: "HH:MM:SS - [Tag] Description" (Thai language).
-TRANSCRIPT: <raw transcript text>
-```
+1. Environment Check → verify `yt-dlp` and `python3`.
+2. Download & Chunk → `python3 scripts/prepare_video.py <URL>`.
+3. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
+4. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
+5. Final Assembly → concatenate, split at byte limits, verify with `check_sections.py`.
 
 ## Iron Rules
 
 - **ALWAYS check video publish date first**.
-- **Use Dynamic Subagent Routing**: Do not guess the stream type for the whole video upfront. Tell the subagents to load the specific sub-skill based on what they see in their 15-minute chunk!
-- **ONE FILE, NOT MANY**: The final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
-- **4,500 BYTE HARD CAP (Thai)**: Each full pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each — a 5,000-char block can be ~15,000 bytes. Target **3,500 bytes** as your ceiling. Run `check_sections.py` after assembly — it now measures bytes of the full block. Split until every section shows ✅.
-- **PRE-SPLIT IN STEP 5**: Talk session > 20 min or Gaming session > 60 min → plan A/B split before assembly. Catching it late means extra editing work.
-- **TOPIC SCAN BEFORE ASSEMBLY**: Always run Step 5 (Topic Scan) before Step 6 (Assembly). Never concatenate blindly without knowing where topic boundaries are.
-- **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format shown in Step 6b. Do not improvise with `---`, `###`, or plain text.
-- **NO GAPS / MISSING SEGMENTS**: Never allow gaps of more than 10 minutes without a timestamp unless the transcript is verified to be silent or pure repetition. Check sequence file lists to ensure no chunk was skipped during assembly.
+- **Use Dynamic Subagent Routing**: Do not guess the stream type upfront. Subagents load matching sub-skills based on what they see in their chunk.
+- **ONE FILE, NOT MANY**: Final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
+- **4,500 BYTE HARD CAP (Thai)**: Each pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each. Target **3,500 bytes** as ceiling. Run `check_sections.py` — split until all sections show ✅.
+- **PRE-SPLIT**: Talk session > 20 min or Gaming > 60 min → plan A/B split before assembly.
+- **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format. Never improvise with `---` or plain text.
+- **NO GAPS**: Never allow gaps > 10 minutes without a timestamp unless transcript is verified silent. Check chunk sequence before final assembly.

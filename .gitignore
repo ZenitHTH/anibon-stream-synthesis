@@ -24,7 +24,6 @@ __pycache__/
 
 # Local SQLite databases (bootstrapped on-demand)
 # We ignore the database files themselves so they don't get uploaded to GitHub
-skills/anibon-timestamper/skills/reference/FGO and DATA/atlas.db
 skills/anibon-timestamper/skills/reference/FGO and DATA/atlas_fgo.db
 skills/anibon-timestamper/skills/reference/Yu-Gi-Oh DATA/ygo_cards.db
 
@@ -34,6 +33,8 @@ skills/anibon-timestamper/skills/reference/FGO and DATA/FGO JP Data/
 # Local workspace directories created during video preparation
 anibon_*_workspace/
 anibon_*_chunks/
+youtube_*_workspace/
+youtube_*_chunks/
 cleaned_transcript.json
 raw_transcript.json
 *.log
