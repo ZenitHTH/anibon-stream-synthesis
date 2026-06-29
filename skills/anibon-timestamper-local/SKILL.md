@@ -88,6 +88,8 @@ chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 
 RULES:
 - Use the pre-calculated `item.timestamp` directly. Do NOT calculate the math yourself.
 - Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
+- **LIMIT**: Maximum 3-4 timestamps per 5-minute chunk. Pick only the most distinct, major topic shifts or key actions. Ignore micro-events.
+- **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
 - Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
 - Output ONLY the timestamp lines. No headers, no explanation, no extra text.
