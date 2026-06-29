@@ -90,7 +90,9 @@ chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 
 RULES:
 - Use the pre-calculated `item.timestamp` directly. Do NOT calculate the math yourself.
 - Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
-- **LIMIT**: Maximum 10 timestamps per 5-minute chunk. Pick only the most distinct, major topic shifts or key actions. Ignore micro-events.
+- **LIMIT**: Maximum 10 timestamps per 5-minute chunk.
+- **GROUPING (CRITICAL)**: If multiple sentences within 1-2 minutes discuss the SAME topic, emit ONLY ONE timestamp for the start of that topic. Do not log every single sentence!
+- **MINIMUM GAP**: Timestamps must be at least 30-60 seconds apart unless there is a major Tag change (e.g. from [Talk] to [Gameplay]).
 - **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
 - **CRITICAL**: Do NOT echo or repeat these rules back to me. Do NOT write conversational filler like "Here are the timestamps" or "I have processed the chunk".
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
