@@ -96,7 +96,9 @@ RULES:
 - **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
 - **CRITICAL**: Do NOT echo or repeat these rules back to me. Do NOT write conversational filler like "Here are the timestamps" or "I have processed the chunk".
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
-- Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
+- **TAGS (STRICT)**: Use ONLY the exact Tags listed below. Do NOT invent new tags (e.g., do not use [Donation]).
+  Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
+- **DESCRIPTION (ACTIONABLE)**: State the actual subject discussed (e.g. "บ๊อตอธิบายความต่างของ MOU 43-44"). Do NOT write internal feelings (e.g. "ความไม่แน่ใจในข้อมูล").
 - Output ONLY the timestamp lines. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
 - If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
 
@@ -128,7 +130,7 @@ When all chunks are finished, concatenate them:
 Now, you MUST assemble the final output file `timestamp_VIDEO_ID.md`. To do this, follow these explicit steps for splitting and formatting:
 
 **Step 4.1: Split by Topic & Size**
-Read the concatenated timestamps. Group them into major topic shifts (e.g., Talk, Gameplay, WatchParty). If a section exceeds **4,500 characters** (YouTube limit), you must split it into Part 1, Part 2, etc.
+Read the concatenated timestamps. Group them into major topic shifts (e.g., Talk, Gameplay, WatchParty). If a section exceeds **50-60 lines of timestamps** (to stay under the YouTube character limit), you must split it into Part 1, Part 2, etc. Do not try to count characters, just count lines.
 
 **Step 4.2: Draft the Header (CRITICAL)**
 For each section you create, you must write a header. Do not rush this. Follow this thought process:
