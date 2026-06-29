@@ -103,16 +103,13 @@ Both scripts are idempotent — they skip the download if the local DB is alread
 ## 🧭 Skill Dependency Graph
 
 ```mermaid
-graph TD
-    SK[synthesizing-knowledge] -->|Long video| YMS[youtube-minutes-synthesis]
-    YMS -->|Cleanup| CAT[cleaning-auto-transcripts]
-    AT[anibon-timestamper] -->|Cleanup| CAT
-    ATL[anibon-timestamper-local] -->|Cleanup| CAT
-    ATL -->|Save/Load State| ATH[anibon-timestamper-handoff]
-    AT -.->|"⚠️ Risk detected only"| MRN[masking-royal-news]
-    ATL -.->|"⚠️ Risk detected only"| MRN
+graph LR
+    subgraph Orchestrators
+        AT["☁️ anibon-timestamper\n(cloud)"]
+        ATL["💻 anibon-timestamper-local\n(Ollama / local AI)"]
+    end
 
-    subgraph "anibon-timestamper/skills/ — auto-detected per chunk"
+    subgraph Sub-Skills["Sub-Skills — auto-detected per chunk"]
         TS[anibon-talk-stream]
         GS[anibon-gaming-stream]
         MS[anibon-marathon-stream]
@@ -120,44 +117,50 @@ graph TD
         TK[anibon-tokusatsu-stream]
     end
 
-    AT -->|Detect: talk signals| TS
-    AT -->|Detect: gameplay jargon| GS
-    AT -->|Detect: multi-game switches| MS
-    AT -->|Detect: patch notes / event| ES
-    AT -->|Detect: tokusatsu names / watch party| TK
-    
-    ATL -->|Detect: talk signals| TS
-    ATL -->|Detect: gameplay jargon| GS
-    ATL -->|Detect: multi-game switches| MS
-    ATL -->|Detect: patch notes / event| ES
-    ATL -->|Detect: tokusatsu names / watch party| TK
-    
-    TS -.->|"⚠️ Risk detected only"| MRN
-    TK -.->|"⚠️ Risk detected only"| MRN
-
-    subgraph "Shared Scripts & Tools"
-        CT[clean_transcript.py]
+    subgraph Scripts["Shared Scripts"]
         PV[prepare_video.py]
+        CAT[cleaning-auto-transcripts]
+        CT[clean_transcript.py]
         CS[check_sections.py]
-        FGO[fetch_fgo_db.py]
-        YGO[fetch_ygo_db.py]
-        Native[yt-dlp / PowerShell]
     end
-    CAT --> CT
-    AT --> PV
-    ATL --> PV
-    AT --> CS
-    ATL --> CS
 
-    subgraph "On-Demand SQLite Databases"
-        FGODB["atlas_fgo.db\n~1.9 MB · Atlas Academy API"]
-        YGODB["ygo_cards.db\n~13.4 MB · YGOPRODeck API"]
+    subgraph DBs["On-Demand SQLite DBs"]
+        FGOS[fetch_fgo_db.py]
+        YGOS[fetch_ygo_db.py]
+        FGODB["atlas_fgo.db\n~1.9 MB"]
+        YGODB["ygo_cards.db\n~13.4 MB"]
     end
-    FGO -->|"build if missing"| FGODB
-    YGO -->|"build if missing"| YGODB
-    GS -.->|"FGO detected"| FGO
-    GS -.->|"YGO detected"| YGO
-    ES -.->|"FGO patch note"| FGO
+
+    SK[synthesizing-knowledge] -->|Long video| YMS[youtube-minutes-synthesis]
+    YMS --> CAT
+
+    %% Both orchestrators share the same sub-skill routing
+    Orchestrators -->|talk signals| TS
+    Orchestrators -->|gameplay jargon| GS
+    Orchestrators -->|multi-game switches| MS
+    Orchestrators -->|patch notes / event| ES
+    Orchestrators -->|tokusatsu / watch party| TK
+
+    %% Both use shared scripts
+    Orchestrators --> PV
+    Orchestrators --> CS
+    CAT --> CT
+
+    %% ATL-only: handoff for context exhaustion
+    ATL -.->|"context full → save state"| ATH[anibon-timestamper-handoff]
+
+    %% Safety masking — only when risk signals detected
+    AT -.->|"⚠️ risk detected"| MRN[masking-royal-news]
+    ATL -.->|"⚠️ risk detected"| MRN
+    TS -.->|"⚠️ risk detected"| MRN
+    TK -.->|"⚠️ risk detected"| MRN
+
+    %% DB bootstrap chain
+    GS -.->|FGO detected| FGOS
+    ES -.->|FGO patch note| FGOS
+    GS -.->|YGO detected| YGOS
+    FGOS -->|build if missing| FGODB
+    YGOS -->|build if missing| YGODB
 ```
 
 ---
