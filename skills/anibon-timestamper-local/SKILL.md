@@ -43,21 +43,82 @@ python3 "/absolute/path/to/prepare_video.py" "VIDEO_URL"
 Process `chunk_00.json`, then `chunk_01.json` sequentially. For each chunk:
 1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
 2. **FGO / YGO Bootstrap**: If game matches, run `--check` and build the SQLite database if missing (exit 1).
-3. **Spawn 1 Subagent**: Send the chunk text to a single subagent using the template below.
-4. **Write Output**: Save subagent timestamps to `chunk_XX_output.md` (never append to one file!).
+3. **Spawn 1 Subagent**: Send the chunk JSON content to a single subagent using the template below.
+4. **Write Output**: Save subagent timestamps to `chunk_XX_output.md` using the output format below.
 5. **Auto-resume**: Upon receiving the subagent response, immediately write the file and spawn the next subagent for `chunk_XX+1.json`. Do NOT wait for user confirmation.
 6. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
 
-**Subagent Template:**
+---
+
+#### 📦 Chunk JSON Schema
+Each `chunk_XX.json` file contains:
+```json
+{
+  "start_sec": 300,
+  "end_sec":   600,
+  "items": [
+    { "text": "สวัสดีครับทุกคน", "start": 301.4, "duration": 2.1 },
+    { "text": "วันนี้มาเล่น FGO", "start": 305.8, "duration": 1.9 }
+  ]
+}
 ```
-You are processing Chunk <N> (MM:SS - MM:SS).
-Step 1: Scan transcript for game actions, news, or gacha pulls.
-Step 2: Align events to timestamps in format HH:MM:SS.
-Step 3: Select tag: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction].
-Step 4: Write summary description in Thai (use FGO/YGO DB terms).
-Step 5: Output ONLY: "HH:MM:SS - [Tag] Description" (No other text).
-TRANSCRIPT: <insert chunk raw text>
+- `start_sec` / `end_sec` — chunk window in **seconds from stream start**
+- `items[].start` — **absolute seconds from stream start** — use this directly to format `HH:MM:SS`
+- The last **30 seconds** of every chunk overlaps with the start of the next chunk (overlap zone)
+
+---
+
+#### ⏱️ Timing Rules
+
+**Formatting:** Convert `item.start` (float seconds) to `HH:MM:SS`:
 ```
+HH = int(start) // 3600
+MM = (int(start) % 3600) // 60
+SS = int(start) % 60
+```
+
+**Overlap cutoff:** Only emit timestamps for events with `item.start < end_sec - 30`. Ignore anything in the last 30 seconds of the chunk — the next chunk will cover it cleanly.
+
+**Timing correction — when timestamps feel drifted:**
+- If the transcript text at a given second doesn't match what you expect (e.g. text says "end screen" but timestamp is 00:05:10 into a 3-hour stream), **trust `item.start` over your intuition** — the timestamps come directly from YouTube's caption file and are authoritative.
+- If two consecutive timestamps are more than **10 minutes apart** with no entries in between, check if you skipped items. Do NOT invent a timestamp to fill the gap — leave it empty and note `[GAP: no transcript data]`.
+- If a tag event (e.g. gacha pull) clearly started earlier than the earliest item in your chunk, use `start_sec` as the floor — never go below it.
+
+---
+
+#### 📄 Subagent Template
+Send the full JSON content of the chunk file to the subagent:
+```
+You are processing Chunk <N> (HH:MM:SS – HH:MM:SS).
+chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 30>
+
+RULES:
+- Convert item.start (seconds) to HH:MM:SS using: HH=start//3600, MM=(start%3600)//60, SS=start%60.
+- Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
+- One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
+- Tags: [Greeting] [Talk] [News] [Gameplay] [Gacha] [Boss] [WatchParty] [Reaction]
+- Output ONLY the timestamp lines. No headers, no explanation, no extra text.
+- If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
+
+CHUNK JSON:
+<paste full chunk_XX.json content here>
+```
+
+---
+
+#### 📋 Output Format for `chunk_XX_output.md`
+Each output file must follow this exact format so `cat` concatenation works cleanly:
+```
+<!-- chunk_00 | 00:00:00 – 00:05:00 -->
+00:00:12 - [Greeting] บ๊อตทักทายผู้ชม เริ่มสตรีม
+00:01:34 - [Talk] คุยเรื่องข่าวสาร
+00:03:45 - [Gacha] ดึงการ์ด FGO รอบแรก
+```
+- **First line**: HTML comment with chunk index and time range — used as a merge marker
+- **Body**: one `HH:MM:SS - [Tag] Description` line per event, chronological order
+- **Never** include the subagent's thinking, apologies, or meta-commentary in this file
+
+---
 
 ### Step 4: Topic Map & Assembly
 When all chunks are finished, concatenate them:
@@ -80,4 +141,3 @@ CHECK_SCRIPT=$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "ch
 python3 "$CHECK_SCRIPT" timestamp_VIDEO_ID.md
 ```
 Split further if any section fails (❌ or ⚠️). Register the final file in your workspace.
-
