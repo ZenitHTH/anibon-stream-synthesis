@@ -17,6 +17,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
 4. **Delegate raw text**: Do NOT read raw transcript files in this main session. Spawn a subagent to do it.
 5. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
+6. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
 
 ---
 
@@ -45,6 +46,7 @@ Process `chunk_00.json`, then `chunk_01.json` sequentially. For each chunk:
 3. **Spawn 1 Subagent**: Send the chunk text to a single subagent using the template below.
 4. **Write Output**: Save subagent timestamps to `chunk_XX_output.md` (never append to one file!).
 5. **Auto-resume**: Upon receiving the subagent response, immediately write the file and spawn the next subagent for `chunk_XX+1.json`. Do NOT wait for user confirmation.
+6. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
 
 **Subagent Template:**
 ```

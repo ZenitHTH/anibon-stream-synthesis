@@ -50,6 +50,7 @@ Manually timestamping these massive, unpredictable streams is extremely time-con
 | [`youtube-minutes-synthesis`](skills/youtube-minutes-synthesis/SKILL.md) | Meeting-minutes from YouTube videos | Calls `cleaning-auto-transcripts` first |
 | [`anibon-timestamper`](skills/anibon-timestamper/SKILL.md) | Stream orchestrator — auto-detects stream type & routes to sub-skills | Orchestrates all `anibon-*` sub-skills via parallel signal detection |
 | [`anibon-timestamper-local`](skills/anibon-timestamper-local/SKILL.md) | Local stream orchestrator — sequential loop & goldfish brain rules | For local AIs (Ollama) with restricted context windows |
+| [`anibon-timestamper-handoff`](skills/anibon-timestamper-handoff/SKILL.md) | Local timestamper session state saving & loading | Resolves context memory issues on long runs |
 | [`cleaning-auto-transcripts`](skills/cleaning-auto-transcripts/SKILL.md) | Transcription noise correction | Powers `anibon-timestamper` and `youtube-minutes-synthesis` |
 | [`masking-royal-news`](skills/masking-royal-news/SKILL.md) | Sensitive political/royal content masking | Single source of truth for public safety compliance |
 | [`building-reusable-cli-tools`](skills/building-reusable-cli-tools/SKILL.md) | CLI tool design guidance | Referenced when writing new processing scripts |
@@ -107,6 +108,7 @@ graph TD
     YMS -->|Cleanup| CAT[cleaning-auto-transcripts]
     AT[anibon-timestamper] -->|Cleanup| CAT
     ATL[anibon-timestamper-local] -->|Cleanup| CAT
+    ATL -->|Save/Load State| ATH[anibon-timestamper-handoff]
     AT -.->|"⚠️ Risk detected only"| MRN[masking-royal-news]
     ATL -.->|"⚠️ Risk detected only"| MRN
 
