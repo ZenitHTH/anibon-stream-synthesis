@@ -127,8 +127,8 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
     
     ### Step 2: Time Alignment
     For every major transition, game switch, or topic change:
-    - Locate the exact starting time of that event in the transcript.
-    - Format the timestamp as `HH:MM:SS` (or `MM:SS` if the stream is under an hour).
+    - Locate the exact starting time of that event in the transcript data.
+    - Use the pre-calculated `timestamp` field from the JSON item directly. Do NOT calculate the math yourself.
     
     ### Step 3: Select the Correct Tag
     Use only standard tags matching the sub-skill detection rules:
@@ -152,8 +152,8 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
     Do NOT include any introduction, thinking process, or additional text outside of this format.
     
     CRITICAL RULES: <Orchestrator: Pre-read the matching sub-skills yourself and inject a distilled 3-4 bullet summary of their Iron Rules here. Do NOT tell the subagent to read files.>
-    TRANSCRIPT:
-    <Orchestrator: Inject the raw text of the 5-minute chunk directly here>"
+    TRANSCRIPT JSON:
+    <Orchestrator: Inject the full JSON content of the 5-minute chunk here>"
 
 4. **Reduce Stage (Final Assembly)**
    

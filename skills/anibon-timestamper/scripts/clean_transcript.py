@@ -25,6 +25,11 @@ def _load(path):
 
 def clean_transcript_data(transcript, mappings):
     for item in transcript:
+        # Pre-calculate HH:MM:SS to save LLM context window tokens
+        if "timestamp" not in item:
+            s = item.get("start", 0)
+            item["timestamp"] = f"{int(s//3600):02d}:{int((s%3600)//60):02d}:{int(s%60):02d}"
+            
         text = re.sub(r'\s+', ' ', item['text']).strip()
         for mapping in mappings.get('mappings', []):
             for pat in mapping.get('patterns', []):
