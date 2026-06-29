@@ -22,6 +22,7 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
    {
      "video_id": "YOUR_YOUTUBE_VIDEO_ID",
      "video_url": "YOUR_YOUTUBE_VIDEO_URL",
+     "workspace_path": "/absolute/path/to/youtube_<video_id>_workspace",
      "total_chunks": 48,
      "current_chunk": 12,
      "db_checked": {
@@ -36,7 +37,7 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 2. **Handoff Message**: Output a message to the user explaining that context is full, pointing to the state file, and instructing them to start a new session.
    
    *Example message:*
-   > 🔄 [CONTEXT WARNING] My active memory window is nearly full. I have saved the progress state to `youtube_rP8AHWOIXtI_workspace/anibon_timestamper_state.json`. Please start a new conversation session and load the `anibon-timestamper-handoff` skill to resume from Chunk 12!
+   > 🔄 [CONTEXT WARNING] My active memory window is nearly full. I have saved the progress state to `/absolute/path/to/youtube_rP8AHWOIXtI_workspace/anibon_timestamper_state.json`. Please start a new conversation session and load BOTH `anibon-timestamper-handoff` and `anibon-timestamper-local` skills to resume from Chunk 12!
 
 ---
 
@@ -44,6 +45,8 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 
 When the user starts a fresh conversation session to resume work:
 
-1. **Find and Read State File**: Locate and read `anibon_timestamper_state.json` in the video workspace.
-2. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.json`).
-3. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
+1. **Load Local Rules First**: You MUST read and load `anibon-timestamper-local/SKILL.md` before doing anything else. You need its rules (no `<think>` tags, chunk JSON schema, output format) to function correctly in the loop.
+2. **Find and Read State File**: Locate and read `anibon_timestamper_state.json` in the video workspace. Use the absolute path if provided.
+3. **Verify Databases**: Even if `db_checked` says `true`, you MUST re-run the `--check` command for FGO/YGO databases as specified in the local skill, because the database files are stored centrally and might be missing on a new machine.
+4. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.json`).
+5. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
