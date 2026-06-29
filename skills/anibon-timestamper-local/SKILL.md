@@ -120,15 +120,25 @@ When all chunks are finished, concatenate them:
 - Unix: `cat chunk_*_output.md > raw_timestamps.txt`
 - Windows: `Get-Content chunk_*_output.md | Set-Content raw_timestamps.txt`
 
-Review the output to map major topic shifts (Talk, Gameplay, WatchParty) and split the file into parts of **4,500 characters or fewer** (YouTube comment limit is 5,000). 
-**CRITICAL**: You MUST write a brief summary (1-2 sentences) of what actually happens in this section for the `เนื้อหา:` field in the separator. Do NOT just copy the title.
+Now, you MUST assemble the final output file `timestamp_VIDEO_ID.md`. To do this, follow these explicit steps for splitting and formatting:
 
-Use the separator format:
+**Step 4.1: Split by Topic & Size**
+Read the concatenated timestamps. Group them into major topic shifts (e.g., Talk, Gameplay, WatchParty). If a section exceeds **4,500 characters** (YouTube limit), you must split it into Part 1, Part 2, etc.
+
+**Step 4.2: Draft the Header (CRITICAL)**
+For each section you create, you must write a header. Do not rush this. Follow this thought process:
+1. **Analyze**: Read the timestamps in this section. What are the 2-3 most important things discussed or played?
+2. **Title**: Pick a short category title (e.g., "คุยประเด็นข่าวดราม่า", "FGO ลุยเนื้อเรื่องหลัก").
+3. **Summary**: Write a 1-2 sentence summary covering the actual core events. (e.g., "บ๊อตวิเคราะห์ประเด็นดราม่าตำรวจด้อม และพูดถึงเรื่อง MOU 43-44 ที่มีข้อโต้เถียงกัน"). **DO NOT** just repeat the title!
+
+**Step 4.3: Apply the Separator Format**
+Use this exact format to print the header you drafted in Step 4.2:
 ```
-📌 ส่วนที่ N: [สรุปภาพรวมของช่วงนี้สั้นๆ 1-2 บรรทัด]
-(หัวข้อ: [ชื่อหัวข้อ] | ⏱ เริ่ม: HH:MM:SS)
+📌 ส่วนที่ N: [ใส่ Summary 1-2 บรรทัดที่เขียนไว้]
+(หัวข้อ: [ใส่ Title ที่คิดไว้] | ⏱ เริ่ม: HH:MM:SS)
 ---------------------------------------------------------
 ```
+*Note: The `HH:MM:SS` must be the timestamp of the VERY FIRST event in this section. Remove all `<!-- chunk_XX -->` markers during assembly.*
 
 ### Step 5: Verification Check
 Find and run `check_sections.py` on the final file to verify character counts:
