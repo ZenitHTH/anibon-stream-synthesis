@@ -58,11 +58,18 @@ def suggest_split(body: str) -> str | None:
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python check_sections.py <timestamp_file.md>")
+    import argparse
+    ap = argparse.ArgumentParser()
+    # ponytail: --file mirrors Antigravity hook $TARGET_FILE injection; positional kept for CLI compat
+    ap.add_argument("file", nargs="?", help="Timestamp .md file")
+    ap.add_argument("--file", dest="file_flag", help="Timestamp .md file (hook env-var form)")
+    args = ap.parse_args()
+    target = args.file_flag or args.file
+    if not target:
+        ap.print_usage()
         sys.exit(1)
 
-    path = Path(sys.argv[1])
+    path = Path(target)
     if not path.exists():
         print(f"[!] File not found: {path}", file=sys.stderr)
         sys.exit(1)
@@ -100,6 +107,7 @@ def main():
                 tip = f"split at ≈ {mid_ts}" if mid_ts else "section too short to split"
                 print(f"  {label}{r['label'][:55]}")
                 print(f"     → {tip}  ({nbytes} bytes, {len(r['full'].strip())} chars)")
+        sys.exit(1)
     else:
         print("\n✅ All sections are within the YouTube comment byte limit.")
 
