@@ -34,3 +34,7 @@ def test_valid_exits_zero(tmp_path):
 
 def test_over_limit_exits_nonzero(tmp_path):
     assert _run(OVER_LIMIT_MD, tmp_path) != 0
+
+def test_no_sections_exits_zero(tmp_path):
+    """Non-timestamp .md files (no ═══ blocks) must not block the agent's write."""
+    assert _run("# Just a notes file\nNo sections here.", tmp_path) == 0
