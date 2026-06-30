@@ -46,7 +46,7 @@ Process `chunk_00.json`, then `chunk_01.json` sequentially. For each chunk:
 1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
 2. **FGO / YGO Bootstrap**: If game matches, run `--check` and build the SQLite database if missing (exit 1).
 3. **Spawn 1 Subagent**: Send the chunk JSON content to a single subagent using the template below.
-4. **Write Output**: Save subagent timestamps to `chunk_XX_output.md` using the output format below.
+4. **Write Output**: Create a `chunk_outputs/` directory in the workspace. Save subagent timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
 5. **Auto-resume**: Upon receiving the subagent response, immediately write the file and spawn the next subagent for `chunk_XX+1.json`. Do NOT wait for user confirmation.
 6. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
 
@@ -115,7 +115,7 @@ CHUNK JSON:
 
 ---
 
-#### 📋 Output Format for `chunk_XX_output.md`
+#### 📋 Output Format for `chunk_outputs/chunk_XX_output.md`
 Each output file must follow this exact format so `cat` concatenation works cleanly:
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
@@ -131,8 +131,8 @@ Each output file must follow this exact format so `cat` concatenation works clea
 
 ### Step 4: Topic Map & Assembly
 When all chunks are finished, concatenate them:
-- Unix: `cat chunk_*_output.md > raw_timestamps.txt`
-- Windows: `Get-Content chunk_*_output.md | Set-Content raw_timestamps.txt`
+- Unix: `cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt`
+- Windows: `Get-Content chunk_outputs/chunk_*_output.md | Set-Content raw_timestamps.txt`
 
 Now, you MUST assemble the final output file `timestamp_VIDEO_ID.md`. To do this, follow these explicit steps for splitting and formatting:
 
