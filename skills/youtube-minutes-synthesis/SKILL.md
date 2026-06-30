@@ -58,22 +58,6 @@ You MUST always follow these steps when this skill is activated:
    - Write the report in consistent, polished language throughout the entire document (e.g. all Thai or all English).
 6. **Save to Markdown**: Save the document to the output store and provide the user with an accessible link.
 
-## Helper Scripts
-
-
-This skill includes utility scripts to safely query transcript JSON files without writing ad-hoc scripts:
-- [transcript_utils.py](scripts/transcript_utils.py) - General utility for searching, dumping, and previewing.
-
-### transcript_utils.py Usage
-**CRITICAL RULE:** Do NOT write new ad-hoc scripts (`search_transcript.py`, `dump.py`, `view_start.py`, etc.) from scratch in the `<working_dir>/` directory. You MUST reuse `transcript_utils.py` for standard search and dump operations. **Always verify that the script exists at the target path before running it.** If your current working directory is not the skill folder, you must use the absolute path to this script. If the script is genuinely missing from the machine, only then are you permitted to write a fallback ad-hoc script. *(In Antigravity use the session's `scratch/` dir; in Claude Code or OpenCode pick any session-scoped temp directory.)*
-
-- **Search for keywords:**
-  `python3 "$HOME/.gemini/config/plugins/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" search <path> <k1> || python3 "$HOME/.config/opencode/skills/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" search <path> <k1>`
-- **Dump a specific time range:**
-  `python3 "$HOME/.gemini/config/plugins/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" dump <path> <start> <end> || python3 "$HOME/.config/opencode/skills/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" dump <path> <start> <end>`
-- **Preview top N items:**
-  `python3 "$HOME/.gemini/config/plugins/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" preview <path> --limit 10 || python3 "$HOME/.config/opencode/skills/synthesizing-knowledge/skills/youtube-minutes-synthesis/scripts/transcript_utils.py" preview <path> --limit 10`
-
 ## Recommended Template
 
 ```markdown
@@ -113,9 +97,7 @@ This skill includes utility scripts to safely query transcript JSON files withou
 
 For videos with access restrictions (age-restricted, private, or captions disabled):
 
-1. **Library Version Error**:
-   - Verify that `python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json` calls via an instance (`api = YouTubeTranscriptApi()`) and converts objects with `.to_raw_data()` when argument/attribute errors are detected.
-2. **Age-restricted / Sign-in required**:
+1. **Age-restricted / Sign-in required**:
    - Since YouTube blocks bots from logging in to fetch captions for age-restricted content, switch to a **"Fallback to Web Search"** plan.
    - Search for summaries, reports, official press releases, or timestamps of that video online via Web Search.
    - Use the gathered data to map against activity timeframes and write the meeting report following the template.

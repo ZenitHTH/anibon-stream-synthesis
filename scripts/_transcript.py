@@ -31,7 +31,7 @@ def download(url: str, workspace: Path) -> None:
 
     print(f"[*] Downloading transcript via yt-dlp...", file=sys.stderr)
     subprocess.run([
-        sys.executable, "-m", "yt_dlp", "-P", str(workspace),
+        "yt-dlp", "-P", str(workspace),
         "--write-auto-subs", "--sub-lang", "th-orig,th",
         "--sub-format", "json3", "--skip-download",
         "--ignore-no-formats-error", "-o", "raw_transcript", url

@@ -14,7 +14,7 @@ def _clean(transcript: list, mappings: dict) -> list:
                 excludes = mapping.get('exclude_if_contains', [])
                 if any(re.search(re.escape(ex), text, re.I) for ex in excludes):
                     continue
-                text = re.sub(re.escape(pat), mapping['correct'], text, flags=re.I)
+                text = re.sub(re.escape(pat), lambda m: mapping['correct'], text, flags=re.I)
         item['text'] = text
     return transcript
 

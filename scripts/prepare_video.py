@@ -22,7 +22,7 @@ def main():
 
     # Extract video_id from URL or use as-is
     url = args.url
-    vid = url.split("v=")[-1].split("&")[0].split("/")[-1]
+    vid = url.split("v=")[-1].split("&")[0].split("/")[-1].split("?")[0]
 
     workspace = Path.home() / f"youtube_{vid}_workspace"
     workspace.mkdir(exist_ok=True)

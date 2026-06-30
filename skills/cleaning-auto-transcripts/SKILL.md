@@ -33,8 +33,7 @@ A skill for processing, fetching, and noise-cleaning auto-generated YouTube tran
 - **Command**:
   Use the shared pipeline script:
   ```bash
-  find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
-    -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
+  python3 "$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -path '*/anibon-stream-synthesis/scripts/prepare_video.py' 2>/dev/null | head -1)" "VIDEO_URL"
   ```
 
 ### Step 3: Verify Output
