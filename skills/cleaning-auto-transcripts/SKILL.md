@@ -31,8 +31,11 @@ A skill for processing, fetching, and noise-cleaning auto-generated YouTube tran
 ### Step 2: Prepare Workspace, Download, and Chunk Transcript
 **Action**: Run the `prepare_video.py` script. This script automatically handles creating the `youtube_VIDEO_ID_workspace`, safely downloading the transcript with native `yt-dlp`, and cleaning/chunking it in one go.
 - **Command**:
-  `python "$HOME/.config/opencode/skills/synthesizing-knowledge/skills/cleaning-auto-transcripts/scripts/prepare_video.py" "VIDEO_URL"`
-  *(If the file is not found, try the fallback path: `python "$HOME/.gemini/config/plugins/synthesizing-knowledge/skills/cleaning-auto-transcripts/scripts/prepare_video.py" "VIDEO_URL"`)*
+  Use the shared pipeline script:
+  ```bash
+  find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
+    -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
+  ```
 
 ### Step 3: Verify Output
 **Action**: Verify that `cleaned_transcript.json` (or the `chunks/` folder) was successfully generated inside the new workspace.

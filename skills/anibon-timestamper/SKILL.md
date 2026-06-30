@@ -175,7 +175,13 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 ## 🧭 Orchestration Checklist (Cloud)
 
 1. Environment Check → verify `yt-dlp` and `python3`.
-2. Download & Chunk → `python3 scripts/prepare_video.py <URL>`.
+2. Download & Chunk:
+```bash
+find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
+  -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
+
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json --block 300 --overlap 30
+```
 3. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
 4. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
 5. Final Assembly → concatenate, split at byte limits, verify with `check_sections.py`.

@@ -37,7 +37,12 @@ Find the absolute path of the `prepare_video.py` script globally:
 
 Run the script using its absolute path to fetch and chunk the transcript (5-min blocks, 30s overlap):
 ```bash
-python3 "/absolute/path/to/prepare_video.py" "VIDEO_URL"
+# Find script globally
+find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
+  -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
+
+# Run with txt format
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
 *(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
 
@@ -52,21 +57,17 @@ Process `chunk_00.json`, then `chunk_01.json` sequentially. For each chunk:
 
 ---
 
-#### 📦 Chunk JSON Schema
-Each `chunk_XX.json` file contains:
-```json
-{
-  "start_sec": 300,
-  "end_sec":   600,
-  "items": [
-    { "text": "สวัสดีครับทุกคน", "start": 301.4, "duration": 2.1, "timestamp": "00:05:01" },
-    { "text": "วันนี้มาเล่น FGO", "start": 305.8, "duration": 1.9, "timestamp": "00:05:05" }
-  ]
-}
+#### 📄 Chunk TXT Format
+Each `chunks/chunk_NN.txt` file contains:
 ```
-- `start_sec` / `end_sec` — chunk window in **seconds from stream start**
-- `items[].timestamp` — **pre-calculated HH:MM:SS** — use this directly!
-- The last **30 seconds** of every chunk overlaps with the start of the next chunk (overlap zone)
+CHUNK NN | HH:MM:SS–HH:MM:SS | cutoff=HH:MM:SS
+(HH:MM:SS) transcript line text
+(HH:MM:SS) transcript line text
+...
+```
+- **Line 1**: Header with chunk index, time range, and cutoff timestamp
+- **Body**: one `(HH:MM:SS) text` line per transcript entry, chronological
+- **Cutoff rule**: Skip entries with timestamp > cutoff when selecting timestamps (overlap zone)
 
 ---
 
@@ -89,7 +90,7 @@ chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 
 
 RULES:
 - Use the pre-calculated `item.timestamp` directly. Do NOT calculate the math yourself.
-- Only emit timestamps for items where item.start < <end_sec - 30> (skip overlap zone).
+- Skip any entry whose timestamp > the cutoff shown in the chunk header line.
 - **LIMIT**: Maximum 10 timestamps per 5-minute chunk.
 - **GROUPING (CRITICAL)**: If multiple sentences within 1-2 minutes discuss the SAME topic, emit ONLY ONE timestamp for the start of that topic. Do not log every single sentence!
 - **MINIMUM GAP**: Timestamps must be at least 30-60 seconds apart unless there is a major Tag change (e.g. from [Talk] to [Gameplay]).
@@ -109,8 +110,8 @@ RULES:
 - Output ONLY the timestamp lines. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
 - If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
 
-CHUNK JSON:
-<paste full chunk_XX.json content here>
+CHUNK TXT:
+<Orchestrator: paste the full content of chunks/chunk_NN.txt here>
 ```
 
 ---

@@ -41,7 +41,11 @@ You MUST always follow these steps when this skill is activated:
    - **NEVER attribute events or information that occurred after the publish date** to the speaker as if they said it, unless clearly labelled as **Post-stream Developments**.
 2. **Extract Transcript**:
    - **REQUIRED SUB-SKILL**: To load or fetch a transcript, ALWAYS invoke the [cleaning-auto-transcripts](../cleaning-auto-transcripts/SKILL.md) skill to download and correct errors from the Auto-Transcript system or unclear speech.
-   - **CRITICAL for Low-Context AIs (e.g. gemma4:e2b or gemma:31b)**: Do NOT use complex python scripts (`fetch_transcript.py`) or guess dynamic filenames. Download the transcript into a predictable JSON file (literally named `raw_transcript.json` in your current directory) using this native command. **ALWAYS prioritize original language** (`--sub-lang "th-orig"` or `"en-orig"`) over English (`en`):
+   - **CRITICAL for Low-Context AIs (e.g. gemma4:e2b or gemma:31b)**: Do NOT use complex python scripts (
+```bash
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json
+```
+) or guess dynamic filenames. Download the transcript into a predictable JSON file (literally named `raw_transcript.json` in your current directory) using this native command. **ALWAYS prioritize original language** (`--sub-lang "th-orig"` or `"en-orig"`) over English (`en`):
      `yt-dlp --write-auto-subs --sub-lang "th-orig" --sub-format json3 --skip-download --ignore-no-formats-error -o "raw_transcript" "<URL>" ; mv raw_transcript.*.json3 raw_transcript.json`
    - **Anti-Bot Block Handling (YouTube 429 Error)**:
      - **Local run**: Ask the user which browser they use (e.g., `chrome`, `brave`) and retry with `--cookies-from-browser <browser_name>`.
@@ -114,7 +118,11 @@ This skill includes utility scripts to safely query transcript JSON files withou
 For videos with access restrictions (age-restricted, private, or captions disabled):
 
 1. **Library Version Error**:
-   - Verify that `fetch_transcript.py` calls via an instance (`api = YouTubeTranscriptApi()`) and converts objects with `.to_raw_data()` when argument/attribute errors are detected.
+   - Verify that 
+```bash
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json
+```
+ calls via an instance (`api = YouTubeTranscriptApi()`) and converts objects with `.to_raw_data()` when argument/attribute errors are detected.
 2. **Age-restricted / Sign-in required**:
    - Since YouTube blocks bots from logging in to fetch captions for age-restricted content, switch to a **"Fallback to Web Search"** plan.
    - Search for summaries, reports, official press releases, or timestamps of that video online via Web Search.
