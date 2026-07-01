@@ -26,7 +26,7 @@ from pathlib import Path
 LIMIT = 4500   # bytes — YouTube Thai comment hard cap (empirical)
 WARN  = 3500   # bytes — warn early to leave safe margin
 
-SEP = re.compile(r'(═+\n📌[^\n]+\n[^\n]+\n═+)')
+SEP = re.compile(r'((?:═+|-+)\n📌[^\n]+\n[^\n]+\n(?:═+|-+))')
 
 
 def _full_blocks(text: str) -> list[dict]:

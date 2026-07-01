@@ -18,6 +18,8 @@ def main():
                     help="Chunk block size in seconds (default: 300 = 5 min)")
     ap.add_argument("--overlap", type=int, default=30,
                     help="Chunk overlap in seconds (default: 30)")
+    ap.add_argument("--vision", action="store_true",
+                    help="Extract and annotate visual frame frames for ambiguous pronoun cues")
     args = ap.parse_args()
 
     # Extract video_id from URL or use as-is
@@ -30,6 +32,11 @@ def main():
 
     _transcript.download(url, workspace)
     n = _chunker.run(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
+    
+    if args.vision and args.format == "json":
+        import _vision
+        _vision.run(workspace, url)
+
     ext = "txt" if args.format == "txt" else "json"
     print(f"[*] Done! Wrote {n} chunks ({ext}) to {workspace}/chunks/")
 

@@ -142,6 +142,9 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
     Output your result using this exact format for every line:
     `HH:MM:SS - [Tag] Description`
     
+    ### Step 6: Visual Reference Resolution
+    - If any transcript item contains an `"image"` field, you may use `view_file` to load the image and visually identify who/what is shown (e.g., resolving pronoun references like "เขา", "คนนี้", "this guy", "this card"). Include the resolved name/context in the description.
+    
     Do NOT include any introduction, thinking process, or additional text outside of this format.
     
     CRITICAL RULES: <Orchestrator: Pre-read the matching sub-skills yourself and inject a distilled 3-4 bullet summary of their Iron Rules here. Do NOT tell the subagent to read files.>
@@ -176,12 +179,12 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 ## 🧭 Orchestration Checklist (Cloud)
 
 1. Environment Check → verify `yt-dlp` and `python3`.
-2. Download & Chunk:
+2. Download & Chunk (add --vision to extract visual frames for pronoun/visual referent resolution):
 ```bash
 find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
   -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
 
-python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json --block 300 --overlap 30
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json --block 300 --overlap 30 --vision
 ```
 3. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
 4. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
