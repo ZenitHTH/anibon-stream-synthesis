@@ -26,6 +26,11 @@ Or add the plugin directly to your global `~/.config/opencode/opencode.jsonc` (o
 ```
 Restart OpenCode. The plugin manager downloads the package automatically and registers all skills.
 
+**Pi Coding Agent** — Install via `pi` CLI (or clone and point to the directory):
+```bash
+pi install git+https://github.com/ZenitHTH/anibon-stream-synthesis.git
+```
+
 **Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
 
 ---
@@ -279,14 +284,14 @@ The `masking-royal-news` skill is **NOT applied by default**. It only triggers w
 
 Skills are tool-agnostic. Key conventions:
 
-| Concept | Antigravity | Claude Code | OpenCode |
-| :--- | :--- | :--- | :--- |
-| Run shell command | `run_command` | `Bash` | native bash |
-| Fetch web page | `read_url_content` | `WebFetch` | WebSearch/bash |
-| Write file | `write_to_file` | `Write` | native write |
-| Spawn subagents | `subagent-driven-development` | `Task` | concurrent tool calls |
-| Working directory | artifacts dir (injected) | `~/.claude/brain/<session-id>/` | project subdir |
-| Temp/scratch files | `scratch/` session dir | any session-scoped temp path | any session-scoped temp path |
+| Concept | Antigravity | Claude Code | OpenCode | Pi Coding Agent |
+| :--- | :--- | :--- | :--- | :--- |
+| Run shell command | `run_command` | `Bash` | native bash | `bash` |
+| Fetch web page | `read_url_content` | `WebFetch` | WebSearch/bash | `bash` + curl / `read` |
+| Write file | `write_to_file` | `Write` | native write | `write` / `edit` |
+| Spawn subagents | `subagent-driven-development` | `Task` | concurrent tool calls | agent delegation |
+| Working directory | artifacts dir (injected) | `~/.claude/brain/<session-id>/` | project subdir | project workspace |
+| Temp/scratch files | `scratch/` session dir | any session-scoped temp path | any session-scoped temp path | any session-scoped temp path |
 
 Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific prefix needed.
 
