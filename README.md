@@ -28,7 +28,7 @@ Restart OpenCode. The plugin manager downloads the package automatically and reg
 
 **Pi Coding Agent** — Install via `pi` CLI (or clone and point to the directory):
 ```bash
-pi install git+https://github.com/ZenitHTH/anibon-stream-synthesis.git
+pi install https://github.com/ZenitHTH/anibon-stream-synthesis.git
 ```
 
 **Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
