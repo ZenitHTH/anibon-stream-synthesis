@@ -40,12 +40,21 @@ def _full_blocks(text: str) -> list[dict]:
 
 
 def suggest_split(body: str) -> str | None:
-    """Find the timestamp line closest to the midpoint of a too-long body."""
+    """Find the timestamp line closest to the byte-midpoint of a too-long body."""
     lines = [l for l in body.splitlines() if re.match(r'\d{2}:\d{2}:\d{2}', l.strip())]
     if len(lines) < 2:
         return None
-    mid_idx = len(lines) // 2
-    return lines[mid_idx].split(" - ")[0].strip()
+        
+    total_bytes = len(body.encode("utf-8"))
+    midpoint = total_bytes / 2
+    
+    current_bytes = 0
+    # Use next() with enumerate to find the split line efficiently
+    split_idx = next((i for i, line in enumerate(lines) 
+                      if (current_bytes := current_bytes + len(line.encode("utf-8"))) >= midpoint), 
+                     len(lines) // 2)
+                     
+    return lines[split_idx].split(" - ")[0].strip()
 
 
 def main():
