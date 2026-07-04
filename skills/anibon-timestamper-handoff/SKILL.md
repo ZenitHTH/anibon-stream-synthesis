@@ -59,9 +59,9 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 
 When the user starts a fresh conversation session to resume work:
 
-1. **Load Local Rules First**: You MUST read and load `anibon-timestamper-local/SKILL.md` before doing anything else. You need its rules (no `<think>` tags, chunk JSON schema, output format) to function correctly in the loop.
-2. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
-3. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/`. Use this as the `[PLUGIN_ROOT]` for the script paths below.
+1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/`. Use this as the `[PLUGIN_ROOT]`.
+2. **Read Local Rules**: You MUST read the core rules by calling the `read` tool on `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md`. You need its rules (no `<think>` tags, output format) to function correctly.
+3. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
 4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact command:
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
    - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
