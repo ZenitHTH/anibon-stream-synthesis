@@ -40,10 +40,11 @@ You already know where everything is. Never search for files.
 
 ### Step 1: Resolve Plugin Path & Verify
 Shell is MINGW64/bash. Run:
+1. **Find Plugin Root**: Look at the `<skill location="...">` tag at the top of your prompt. Delete the exact text `skills\anibon-timestamper-local\SKILL.md` from the end of it. Replace all backslashes `\` with forward slashes `/`. This remaining path is your `[PLUGIN_ROOT]`.
+2. **Verify**:
 ```bash
 uname -a && python3 --version
 ```
-Resolve `[PLUGIN_ROOT]` from the `<skill location="...">` XML tag: extract path up to (not including) `skills/`, replace `\` → `/`.
 
 ### Step 2: Download & Chunk
 ```bash
