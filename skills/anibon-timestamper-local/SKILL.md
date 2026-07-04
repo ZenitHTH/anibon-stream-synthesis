@@ -55,7 +55,20 @@ Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
 4. **Process Inline**: Read the content of `chunk_XX.txt`. Generate timestamps following the Prompt Template rules below.
 5. **Write Output**: Save your generated timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
 6. **Auto-resume**: Immediately read and process the next chunk (`chunk_XX+1.txt`). Do NOT wait for user confirmation.
-7. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
+7. **Context Handoff**: If you notice high latency or memory issues, you MUST write a state file named `anibon_timestamper_state.json` inside the workspace before stopping. Use this exact JSON schema:
+```json
+{
+  "video_id": "YOUR_YOUTUBE_VIDEO_ID",
+  "video_url": "YOUR_YOUTUBE_VIDEO_URL",
+  "workspace_path": "/absolute/path/to/youtube_<video_id>_workspace",
+  "total_chunks": 48,
+  "current_chunk": 12,
+  "db_checked": { "fgo": true, "ygo": false },
+  "phase": "chunk_loop",
+  "last_updated": "2026-06-29T09:23:00Z"
+}
+```
+Explain the handoff to the user and stop. They will load `anibon-timestamper-handoff` in a new session.
 
 ---
 
