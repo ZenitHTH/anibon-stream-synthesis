@@ -17,14 +17,14 @@ def analyze_logic(events, keywords, window=600):
     time_map = {}
     
     for item in events:
-        text = item.get("text", "").lower()
+        text = (item.get("text") or "").lower()
         slot = int(item.get("start", 0) // window)
         
         if slot not in time_map:
             time_map[slot] = item.get("timestamp", "")
             
         for key, pats in keywords.items():
-            if any(p in text for p in pats):
+            if any(p.lower() in text for p in pats):
                 results[slot][key] += 1
                 
     output = []
@@ -49,10 +49,12 @@ def main():
         keywords = json.load(f)
         
     results = analyze_logic(events, keywords, args.window)
-    if not results: return
     
     writer = csv.DictWriter(sys.stdout, fieldnames=["Time"] + list(keywords.keys()))
     writer.writeheader()
+    
+    if not results: return
+    
     writer.writerows(results)
 
 if __name__ == "__main__":

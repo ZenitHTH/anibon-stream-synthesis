@@ -1,7 +1,9 @@
 import pytest
 import sys
+from pathlib import Path
 
-sys.path.insert(0, "/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts")
+# Dynamically resolve path to scripts directory
+sys.path.insert(0, str(Path(__file__).parent.parent / "skills" / "anibon-timestamper" / "scripts"))
 from analyze_transcript import analyze_logic
 
 def test_analyze_logic():
