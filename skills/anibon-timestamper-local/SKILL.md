@@ -55,6 +55,7 @@ python3 "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --bloc
 
 ### Step 3: Sequential Chunk Loop
 For each chunk `chunk_00.txt`, `chunk_01.txt`, ...:
+**CRITICAL**: Chunk numbers are ALWAYS zero-padded to two digits (e.g. `chunk_02.txt`, NOT `chunk_2.txt`).
 1. **Read**: `read C:/Users/peter/<workspace>/chunks/chunk_XX.txt`
 2. **DB check** (only if chunk text contains `FGO`, `Fate`, `YGO`, or `遊戯王`):
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
