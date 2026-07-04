@@ -8,7 +8,7 @@ def parse_time(ts_str):
 
 def merge_logic(file_paths):
     merged = []
-    pattern = re.compile(r'^(\d{2}:\d{2}:\d{2})\s*(?:\[(.*?)\])?\s*(.*)$')
+    pattern = re.compile(r'^(\d{2}:\d{2}:\d{2})\s*(?:-\s*)?(?:\[(.*?)\])?\s*(.*)$')
     for fp in file_paths:
         try:
             with open(fp, "r", encoding="utf-8") as f:
@@ -26,7 +26,7 @@ def merge_logic(file_paths):
             
     merged.sort(key=lambda x: x["sec"])
     # Deduplicate using dict insertion order (Ponytail principle)
-    deduped = list({e["sec"]: e["line"] for e in merged}.values())
+    deduped = list({e["line"]: None for e in merged}.keys())
     return deduped
 
 def main():
