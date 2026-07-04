@@ -80,20 +80,24 @@ Read the chunk. Group consecutive lines that discuss the **same topic** into a b
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
 
-📌 ส่วนที่ 1: บ๊อตทักทายผู้ชม เปิดสตรีมยามเย็น
-(หัวข้อ: ทักทาย | ⏱ เริ่ม: 00:03:52)
-00:03:52 บ๊อตทักทายผู้ชม เริ่มสตรีม
+📌 ส่วนที่ 1: บ๊อตทักทายผู้ชมและเปิดสตรีมยามเย็น หลังจากห่างหายจากข่าวการเมืองมากว่า 3 สัปดาห์
+(หัวข้อ: เปิดรายการและทักทาย | ⏱ เริ่ม: 00:03:52)
+-------
+00:03:52 -  บ๊อตทักทายผู้ชม เริ่มสตรีม
+00:04:01 -  พูดถึงช่วงเว้นว่างจากข่าวการเมืองในช่วง 3 สัปดาห์ที่ผ่านมา
 
-📌 ส่วนที่ 2: พูดคุยช่วงที่ไม่ได้อัปเดตข่าวการเมืองนานกว่า 3 สัปดาห์
-(หัวข้อ: อัปเดตข่าวสาร | ⏱ เริ่ม: 00:04:01)
-00:04:01 พูดถึงช่วงเว้นว่างจากข่าวการเมือง
+📌 ส่วนที่ 2: [summary of next topic block]
+(หัวข้อ: [title] | ⏱ เริ่ม: HH:MM:SS)
+-------
+HH:MM:SS -  description
 ```
 
 - First line: HTML comment (required for merge).
-- `📌 ส่วนที่ N:` — use a running counter N that continues across ALL chunks (not per-chunk).
-- Summary line: 1 sentence, what happened in this block.
-- `(หัวข้อ: ... | ⏱ เริ่ม: HH:MM:SS)` — short title + first timestamp of the block.
-- `HH:MM:SS description` lines below — just time + Thai text, no dashes, no tags.
+- `📌 ส่วนที่ N:` — running counter that continues across ALL chunks (not reset per chunk).
+- Summary: 1 sentence on the `📌` line describing what happened.
+- `(หัวข้อ: [short title] | ⏱ เริ่ม: HH:MM:SS)` — title + first timestamp of the block.
+- `-------` separator line (7 dashes).
+- `HH:MM:SS -  description` — timestamp, dash, two spaces, Thai text. No tags.
 - No meta-commentary or apologies in this file.
 
 **Edge cases (check only if gap > 10 min or timestamps seem wrong):**
