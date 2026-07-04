@@ -26,20 +26,15 @@ from pathlib import Path
 LIMIT = 4500   # bytes — YouTube Thai comment hard cap (empirical)
 WARN  = 3500   # bytes — warn early to leave safe margin
 
-SEP = re.compile(r'((?:═+|-+)\n📌[^\n]+\n[^\n]+\n(?:═+|-+))')
+BLOCK_RE = re.compile(r'((?:═+|-+)\n📌[^\n]+\n[^\n]+\n(?:═+|-+)\n*)(.*?)(?=(?:═+|-+)\n📌|\Z)', re.DOTALL)
 
 
 def _full_blocks(text: str) -> list[dict]:
-    """Split text into full pasted blocks (separator header + body)."""
-    parts = SEP.split(text)
-    # parts = [pre, sep1, body1, sep2, body2, ...]
+    """Extract full pasted blocks (separator header + body)."""
     results = []
-    for i in range(1, len(parts) - 1, 2):
-        header = parts[i]
-        body   = parts[i + 1]
-        full   = header + body
-        # Extract the 📌 line for display
-        label  = next((l for l in header.splitlines() if l.startswith("📌")), header[:60])
+    for header, body in BLOCK_RE.findall(text):
+        full = header + body
+        label = next((l for l in header.splitlines() if l.startswith("📌")), header[:60])
         results.append({"label": label, "full": full, "body": body})
     return results
 
