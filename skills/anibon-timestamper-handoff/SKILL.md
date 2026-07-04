@@ -49,7 +49,7 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 When the user starts a fresh conversation session to resume work:
 
 1. **Load Local Rules First**: You MUST read and load `anibon-timestamper-local/SKILL.md` before doing anything else. You need its rules (no `<think>` tags, chunk JSON schema, output format) to function correctly in the loop.
-2. **Find and Read State File**: Locate and read `anibon_timestamper_state.json` in the video workspace. Use the absolute path if provided.
+2. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
 3. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/`. Use this as the `[PLUGIN_ROOT]` for the script paths below.
 4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact command:
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
