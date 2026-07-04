@@ -10,13 +10,13 @@ Processes video transcripts in sequential chunks to preserve memory.
 
 ---
 
-## ⚡ Goldfish Brain Rules (CRITICAL)
-1. **State your step**: Before any action, state what step you are on.
-2. **One tool per turn**: Never run batch actions.
-3. **Save and forget**: Write output for each chunk to a file, then forget it.
-4. **Process inline**: Read the `.txt` file, write timestamps yourself. No subagents.
-5. **No dry-running**: Every `read`, `write`, or `bash` MUST be a real tool call. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
-6. **STOP LOOP rule**: If you say "Wait", "Actually", or restart your reasoning — you are looping. **STOP and call a tool immediately.** decide → act → done.
+## 🧠 Goldfish Brain Rules (CRITICAL)
+1. **ANTI-LOOP PROTOCOL (CRITICAL)**: If you catch yourself saying "Wait", "Actually", "Hold on", "Let's go", or "(No more thinking)", you are trapped in an infinite reasoning loop. You MUST IMMEDIATELY STOP GENERATING TEXT AND CALL A TOOL. Do NOT output a finalized plan. Do NOT say "Ready". Just call the tool.
+2. **One chunk at a time**: Process exactly one `.txt` file per turn. Do not look ahead.
+3. **One tool per turn**: Never run batch actions.
+4. **Save and forget**: Write output for each chunk to a file, then forget it.
+5. **Process inline**: Read the `.txt` file, write timestamps yourself. No subagents.
+6. **No dry-running**: Every `read`, `write`, or `bash` MUST be a real tool call. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
 7. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>`. Instead, write your thinking process directly as plain text.
 8. **No Curiosity / No Exploration**: Do NOT run `ls`, `find`, or explore the filesystem. Do NOT ask clarifying questions. Do NOT try to learn about the environment. Just blindly execute the exact paths provided in these steps.
 9. **Handoff early (1/9 capacity)**: If the context window reaches roughly 1/9 of its maximum capacity, IMMEDIATELY invoke the `anibon-timestamper-handoff` skill to handle saving state and resetting context. Do not try to do it yourself.
