@@ -257,10 +257,12 @@ See [`YGO_DB_Reference.md`](skills/anibon-timestamper/skills/reference/Yu-Gi-Oh%
 
 ### Hierarchical MapReduce (anibon-timestamper)
 Streams > 2 hours → split into overlapping 5-min chunks.  
-**Local LLM Guardrails (Goldfish Brain Protocol)**: Local LLMs have very limited working memory. They MUST:
-1. **Locate Tools dynamically**: Use narrowed `find` commands to locate scripts within the skill directory instead of relying on hardcoded paths.
-2. **One-to-One Files**: Write analysis for each chunk into uniquely named files (e.g., `chunk_00_output.md`) sequentially to prevent overwriting or hallucinating `bash` append syntax.
-3. **Flush Context & Stop**: Mentally flush their scratchpad after each file is written, output a `[READY FOR NEXT CHUNK]` marker, and halt completely to wait for orchestrator confirmation.
+**Local LLM Guardrails (Goldfish Brain Protocol)**: Local LLMs (like `gemma4:12b` or `qwen`) have limited working memory and are prone to reasoning loops and path hallucinations. They MUST strictly adhere to the hardened local rules:
+1. **ANTI-LOOP PROTOCOL**: Local LLMs often get trapped in infinite reasoning loops (saying "Wait...", "Actually..."). They must immediately stop generating text and call a tool if they detect this.
+2. **Explicit Path Resolution**: Never reconstruct `[PLUGIN_ROOT]` from memory, as models will hallucinate hyphens as underscores (`anibon_timestamper`). Use explicit literal string deletion.
+3. **Zero-Padded Chunks**: Chunk filenames are strictly zero-padded (e.g., `chunk_02.txt`), preventing crash loops on missing files like `chunk_2.txt`.
+4. **No Curiosity**: Ban exploratory commands (`ls`, `find`). Do not debug paths if verification scripts fail; blindly execute fallback commands.
+5. **Handoff for Context Exhaustion**: Invoke `anibon-timestamper-handoff` to automatically save state and dump context history before the context window reaches capacity.
 
 **Final Assembly**: Use native PowerShell `Get-Content -Encoding UTF8 chunk_*_output.md | Set-Content -Encoding UTF8 timestamp_VIDEO_ID.md` to safely concatenate the final artifact.
 
