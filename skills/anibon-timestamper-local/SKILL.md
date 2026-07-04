@@ -19,7 +19,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
 4. **Process inline**: Process each chunk directly in this session. Read the `.txt` file, output timestamps inline, and write to the output file yourself. Do NOT attempt to spawn subagents or run hallucinated scripts.
 5. **No dry-running**: NEVER describe a file operation in plain text without doing it. Every `read`, `write`, or `bash` action MUST be a real tool call. If you say "I will read chunk_00.txt", you MUST immediately call the tool — not narrate it. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
-6. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
+6. **Thinking budget**: Keep any reasoning BRIEF (3 sentences max) before acting. Do NOT deliberate endlessly. If you are unsure, pick the most likely option and try it. If it fails, adjust next turn.
 7. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
 8. **Forward Slashes Only**: ALWAYS use forward slashes (`/`) for file paths in tool calls and bash commands (e.g., `C:/Users/peter/...`). Single backslashes will be stripped by the shell and cause errors.
 
@@ -28,11 +28,12 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 ## 🧭 Step-by-Step Guide
 
 ### Step 1: Verify Environment & Resolve Plugin Path
-1. Verify shell and tools:
-   - Run: `uname -a` (Unix) OR `$PSVersionTable` (Windows)
-   - Run: `command -v yt-dlp` (Unix) OR `Get-Command yt-dlp` (Windows)
+1. Verify shell and tools (Unix first, Windows fallback):
+   - Try: `uname -a && command -v yt-dlp && python3 --version`
+   - If `uname` fails, try: `python3 --version; yt-dlp --version`
+   - Do NOT deliberate. Run Unix commands first. If they fail, try Windows on the next turn.
 2. Resolve the Plugin Root Path:
-   Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/` (e.g., `C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis`). Use this `[PLUGIN_ROOT]` for all script paths below.
+   Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/` (e.g., `C:/Users/peter/.pi/agent/git/github.com/ZenitHTH/anibon-stream-synthesis`). Use this `[PLUGIN_ROOT]` for all script paths below.
 
 ### Step 2: Download & Chunk Transcript
 Run the `prepare_video.py` script to fetch and chunk the transcript (5-min blocks, 30s overlap). Do NOT search for it. Use this exact command:
