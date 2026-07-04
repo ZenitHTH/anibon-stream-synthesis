@@ -2,7 +2,7 @@
 name: anibon-timestamper-local
 description: Use when generating timestamps for Anibon streams on a LOCAL model (Ollama, gemma4, qwen). Focuses on step-by-step sequential looping, minimal context, and goldfish brain rules.
 title: "Anibon Timestamper (Local AI Edition)"
-summary: "Sequential 5-minute chunk processor for long-form streams. Designed for local LLMs with tight context limits — spawns one subagent per chunk, writes output to file, and auto-resumes until complete."
+summary: "Sequential 5-minute chunk processor for long-form streams. Designed for local LLMs with tight context limits — processes each chunk inline, writes output to file, and auto-resumes until complete."
 ---
 
 # 🎬 Anibon Timestamper (Local AI Edition)
@@ -17,7 +17,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 1. **State your step**: Before any action, state what step you are on.
 2. **One tool per turn**: Never run batch actions.
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
-4. **Delegate raw text**: Do NOT read raw transcript files in this main session. Spawn a subagent to do it.
+4. **Process inline**: Process each chunk directly in this session. Read the `.txt` file, output timestamps inline, and write to the output file yourself. Do NOT attempt to spawn subagents or run hallucinated scripts.
 5. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
 6. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
 
@@ -47,13 +47,14 @@ python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format txt --
 *(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
 
 ### Step 3: Sequential Chunk Loop
-Process `chunk_00.json`, then `chunk_01.json` sequentially. For each chunk:
+Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
 1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
 2. **FGO / YGO Bootstrap**: If game matches, run `--check` and build the SQLite database if missing (exit 1).
-3. **Spawn 1 Subagent**: Send the chunk JSON content to a single subagent using the template below.
-4. **Write Output**: Create a `chunk_outputs/` directory in the workspace. Save subagent timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
-5. **Auto-resume**: Upon receiving the subagent response, immediately write the file and spawn the next subagent for `chunk_XX+1.json`. Do NOT wait for user confirmation.
-6. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
+3. **Setup Output**: Ensure the `chunk_outputs/` directory exists in the workspace.
+4. **Process Inline**: Read the content of `chunk_XX.txt`. Generate timestamps following the Prompt Template rules below.
+5. **Write Output**: Save your generated timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
+6. **Auto-resume**: Immediately read and process the next chunk (`chunk_XX+1.txt`). Do NOT wait for user confirmation.
+7. **Context Handoff**: If you notice high latency or memory issues, write `anibon_timestamper_state.json` with the current chunk index, explain the handoff to the user, and stop (see `anibon-timestamper-handoff`).
 
 ---
 
@@ -82,20 +83,17 @@ CHUNK NN | HH:MM:SS–HH:MM:SS | cutoff=HH:MM:SS
 
 ---
 
-#### 📄 Subagent Template
-Send the full JSON content of the chunk file to the subagent:
-```
-You are processing Chunk <N> (HH:MM:SS – HH:MM:SS).
-chunk start_sec = <start_sec>, end_sec = <end_sec>, overlap cutoff = <end_sec - 30>
+#### 📄 Prompt Template
+When processing a chunk, strictly follow these rules:
 
 RULES:
-- Use the pre-calculated `item.timestamp` directly. Do NOT calculate the math yourself.
+- Identify chunk start_sec and end_sec, calculate overlap cutoff = end_sec - 30.
+- Use the pre-calculated `(HH:MM:SS)` directly. Do NOT calculate the math yourself.
 - Skip any entry whose timestamp > the cutoff shown in the chunk header line.
 - **LIMIT**: Maximum 10 timestamps per 5-minute chunk.
 - **GROUPING (CRITICAL)**: If multiple sentences within 1-2 minutes discuss the SAME topic, emit ONLY ONE timestamp for the start of that topic. Do not log every single sentence!
 - **MINIMUM GAP**: Timestamps must be at least 30-60 seconds apart unless there is a major Tag change (e.g. from [Talk] to [Gameplay]).
 - **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
-- **CRITICAL**: Do NOT echo or repeat these rules back to me. Do NOT write conversational filler like "Here are the timestamps" or "I have processed the chunk".
 - One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
 - **TAGS (STRICT)**: Use ONLY the exact Tags listed below. Do NOT invent new tags (e.g., do not use [Donation]).
   - `[Greeting]`: Saying hello/goodbye, thanking for subs/members/donations.
@@ -107,12 +105,8 @@ RULES:
   - `[WatchParty]`: Reacting to official streams, trailers, or videos together.
   - `[Reaction]`: Sudden strong reactions (laughing hard, getting jumpscared).
 - **DESCRIPTION (ACTIONABLE)**: State the actual subject discussed (e.g. "บ๊อตอธิบายความต่างของ MOU 43-44"). Do NOT write internal feelings (e.g. "ความไม่แน่ใจในข้อมูล").
-- Output ONLY the timestamp lines. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
+- Output ONLY the timestamp lines into the output file. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
 - If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
-
-CHUNK TXT:
-<Orchestrator: paste the full content of chunks/chunk_NN.txt here>
-```
 
 ---
 
@@ -126,7 +120,7 @@ Each output file must follow this exact format so `cat` concatenation works clea
 ```
 - **First line**: HTML comment with chunk index and time range — used as a merge marker
 - **Body**: one `HH:MM:SS - [Tag] Description` line per event, chronological order
-- **Never** include the subagent's thinking, apologies, or meta-commentary in this file
+- **Never** include your thinking, apologies, or meta-commentary in this file
 
 ---
 
