@@ -1,13 +1,11 @@
 ---
 name: anibon-timestamper-local
 description: Use when generating timestamps for Anibon streams on a LOCAL model (Ollama, gemma4, qwen). Focuses on step-by-step sequential looping, minimal context, and goldfish brain rules.
-title: "Anibon Timestamper (Local AI Edition)"
-summary: "Sequential 5-minute chunk processor for long-form streams. Designed for local LLMs with tight context limits — processes each chunk inline, writes output to file, and auto-resumes until complete."
 ---
 
 # 🎬 Anibon Timestamper (Local AI Edition)
 
-Optimized for local LLMs with limited context windows (e.g. Gemma 4, Qwen 2.5). 
+Optimized for local LLMs with limited context windows (e.g. Gemma 4, Qwen 2.5).
 Processes video transcripts in sequential chunks to preserve memory.
 
 ---
@@ -27,38 +25,34 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 
 ## 🧭 Step-by-Step Guide
 
-### Step 1: Verify Environment & Resolve Plugin Path
-1. Verify shell and tools (Unix first, Windows fallback):
-   - Try: `uname -a && command -v yt-dlp && python3 --version`
-   - If `uname` fails, try: `python3 --version; yt-dlp --version`
-   - Do NOT deliberate. Run Unix commands first. If they fail, try Windows on the next turn.
-2. Resolve the Plugin Root Path:
-   Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/` (e.g., `C:/Users/peter/.pi/agent/git/github.com/ZenitHTH/anibon-stream-synthesis`). Use this `[PLUGIN_ROOT]` for all script paths below.
+### Step 1: Resolve Plugin Path & Verify Tools
+Shell is MINGW64/bash. Use Unix commands only.
+1. Run: `uname -a && command -v yt-dlp && python3 --version`
+2. Resolve `[PLUGIN_ROOT]`: Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to (but not including) `skills/`. Replace all `\` with `/`. Example result: `C:/Users/peter/.pi/agent/git/github.com/ZenitHTH/anibon-stream-synthesis`
 
 ### Step 2: Download & Chunk Transcript
-Run the `prepare_video.py` script to fetch and chunk the transcript (5-min blocks, 30s overlap). Do NOT search for it. Use this exact command:
+Run this exact command. Do NOT search for the script:
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
-*(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
+*(If blocked by YouTube, ask user for cookies or a raw_transcript.json upload.)*
 
 ### Step 3: Sequential Chunk Loop
-Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
-1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
-2. **FGO / YGO Bootstrap**: If the stream plays FGO or YGO, you MUST verify the database. Do NOT search for the script. Run the exact command for the matching game:
+For each chunk, starting at `chunk_00.txt`:
+1. **Read chunk**: `read C:/Users/peter/<workspace>/chunks/chunk_XX.txt`
+2. **FGO / YGO Bootstrap**: Only if the chunk text contains `FGO`, `Fate`, `YGO`, or `遊戯王` — run the check for the matching game:
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
    - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
-   If it returns exit code 1, run the script again without `--check` to build it.
-3. **Setup Output**: Ensure the `chunk_outputs/` directory exists in the workspace.
-4. **Process Inline**: Read the content of `chunk_XX.txt`. Generate timestamps following the Prompt Template rules below.
-5. **Write Output**: Save your generated timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
-6. **Auto-resume**: Immediately read and process the next chunk (`chunk_XX+1.txt`). Do NOT wait for user confirmation.
-7. **Context Handoff**: If you notice high latency or memory issues, you MUST write a state file named `anibon_timestamper_state.json` inside the workspace before stopping. Use this exact JSON schema:
+   - If exit code 1, re-run without `--check` to build it. Otherwise skip entirely.
+3. **Generate timestamps**: Apply the Prompt Template rules below. Write them to memory.
+4. **Write output**: Save to `C:/Users/peter/<workspace>/chunk_outputs/chunk_XX_output.md`
+5. **Auto-resume**: Immediately proceed to `chunk_XX+1.txt`. Do NOT wait for user confirmation.
+6. **Context Handoff**: If the model is slow or forgetting instructions, write `anibon_timestamper_state.json` inside the workspace and stop:
 ```json
 {
   "video_id": "YOUR_YOUTUBE_VIDEO_ID",
   "video_url": "YOUR_YOUTUBE_VIDEO_URL",
-  "workspace_path": "/absolute/path/to/youtube_<video_id>_workspace",
+  "workspace_path": "C:/Users/peter/youtube_<video_id>_workspace",
   "total_chunks": 48,
   "current_chunk": 12,
   "db_checked": { "fgo": true, "ygo": false },
@@ -66,104 +60,77 @@ Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
   "last_updated": "2026-06-29T09:23:00Z"
 }
 ```
-Explain the handoff to the user and stop. They will load `anibon-timestamper-handoff` in a new session.
 
 ---
 
 #### 📄 Chunk TXT Format
-Each `chunks/chunk_NN.txt` file contains:
 ```
 CHUNK NN | HH:MM:SS–HH:MM:SS | cutoff=HH:MM:SS
 (HH:MM:SS) transcript line text
-(HH:MM:SS) transcript line text
 ...
 ```
-- **Line 1**: Header with chunk index, time range, and cutoff timestamp
-- **Body**: one `(HH:MM:SS) text` line per transcript entry, chronological
-- **Cutoff rule**: Skip entries with timestamp > cutoff when selecting timestamps (overlap zone)
+**Cutoff rule**: Skip any line whose timestamp > the cutoff shown in the header.
 
 ---
 
-#### ⏱️ Timing Rules
+#### 📄 Prompt Template Rules
 
-**Overlap cutoff:** Only emit timestamps for events with `item.start < end_sec - 30`. Ignore anything in the last 30 seconds of the chunk — the next chunk will cover it cleanly.
-
-**Timing correction — when timestamps feel drifted:**
-- If the transcript text at a given second doesn't match what you expect (e.g. text says "end screen" but timestamp is 00:05:10 into a 3-hour stream), **trust `item.start` over your intuition** — the timestamps come directly from YouTube's caption file and are authoritative.
-- If two consecutive timestamps are more than **10 minutes apart** with no entries in between, check if you skipped items. Do NOT invent a timestamp to fill the gap — leave it empty and note `[GAP: no transcript data]`.
-- If a tag event (e.g. gacha pull) clearly started earlier than the earliest item in your chunk, use `start_sec` as the floor — never go below it.
-
----
-
-#### 📄 Prompt Template
-When processing a chunk, strictly follow these rules:
-
-RULES:
-- Identify chunk start_sec and end_sec, calculate overlap cutoff = end_sec - 30.
-- Use the pre-calculated `(HH:MM:SS)` directly. Do NOT calculate the math yourself.
-- Skip any entry whose timestamp > the cutoff shown in the chunk header line.
-- **LIMIT**: Maximum 10 timestamps per 5-minute chunk.
-- **GROUPING (CRITICAL)**: If multiple sentences within 1-2 minutes discuss the SAME topic, emit ONLY ONE timestamp for the start of that topic. Do not log every single sentence!
-- **MINIMUM GAP**: Timestamps must be at least 30-60 seconds apart unless there is a major Tag change (e.g. from [Talk] to [Gameplay]).
-- **WARNING**: Do NOT summarize the entire chunk into a single vague timestamp! You must still pick specific discrete events, just limit the quantity.
-- One line per event. Format: HH:MM:SS - [Tag] Description (Thai).
-- **TAGS (STRICT)**: Use ONLY the exact Tags listed below. Do NOT invent new tags (e.g., do not use [Donation]).
-  - `[Greeting]`: Saying hello/goodbye, thanking for subs/members/donations.
-  - `[Talk]`: General chatting, updating life, answering Q&A.
+- Use the `(HH:MM:SS)` timestamps directly from the file. Do NOT recalculate.
+- Skip any entry whose timestamp > chunk cutoff.
+- **Max 10 timestamps per chunk.**
+- **Grouping**: Multiple lines within 1-2 minutes on the SAME topic → emit ONE timestamp at the start.
+- **Tag changes reset the gap rule.** Use the first timestamp of each new tag, regardless of proximity to the previous one.
+- **TAGS (use exactly these, no others)**:
+  - `[Greeting]`: Hello/goodbye, thanking subs/members/donations.
+  - `[Talk]`: General chatting, life updates, Q&A.
   - `[News]`: Reading or analyzing news, dramas, or patch notes.
-  - `[Gameplay]`: Playing games normally, doing story quests, or farming.
+  - `[Gameplay]`: Playing games, story quests, farming.
   - `[Gacha]`: Rolling/pulling in gacha games.
-  - `[Boss]`: Fighting a major boss in a game.
-  - `[WatchParty]`: Reacting to official streams, trailers, or videos together.
-  - `[Reaction]`: Sudden strong reactions (laughing hard, getting jumpscared).
-- **DESCRIPTION (ACTIONABLE)**: State the actual subject discussed (e.g. "บ๊อตอธิบายความต่างของ MOU 43-44"). Do NOT write internal feelings (e.g. "ความไม่แน่ใจในข้อมูล").
-- Output ONLY the timestamp lines into the output file. Do NOT write markdown headers (e.g. `# Chunk 34`), explanations, or any other extra text.
-- If no events found: output exactly one line → HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)
+  - `[Boss]`: Fighting a major boss.
+  - `[WatchParty]`: Reacting to official streams or trailers.
+  - `[Reaction]`: Sudden strong reactions (laughing, jumpscared).
+- **When unsure between [Talk] and [News]**: If she is *reading or quoting* a source → `[News]`. If she is *commenting or chatting* → `[Talk]`. Pick and move on.
+- **Description**: State what was actually discussed (e.g. `บ๊อตอธิบาย MOU 43-44`). No internal feelings.
+- If no events found: output exactly → `HH:MM:SS - [Talk] (ไม่มีเหตุการณ์สำคัญ)`
 
 ---
 
-#### 📋 Output Format for `chunk_outputs/chunk_XX_output.md`
-Each output file must follow this exact format so `cat` concatenation works cleanly:
+#### 📋 Output Format
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
 00:00:12 - [Greeting] บ๊อตทักทายผู้ชม เริ่มสตรีม
 00:01:34 - [Talk] คุยเรื่องข่าวสาร
 00:03:45 - [Gacha] ดึงการ์ด FGO รอบแรก
 ```
-- **First line**: HTML comment with chunk index and time range — used as a merge marker
-- **Body**: one `HH:MM:SS - [Tag] Description` line per event, chronological order
-- **Never** include your thinking, apologies, or meta-commentary in this file
+- First line is the HTML comment header — required for merge.
+- No thinking, apologies, or meta-commentary in this file.
 
 ---
 
-### Step 4: Topic Map & Assembly
-When all chunks are finished, concatenate them:
-- Unix: `cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt`
-- Windows: `Get-Content chunk_outputs/chunk_*_output.md | Set-Content raw_timestamps.txt`
+#### ⚠️ Timing Edge Cases (check only if gap > 10 min or timestamps seem wrong)
+- If transcript text doesn't match expected content: trust `item.start` — it comes from YouTube's caption file.
+- If two consecutive timestamps are >10 minutes apart with nothing in between: leave a note `[GAP: no transcript data]`. Do NOT invent a timestamp.
 
-Now, you MUST assemble the final output file `timestamp_VIDEO_ID.md`. To do this, follow these explicit steps for splitting and formatting:
+---
 
-**Step 4.1: Split by Topic & Size**
-Read the concatenated timestamps. Group them into major topic shifts (e.g., Talk, Gameplay, WatchParty). If a section exceeds **50-60 lines of timestamps** (to stay under the YouTube character limit), you must split it into Part 1, Part 2, etc. Do not try to count characters, just count lines.
-
-**Step 4.2: Draft the Header (CRITICAL)**
-For each section you create, you must write a header. Do not rush this. Follow this thought process:
-1. **Analyze**: Read the timestamps in this section. What are the 2-3 most important things discussed or played?
-2. **Title**: Pick a short category title (e.g., "คุยประเด็นข่าวดราม่า", "FGO ลุยเนื้อเรื่องหลัก").
-3. **Summary**: Write a 1-2 sentence summary covering the actual core events. (e.g., "บ๊อตวิเคราะห์ประเด็นดราม่าตำรวจด้อม และพูดถึงเรื่อง MOU 43-44 ที่มีข้อโต้เถียงกัน"). **DO NOT** just repeat the title!
-
-**Step 4.3: Apply the Separator Format**
-Use this exact format to print the header you drafted in Step 4.2:
+### Step 4: Assembly
+When all chunks are done:
+```bash
+cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt
 ```
-📌 ส่วนที่ N: [ใส่ Summary 1-2 บรรทัดที่เขียนไว้]
-(หัวข้อ: [ใส่ Title ที่คิดไว้] | ⏱ เริ่ม: HH:MM:SS)
+
+Assemble `timestamp_VIDEO_ID.md`. Split into sections by major topic shift. If any section exceeds **50 lines**, split it into Part 1, Part 2, etc.
+
+For each section header, write one line:
+```
+📌 ส่วนที่ N: [1-2 sentence summary of what happened]
+(หัวข้อ: [short title] | ⏱ เริ่ม: HH:MM:SS)
 ---------------------------------------------------------
 ```
-*Note: The `HH:MM:SS` must be the timestamp of the VERY FIRST event in this section. Remove all `<!-- chunk_XX -->` markers during assembly.*
+Use the timestamp of the VERY FIRST event in the section. Remove all `<!-- chunk_XX -->` markers.
 
-### Step 5: Verification Check
-Run `check_sections.py` on the final file to verify character counts using this exact command:
+### Step 5: Verification
 ```bash
 python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/check_sections.py" timestamp_VIDEO_ID.md
 ```
-Split further if any section fails (❌ or ⚠️). Register the final file in your workspace.
+Split further if any section fails (❌ or ⚠️).
