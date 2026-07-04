@@ -80,23 +80,16 @@ Read the chunk. Group consecutive lines that discuss the **same topic** into a b
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
 
-📌 ส่วนที่ 1: บ๊อตทักทายผู้ชมและเปิดสตรีมยามเย็น หลังจากห่างหายจากข่าวการเมืองมากว่า 3 สัปดาห์
-(หัวข้อ: เปิดรายการและทักทาย | ⏱ เริ่ม: 00:03:52)
--------
+### ทักทาย
 00:03:52 -  บ๊อตทักทายผู้ชม เริ่มสตรีม
 00:04:01 -  พูดถึงช่วงเว้นว่างจากข่าวการเมืองในช่วง 3 สัปดาห์ที่ผ่านมา
 
-📌 ส่วนที่ 2: [summary of next topic block]
-(หัวข้อ: [title] | ⏱ เริ่ม: HH:MM:SS)
--------
+### หัวข้อถัดไป
 HH:MM:SS -  description
 ```
 
 - First line: HTML comment (required for merge).
-- `📌 ส่วนที่ N:` — running counter that continues across ALL chunks (not reset per chunk).
-- Summary: 1 sentence on the `📌` line describing what happened.
-- `(หัวข้อ: [short title] | ⏱ เริ่ม: HH:MM:SS)` — title + first timestamp of the block.
-- `-------` separator line (7 dashes).
+- `### Title` on its own line before each topic block. (This is a temporary header for grouping).
 - `HH:MM:SS -  description` — timestamp, dash, two spaces, Thai text. No tags.
 - No meta-commentary or apologies in this file.
 
@@ -108,12 +101,22 @@ HH:MM:SS -  description
 
 ### Step 4: Assembly
 ```bash
-cat chunk_outputs/chunk_*_output.md > timestamp_VIDEO_ID.md
+cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt
 ```
-Then:
-1. Remove all `<!-- chunk_XX ... -->` lines.
-2. The `📌 ส่วนที่ N` headers from chunks are already in the final format — no reformatting needed.
-3. If any consecutive section block exceeds **50 timestamp lines**, split it: duplicate the header as Part 1 / Part 2 and divide the lines between them.
+
+Assemble `timestamp_VIDEO_ID.md`. Read through `raw_timestamps.txt` and convert the `### Title` blocks into the final format. 
+If a section exceeds **50 timestamp lines**, split it: duplicate the header as Part 1 / Part 2 and divide the lines between them.
+
+For each section, use this exact format:
+```
+📌 ส่วนที่ N: [1 sentence summary of what happened in this section]
+(หัวข้อ: [short title from the ### header] | ⏱ เริ่ม: HH:MM:SS)
+-------
+[timestamps here — e.g. 00:03:52 -  description]
+```
+- Use a running counter `N` across the whole file.
+- `HH:MM:SS` in the header must be the timestamp of the VERY FIRST event in this section.
+- Remove all `<!-- chunk_XX -->` markers and `###` headers.
 
 ### Step 5: Verify
 ```bash
