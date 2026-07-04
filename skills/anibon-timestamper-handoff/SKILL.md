@@ -63,6 +63,7 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 When the user starts a fresh conversation session to resume work:
 
 1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Delete the exact text `skills\anibon-timestamper-handoff\SKILL.md` from the end of it. Replace all backslashes `\` with forward slashes `/`. This remaining path is your `[PLUGIN_ROOT]`.
+   - 🚨 **ANTI-TYPO WARNING**: You (the AI) are prone to confusing hyphens (`-`) and underscores (`_`) when typing from memory. The repository is `anibon-stream-synthesis` (HYPHENS). The skill folder is `anibon-timestamper` (HYPHENS). NEVER use underscores for these! Copy the path directly, do not retype it.
 2. **Read Local Rules**: You MUST read the core rules by calling the `read` tool on `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md`. You need its rules (no `<think>` tags, output format) to function correctly.
 3. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
 4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact commands below. If a `--check` command fails (exit code 1), do NOT debug paths or use `ls`. Just run the specific download command exactly as provided below!
