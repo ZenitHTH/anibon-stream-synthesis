@@ -25,6 +25,17 @@ Processes video transcripts in sequential chunks to preserve memory.
 
 ---
 
+## 🗺️ Plugin Directory Map (Do NOT use `ls`)
+You already know where everything is. Never search for files.
+- **Main Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
+- **Sub-scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`)
+- **Workspace**: `C:/Users/peter/youtube_<video_id>_workspace/`
+  - `/chunks/chunk_XX.txt`
+  - `/chunk_outputs/chunk_XX_output.md`
+  - `/anibon_timestamper_state.json`
+
+---
+
 ## 🧭 Steps
 
 ### Step 1: Resolve Plugin Path & Verify
