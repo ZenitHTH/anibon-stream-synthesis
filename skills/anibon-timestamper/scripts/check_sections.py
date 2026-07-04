@@ -78,6 +78,7 @@ def main():
 
     if not blocks:
         print("[!] No sections found. Make sure the file uses the ═══ separator format.")
+        # ponytail: non-timestamp files have no ═══ blocks; exit 0 so hook doesn't block unrelated writes
         sys.exit(0)
 
     any_fail = False
