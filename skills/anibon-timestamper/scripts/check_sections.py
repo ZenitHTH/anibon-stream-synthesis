@@ -39,10 +39,6 @@ def _full_blocks(text: str) -> list[dict]:
     return results
 
 
-def _byte_size(s: str) -> int:
-    return len(s.encode("utf-8"))
-
-
 def suggest_split(body: str) -> str | None:
     """Find the timestamp line closest to the midpoint of a too-long body."""
     lines = [l for l in body.splitlines() if re.match(r'\d{2}:\d{2}:\d{2}', l.strip())]
@@ -81,7 +77,7 @@ def main():
     print(f"\n{'Status':10} {'Bytes':>6}  {'Chars':>6}  Section")
     print("─" * 80)
     for r in blocks:
-        nbytes = _byte_size(r["full"].strip())
+        nbytes = len(r["full"].strip().encode("utf-8"))
         nchars = len(r["full"].strip())
         if nbytes > LIMIT:
             status = "❌ OVER  "
@@ -96,7 +92,7 @@ def main():
     if any_fail:
         print("\n── Suggested split points ──────────────────────────────────────────────")
         for r in blocks:
-            nbytes = _byte_size(r["full"].strip())
+            nbytes = len(r["full"].strip().encode("utf-8"))
             if nbytes > WARN:
                 mid_ts = suggest_split(r["body"])
                 label = "⚠️ " if nbytes <= LIMIT else "❌ "
