@@ -17,8 +17,10 @@ Processes video transcripts in sequential chunks to preserve memory.
 4. **Process inline**: Read the `.txt` file, write timestamps yourself. No subagents.
 5. **No dry-running**: Every `read`, `write`, or `bash` MUST be a real tool call. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
 6. **STOP LOOP rule**: If you say "Wait", "Actually", or restart your reasoning — you are looping. **STOP and call a tool immediately.** decide → act → done.
-7. **Handoff when full**: If slow or forgetting, write `anibon_timestamper_state.json` and stop.
-8. **Forward Slashes Only**: Always `C:/Users/peter/...`. Backslashes get stripped.
+7. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
+8. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
+9. **Emergency Stop (Hang)**: If the user says "hang", "stuck", or "stop", IMMEDIATELY write the `anibon_timestamper_state.json` file to save progress and stop. Do not try to finish the current chunk.
+10. **Forward Slashes Only**: Always `C:/Users/peter/...`. Backslashes get stripped.
 
 ---
 
