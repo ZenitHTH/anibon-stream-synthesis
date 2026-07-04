@@ -23,6 +23,9 @@ You already know where everything is. Never search for files.
   - `/chunk_outputs/chunk_XX_output.md`
   - `/anibon_timestamper_state.json`
 
+## ⚡ Strict Rules
+- **No Curiosity / No Exploration**: Do NOT run `ls`, `find`, or explore the filesystem. Just blindly execute the paths. Do not list directory contents to "check progress".
+
 ---
 
 ## 💾 Saving Progress (When Context is Full)
@@ -62,7 +65,7 @@ When the user starts a fresh conversation session to resume work:
 1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/`. Use this as the `[PLUGIN_ROOT]`.
 2. **Read Local Rules**: You MUST read the core rules by calling the `read` tool on `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md`. You need its rules (no `<think>` tags, output format) to function correctly.
 3. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
-4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact command:
+4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact commands below. If a `--check` command fails (exit code 1), do NOT debug paths. Just run the script again WITHOUT the `--check` flag to download it!
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
    - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
 5. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk via `prepare_video.py`) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.txt`).
