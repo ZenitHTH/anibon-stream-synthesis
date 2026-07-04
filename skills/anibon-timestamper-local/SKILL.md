@@ -19,7 +19,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
 4. **Process inline**: Process each chunk directly in this session. Read the `.txt` file, output timestamps inline, and write to the output file yourself. Do NOT attempt to spawn subagents or run hallucinated scripts.
 5. **No dry-running**: NEVER describe a file operation in plain text without doing it. Every `read`, `write`, or `bash` action MUST be a real tool call. If you say "I will read chunk_00.txt", you MUST immediately call the tool — not narrate it. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
-6. **Thinking budget**: Keep any reasoning BRIEF (3 sentences max) before acting. Do NOT deliberate endlessly. If you are unsure, pick the most likely option and try it. If it fails, adjust next turn.
+6. **STOP LOOP rule**: If you notice yourself saying "Wait", "Actually", "One more thing", or restarting your reasoning — you are in a loop. **STOP IMMEDIATELY and call a tool.** The rule is: decide → act → done. Never revise a decision more than once.
 7. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
 8. **Forward Slashes Only**: ALWAYS use forward slashes (`/`) for file paths in tool calls and bash commands (e.g., `C:/Users/peter/...`). Single backslashes will be stripped by the shell and cause errors.
 
