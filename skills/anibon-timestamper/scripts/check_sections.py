@@ -65,16 +65,10 @@ def suggest_split(body: str) -> str | None:
 def main():
     import argparse
     ap = argparse.ArgumentParser()
-    # ponytail: --file mirrors Antigravity hook $TARGET_FILE injection; positional kept for CLI compat
-    ap.add_argument("file", nargs="?", help="Timestamp .md file")
-    ap.add_argument("--file", dest="file_flag", help="Timestamp .md file (hook env-var form)")
+    ap.add_argument("file", help="Timestamp .md file")
     args = ap.parse_args()
-    target = args.file_flag or args.file
-    if not target:
-        ap.print_usage()
-        sys.exit(1)
-
-    path = Path(target)
+    
+    path = Path(args.file)
     if not path.exists():
         print(f"[!] File not found: {path}", file=sys.stderr)
         sys.exit(1)
@@ -84,39 +78,42 @@ def main():
 
     if not blocks:
         print("[!] No sections found. Make sure the file uses the ═══ separator format.")
-        # ponytail: non-timestamp files have no ═══ blocks; exit 0 so hook doesn't block unrelated writes
         sys.exit(0)
 
     any_fail = False
+    suggestions = []
     print(f"\n{'Status':10} {'Bytes':>6}  {'Chars':>6}  Section")
     print("─" * 80)
+    
     for r in blocks:
         nbytes = len(r["full"].strip().encode("utf-8"))
         nchars = len(r["full"].strip())
+        
         if nbytes > LIMIT:
             status = "❌ OVER  "
             any_fail = True
+            label = "❌ "
         elif nbytes > WARN:
             status = "⚠️  WARN "
             any_fail = True
+            label = "⚠️ "
         else:
             status = "✅ OK    "
+            
         print(f"{status}  {nbytes:5}B  {nchars:5}c  {r['label'][:55]}")
+        
+        if nbytes > WARN:
+            mid_ts = suggest_split(r["body"])
+            tip = f"split at ≈ {mid_ts}" if mid_ts else "section too short to split"
+            suggestions.append(f"  {label}{r['label'][:55]}\n     → {tip}  ({nbytes} bytes, {nchars} chars)")
 
     if any_fail:
         print("\n── Suggested split points ──────────────────────────────────────────────")
-        for r in blocks:
-            nbytes = len(r["full"].strip().encode("utf-8"))
-            if nbytes > WARN:
-                mid_ts = suggest_split(r["body"])
-                label = "⚠️ " if nbytes <= LIMIT else "❌ "
-                tip = f"split at ≈ {mid_ts}" if mid_ts else "section too short to split"
-                print(f"  {label}{r['label'][:55]}")
-                print(f"     → {tip}  ({nbytes} bytes, {len(r['full'].strip())} chars)")
+        for sug in suggestions:
+            print(sug)
         sys.exit(1)
     else:
         print("\n✅ All sections are within the YouTube comment byte limit.")
-
 
 if __name__ == "__main__":
     main()

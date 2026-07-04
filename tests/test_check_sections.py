@@ -23,7 +23,7 @@ def _run(md: str, tmp_path: Path) -> int:
     env["PYTHONUTF8"] = "1"
     env["PYTHONIOENCODING"] = "utf-8"
     result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--file", str(f)],
+        [sys.executable, str(SCRIPT), str(f)],
         capture_output=True,
         env=env,
     )
