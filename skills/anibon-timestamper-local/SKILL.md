@@ -33,25 +33,19 @@ Verify shell and tools before downloading:
 - Run: `command -v yt-dlp` (Unix) OR `Get-Command yt-dlp` (Windows)
 
 ### Step 2: Download & Chunk Transcript
-Find the absolute path of the `prepare_video.py` script globally:
-- Unix: `find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "prepare_video.py" 2>/dev/null | head -1`
-- Windows (PowerShell): `Get-ChildItem -Path $env:USERPROFILE -Filter "prepare_video.py" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName`
-
-Run the script using its absolute path to fetch and chunk the transcript (5-min blocks, 30s overlap):
+Run the `prepare_video.py` script to fetch and chunk the transcript (5-min blocks, 30s overlap). Do NOT search for it. Use this exact command:
 ```bash
-# Find script globally
-find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
-  -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
-
-# Run with txt format
-python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
 *(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
 
 ### Step 3: Sequential Chunk Loop
 Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
 1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
-2. **FGO / YGO Bootstrap**: If game matches, run `--check` and build the SQLite database if missing (exit 1).
+2. **FGO / YGO Bootstrap**: If the stream plays FGO or YGO, you MUST verify the database. Do NOT search for the script. Run the exact command for the matching game:
+   - FGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
+   - YGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
+   If it returns exit code 1, run the script again without `--check` to build it.
 3. **Setup Output**: Ensure the `chunk_outputs/` directory exists in the workspace.
 4. **Process Inline**: Read the content of `chunk_XX.txt`. Generate timestamps following the Prompt Template rules below.
 5. **Write Output**: Save your generated timestamps to `chunk_outputs/chunk_XX_output.md` using the output format below.
@@ -165,10 +159,8 @@ Use this exact format to print the header you drafted in Step 4.2:
 *Note: The `HH:MM:SS` must be the timestamp of the VERY FIRST event in this section. Remove all `<!-- chunk_XX -->` markers during assembly.*
 
 ### Step 5: Verification Check
-Find and run `check_sections.py` on the final file to verify character counts:
+Run `check_sections.py` on the final file to verify character counts using this exact command:
 ```bash
-# Find the script (use global find, same as Step 2)
-CHECK_SCRIPT=$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name "check_sections.py" 2>/dev/null | head -1)
-python3 "$CHECK_SCRIPT" timestamp_VIDEO_ID.md
+python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/check_sections.py" timestamp_VIDEO_ID.md
 ```
 Split further if any section fails (❌ or ⚠️). Register the final file in your workspace.
