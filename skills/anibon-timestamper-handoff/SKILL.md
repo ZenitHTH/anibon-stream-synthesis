@@ -3,6 +3,9 @@ name: anibon-timestamper-handoff
 description: Save or load the progress state of a local timestamper session to prevent token context window exhaustion.
 ---
 
+> [!WARNING]
+> **Load order is critical.** This skill MUST be loaded *after* `anibon-timestamper-local`. Loading this skill first on a local model (Gemma, Qwen) will cause an immediate abort due to prefill budget exhaustion from the combined skill text size. Always load `anibon-timestamper-local` first, then load this skill.
+
 # 🔄 Anibon Timestamper Handoff Protocol
 
 When processing long video transcripts (>2 hours) on local models (Ollama/Gemma/Qwen), the conversation context window can overflow after processing several sequential chunks, causing the model to become slow, unresponsive, or forgetful.
@@ -48,6 +51,6 @@ When the user starts a fresh conversation session to resume work:
 1. **Load Local Rules First**: You MUST read and load `anibon-timestamper-local/SKILL.md` before doing anything else. You need its rules (no `<think>` tags, chunk JSON schema, output format) to function correctly in the loop.
 2. **Find and Read State File**: Locate and read `anibon_timestamper_state.json` in the video workspace. Use the absolute path if provided.
 3. **Verify Databases**: Even if `db_checked` says `true`, you MUST re-run the `--check` command for FGO/YGO databases as specified in the local skill, because the database files are stored centrally and might be missing on a new machine.
-4. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk via `anibon-stream-synthesis/scripts/prepare_video.py`) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.json`).
+4. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk via `anibon-stream-synthesis/scripts/prepare_video.py`) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.txt`).
 5. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
 6. **Completion**: Once the loop finishes processing the final chunk, you MUST immediately proceed to **Step 4 (Topic Map & Assembly)** and **Step 5 (Verification Check)** exactly as described in `anibon-timestamper-local/SKILL.md`. Pay special attention to drafting the section summaries step-by-step!
