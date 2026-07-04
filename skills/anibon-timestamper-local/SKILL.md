@@ -80,16 +80,20 @@ Read the chunk. Group consecutive lines that discuss the **same topic** into a b
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
 
-### ทักทาย
-00:03:52 บ๊อตทักทายผู้ชม เริ่มสตรีมยามเย็น
+📌 ส่วนที่ 1: บ๊อตทักทายผู้ชม เปิดสตรีมยามเย็น
+(หัวข้อ: ทักทาย | ⏱ เริ่ม: 00:03:52)
+00:03:52 บ๊อตทักทายผู้ชม เริ่มสตรีม
 
-### อัปเดตข่าวสาร
-00:04:01 พูดคุยถึงช่วงที่ไม่ได้อัปเดตข่าวการเมืองในช่วง 3 สัปดาห์
+📌 ส่วนที่ 2: พูดคุยช่วงที่ไม่ได้อัปเดตข่าวการเมืองนานกว่า 3 สัปดาห์
+(หัวข้อ: อัปเดตข่าวสาร | ⏱ เริ่ม: 00:04:01)
+00:04:01 พูดถึงช่วงเว้นว่างจากข่าวการเมือง
 ```
 
 - First line: HTML comment (required for merge).
-- `### Title` on its own line before each topic block.
-- `HH:MM:SS description` — no dashes, no tags, just time + Thai text.
+- `📌 ส่วนที่ N:` — use a running counter N that continues across ALL chunks (not per-chunk).
+- Summary line: 1 sentence, what happened in this block.
+- `(หัวข้อ: ... | ⏱ เริ่ม: HH:MM:SS)` — short title + first timestamp of the block.
+- `HH:MM:SS description` lines below — just time + Thai text, no dashes, no tags.
 - No meta-commentary or apologies in this file.
 
 **Edge cases (check only if gap > 10 min or timestamps seem wrong):**
@@ -100,19 +104,12 @@ Read the chunk. Group consecutive lines that discuss the **same topic** into a b
 
 ### Step 4: Assembly
 ```bash
-cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt
+cat chunk_outputs/chunk_*_output.md > timestamp_VIDEO_ID.md
 ```
-
-Assemble `timestamp_VIDEO_ID.md`. Read through and group into **major sections by topic**. If a section exceeds **50 lines**, split into Part 1, Part 2.
-
-For each section:
-```
-📌 ส่วนที่ N: [1-2 sentence summary of what happened in this section]
-(หัวข้อ: [short title] | ⏱ เริ่ม: HH:MM:SS)
----------------------------------------------------------
-[timestamps here — keep the ### headers from chunk files]
-```
-Remove all `<!-- chunk_XX -->` markers. Keep `### headers`.
+Then:
+1. Remove all `<!-- chunk_XX ... -->` lines.
+2. The `📌 ส่วนที่ N` headers from chunks are already in the final format — no reformatting needed.
+3. If any consecutive section block exceeds **50 timestamp lines**, split it: duplicate the header as Part 1 / Part 2 and divide the lines between them.
 
 ### Step 5: Verify
 ```bash
