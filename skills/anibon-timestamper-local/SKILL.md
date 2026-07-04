@@ -21,6 +21,7 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 5. **No dry-running**: NEVER describe a file operation in plain text without doing it. Every `read`, `write`, or `bash` action MUST be a real tool call. If you say "I will read chunk_00.txt", you MUST immediately call the tool — not narrate it. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
 6. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
 7. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
+8. **Forward Slashes Only**: ALWAYS use forward slashes (`/`) for file paths in tool calls and bash commands (e.g., `C:/Users/peter/...`). Single backslashes will be stripped by the shell and cause errors.
 
 ---
 
