@@ -48,10 +48,10 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
    }
    ```
 
-2. **Handoff Message**: Output a message to the user explaining that context is full, pointing to the state file, and instructing them to start a new session.
+2. **Automated Handoff Action**: Output a message explaining that context is full, pointing to the state file. Then, **clear your context** and **call yourself** to load the state and resume work automatically. Do NOT wait for the user to restart the session!
    
    *Example message:*
-   > 🔄 [CONTEXT WARNING] My active memory window is nearly full. I have saved the progress state to `/absolute/path/to/youtube_rP8AHWOIXtI_workspace/anibon_timestamper_state.json`. Please start a new conversation session and load BOTH `anibon-timestamper-handoff` and `anibon-timestamper-local` skills to resume from Chunk 12!
+   > 🔄 [CONTEXT WARNING] My active memory window is reaching 1/9 capacity. I have saved the progress state to `/absolute/path/to/youtube_rP8AHWOIXtI_workspace/anibon_timestamper_state.json`. Clearing context and calling myself to resume from Chunk 12 automatically...
 
 ---
 

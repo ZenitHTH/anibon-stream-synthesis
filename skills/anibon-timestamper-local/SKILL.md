@@ -19,7 +19,7 @@ Processes video transcripts in sequential chunks to preserve memory.
 6. **STOP LOOP rule**: If you say "Wait", "Actually", or restart your reasoning — you are looping. **STOP and call a tool immediately.** decide → act → done.
 7. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>`. Instead, write your thinking process directly as plain text.
 8. **No Curiosity / No Exploration**: Do NOT run `ls`, `find`, or explore the filesystem. Do NOT ask clarifying questions. Do NOT try to learn about the environment. Just blindly execute the exact paths provided in these steps.
-9. **Handoff early (1/9 capacity)**: If the context window reaches roughly 1/9 of its maximum capacity (or feels even slightly heavy), save state using `anibon-timestamper-handoff` and tell the user to reset the session. Do NOT wait until it is full.
+9. **Handoff early (1/9 capacity)**: If the context window reaches roughly 1/9 of its maximum capacity, write the `anibon_timestamper_state.json` file. Then, clear your context and call yourself to resume work automatically. Do NOT wait for the user to reset the session.
 10. **Emergency Stop (Hang)**: If the user says "hang", "stuck", or "stop", IMMEDIATELY write the `anibon_timestamper_state.json` file to save progress and stop.
 11. **Forward Slashes Only**: Always `C:/Users/peter/...`. Backslashes get stripped.
 
