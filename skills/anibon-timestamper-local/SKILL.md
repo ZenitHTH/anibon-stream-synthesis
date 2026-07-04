@@ -18,8 +18,9 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 2. **One tool per turn**: Never run batch actions.
 3. **Save and forget**: Write output for each chunk to a separate file, then flush it from your memory.
 4. **Process inline**: Process each chunk directly in this session. Read the `.txt` file, output timestamps inline, and write to the output file yourself. Do NOT attempt to spawn subagents or run hallucinated scripts.
-5. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
-6. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
+5. **No dry-running**: NEVER describe a file operation in plain text without doing it. Every `read`, `write`, or `bash` action MUST be a real tool call. If you say "I will read chunk_00.txt", you MUST immediately call the tool — not narrate it. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
+6. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>` tags due to local server parsing bugs. Instead, write your thinking process directly as plain text in the normal response stream (i.e. "think very loud" in normal text).
+7. **Handoff when full**: If context window becomes exhausted during processing, save state using `anibon-timestamper-handoff` and tell the user to reset the session.
 
 ---
 
