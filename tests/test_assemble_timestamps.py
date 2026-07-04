@@ -8,6 +8,7 @@ def test_assemble_logic():
     lines = [
         "00:00:00 - [Talk] Start",
         "00:05:00 - [Game] Play",
+        "00:05:00 - [Game] Play updated",
         "00:10:00 - [End] Stop"
     ]
     topics = [
@@ -19,3 +20,5 @@ def test_assemble_logic():
     joined = "\n".join(result_lines)
     assert "📌 ส่วนที่ 1" in joined
     assert "📌 ส่วนที่ 2" in joined
+    assert "Play updated" in joined
+    assert "00:05:00 - [Game] Play\n" not in joined + "\n"

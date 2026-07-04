@@ -1,24 +1,29 @@
 import re
 import argparse
 import json
-import sys
 
 def parse_time(ts_str):
     parts = list(map(int, ts_str.split(":")))
-    return parts[0]*3600 + parts[1]*60 + parts[2] if len(parts) == 3 else 0
+    if len(parts) == 3:
+        return parts[0]*3600 + parts[1]*60 + parts[2]
+    elif len(parts) == 2:
+        return parts[0]*60 + parts[1]
+    return 0
 
-def assemble_logic(lines, topics, limit_bytes=4500, max_chunk_bytes=2400):
-    entries = []
+def assemble_logic(lines: list[str], topics: list[dict], limit_bytes: int = 4500, max_chunk_bytes: int = 2400) -> list[str]:
+    entries_dict = {}
     pattern = re.compile(r'^(\d{2}:\d{2}:\d{2})\s*-\s*\[(.*?)\]\s*(.*)$')
     for line in lines:
         match = pattern.match(line)
         if match:
-            entries.append({"sec": parse_time(match.group(1)), "ts": match.group(1), "line": line})
+            entries_dict[match.group(1)] = {"sec": parse_time(match.group(1)), "ts": match.group(1), "line": line}
+    entries = list(entries_dict.values())
             
     # Group by topic using simple iteration (Ponytail)
     groups = {i: [] for i in range(len(topics))}
+    topic_starts = [parse_time(t["start"]) for t in topics]
     for entry in entries:
-        idx = max((i for i, t in enumerate(topics) if entry["sec"] >= parse_time(t["start"])), default=0)
+        idx = max((i for i, start_sec in enumerate(topic_starts) if entry["sec"] >= start_sec), default=0)
         groups[idx].append(entry)
         
     output = ["# วิดีโอสตรีม ANIBON - ทริปส์และข่าวสารเกมกาชา\n"]
