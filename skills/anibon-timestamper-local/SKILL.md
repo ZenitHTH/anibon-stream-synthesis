@@ -104,8 +104,8 @@ HH:MM:SS -  description
 cat chunk_outputs/chunk_*_output.md > raw_timestamps.txt
 ```
 
-Assemble `timestamp_VIDEO_ID.md`. Read through `raw_timestamps.txt` and convert the `### Title` blocks into the final format. 
-If a section exceeds **50 timestamp lines**, split it: duplicate the header as Part 1 / Part 2 and divide the lines between them.
+Assemble `timestamp_VIDEO_ID.md`. Read through `raw_timestamps.txt` and convert the temporary `### Title` blocks into the final format. 
+If a section exceeds **15 timestamp lines** (Thai characters consume 3x bytes and hit YouTube limits faster), split it: duplicate the header as Part 1 / Part 2 and divide the lines between them.
 
 For each section, use this exact format:
 ```
