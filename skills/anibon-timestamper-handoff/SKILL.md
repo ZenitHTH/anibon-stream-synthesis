@@ -51,8 +51,9 @@ When the user starts a fresh conversation session to resume work:
 1. **Load Local Rules First**: You MUST read and load `anibon-timestamper-local/SKILL.md` before doing anything else. You need its rules (no `<think>` tags, chunk JSON schema, output format) to function correctly in the loop.
 2. **Find and Read State File**: Locate and read `anibon_timestamper_state.json` in the video workspace. Use the absolute path if provided.
 3. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact command:
-   - FGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
-   - YGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
+   - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
+   - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
+   *(Note: Resolve `[PLUGIN_ROOT]` from the skill location tag at the top of your instructions, replacing `\` with `/`).*
 4. **Resume Step 3 (Loop)**: Do NOT repeat Step 1 (Environment Check) or Step 2 (Download & Chunk via `anibon-stream-synthesis/scripts/prepare_video.py`) in the new session. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of `"current_chunk"` (e.g. `chunk_12.txt`).
 5. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
 6. **Completion**: Once the loop finishes processing the final chunk, you MUST immediately proceed to **Step 4 (Topic Map & Assembly)** and **Step 5 (Verification Check)** exactly as described in `anibon-timestamper-local/SKILL.md`. Pay special attention to drafting the section summaries step-by-step!

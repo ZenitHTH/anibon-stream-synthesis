@@ -27,15 +27,17 @@ Your working memory is extremely limited. To prevent hallucination or crashes:
 
 ## 🧭 Step-by-Step Guide
 
-### Step 1: Verify Environment
-Verify shell and tools before downloading:
-- Run: `uname -a` (Unix) OR `$PSVersionTable` (Windows)
-- Run: `command -v yt-dlp` (Unix) OR `Get-Command yt-dlp` (Windows)
+### Step 1: Verify Environment & Resolve Plugin Path
+1. Verify shell and tools:
+   - Run: `uname -a` (Unix) OR `$PSVersionTable` (Windows)
+   - Run: `command -v yt-dlp` (Unix) OR `Get-Command yt-dlp` (Windows)
+2. Resolve the Plugin Root Path:
+   Look at the `<skill location="...">` XML tag at the top of your instructions. Extract the directory path up to the `skills/` folder. Replace all backslashes `\` with forward slashes `/` (e.g., `C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis`). Use this `[PLUGIN_ROOT]` for all script paths below.
 
 ### Step 2: Download & Chunk Transcript
 Run the `prepare_video.py` script to fetch and chunk the transcript (5-min blocks, 30s overlap). Do NOT search for it. Use this exact command:
 ```bash
-python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python3 "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
 *(If blocked by YouTube, ask user for cookies permission or to upload raw_transcript.json).*
 
@@ -43,8 +45,8 @@ python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/scripts/p
 Process `chunk_00.txt`, then `chunk_01.txt` sequentially. For each chunk:
 1. **Pre-read sub-skills**: Check chunk signals (gacha, talk, gameplay, tokusatsu) and load matching sub-skills.
 2. **FGO / YGO Bootstrap**: If the stream plays FGO or YGO, you MUST verify the database. Do NOT search for the script. Run the exact command for the matching game:
-   - FGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
-   - YGO: `python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
+   - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
+   - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
    If it returns exit code 1, run the script again without `--check` to build it.
 3. **Setup Output**: Ensure the `chunk_outputs/` directory exists in the workspace.
 4. **Process Inline**: Read the content of `chunk_XX.txt`. Generate timestamps following the Prompt Template rules below.
@@ -161,6 +163,6 @@ Use this exact format to print the header you drafted in Step 4.2:
 ### Step 5: Verification Check
 Run `check_sections.py` on the final file to verify character counts using this exact command:
 ```bash
-python3 "C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/scripts/check_sections.py" timestamp_VIDEO_ID.md
+python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/check_sections.py" timestamp_VIDEO_ID.md
 ```
 Split further if any section fails (❌ or ⚠️). Register the final file in your workspace.
