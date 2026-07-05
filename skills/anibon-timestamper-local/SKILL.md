@@ -11,8 +11,8 @@ Processes video transcripts in sequential chunks to preserve memory.
 ---
 
 ## 🧠 Goldfish Brain Rules (CRITICAL)
-1. **ANTI-LOOP PROTOCOL (CRITICAL)**: If you catch yourself saying "Wait", "Actually", "Hold on", "Let's go", or "(No more thinking)", you are trapped in an infinite reasoning loop. You MUST IMMEDIATELY STOP GENERATING TEXT AND CALL A TOOL. Do NOT output a finalized plan. Do NOT say "Ready". Just call the tool.
-2. **One chunk at a time**: Process exactly one `.txt` file per turn. Do not look ahead.
+1. **ANTI-LOOP PROTOCOL (CRITICAL)**: If you catch yourself saying "Wait", "Actually", "Hold on", "Let's go", or "(No more thinking)", you are trapped in an infinite reasoning loop. You MUST IMMEDIATELY STOP GENERATING TEXT AND CALL A TOOL. **DO NOT DEBATE. DO NOT EXPLAIN. JUST PICK THE LOWEST CHUNK NUMBER AND CALL THE TOOL.**
+2. **One chunk at a time (FATAL ERROR WARNING)**: You are strictly forbidden from processing more than one chunk per turn. Processing multiple chunks will cause a critical token overflow and crash the system. Never try to be "efficient". Never debate doing two chunks. Process exactly one `.txt` file per turn and STOP.
 3. **One tool per turn**: Never run batch actions.
 4. **Save and forget**: Write output for each chunk to a file, then forget it.
 5. **Process inline**: Read the `.txt` file, write timestamps yourself. No subagents.
