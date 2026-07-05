@@ -63,8 +63,9 @@ For each chunk `chunk_00.txt`, `chunk_01.txt`, ...:
    - Exit 1 → re-run without `--check` to build. Otherwise skip.
 3. **Generate timestamps**: follow the Prompt Template below.
 4. **Write**: save to `C:/Users/peter/<workspace>/chunk_outputs/chunk_XX_output.md`
-5. **Auto-resume**: Immediately call the `read` tool for `chunk_XX+1.txt`. Do NOT ask the user for permission to continue. Just initiate the next chunk yourself to keep the loop going.
-6. **Handoff** if overwhelmed — write state file:
+5. **Update State (CRITICAL)**: IMMEDIATELY overwrite `anibon_timestamper_state.json` and set `"current_chunk"` to the NEXT chunk number (XX+1). Doing this after every single chunk ensures your progress is never lost if you crash.
+6. **Auto-resume**: Immediately call the `read` tool for `chunk_XX+1.txt`. Do NOT ask the user for permission to continue. Just initiate the next chunk yourself to keep the loop going.
+7. **Handoff** if overwhelmed — write state file:
 ```json
 {
   "video_id": "VIDEO_ID",
