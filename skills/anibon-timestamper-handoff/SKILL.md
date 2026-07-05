@@ -51,6 +51,8 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
    }
    ```
 
+   **CRITICAL NOTE ON `current_chunk`**: The value for `"current_chunk"` MUST be the exact integer of the **NEXT** chunk to be processed. If you just finished writing the output for `chunk_11`, you MUST set `"current_chunk": 12` so the next session knows to start at 12. Never set it to the chunk you already finished.
+
 2. **Automated Handoff Action**: Output a message explaining that context is full, pointing to the state file. Then, **clear your context** and **call yourself** to load the state and resume work automatically. Do NOT wait for the user to restart the session!
    
    *Example message:*
@@ -71,6 +73,6 @@ When the user starts a fresh conversation session to resume work:
    - FGO Download (if check fails): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py"`
    - YGO Check: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
    - YGO Download (if check fails): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py"`
-5. **Resume Step 3 (Loop)**: Do not repeat Step 1 or Step 2. Directly resume Step 3 (Sequential Chunk Loop) starting at the value of "current_chunk". **CRITICAL**: The chunk files are zero-padded to two digits (e.g. if current_chunk is 2, the file is `chunk_02.txt`; if 12, it is `chunk_12.txt`).
+5. **Resume Step 3 (Loop)**: Do not repeat Step 1 or Step 2. Directly resume Step 3 (Sequential Chunk Loop) by immediately reading the chunk specified by `"current_chunk"`. Because this value represents the exact NEXT chunk to process, you should start with it. **CRITICAL**: The chunk files are zero-padded to two digits (e.g. if current_chunk is 12, the file is `chunk_12.txt`).
 6. **Verify Chunk Outputs**: Verify that outputs up to `chunk_11_output.md` exist before starting the next one.
 7. **Completion**: Once the loop finishes processing the final chunk, you MUST immediately proceed to **Step 4 (Topic Map & Assembly)** and **Step 5 (Verification Check)** exactly as described in `anibon-timestamper-local/SKILL.md`. Pay special attention to drafting the section summaries step-by-step!
