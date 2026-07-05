@@ -20,6 +20,7 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 - Thinking "I will do both chunks now to be efficient."
 - Thinking "I don't remember the prompt format, I'll just guess."
 - Running `ls` to check if a file exists.
+- Outputting the generated timestamps/markdown directly into your response text instead of calling the `write` tool.
 
 ### Anti-Rationalization Table
 | Your Excuse | The Reality |
@@ -76,8 +77,8 @@ For each chunk `chunk_00.txt`, `chunk_01.txt`, ...:
    - FGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
    - YGO: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
    - Exit 1 → re-run without `--check` to build. Otherwise skip.
-3. **Generate timestamps**: follow the Prompt Template below.
-4. **Write**: save to `C:/Users/peter/<workspace>/chunk_outputs/chunk_XX_output.md`
+3. **Generate timestamps**: follow the Prompt Template below. **DO NOT output the markdown directly into the chat!**
+4. **Write**: Use the `write` tool to save the generated markdown directly to `C:/Users/peter/<workspace>/chunk_outputs/chunk_XX_output.md`.
 5. **Update State (CRITICAL)**: IMMEDIATELY overwrite `anibon_timestamper_state.json` and set `"current_chunk"` to the NEXT chunk number (XX+1). Doing this after every single chunk ensures your progress is never lost if you crash.
 6. **End Turn (CRITICAL)**: You MUST stop generating text immediately after updating the `.json` state. Do NOT call the `read` tool for the next chunk. Tell the user: `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for their prompt.
 7. **Handoff** if overwhelmed — write state file:
