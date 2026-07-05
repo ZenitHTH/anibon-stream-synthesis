@@ -29,7 +29,8 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 | "I am on Windows, I'll use `\`" | Backslashes break tool calls. **Always use forward slashes (`/`).** |
 | "I'll narrate my tool call" | No dry-running. If you say "I will read", you MUST actually call the tool. |
 | "I'll output everything to be safe" | The Prompt Template strictly forbids >10 lines. You MUST summarize. |
-| "I will read chunk 24, 25, 26..." | This is a read loop. You must Generate and Write output between reads! |
+| "I successfully generated the markdown" | Did you actually call the `write` tool? NEVER skip the `write` tool call! |
+| "I must continue reading the next chunk" | NO! You MUST stop after updating the state. Let the user prompt you. |
 
 ### Core Operating Constraints
 1. **One tool per turn**: Never run batch actions.
@@ -78,7 +79,7 @@ For each chunk `chunk_00.txt`, `chunk_01.txt`, ...:
 3. **Generate timestamps**: follow the Prompt Template below.
 4. **Write**: save to `C:/Users/peter/<workspace>/chunk_outputs/chunk_XX_output.md`
 5. **Update State (CRITICAL)**: IMMEDIATELY overwrite `anibon_timestamper_state.json` and set `"current_chunk"` to the NEXT chunk number (XX+1). Doing this after every single chunk ensures your progress is never lost if you crash.
-6. **Auto-resume**: Call the `read` tool for `chunk_XX+1.txt`. This MUST be your very last action in the loop. You must have already written the `.md` output and updated the `.json` state before you do this! Do not process the next chunk in the same turn.
+6. **End Turn (CRITICAL)**: You MUST stop generating text immediately after updating the `.json` state. Do NOT call the `read` tool for the next chunk. Tell the user: `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for their prompt.
 7. **Handoff** if overwhelmed — write state file:
 ```json
 {
