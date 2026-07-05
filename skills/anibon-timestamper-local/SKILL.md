@@ -86,9 +86,10 @@ For each chunk `chunk_00.txt`, `chunk_01.txt`, ...:
 Read the chunk. Group consecutive lines that discuss the **same topic** into a block. Write a **short Thai header title** for each block, then list timestamps below it.
 
 **Rules:**
+- **CRITICAL: SUMMARIZE, DO NOT TRANSCRIBE.** Do not copy every line! You MUST combine multiple lines of dialogue into a single summary sentence.
+- **MAX 10 LINES**: You are strictly forbidden from writing more than 10 timestamp lines per chunk. If you output 30 lines, you have failed.
 - Use `(HH:MM:SS)` directly from the file. Do NOT recalculate.
 - Skip any line whose timestamp > the cutoff in the chunk header.
-- Max **10 timestamp lines** per chunk (headers don't count).
 - Same topic within 1-2 minutes → one block, one header.
 - New topic → new header. That's the only decision you need to make.
 - Description: what was actually said/done (Thai). No internal feelings.
