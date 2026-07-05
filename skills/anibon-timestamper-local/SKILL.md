@@ -32,6 +32,7 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 | "I'll output everything to be safe" | The Prompt Template strictly forbids >10 lines. You MUST summarize. |
 | "I successfully generated the markdown" | Did you actually call the `write` tool? NEVER skip the `write` tool call! |
 | "I must continue reading the next chunk" | NO! You MUST stop after updating the state. Let the user prompt you. |
+| "I'll update the state file at the end of the batch" | No! If you batch 2 chunks, you MUST update the state file after EACH chunk. |
 
 ### Core Operating Constraints
 1. **One tool per turn**: Never run batch actions.
