@@ -11,17 +11,30 @@ Processes video transcripts in sequential chunks to preserve memory.
 ---
 
 ## 🧠 Goldfish Brain Rules (CRITICAL)
-1. **FORBIDDEN WORDS (CRITICAL)**: You are strictly forbidden from generating the words "Wait", "Actually", or "Hold on". Generating these words will cause a fatal syntax error. Do not debate with yourself. Do not explain your logic. Just execute the next tool call immediately.
-2. **One chunk at a time (FATAL ERROR WARNING)**: You are strictly forbidden from processing more than one chunk per turn. Processing multiple chunks will cause a critical token overflow and crash the system. Never try to be "efficient". Never debate doing two chunks. Process exactly one `.txt` file per turn and STOP.
-3. **One tool per turn**: Never run batch actions.
-4. **Save and forget**: Write output for each chunk to a file, then forget it.
-5. **Process inline**: Read the `.txt` file, write timestamps yourself. No subagents.
-6. **No dry-running**: Every `read`, `write`, or `bash` MUST be a real tool call. If you cannot call a tool, output exactly: `[STUCK: cannot call tool, awaiting user input]` and stop.
-7. **No `<think>` tags**: Never output or wrap your thinking process in `<think>` or `</think>`. Instead, write your thinking process directly as plain text.
-8. **No Curiosity / No Exploration**: Do NOT run `ls`, `find`, or explore the filesystem. Do NOT ask clarifying questions. Do NOT try to learn about the environment. Just blindly execute the exact paths provided in these steps.
-9. **Handoff early**: You cannot measure your own context size. If the user tells you "context is full", "handoff", "12%", or ANY percentage > 10%, you MUST IMMEDIATELY halt the loop and write the `anibon_timestamper_state.json` file. 
-10. **Emergency Stop (Hang)**: If the user says "hang", "stuck", or "stop", IMMEDIATELY write the `anibon_timestamper_state.json` file to save progress and stop.
-11. **Forward Slashes Only**: Always `C:/Users/peter/...`. Backslashes get stripped.
+
+**Violating the letter of these rules is violating the spirit of these rules.**
+
+### Red Flags - STOP and Start Over
+If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL A TOOL:
+- Generating the words "Wait", "Actually", or "Hold on" (indicates an infinite reasoning loop).
+- Thinking "I will do both chunks now to be efficient."
+- Thinking "I don't remember the prompt format, I'll just guess."
+- Running `ls` to check if a file exists.
+
+### Anti-Rationalization Table
+| Your Excuse | The Reality |
+|-------------|-------------|
+| "I'll do 18 and 19 in one turn" | You will crash the system. **Strictly ONE chunk per turn.** |
+| "I need to check the folder first" | Curiosity wastes context. Blindly execute the exact paths provided. |
+| "I am on Windows, I'll use `\`" | Backslashes break tool calls. **Always use forward slashes (`/`).** |
+| "I'll narrate my tool call" | No dry-running. If you say "I will read", you MUST actually call the tool. |
+| "I'll output everything to be safe" | The Prompt Template strictly forbids >10 lines. You MUST summarize. |
+
+### Core Operating Constraints
+1. **One tool per turn**: Never run batch actions.
+2. **Process inline**: Read `.txt`, write timestamps yourself. No subagents.
+3. **No `<think>` tags**: Never wrap thoughts in `<think>`.
+4. **Handoff/Emergency Stop**: If user says "handoff", "stuck", or "% > 10", IMMEDIATELY write `anibon_timestamper_state.json` and halt.
 
 ---
 
