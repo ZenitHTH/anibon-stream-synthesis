@@ -64,6 +64,9 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
 
 When the user starts a fresh conversation session to resume work:
 
+> [!IMPORTANT]
+> **CRITICAL OVERRIDE**: Even if the user asks you to do a specific custom task immediately (e.g. "redo chunk-14", "skip to chunk 16"), you MUST complete Step 1 and Step 2 below FIRST to get your formatting rules. NEVER try to guess the markdown format or file paths from memory.
+
 1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Delete the exact text `skills\anibon-timestamper-handoff\SKILL.md` from the end of it. Replace all backslashes `\` with forward slashes `/`. This remaining path is your `[PLUGIN_ROOT]`.
    - 🚨 **ANTI-TYPO WARNING**: You (the AI) are prone to confusing hyphens (`-`) and underscores (`_`) when typing from memory. The repository is `anibon-stream-synthesis` (HYPHENS). The skill folder is `anibon-timestamper` (HYPHENS). NEVER use underscores for these! Copy the path directly, do not retype it.
 2. **Read Local Rules**: You MUST read the core rules by calling the `read` tool on `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md`. You need its rules (no `<think>` tags, output format) to function correctly.
