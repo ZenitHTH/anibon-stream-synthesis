@@ -29,6 +29,10 @@ Avoid disconnecting scenes with "and then", which causes confusing jump cuts.
 - **Bad:** The player suddenly uses a powerful new Pokémon or item to win a fight.
 - **Fix:** Include the scene where the player catches that key Pokémon or finds that crucial item. Viewers must not be confused about where it came from.
 
+### Establishing the Location
+- **Rule:** When the player travels to a new area (like a town, gym, or dungeon), you MUST include the scene where the player first arrives or establishes the location.
+- **Why:** Viewers get confused if the scene cuts directly into a fight or building Pokémon without knowing *where* the player is. Show the arrival to ground the scene.
+
 ### Merging Contiguous Scenes
 - **Rule:** If two selected scenes occur back-to-back or are naturally continuous in time, do NOT cut between them. Merge them into a single continuous block to maintain the natural flow.
 
@@ -65,6 +69,7 @@ When generating a timeline for a video editor, your output MUST follow this stru
 | Mistake | Reality / Fix |
 |---------|---------------|
 | Skipping the "walk-up" or preparation | Viewers get confused by sudden setting changes. Always include 1-2 minutes of setup before a major event. |
+| Sudden Location Changes | Viewers don't know where the player is. Always show the arrival or establishing shot of a new town/dungeon before showing fights or preparations inside it. |
 | Unexplained Items or Pokémon | Viewers get confused if a new item/Pokémon suddenly appears in a boss fight. Show the moment it was acquired. |
 | Making it "too short" | Don't sacrifice the storyline just to hit an arbitrary low duration. Focus on the storyline first! Even a 6-hour summary of an 11-hour stream is a valid summary because it cuts out 5 hours of dead space. |
 | Forgetting the "Why" | The video editor needs to know the emotional beat (e.g., "Climax", "Funny frustration") for pacing, and needs to know *why* a section was skipped to ensure no important context was accidentally cut. |
