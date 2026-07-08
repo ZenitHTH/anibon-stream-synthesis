@@ -43,12 +43,12 @@ def main():
         for sc in scenes:
             start = str(sc["start"])
             end = str(sc["end"])
-            tmp_out = f"tmp_{vid}_scene_{sc['scene']}.mp4"
-            tmp_files.append(tmp_out)
+            tmp_out = plan_path.parent / f"tmp_{vid}_scene_{sc['scene']}.mp4"
+            tmp_files.append(str(tmp_out))
     
             if is_local:
                 # Cut from local file
-                cmd = ["ffmpeg", "-y", "-ss", start, "-to", end, "-i", source_url, "-c", "copy", tmp_out]
+                cmd = ["ffmpeg", "-y", "-ss", start, "-to", end, "-i", source_url, "-c", "copy", str(tmp_out)]
                 run_cmd(cmd, f"Cutting scene {sc['scene']} from local file...")
             else:
                 # Download section
@@ -58,7 +58,7 @@ def main():
                     "-f", args.format,
                     "--merge-output-format", "mp4",
                     source_url,
-                    "-o", tmp_out
+                    "-o", str(tmp_out)
                 ]
                 run_cmd(cmd, f"Downloading scene {sc['scene']}...")
     
