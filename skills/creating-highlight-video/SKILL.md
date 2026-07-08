@@ -26,12 +26,13 @@ Once the `.md` file is ready, you must invoke the planner.
 1. See `highlight-planner/SKILL.md`.
 2. Run: `python3 scripts/plan_highlight.py <your_markdown_file.md> --video-id <ID> --source <URL>`
 3. Wait for the `highlight_plan_<id>.json` file to be generated.
+4. **CRITICAL DURATION CHECK:** Read the stdout from the planner script. If the total highlight duration exceeds **30 minutes**, STOP and warn the user. Tell them downloading will take a long time, and offer to list available resolutions/framerates using `yt-dlp -F <URL>`. If they choose a lower quality to save time, append `--format "<their_choice>"` during Phase 3.
 > **Iron Rule:** Never read the JSON file. It is for the machine only.
 
 ### Phase 3: Highlight Cutter (Subagent Delegation)
 Because video downloading and FFmpeg rendering can take time, this phase should ideally be handled cleanly.
 1. See `highlight-cutter/SKILL.md`.
-2. Run: `python3 scripts/cut_highlight.py <your_plan.json> --source <URL>`
+2. Run: `python3 scripts/cut_highlight.py <your_plan.json> --source <URL> [--format "chosen_format"]`
 3. Monitor the background task or subagent. It will download the chunks (or use a local `--source`) and stitch them via FFmpeg `filter_complex`. 
 > **Tip:** If the user already downloaded the full video to avoid YouTube rate limits, pass the local file path to `--source` instead of the URL!
 

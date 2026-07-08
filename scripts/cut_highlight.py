@@ -19,6 +19,7 @@ def main():
     ap.add_argument("plan_json", help="Path to highlight_plan_abc123.json")
     ap.add_argument("--source", required=True, help="YouTube URL or local MP4 path")
     ap.add_argument("--output", help="Output MP4 file path (default: highlight_<video_id>.mp4)")
+    ap.add_argument("--format", default="bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best", help="yt-dlp format string")
     args = ap.parse_args()
 
     plan_path = Path(args.plan_json)
@@ -54,7 +55,7 @@ def main():
                 cmd = [
                     "yt-dlp",
                     "--download-sections", f"*{start}-{end}",
-                    "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                    "-f", args.format,
                     "--merge-output-format", "mp4",
                     source_url,
                     "-o", tmp_out
