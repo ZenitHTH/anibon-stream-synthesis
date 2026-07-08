@@ -29,57 +29,63 @@ def main():
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     vid = plan["video_id"]
     scenes = plan["scenes"]
+    if len(scenes) == 0:
+        print("ERROR: No scenes found in plan", file=sys.stderr)
+        sys.exit(1)
     out_path = Path(args.output) if args.output else plan_path.parent / f"highlight_{vid}.mp4"
 
     is_local = Path(args.source).exists()
     source_url = args.source
 
     tmp_files = []
-    for sc in scenes:
-        start = sc["start"]
-        end = sc["end"]
-        tmp_out = f"tmp_scene_{sc['scene']}.mp4"
-        tmp_files.append(tmp_out)
-
-        if is_local:
-            # Cut from local file
-            cmd = ["ffmpeg", "-y", "-i", source_url, "-ss", start, "-to", end, "-c", "copy", tmp_out]
-            run_cmd(cmd, f"Cutting scene {sc['scene']} from local file...")
-        else:
-            # Download section
-            cmd = [
-                "yt-dlp",
-                "--download-sections", f"*{start}-{end}",
-                "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-                source_url,
-                "-o", tmp_out
-            ]
-            run_cmd(cmd, f"Downloading scene {sc['scene']}...")
-
-    # Build concat filter
-    # e.g., [0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]
-    filter_str = "".join([f"[{i}:v][{i}:a]" for i in range(len(scenes))])
-    filter_str += f"concat=n={len(scenes)}:v=1:a=1[outv][outa]"
-
-    concat_cmd = ["ffmpeg", "-y"]
-    for tmp in tmp_files:
-        concat_cmd.extend(["-i", tmp])
+    try:
+        for sc in scenes:
+            start = sc["start"]
+            end = sc["end"]
+            tmp_out = f"tmp_scene_{sc['scene']}.mp4"
+            tmp_files.append(tmp_out)
     
-    concat_cmd.extend([
-        "-filter_complex", filter_str,
-        "-map", "[outv]", "-map", "[outa]",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-movflags", "+faststart",
-        str(out_path)
-    ])
-
-    run_cmd(concat_cmd, "Merging and re-encoding scenes...")
-
-    # Cleanup
-    for tmp in tmp_files:
-        p = Path(tmp)
-        if p.exists():
-            p.unlink()
+            if is_local:
+                # Cut from local file
+                cmd = ["ffmpeg", "-y", "-ss", start, "-to", end, "-i", source_url, "-c", "copy", tmp_out]
+                run_cmd(cmd, f"Cutting scene {sc['scene']} from local file...")
+            else:
+                # Download section
+                cmd = [
+                    "yt-dlp",
+                    "--download-sections", f"*{start}-{end}",
+                    "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                    "--merge-output-format", "mp4",
+                    source_url,
+                    "-o", tmp_out
+                ]
+                run_cmd(cmd, f"Downloading scene {sc['scene']}...")
+    
+        # Build concat filter
+        # e.g., [0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]
+        filter_str = "".join([f"[{i}:v][{i}:a]" for i in range(len(scenes))])
+        filter_str += f"concat=n={len(scenes)}:v=1:a=1[outv][outa]"
+    
+        concat_cmd = ["ffmpeg", "-y"]
+        for tmp in tmp_files:
+            concat_cmd.extend(["-i", tmp])
+        
+        concat_cmd.extend([
+            "-filter_complex", filter_str,
+            "-map", "[outv]", "-map", "[outa]",
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-movflags", "+faststart",
+            str(out_path)
+        ])
+    
+        run_cmd(concat_cmd, "Merging and re-encoding scenes...")
+    
+    finally:
+        # Cleanup
+        for tmp in tmp_files:
+            p = Path(tmp)
+            if p.exists():
+                p.unlink()
 
     print(f"OK: Saved {out_path}")
     print(str(out_path)) # Just output the path to stdout for the AI
