@@ -11,6 +11,7 @@ import sys
 import re
 import json
 import argparse
+import subprocess
 from pathlib import Path
 
 
@@ -138,6 +139,30 @@ def main() -> int:
     out_path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
 
     total_s = plan["total_expected_duration_seconds"]
+
+    # Estimate download time if source is a URL
+    if args.source and args.source.startswith("http"):
+        print("Fetching video metadata from YouTube to estimate download size...", file=sys.stderr)
+        try:
+            res = subprocess.run(["yt-dlp", "--dump-json", args.source], capture_output=True, text=True, check=True)
+            meta = json.loads(res.stdout)
+            video_duration = meta.get("duration")
+            filesize = meta.get("filesize") or meta.get("filesize_approx")
+            if video_duration and filesize:
+                ratio = total_s / video_duration
+                est_bytes = filesize * ratio
+                est_mb = est_bytes / (1024 * 1024)
+                est_seconds = est_mb / 5.0  # Assume conservative 5 MB/s download speed
+
+                print(f"---", file=sys.stderr)
+                print(f"Estimated Highlight Size: {est_mb:.1f} MB", file=sys.stderr)
+                print(f"Estimated Download Time (at 5 MB/s): {est_seconds:.1f} seconds", file=sys.stderr)
+                if est_seconds > 1800:
+                    print("WARNING: Estimated download time is over 30 minutes! Consider lowering the resolution.", file=sys.stderr)
+                print(f"---", file=sys.stderr)
+        except Exception as e:
+            print(f"Note: Could not estimate filesize from YouTube ({e})", file=sys.stderr)
+
     print(
         f"OK: {len(scenes)} scenes | "
         f"total {_to_hhmmss(total_s)} ({total_s}s) | "
