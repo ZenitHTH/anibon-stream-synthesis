@@ -40,9 +40,9 @@ def main():
     tmp_files = []
     try:
         for sc in scenes:
-            start = sc["start"]
-            end = sc["end"]
-            tmp_out = f"tmp_scene_{sc['scene']}.mp4"
+            start = str(sc["start"])
+            end = str(sc["end"])
+            tmp_out = f"tmp_{vid}_scene_{sc['scene']}.mp4"
             tmp_files.append(tmp_out)
     
             if is_local:
