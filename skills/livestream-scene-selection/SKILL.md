@@ -13,6 +13,8 @@ A framework for selecting and documenting scenes from long-form livestreams. It 
 - When writing a timeline, script, or scene-selection list for a video editor.
 - When filtering timestamps to build a cohesive narrative from gameplay.
 
+**REQUIRED COMPANION SKILL:** Before finalizing any scene selection, run `highlight-no-jumpcut-rules` to validate all transitions. It enforces Walter Murch's Rule of Six, the 5-min buffer rule, the pacing rollercoaster, and the merge-contiguous rule.
+
 ## Core Principles: Good vs. Bad Storytelling
 
 ### The "But / Therefore" Rule (Good)

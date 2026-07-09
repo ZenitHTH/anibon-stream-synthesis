@@ -38,3 +38,12 @@ youtube_*_chunks/
 cleaned_transcript.json
 raw_transcript.json
 *.log
+
+# yt-dlp generated files
+*.json3
+video_meta.json
+
+# Highlight Editor generated files
+*.mp4
+highlight_plan_*.json
+*_selection.md

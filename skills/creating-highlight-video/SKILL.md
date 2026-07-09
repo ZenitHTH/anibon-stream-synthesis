@@ -19,7 +19,8 @@ When this skill is activated, you must guide the operation through these 4 stric
 To cut a video, we need to know *what* to cut.
 1. Ask the user if they already have the timestamps or a Markdown selection list.
 2. If they do NOT have one, offer to read the transcript or use the `livestream-scene-selection` skill to help them identify the best timestamps (following the "But / Therefore" rule).
-3. Once you have the timeline, write it out to a `.md` file (e.g., `highlight_selection.md`). 
+3. **REQUIRED SUB-SKILL:** Before finalizing any scene selection, you MUST apply `highlight-no-jumpcut-rules`. This skill enforces Walter Murch's Rule of Six, the 5-min buffer rule, the merge-contiguous rule, and the pacing rollercoaster — all of which prevent jump cuts in the final output.
+4. Once you have the timeline validated against `highlight-no-jumpcut-rules`, write it out to a `.md` file (e.g., `highlight_selection.md`). 
 > **Workspace Rule:** If there is an existing `youtube_<VIDEO_ID>_workspace` directory (created by `anibon-timestamper` or similar skills), you MUST save this `.md` file inside that directory!
 
 ### Phase 2: Highlight Planner
