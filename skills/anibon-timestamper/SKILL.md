@@ -187,6 +187,29 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`anibon-analyzer.py`** — runs on the workspace folder to detect >10m timeline gaps, classify chunks for routing, and pre-calculate YouTube block byte sizes (warns >3500 bytes). Run BEFORE analysis to plan part splits.
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
+- **`assemble_timestamps.py`** — assembles a list of timestamp sections from a JSON file into a formatted Markdown output file. This is the reusable CLI replacement for ad-hoc assembly scripts.
+
+  **Usage:**
+  ```bash
+  # Assemble with default output (anibon_timestamps.md next to parts.json)
+  python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json
+
+  # Assemble with a custom output path
+  python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json --output /path/to/output.md
+  ```
+
+  **`parts.json` format** — a JSON array where each object has:
+  ```json
+  [
+    {
+      "title": "ชื่อหัวข้อ",
+      "start": "HH:MM:SS",
+      "desc": "สรุปภาพรวมของช่วงนี้ 1-2 บรรทัด",
+      "body": "HH:MM:SS - [Tag] คำอธิบาย\nHH:MM:SS - [Tag] คำอธิบาย"
+    }
+  ]
+  ```
+  > **Important:** Never hardcode the parts list or output path inside a one-off script. Always use `assemble_timestamps.py` with a `parts.json` input file. This keeps data and assembly logic separate and reusable across streams.
 
 ## 🧭 Orchestration Checklist (Cloud)
 
