@@ -29,12 +29,22 @@ def test_keywords_filter():
     assert matched[1]["start"] == 20
 
 @patch("subprocess.run")
-def test_get_stream_url(mock_run):
+def test_download_reference_video(mock_run, tmp_path):
+    # Setup mock
     mock_proc = MagicMock()
-    mock_proc.stdout = "https://manifest.googlevideo.com/api/..."
     mock_proc.returncode = 0
     mock_run.return_value = mock_proc
     
-    url = _vision.get_stream_url("https://youtube.com/watch?v=123")
-    assert url == "https://manifest.googlevideo.com/api/..."
+    # Test successful download
+    result = _vision.download_reference_video("https://youtube.com/watch?v=123", tmp_path)
+    
+    # Assertions
+    assert result == tmp_path / "reference_video.mp4"
     mock_run.assert_called_once()
+    
+    # Test skipping download if file exists
+    (tmp_path / "reference_video.mp4").touch()
+    mock_run.reset_mock()
+    result_existing = _vision.download_reference_video("https://youtube.com/watch?v=123", tmp_path)
+    assert result_existing == tmp_path / "reference_video.mp4"
+    mock_run.assert_not_called()

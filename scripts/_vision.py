@@ -8,16 +8,22 @@ KEYWORDS = [
     "คนนี้", "คนนั้น", "ใคร", "รูป", "ภาพ", "การ์ด", "ตัวนี้", "ตัวละคร", "เขา"
 ]
 
-def get_stream_url(video_url: str) -> str | None:
-    """Get direct stream/video URL via yt-dlp."""
-    print(f"[*] Getting stream URL via yt-dlp...", file=sys.stderr)
+def download_reference_video(video_url: str, workspace: Path) -> Path | None:
+    """Download a low-res reference video using yt-dlp."""
+    out_path = workspace / "reference_video.mp4"
+    if out_path.exists():
+        print(f"[*] Reference video already exists at {out_path}", file=sys.stderr)
+        return out_path
+
+    print(f"[*] Downloading reference video via yt-dlp...", file=sys.stderr)
     try:
-        res = subprocess.run([
-            "yt-dlp", "-g", "-f", "bestvideo[height<=480]/best", video_url
-        ], capture_output=True, text=True, check=True)
-        return res.stdout.strip()
+        subprocess.run([
+            "yt-dlp", "-f", "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "-o", str(out_path), video_url
+        ], capture_output=False, check=True)
+        return out_path
     except Exception as e:
-        print(f"[!] Failed to get stream URL: {e}", file=sys.stderr)
+        print(f"[!] Failed to download reference video: {e}", file=sys.stderr)
         return None
 
 def extract_frame(stream_url: str, start_sec: float, out_path: Path) -> bool:
