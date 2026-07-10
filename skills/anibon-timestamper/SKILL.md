@@ -173,6 +173,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`prepare_video.py`** — downloads transcript, cleans, and chunks (Step 2).
+- **`anibon-analyzer.py`** — runs on the workspace folder to detect >10m timeline gaps, classify chunks for routing, and pre-calculate YouTube block byte sizes (warns >3500 bytes). Run BEFORE analysis to plan part splits.
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
 
@@ -186,9 +187,13 @@ find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
 
 python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json --block 300 --overlap 30 --vision
 ```
-3. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
-4. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
-5. Final Assembly → concatenate, split at byte limits, verify with `check_sections.py`.
+3. Pre-flight Analysis → run `python3 /absolute/path/to/scripts/anibon-analyzer.py /path/to/workspace`.
+   - Use output to route chunks (e.g. tokusatsu vs gaming).
+   - Resolve `GAP DETECTED` warnings before delegating tasks.
+   - Plan chunk byte limits (split blocks if they read OVER).
+4. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
+5. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
+6. Final Assembly → concatenate, split at byte limits, verify with `check_sections.py`.
 
 ## Iron Rules
 
