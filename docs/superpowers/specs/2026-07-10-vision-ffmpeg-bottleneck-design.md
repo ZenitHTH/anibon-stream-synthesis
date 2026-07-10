@@ -7,10 +7,10 @@ Resolve the issue where `_vision.py` freezes indefinitely during execution becau
 When running `prepare_video.py --vision`, the script uses `_vision.py` to extract frames for ambiguous pronouns (e.g., "he", "this guy"). Currently, it gets the remote stream URL via `yt-dlp` and calls `ffmpeg` for each timestamp. For a 7-hour video, this generates hundreds of remote stream requests, causing network timeouts and permanent subprocess hangs.
 
 ## Architecture & Data Flow
-1. **Local Download**: Instead of streaming, `_vision.py` will use `yt-dlp` to download a low-resolution (<= 480p) video file to the user's workspace (e.g., `temp_video.mp4`).
+1. **Local Download**: Instead of streaming, `_vision.py` will use `yt-dlp` to download a low-resolution (<= 480p) video file to the user's workspace (e.g., `reference_video.mp4`). This ensures a fast download time.
 2. **Local Extraction**: The `extract_frame` function will be modified to accept the local file path instead of the remote URL. 
 3. **Iterative Processing**: The existing loop will remain unchanged, calling `ffmpeg` for each candidate timestamp. Because it reads a local file, there will be no network latency or throttling.
-4. **Cleanup**: Once all candidate frames are extracted (or if the script errors out during extraction), the `temp_video.mp4` file will be deleted to free up disk space.
+4. **Persistence**: The downloaded `reference_video.mp4` will **not** be deleted. It will be kept on the user's disk as a quick reference file. (Note: High-quality clips for final highlights will be fetched later using `yt-dlp --download-sections`, avoiding the need to download the full 1080p video).
 
 ## Error Handling & Resilience
 - **Download Failure**: The `yt-dlp` download subprocess will have `check=True`. If it fails, the script will catch the exception, log an error message to `sys.stderr`, and exit the vision phase gracefully without crashing the whole application or leaving broken chunks.
