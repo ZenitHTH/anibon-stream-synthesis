@@ -126,6 +126,7 @@ graph LR
         PV[prepare_video.py]
         CT[clean_transcript.py]
         CS[check_sections.py]
+        ASM[assemble_timestamps.py]
     end
 
     subgraph DBs["On-Demand SQLite DBs"]
@@ -143,12 +144,14 @@ graph LR
     CAT --> CT
 
     %% Orchestrators → transcript prep & cleanup
-    AT --> PV
-    AT --> CAT
-    AT --> CS
-    ATL --> PV
-    ATL --> CAT
-    ATL --> CS
+    AT ---> PV
+    AT ---> CAT
+    AT ---> CS
+    AT ---> ASM
+    ATL ---> PV
+    ATL ---> CAT
+    ATL ---> CS
+    ATL ---> ASM
 
     %% Orchestrators → sub-skill routing (auto-detected per chunk)
     AT -->|talk signals| TS
@@ -200,6 +203,33 @@ find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -name <script>.py 2>/dev
 To avoid context bloat and path hallucination errors for local LLMs (like `gemma`), use this single script to safely create the `youtube_VIDEO_ID_workspace`, download the transcript via `yt-dlp`, and clean/chunk the data all at once:
 ```bash
 python3 scripts/prepare_video.py <VIDEO_URL_OR_ID>
+```
+Add `--vision` to also extract frame images for visual reference resolution (pronoun disambiguation). When `--vision` is used, `yt-dlp` first downloads a low-resolution (≤ 480p) reference copy of the video to `workspace/reference_video.mp4`, then `ffmpeg` extracts frames locally — preventing network timeouts from remote stream requests:
+```bash
+python3 scripts/prepare_video.py <VIDEO_URL_OR_ID> --vision
+# → workspace/reference_video.mp4  (kept on disk for future editing)
+# → workspace/frames/frame_HH_MM_SS.jpg  (per visual cue)
+```
+
+### `assemble_timestamps.py` — Section Assembly CLI
+Assembles a list of timestamp sections from a JSON file into a formatted Markdown file ready for YouTube. Always use this instead of writing a one-off assembly script.
+```bash
+# Default output: anibon_timestamps.md next to parts.json
+python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json
+
+# Custom output path
+python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json --output /path/to/output.md
+```
+`parts.json` is a JSON array. Each object must have `title`, `start`, `desc`, and `body` keys:
+```json
+[
+  {
+    "title": "ชื่อหัวข้อ",
+    "start": "HH:MM:SS",
+    "desc": "สรุปภาพรวมของช่วงนี้ 1-2 บรรทัด",
+    "body": "HH:MM:SS - [Tag] คำอธิบาย\nHH:MM:SS - [Tag] คำอธิบาย"
+  }
+]
 ```
 
 ### `clean_transcript.py` — Space Normalization & MapReduce Chunking
@@ -311,4 +341,5 @@ Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific pr
 8. **Run `check_sections.py` after assembly** — never count YouTube comment chars manually. Split until all sections show ✅.
 9. **Anti-bot handling** — YouTube block → ask user for browser cookie permission immediately.
 10. **Transcript required** — if unavailable, reject the task; never guess timestamps.
+11. **No hardcoded assembly** — never write a one-off script with hardcoded `parts` data or output paths. Always use `assemble_timestamps.py` with a `parts.json` input file.
 
