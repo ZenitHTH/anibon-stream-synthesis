@@ -71,8 +71,8 @@ def run(workspace: Path, video_url: str) -> int:
         
     print(f"[*] Found {len(candidates)} potential visual references.", file=sys.stderr)
     
-    stream_url = get_stream_url(video_url)
-    if not stream_url:
+    video_path = download_reference_video(video_url, workspace)
+    if not video_path:
         return 0
         
     frames_dir = workspace / "frames"
@@ -87,7 +87,7 @@ def run(workspace: Path, video_url: str) -> int:
         out_name = f"frame_{ts_name}.jpg"
         out_path = frames_dir / out_name
         
-        if out_path.exists() or extract_frame(stream_url, start_sec, out_path):
+        if out_path.exists() or extract_frame(video_path, start_sec, out_path):
             annotated_items[start_sec] = f"frames/{out_name}"
             extracted_count += 1
             if extracted_count % 10 == 0:
