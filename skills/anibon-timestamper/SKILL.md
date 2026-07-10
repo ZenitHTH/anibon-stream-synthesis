@@ -134,8 +134,8 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
     - `[WatchParty]`: Watch along reaction / episode reviews
     - `[Reaction]`: General reaction to trailers or videos
     
-    ### Step 4: Write Description
-    - Write a short, descriptive summary of the event in <User's Requested Language>.
+    ### Step 4: Write Description (Macro Topics ONLY)
+    - Write a short, descriptive summary of the MACRO event in <User's Requested Language>.
     - Keep it concise, precise, and use correct terms/names from the FGO/YGO databases.
     
     ### Step 5: Format Output
@@ -143,7 +143,18 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
     `HH:MM:SS - [Tag] Description`
     
     ### Step 6: Visual Reference Resolution
-    - If any transcript item contains an `"image"` field, you may use `view_file` to load the image and visually identify who/what is shown (e.g., resolving pronoun references like "เขา", "คนนี้", "this guy", "this card"). Include the resolved name/context in the description.
+    - If any transcript item contains an `"image"` field, you may use `view_file` to load the image and visually identify who/what is shown. Include the resolved name/context in the description.
+    
+    ### Step 7: Density Control & Red Flags (CRITICAL)
+    **Violating the letter of the density rule is violating the spirit of the summary.**
+    - Target density: ~1 timestamp every 3 to 10 minutes. NEVER exceed 1 timestamp per minute. 
+    - Group continuous micro-topics into a SINGLE macro timestamp.
+    
+    **Red Flags - STOP and Group:**
+    - "But they mentioned a new detail" -> Reality: Add it to the macro description, don't make a new timestamp.
+    - "They reacted to a specific scene" -> Reality: It's still part of the same WatchParty segment.
+    - "The topic shifted slightly" -> Reality: Micro-shifts within the same game/conversation do NOT warrant a new timestamp.
+    **All of these mean: Group them together. Do NOT create dense sentence-by-sentence transcription logs.**
     
     Do NOT include any introduction, thinking process, or additional text outside of this format.
     
