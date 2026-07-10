@@ -47,3 +47,7 @@ video_meta.json
 *.mp4
 highlight_plan_*.json
 *_selection.md
+
+# Documentation directory
+docs/
+
