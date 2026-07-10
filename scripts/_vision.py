@@ -26,7 +26,7 @@ def download_reference_video(video_url: str, workspace: Path) -> Path | None:
         print(f"[!] Failed to download reference video: {e}", file=sys.stderr)
         return None
 
-def extract_frame(stream_url: str, start_sec: float, out_path: Path) -> bool:
+def extract_frame(video_path: Path, start_sec: float, out_path: Path) -> bool:
     """Extract a single frame at start_sec using ffmpeg."""
     out_path.parent.mkdir(exist_ok=True)
     h = int(start_sec // 3600)
@@ -35,12 +35,15 @@ def extract_frame(stream_url: str, start_sec: float, out_path: Path) -> bool:
     ts_str = f"{h:02d}:{m:02d}:{s:06.3f}"
     
     cmd = [
-        "ffmpeg", "-y", "-ss", ts_str, "-i", stream_url,
+        "ffmpeg", "-y", "-ss", ts_str, "-i", str(video_path),
         "-vframes", "1", "-vf", "scale=480:-1", "-q:v", "5", str(out_path)
     ]
     try:
-        res = subprocess.run(cmd, capture_output=True, check=False)
+        res = subprocess.run(cmd, capture_output=True, check=False, timeout=15)
         return res.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"[!] ffmpeg timed out extracting frame at {ts_str}", file=sys.stderr)
+        return False
     except Exception:
         return False
 

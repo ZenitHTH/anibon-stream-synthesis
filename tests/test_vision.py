@@ -48,3 +48,18 @@ def test_download_reference_video(mock_run, tmp_path):
     result_existing = _vision.download_reference_video("https://youtube.com/watch?v=123", tmp_path)
     assert result_existing == tmp_path / "reference_video.mp4"
     mock_run.assert_not_called()
+
+@patch("subprocess.run")
+def test_extract_frame_timeout(mock_run, tmp_path):
+    import subprocess
+    # Setup mock to raise TimeoutExpired
+    mock_run.side_effect = subprocess.TimeoutExpired(cmd="ffmpeg", timeout=15)
+    
+    video_path = tmp_path / "reference_video.mp4"
+    out_path = tmp_path / "frame.jpg"
+    
+    result = _vision.extract_frame(video_path, 10.5, out_path)
+    
+    # It should catch the timeout and return False
+    assert result is False
+    mock_run.assert_called_once()
