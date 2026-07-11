@@ -71,6 +71,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - [Limbus Company Reference](skills/reference/Limbus_Company.md)
    - [Pokémon PvP & Champions Reference](skills/reference/Pokemon_PvP.md)
    - [Pokémon Translation & Names Reference](skills/reference/Pokemon_Names.md)
+   - [Pokémon Radical Red Reference](skills/reference/Pokemon_Radical_Red.md)
    - [Arknights Reference](skills/reference/Arknights.md)
    - [Honkai Impact 3rd Reference](skills/reference/Honkai_Impact_3.md)
    - [Honkai Impact 3rd Part 2 Reference](skills/reference/Honkai_Impact_3_Part2.md)
@@ -191,11 +192,12 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 
   **Usage:**
   ```bash
-  # Assemble with default output (anibon_timestamps.md next to parts.json)
-  python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json
+  # Store parts.json INSIDE the workspace, then assemble (output lands beside it automatically)
+  python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json
+  # → produces ~/youtube_<video_id>_workspace/anibon_timestamps.md
 
-  # Assemble with a custom output path
-  python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json --output /path/to/output.md
+  # Or with an explicit path if needed
+  python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json --output ~/youtube_<video_id>_workspace/anibon_timestamps.md
   ```
 
   **`parts.json` format** — a JSON array where each object has:
@@ -227,13 +229,20 @@ python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json -
    - Plan chunk byte limits (split blocks if they read OVER).
 4. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
 5. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
-6. Final Assembly → concatenate, split at byte limits, verify with `check_sections.py`.
+6. Final Assembly → write `parts.json` to the workspace folder (`~/youtube_<video_id>_workspace/parts.json`), then run:
+```bash
+python3 /absolute/path/to/scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json
+# Output: ~/youtube_<video_id>_workspace/anibon_timestamps.md
+python3 /absolute/path/to/skills/anibon-timestamper/scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md
+```
+Both `parts.json` and `anibon_timestamps.md` MUST be saved inside the workspace folder, NOT the session artifacts dir.
 
 ## Iron Rules
 
 - **ALWAYS check video publish date first**.
 - **Use Dynamic Subagent Routing**: Do not guess the stream type upfront. Subagents load matching sub-skills based on what they see in their chunk.
 - **ONE FILE, NOT MANY**: Final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
+- **OUTPUT IN WORKSPACE**: `parts.json` and the final `anibon_timestamps.md` MUST be written to `~/youtube_<video_id>_workspace/`. Do NOT place them in the session artifacts directory.
 - **4,500 BYTE HARD CAP (Thai)**: Each pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each. Target **3,500 bytes** as ceiling. Run `check_sections.py` — split until all sections show ✅.
 - **PRE-SPLIT**: Talk session > 20 min or Gaming > 60 min → plan A/B split before assembly.
 - **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format. Never improvise with `---` or plain text.

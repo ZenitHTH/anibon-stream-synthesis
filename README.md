@@ -2,6 +2,16 @@
 
 A suite of skills for deep research, transcript processing, and content synthesis. Works across **Antigravity CLI**, **Claude Code**, and **OpenCode**. Uses hierarchical MapReduce, censorship/masking pipes, and centralized script utilities.
 
+## ✨ Key Features
+
+*   **Hierarchical MapReduce Workflow**: Efficiently processes extremely long streams (often 2 to 10+ hours) by chunking, running parallel subagents, and combining findings.
+*   **Dynamic Sub-Skill Routing**: Auto-detects content characteristics (talk, gaming, marathon, event, tokusatsu) to route transcript chunks to specialized subagents.
+*   **On-Demand Database Bootstrapping**: Lightly bootstraps large databases (FGO, Yu-Gi-Oh!) locally, avoiding repo bloat while maintaining deep references.
+*   **Sensitive Content Masking**: Auto-masks legally sensitive or political topics dynamically via configurable, One Piece-coded metaphor rules.
+*   **Local LLM Goldfish Brain Protocols**: Tailored instructions to prevent infinite loops, handle zero-padded file systems, and execute robust local processing.
+*   **YouTube Comment Compliance**: Automatically checks byte size limits for compiled results, adapting for 3-byte Thai characters.
+*   **Rich Knowledge Base References**: Built-in guides for deep lore, patches, and game mechanics (Honkai, Genshin, Arknights, Pokémon, Limbus Company).
+
 ## 🚀 Installation
 
 **Antigravity CLI (`agy`)** — Install directly from GitHub:
@@ -86,6 +96,7 @@ Nested under [`skills/anibon-timestamper/skills/reference/`](skills/anibon-times
 *   [**Arknights Reference**](skills/anibon-timestamper/skills/reference/Arknights.md) - Version and chronology reference.
 *   [**Arknights: Endfield Reference**](skills/anibon-timestamper/skills/reference/Arknights_Endfield.md) - Setup, dates, and gameplay mechanics.
 *   [**Limbus Company Reference**](skills/anibon-timestamper/skills/reference/Limbus_Company.md) - Key event updates and gameplay styles.
+*   [**Pokémon Radical Red Reference**](skills/anibon-timestamper/skills/reference/Pokemon_Radical_Red.md) - Guide for difficulty modes, core mechanics, cheat codes, bosses/level caps, and Version 4.1 key additions.
 
 #### ⚡ On-Demand SQLite Databases (Auto-Bootstrapped)
 
