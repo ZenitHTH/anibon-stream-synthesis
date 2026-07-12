@@ -162,7 +162,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
   -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
 
-python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json --block 300 --overlap 30 --vision
+python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format xml --block 300 --overlap 30 --vision
 ```
 3. Pre-flight Analysis → run `python3 /absolute/path/to/scripts/anibon-analyzer.py /path/to/workspace`.
    - Use output to route chunks (e.g. tokusatsu vs gaming).

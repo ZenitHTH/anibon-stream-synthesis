@@ -23,6 +23,14 @@ def _write_json(path: Path, start_sec: int, end_sec: int, items: list) -> None:
         json.dump({"start_sec": start_sec, "end_sec": end_sec, "items": items},
                   f, ensure_ascii=False, indent=2)
 
+def _write_xml(path: Path, idx: int, start_sec: int, end_sec: int, items: list) -> None:
+    lines = [f'<chunk id="{idx}" start_sec="{start_sec}" end_sec="{end_sec}">']
+    for i in items:
+        text = i['text'].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        lines.append(f'  <item start="{i["start"]}" timestamp="{i["timestamp"]}">{text}</item>')
+    lines.append('</chunk>')
+    path.write_text("\n".join(lines), encoding="utf-8")
+
 def _write_txt(path: Path, idx: int, start_sec: int, end_sec: int,
                overlap: int, items: list) -> None:
     cutoff = end_sec - overlap
@@ -59,10 +67,12 @@ def run(workspace: Path, block: int = 300, overlap: int = 30,
         items = [x for x in cleaned if start <= x['start'] < end]
         if not items:
             continue
-        ext = "txt" if fmt == "txt" else "json"
+        ext = "txt" if fmt == "txt" else ("xml" if fmt == "xml" else "json")
         path = chunk_dir / f"chunk_{idx:02d}.{ext}"
         if fmt == "txt":
             _write_txt(path, idx, start, end, overlap, items)
+        elif fmt == "xml":
+            _write_xml(path, idx, start, end, items)
         else:
             _write_json(path, start, end, items)
         idx += 1

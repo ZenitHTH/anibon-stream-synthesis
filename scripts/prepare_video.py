@@ -12,8 +12,8 @@ def main():
         description="Download and chunk a YouTube transcript for AI timestamping."
     )
     ap.add_argument("url", help="YouTube video URL or ID")
-    ap.add_argument("--format", choices=["json", "txt"], default="json",
-                    help="Output format: json (cloud/Gemini) or txt (local/Gemma). Default: json")
+    ap.add_argument("--format", choices=["json", "txt", "xml"], default="json",
+                    help="Output format: json (Gemini), xml (Claude), or txt (local). Default: json")
     ap.add_argument("--block", type=int, default=300,
                     help="Chunk block size in seconds (default: 300 = 5 min)")
     ap.add_argument("--overlap", type=int, default=30,
@@ -33,11 +33,11 @@ def main():
     _transcript.download(url, workspace)
     n = _chunker.run(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
     
-    if args.vision and args.format == "json":
+    if args.vision and args.format in ["json", "xml"]:
         import _vision
         _vision.run(workspace, url)
 
-    ext = "txt" if args.format == "txt" else "json"
+    ext = args.format
     print(f"[*] Done! Wrote {n} chunks ({ext}) to {workspace}/chunks/")
 
 if __name__ == "__main__":

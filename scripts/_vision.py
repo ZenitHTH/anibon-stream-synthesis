@@ -98,6 +98,7 @@ def run(workspace: Path, video_url: str) -> int:
         return extracted_count
         
     updated_chunks = 0
+    # Update JSON files
     for chunk_file in chunk_dir.glob("chunk_*.json"):
         try:
             data = json.loads(chunk_file.read_text(encoding="utf-8"))
@@ -109,6 +110,23 @@ def run(workspace: Path, video_url: str) -> int:
                     dirty = True
             if dirty:
                 chunk_file.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+                updated_chunks += 1
+        except Exception as e:
+            print(f"[!] Error updating {chunk_file.name}: {e}", file=sys.stderr)
+            
+    # Update XML files
+    for chunk_file in chunk_dir.glob("chunk_*.xml"):
+        try:
+            content = chunk_file.read_text(encoding="utf-8")
+            dirty = False
+            for start, img_path in annotated_items.items():
+                # We added start="{start}" to the <item> tags in _chunker.py
+                search_str = f'start="{start}"'
+                if search_str in content:
+                    content = content.replace(f'{search_str}', f'{search_str} image="{img_path}"')
+                    dirty = True
+            if dirty:
+                chunk_file.write_text(content, encoding="utf-8")
                 updated_chunks += 1
         except Exception as e:
             print(f"[!] Error updating {chunk_file.name}: {e}", file=sys.stderr)
