@@ -16,13 +16,16 @@ CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 
 ## OUTPUT CONTRACT (read before anything else)
 
-One 5-minute chunk → **1 timestamp by default, 2 MAX**.
+One 5-minute chunk → **1 timestamp by default, 2 MAX. (0 is allowed!)**.
 A new timestamp is only valid when ONE of these occurs:
 - Game switches entirely (different title)
 - Speaker joins or leaves (Discord guest, etc.)
 - Completely different activity begins (e.g., watching video → playing game)
+- A completely NEW topic of conversation begins
 
-Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description.
+**CRITICAL:** If this chunk is simply CONTINUING the exact same topic, story, or game activity from the previous chunk, you should output **0 timestamps**. Do not emit a timestamp just because your chunk started.
+
+Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description, or emit 0 if it's all one long continuous flow.
 If unsure → merge. Never split.
 
 ## Step 1: Scan and Detect Signals
@@ -71,7 +74,8 @@ If a transcript item contains an `"image"` field, use `view_file` to identify wh
 ## Step 8: Density Self-Check (BEFORE submitting)
 Count your timestamps. If you have more than 2 for this chunk, you MUST merge until ≤ 2.
 
-Red flags — merge immediately:
+Red flags — merge immediately or output 0 timestamps:
+- The chunk starts in the middle of an ongoing story/topic → Output 0 timestamps (let the previous chunk's timestamp cover it)
 - Two consecutive `[Talk]` timestamps about same conversation → merge
 - Sub-topic shift within same game session → merge
 - "They mentioned a new detail" → add to existing description, no new line
