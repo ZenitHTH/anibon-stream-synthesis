@@ -107,79 +107,20 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    Then query it with sqlite3. See [YGO_DB_Reference.md](skills/reference/Yu-Gi-Oh%20DATA/YGO_DB_Reference.md) for SQL patterns.
    The DB is ~10–20 MB and downloads in ~60–180 seconds. It is **auto-refreshed** when YGOPRODeck releases a new database_version.
 
-    **Canonical Subagent Prompt Template:**
-    Use this template when delegating chunks to subagents:
-    "You are processing Chunk <N>.
-    CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
-    
-    You MUST execute your task following this step-by-step processing workflow:
-    
-    ### Step 1: Scan and Detect Signals
-    Read the transcript text below. Look for specific topics, transitions, or game content.
-    - Standard signals: Gacha pulls, gameplay, talk/news, tokusatsu, watch parties, greetings.
-    - Match card names or game terms against FGO/YGO database records if provided.
-    
-    ### Step 2: Time Alignment
-    For every major transition, game switch, or topic change:
-    - Locate the exact starting time of that event in the transcript data.
-    - Use the pre-calculated `timestamp` field from the JSON item directly. Do NOT calculate the math yourself.
-    
-    ### Step 3: Select the Correct Tag
-    Use only standard tags matching the sub-skill detection rules:
-    - `[Greeting]`: Stream intro / saying hi
-    - `[Talk]`: Generic chatting / chat interaction / story tangents
-    - `[News]`: Reading news or commenting on real-world events (apply safety metaphors!)
-    - `[Gameplay]`: Playing a game / fighting stages
-    - `[Gacha]`: Drawing cards / summoning
-    - `[Boss]`: Boss fight / final stage battles
-    - `[WatchParty]`: Watch along reaction / episode reviews
-    - `[Reaction]`: General reaction to trailers or videos
-    
-    ### Step 4: Write Description (Macro Topics ONLY)
-    - Write a short, descriptive summary of the MACRO event in <User's Requested Language>.
-    - Keep it concise, precise, and use correct terms/names from the FGO/YGO databases.
-    
-    ### Step 5: Format Output
-    Output your result using this exact format for every line:
-    `HH:MM:SS - [Tag] Description`
-    
-    ### Step 6: Visual Reference Resolution
-    - If any transcript item contains an `"image"` field, you may use `view_file` to load the image and visually identify who/what is shown. Include the resolved name/context in the description.
-    
-    ### Step 7: Density Control & Red Flags (CRITICAL)
-    **Violating the letter of the density rule is violating the spirit of the summary.**
-    - Target density: ~1 timestamp every 3 to 10 minutes. NEVER exceed 1 timestamp per minute. 
-    - Group continuous micro-topics into a SINGLE macro timestamp.
-    
-    **Red Flags - STOP and Group:**
-    - "But they mentioned a new detail" -> Reality: Add it to the macro description, don't make a new timestamp.
-    - "They reacted to a specific scene" -> Reality: It's still part of the same WatchParty segment.
-    - "The topic shifted slightly" -> Reality: Micro-shifts within the same game/conversation do NOT warrant a new timestamp.
-    **All of these mean: Group them together. Do NOT create dense sentence-by-sentence transcription logs.**
-    
-    Do NOT include any introduction, thinking process, or additional text outside of this format.
-    
-    CRITICAL RULES: <Orchestrator: Pre-read the matching sub-skills yourself and inject a distilled 3-4 bullet summary of their Iron Rules here. Do NOT tell the subagent to read files.>
-    TRANSCRIPT JSON:
-    <Orchestrator: Inject the full JSON content of the 5-minute chunk here>"
+   **Canonical Subagent Prompt Template:**
+   Read [subagent-prompt-template.md](subagent-prompt-template.md) for the full prompt to send to each chunk subagent.
+
+   **Key rule injected into every subagent prompt:**
+   - 5-min chunk → **1 timestamp default, 2 MAX**
+   - New timestamp ONLY on: game switch, speaker join/leave, completely new activity
+   - Multiple sub-topics in same conversation → MERGE into 1
+   - Subagent must run Density Self-Check (Step 8) and merge down to ≤ 2 before submitting
 
 4. **Reduce Stage (Final Assembly)**
-   
-   - Once all subagents return their timestamps, combine them chronologically.
-   - **Splitting Parts & YouTube Limits**: When a specific game or talk section spans a very long duration, you MUST split it into numbered parts (e.g., "Talk & Gacha Game Discussions - Part 1", "Talk & Gacha Game Discussions - Part 2").
-   - **CRITICAL BYTE LIMIT**: YouTube validates comments by **UTF-8 byte size**, not character count. Thai characters are 3 bytes each, so a block with 2,000 Thai characters already costs ~6,000 bytes — exceeding YouTube's ~4,500-byte server cap. **NEVER** let the full pasted block (header + body) exceed **4,500 bytes**. If a section would exceed this, split it **before** assembly:
-     - For a long Gaming or Talk section: split so each block stays under **3,500 bytes** (the WARN threshold — leave margin).
-     - Do NOT wait until after assembly to discover the block is too long — estimate during Topic Scan (Step 5).
-     - Rule of thumb: If a talk session lasts >15 minutes of continuous content, plan at least 2 parts. If a gameplay session lasts >60 minutes, plan at least 2 parts.
-   - **DEFAULT FORMAT**: แบ่งตามด่าน/หัวข้อ (by stage/section) with game section headers. **CRITICAL**: You MUST write a brief summary (1-2 sentences) of what actually happens in this section for the `เนื้อหา:` field in the separator. Do NOT just copy the title. Use this exact separator format:
-```
-═════════════════════════════════════════════════════════
-📌 ส่วนที่ N: [สรุปภาพรวมของช่วงนี้สั้นๆ 1-2 บรรทัด]
-(หัวข้อ: [ชื่อหัวข้อ] | ⏱ เริ่ม: HH:MM:SS)
-═════════════════════════════════════════════════════════
-```
-   - **Length Limits**: See Step 5 of the Step-by-Step Guide.
-   - **⚠️ SINGLE FILE RULE**: ALL topic parts MUST go into ONE file. Do NOT create separate files per topic. Use the visual separator blocks above between topics.
+
+   - **Gather**: Combine all chunk subagent results chronologically.
+   - **Delegate to Summarizer Subagent**: Read [summarizer-subagent-guide.md](summarizer-subagent-guide.md) for the full prompt to send to the Summarizer Subagent. Do NOT write summaries or decide splits yourself — prevents context fatigue and errors.
+   - **⚠️ SINGLE FILE RULE**: Save ALL parts into ONE `.md` file. Never create `part1.md`, `part2.md`, etc.
 
 ## Helper Scripts & Writing Code
 

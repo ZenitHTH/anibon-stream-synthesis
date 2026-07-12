@@ -20,7 +20,10 @@ def load_chunks(workspace_dir: str) -> list[dict]:
     if not os.path.exists(chunks_dir):
         raise FileNotFoundError(f"Directory not found: {chunks_dir}")
     
-    chunk_files = sorted(glob.glob(os.path.join(chunks_dir, "chunk_*.json")))
+    chunk_files = sorted(
+        glob.glob(os.path.join(chunks_dir, "chunk_*.json")),
+        key=lambda x: int(os.path.basename(x).split('_')[1].split('.')[0])
+    )
     chunks = []
     for fpath in chunk_files:
         with open(fpath, "r", encoding="utf-8") as f:
