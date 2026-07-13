@@ -24,10 +24,42 @@ def load_chunks(workspace_dir: str) -> list[dict]:
         glob.glob(os.path.join(chunks_dir, "chunk_*.json")),
         key=lambda x: int(os.path.basename(x).split('_')[1].split('.')[0])
     )
+    is_xml = False
+    if not chunk_files:
+        chunk_files = sorted(
+            glob.glob(os.path.join(chunks_dir, "chunk_*.xml")),
+            key=lambda x: int(os.path.basename(x).split('_')[1].split('.')[0])
+        )
+        is_xml = True
+        
+    if not chunk_files:
+        raise FileNotFoundError(f"No chunk files found in: {chunks_dir}")
+        
     chunks = []
-    for fpath in chunk_files:
-        with open(fpath, "r", encoding="utf-8") as f:
-            chunks.append(json.load(f))
+    if is_xml:
+        import xml.etree.ElementTree as ET
+        for fpath in chunk_files:
+            tree = ET.parse(fpath)
+            root = tree.getroot()
+            chunk_data = {
+                "start_sec": int(root.attrib.get("start_sec", 0)),
+                "end_sec": int(root.attrib.get("end_sec", 0)),
+                "items": []
+            }
+            for item in root.findall("item"):
+                item_data = {
+                    "start": float(item.attrib.get("start", 0.0)),
+                    "timestamp": item.attrib.get("timestamp", ""),
+                    "text": item.text or ""
+                }
+                if "image" in item.attrib:
+                    item_data["image"] = item.attrib["image"]
+                chunk_data["items"].append(item_data)
+            chunks.append(chunk_data)
+    else:
+        for fpath in chunk_files:
+            with open(fpath, "r", encoding="utf-8") as f:
+                chunks.append(json.load(f))
     return chunks
 
 def classify_chunk(chunk: dict, keywords: dict = None) -> list[str]:
