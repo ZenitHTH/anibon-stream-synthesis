@@ -184,6 +184,6 @@ Both `parts.json` and `anibon_timestamps.md` MUST be saved inside the workspace 
 - **ONE FILE, NOT MANY**: Final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
 - **OUTPUT IN WORKSPACE**: `parts.json` and the final `anibon_timestamps.md` MUST be written to `~/youtube_<video_id>_workspace/`. Do NOT place them in the session artifacts directory.
 - **4,500 BYTE HARD CAP (Thai)**: Each pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each. Target **3,500 bytes** as ceiling. Run `check_sections.py` — split until all sections show ✅.
-- **PRE-SPLIT**: Talk session > 20 min or Gaming > 60 min → plan A/B split before assembly.
+- **PRE-SPLIT & CONSOLIDATION**: Talk session > 20 min or Gaming > 60 min → plan A/B split before assembly. **CRITICAL**: If any resulting part has only 1–3 timestamps, you MUST wrap/merge it into adjacent parts. Do not keep parts with only 1–3 timestamps unless the entire video only has 1–3 timestamps; keep packing them to maximize character limit usage per pasted block.
 - **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format. Never improvise with `---` or plain text.
 - **NO GAPS**: Never allow gaps > 10 minutes without a timestamp unless transcript is verified silent. Check chunk sequence before final assembly.

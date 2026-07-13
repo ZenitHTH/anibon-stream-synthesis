@@ -28,7 +28,7 @@ You MUST deduplicate them:
 - DO NOT list the same topic multiple times just because it continued into the next chunk.
 - If you merge them, update the first timestamp's description to reflect the full breadth of the merged topic if necessary.
 
-## PART SPLIT RULES
+## PART SPLIT & CONSOLIDATION RULES
 
 Split a section into Part A / Part B when:
 - Talk section > 15 minutes of continuous content
@@ -36,6 +36,10 @@ Split a section into Part A / Part B when:
 - Any section exceeds 3,500 bytes (Thai chars = 3 bytes each)
 
 When splitting: divide evenly by timestamp count. Each sub-part gets its own separator block.
+
+**Consolidation / Wrapping Constraint (CRITICAL)**:
+- Do NOT create parts containing only 1–3 timestamps unless the entire video has only 1–3 timestamps.
+- If a part has only 1–3 timestamps, you MUST wrap/merge it into adjacent parts. Keep packing timestamps into each part until the section size approaches the target ceiling (3,500 bytes). This maximizes character usage per pasted block.
 
 ## BYTE LIMITS
 
