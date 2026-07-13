@@ -12,6 +12,17 @@ A suite of skills for deep research, transcript processing, and content synthesi
 *   **YouTube Comment Compliance**: Automatically checks byte size limits for compiled results, adapting for 3-byte Thai characters.
 *   **Rich Knowledge Base References**: Built-in guides for deep lore, patches, and game mechanics (Honkai, Genshin, Arknights, Pokémon, Limbus Company).
 
+## 📋 Prerequisites & System Dependencies
+
+Ensure you have the following installed on your system:
+- [ ] **Python 3.10+** (Standard library modules only; no third-party packages required)
+- [ ] **yt-dlp** (For downloading stream media, transcripts, and comments)
+- [ ] **ffmpeg** (For frame extraction, video cutting, and audio processing)
+- [ ] **sqlite3** (For bootstrapping FGO and Yu-Gi-Oh local lookup databases)
+
+> [!IMPORTANT]
+> Both `yt-dlp` and `ffmpeg` must be available in your system's `PATH` for the automated scripts and video cutting features to work correctly.
+
 ## 🚀 Installation
 
 **Antigravity CLI (`agy`)** — Install directly from GitHub:
@@ -69,6 +80,7 @@ Manually timestamping these massive, unpredictable streams is extremely time-con
 | [`cleaning-auto-transcripts`](skills/cleaning-auto-transcripts/SKILL.md) | Transcription noise correction | Powers `anibon-timestamper` and `youtube-minutes-synthesis` |
 | [`masking-royal-news`](skills/masking-royal-news/SKILL.md) | Sensitive political/royal content masking | Single source of truth for public safety compliance |
 | [`building-reusable-cli-tools`](skills/building-reusable-cli-tools/SKILL.md) | CLI tool design guidance | Referenced when writing new processing scripts |
+| [`writing-plugin-readme`](skills/writing-plugin-readme/SKILL.md) | Plugin README writing guidelines | Guidance on structuring and formatting this plugin's README files |
 
 ### 🎬 anibon-timestamper Sub-Skills
 
@@ -197,6 +209,28 @@ graph LR
     FGOS -->|build if missing| FGODB
     YGOS -->|build if missing| YGODB
 ```
+
+---
+
+## 📂 Directory & File Structure
+
+Here is a map of the key directories and files within this repository:
+
+- `scripts/` - Root-level Python utility scripts (e.g., preparation, highlight planning/cutting/verification).
+- `skills/` - Registered agent skills available to CLIs.
+  - `anibon-timestamper/` - The main orchestrator skill for stream processing.
+    - `scripts/` - Specialized scripts (DB fetchers, timestamp merging, comment size validation).
+    - `skills/` - Nested sub-skills (Talk, Gaming, Event, Marathon, Tokusatsu).
+    - `skills/reference/` - Game reference files and DB schemas.
+  - `anibon-timestamper-handoff/` - Local LLM context handoff state manager.
+  - `anibon-timestamper-local/` - Local LLM stream processor.
+  - `cleaning-auto-transcripts/` - Transcript spelling/noise cleaner.
+  - `masking-royal-news/` - Legal safety compliance masking rules.
+  - `synthesizing-knowledge/` - Deep report synthesis.
+  - `youtube-minutes-synthesis/` - Meeting minutes builder.
+  - `writing-plugin-readme/` - Formatting checklist and templates.
+- `tests/` - Automated unit and integration tests.
+- `plugin.json` / `package.json` / `hooks.json` / `gemini-extension.json` - Plugin configurations.
 
 ---
 
@@ -353,4 +387,12 @@ Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific pr
 9. **Anti-bot handling** — YouTube block → ask user for browser cookie permission immediately.
 10. **Transcript required** — if unavailable, reject the task; never guess timestamps.
 11. **No hardcoded assembly** — never write a one-off script with hardcoded `parts` data or output paths. Always use `assemble_timestamps.py` with a `parts.json` input file.
+
+---
+
+## ⚖️ License & Contributing
+
+Distributed under the MIT License. See `package.json` for details.
+
+Contributions are welcome! Please ensure any code changes or new scripts maintain compatibility across all supported environments and follow the guidelines in `skills/writing-plugin-readme/SKILL.md`.
 
