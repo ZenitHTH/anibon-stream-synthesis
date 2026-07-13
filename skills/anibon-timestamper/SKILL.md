@@ -147,7 +147,6 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
     {
       "title": "ชื่อหัวข้อ",
       "start": "HH:MM:SS",
-      "desc": "สรุปภาพรวมของช่วงนี้ 1-2 บรรทัด",
       "body": "HH:MM:SS - [Tag] คำอธิบาย\nHH:MM:SS - [Tag] คำอธิบาย"
     }
   ]

@@ -22,8 +22,8 @@ def format_sections(parts: list) -> str:
     out = []
     for i, part in enumerate(parts, 1):
         out.append("═════════════════════════════════════════════════════════")
-        out.append(f"📌 ส่วนที่ {i}: {part['desc']}")
-        out.append(f"(หัวข้อ: {part['title']} | ⏱ เริ่ม: {part['start']})")
+        out.append(f"📌 ส่วนที่ {i}: {part['title']}")
+        out.append(f"(⏱ เริ่ม: {part['start']})")
         out.append("═════════════════════════════════════════════════════════")
         out.append(part["body"])
         out.append("")
@@ -37,7 +37,7 @@ def load_parts(parts_json: Path) -> list:
         print(f"[!] Expected a JSON array in {parts_json}", file=sys.stderr)
         sys.exit(1)
     for item in data:
-        for key in ("title", "start", "desc", "body"):
+        for key in ("title", "start", "body"):
             if key not in item:
                 print(f"[!] Missing key '{key}' in part: {item}", file=sys.stderr)
                 sys.exit(1)
