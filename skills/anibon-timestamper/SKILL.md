@@ -25,7 +25,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 1. **Initialization & Context**
    
    - Greet the user and **Ask for Output Language**: "What language would you like the timestamps generated in? (e.g., Thai, English, etc.)" Do not proceed to timestamp generation until the user confirms.
-   - **Channel Ownership Check**: Verify the channel is Anibon Official. If not, do NOT call the speaker "Boat".
+   - **Channel Ownership Check**: Verify the channel is Anibon Official (uploader name matches Phuboat, ปู่โบ๊ต, โบ๊ต, Boat, or ANIBON). If not, do NOT call the speaker "Boat".
    - **Video Publish Date Check**: Run `yt-dlp --print uploader,upload_date "<url>"` via a shell command (`Bash` in Claude Code, `run_command` in Antigravity, native bash in OpenCode). If `yt-dlp` is unavailable, fetch the page via the available web-fetch tool. **Compare the stream's upload date to the CURRENT DATE** to determine if you are analyzing a retrospective/old video, as news context changes over time. **CRITICAL**: Do NOT write ad-hoc `python -c` scripts to scrape YouTube HTML.
    - **Transcript & Preparation**: See Step 2 and Step 3 of the Step-by-Step Guide for downloading and chunking.
 
@@ -63,49 +63,12 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - `skills/anibon-event-stream/SKILL.md`
    - `skills/anibon-tokusatsu-stream/SKILL.md`
 
-   **Live Service Games Knowledge Base References** (nested under this skill):
-   - [Honkai: Star Rail Reference](skills/reference/Honkai_Star_Rail.md)
-   - [Wuthering Waves Reference](skills/reference/Wuthering_Waves.md)
-   - [Zenless Zone Zero Reference](skills/reference/Zenless_Zone_Zero.md)
-   - [Arknights: Endfield Reference](skills/reference/Arknights_Endfield.md)
-   - [Limbus Company Reference](skills/reference/Limbus_Company.md)
-   - [Pokémon PvP & Champions Reference](skills/reference/Pokemon_PvP.md)
-   - [Pokémon Translation & Names Reference](skills/reference/Pokemon_Names.md)
-   - [Pokémon Radical Red Reference](skills/reference/Pokemon_Radical_Red.md)
-   - [Arknights Reference](skills/reference/Arknights.md)
-   - [Honkai Impact 3rd Reference](skills/reference/Honkai_Impact_3.md)
-   - [Honkai Impact 3rd Part 2 Reference](skills/reference/Honkai_Impact_3_Part2.md)
-   - [Genshin Impact Reference](skills/reference/Genshin_Impact.md)
-   - [miHoYo Connected Lore Reference](skills/reference/miHoYo_Connected_Lore.md)
-   - [Fate/Grand Order Core Mechanics & Lore Reference](skills/reference/FGO%20and%20DATA/fgo_knowledge_base.md)
-   - [Fate/Grand Order "Past Chaldea" Patch Analysis Reference](skills/reference/FGO%20and%20DATA/fgo_patch_analysis.md)
-   - [Fate/Grand Order Chat Export Reference](skills/reference/FGO%20and%20DATA/fgo_chat_export.md)
-   - [Fate/Grand Order Live DB Query Guide](skills/reference/FGO%20and%20DATA/FGO_DB_Reference.md) ← **Read this for all name/ID lookups**
-   - [Yu-Gi-Oh! Card DB Query Guide](skills/reference/Yu-Gi-Oh%20DATA/YGO_DB_Reference.md) ← **Read this for all card/archetype lookups**
+   **Live Service Games Knowledge Base References**:
+   - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.
 
-   **⚡ FGO Database Bootstrap** (run BEFORE any FGO name/ID lookup):
-   When FGO content is detected, check if `atlas_fgo.db` exists:
-   ```
-   python3 scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db"
-   ```
-   If exit code is 1 (missing/invalid), build it:
-   ```
-   python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"
-   ```
-   Then query it with sqlite3. See [FGO_DB_Reference.md](skills/reference/FGO%20and%20DATA/FGO_DB_Reference.md) for SQL patterns.
-   The DB is ~1.9 MB and downloads in ~18 seconds. It is **auto-refreshed** when Atlas Academy releases new game data.
-
-   **⚡ Yu-Gi-Oh! Database Bootstrap** (run BEFORE any YGO card/archetype lookup):
-   When Yu-Gi-Oh content is detected, check if `ygo_cards.db` exists:
-   ```
-   python3 scripts/fetch_ygo_db.py --check --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"
-   ```
-   If exit code is 1 (missing/stale), build it:
-   ```
-   python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"
-   ```
-   Then query it with sqlite3. See [YGO_DB_Reference.md](skills/reference/Yu-Gi-Oh%20DATA/YGO_DB_Reference.md) for SQL patterns.
-   The DB is ~10–20 MB and downloads in ~60–180 seconds. It is **auto-refreshed** when YGOPRODeck releases a new database_version.
+   **⚡ DB Bootstrap** (Run before lookup):
+   - FGO: `python3 scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db" || python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"`
+   - YGO: `python3 scripts/fetch_ygo_db.py --check --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db" || python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"`
 
    **Canonical Subagent Prompt Template:**
    Read [subagent-prompt-template.md](subagent-prompt-template.md) for the full prompt to send to each chunk subagent.
@@ -154,36 +117,20 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
   > **Important:** Never hardcode the parts list or output path inside a one-off script. Always use `assemble_timestamps.py` with a `parts.json` input file. This keeps data and assembly logic separate and reusable across streams.
 
 ## 🧭 Orchestration Checklist (Cloud)
-
-1. Environment Check → verify `yt-dlp` and `python3`.
-2. Download & Chunk (add --vision to extract visual frames for pronoun/visual referent resolution):
-```bash
-find $HOME/.gemini $HOME/.config/opencode $HOME/.agents \
-  -path "*/anibon-stream-synthesis/scripts/prepare_video.py" 2>/dev/null | head -1
-
-python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format xml --block 300 --overlap 30 --vision
-```
-3. Pre-flight Analysis → run `python3 /absolute/path/to/scripts/anibon-analyzer.py /path/to/workspace`.
-   - Use output to route chunks (e.g. tokusatsu vs gaming).
-   - Resolve `GAP DETECTED` warnings before delegating tasks.
-   - Plan chunk byte limits (split blocks if they read OVER).
-4. DB Bootstrap → run `--check` for FGO/YGO if detected; build if exit 1.
-5. Parallel Analysis → spawn subagents per chunk using the **Canonical Subagent Prompt Template** above.
-6. Final Assembly → write `parts.json` to the workspace folder (`~/youtube_<video_id>_workspace/parts.json`), then run:
-```bash
-python3 /absolute/path/to/scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json
-# Output: ~/youtube_<video_id>_workspace/anibon_timestamps.md
-python3 /absolute/path/to/skills/anibon-timestamper/scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md
-```
-Both `parts.json` and `anibon_timestamps.md` MUST be saved inside the workspace folder, NOT the session artifacts dir.
+1. Environment: Verify `yt-dlp`, `python3`.
+2. Download & Chunk: `python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30 --vision`
+3. Pre-flight: `python3 scripts/anibon-analyzer.py /path/to/workspace`. Resolve gaps, plan byte limits.
+4. DB Bootstrap: Run check/build for FGO/YGO if needed.
+5. Parallel Analysis: Spawn chunk subagents using [subagent-prompt-template.md](subagent-prompt-template.md).
+6. Final Assembly: Save `parts.json` to workspace, then run:
+   `python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json`
+   `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
 
 ## Iron Rules
-
-- **ALWAYS check video publish date first**.
-- **Use Dynamic Subagent Routing**: Do not guess the stream type upfront. Subagents load matching sub-skills based on what they see in their chunk.
-- **ONE FILE, NOT MANY**: Final output is always ONE `.md` file. Visual separators replace separate files. Never create `part1.md`, `part2.md`, etc.
-- **OUTPUT IN WORKSPACE**: `parts.json` and the final `anibon_timestamps.md` MUST be written to `~/youtube_<video_id>_workspace/`. Do NOT place them in the session artifacts directory.
-- **4,500 BYTE HARD CAP (Thai)**: Each pasted block MUST be under 4,500 UTF-8 bytes. Thai chars cost 3 bytes each. Target **3,500 bytes** as ceiling. Run `check_sections.py` — split until all sections show ✅.
-- **PRE-SPLIT & CONSOLIDATION**: Talk session > 20 min or Gaming > 60 min → plan A/B split before assembly. **CRITICAL**: The primary goal is to pack as many timestamps as possible into each part to approach the 3,500-byte target ceiling first (maximizing character limit usage per pasted block). Splitting or sorting by topic/activity is secondary. If any resulting part has only 1–3 timestamps, or if multiple distinct topics can fit in a single part under 3,500 bytes, you MUST combine them into a single part. Do not create new parts for different topics if they can be packed together under the limit. **EXCEPTION**: If a single topic is so long that combining it with another topic causes a part to overflow the 3,500-byte ceiling (flooding it into the next part), you should split them cleanly at the topic boundary. The long topic can have its own dedicated part, and the overflowed short topic can reside in its own part, even if that short topic has only 1–3 timestamps.
-- **SEPARATOR FORMAT IS FIXED**: Always use the `═══` block format. Never improvise with `---` or plain text.
-- **NO GAPS**: Never allow gaps > 10 minutes without a timestamp unless transcript is verified silent. Check chunk sequence before final assembly.
+- **Publish date first**: Always check.
+- **Dynamic Routing**: Subagents load skills based on chunk content. No upfront guessing.
+- **ONE FILE**: Output is one `.md` file. Use `═══` blocks. No `part1.md`.
+- **OUTPUT IN WORKSPACE**: Save `parts.json` and `anibon_timestamps.md` to `~/youtube_<video_id>_workspace/`.
+- **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
+- **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit.
+- **NO GAPS**: Max 10 mins without timestamp unless verified silent.
