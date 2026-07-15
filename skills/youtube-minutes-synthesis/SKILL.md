@@ -36,6 +36,9 @@ digraph youtube_flow {
 
 You MUST always follow these steps when this skill is activated:
 
+> [!IMPORTANT]
+> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `python3`). Do NOT proceed if any tool is missing.
+
 1. **Verify Video ID & Publish Date — REQUIRED**: Extract the 11-character Video ID from the user-provided URL **AND verify the video's public publish date** (e.g. `upload_date` or `release_timestamp` from `yt-dlp --dump-json <URL>`, or look it up on the video's YouTube page) to establish the correct temporal context before analyzing any content. Always record the publish date in the report metadata.
    - If the video is older than 6 months, add a note: **"Old video — context may differ from the present"** in the report.
    - **NEVER attribute events or information that occurred after the publish date** to the speaker as if they said it, unless clearly labelled as **Post-stream Developments**.

@@ -55,6 +55,9 @@ You already know where everything is. Never search for files.
 
 ## 🧭 Steps
 
+> [!IMPORTANT]
+> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `ffmpeg`, `python3`, `sqlite3`). Do NOT proceed if any tool is missing.
+
 ### Step 1: Resolve Plugin Path & Verify
 Shell is MINGW64/bash. Run:
 1. **Find Plugin Root**: Look at the `<skill location="...">` tag at the top of your prompt. Delete the exact text `skills\anibon-timestamper-local\SKILL.md` from the end of it. Replace all backslashes `\` with forward slashes `/`. This remaining path is your `[PLUGIN_ROOT]`.

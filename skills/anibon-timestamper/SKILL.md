@@ -17,6 +17,9 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 ## Process Flow: Dynamic Subagent Routing
 
+> [!IMPORTANT]
+> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `ffmpeg`, `python3`, `sqlite3`). Do NOT proceed if any tool is missing.
+
 0. **Environment Setup**
    
    - **Native PATH**: Rely entirely on the OS `$env:PATH` to resolve python and tools. Do NOT write boilerplate to detect python paths or set PYTHONPATH.

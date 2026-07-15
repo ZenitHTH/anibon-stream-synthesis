@@ -13,6 +13,9 @@ This is the master orchestration skill for the Highlight Editor Family. When the
 
 ## The Automated Pipeline
 
+> [!IMPORTANT]
+> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `ffmpeg`, `python3`, `sqlite3`). Do NOT proceed if any tool is missing.
+
 When this skill is activated, you must guide the operation through these 4 strict phases:
 
 ### Phase 1: Scene Selection 
