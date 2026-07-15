@@ -52,7 +52,10 @@ Restart OpenCode. The plugin manager downloads the package automatically and reg
 pi install https://github.com/ZenitHTH/anibon-stream-synthesis.git
 ```
 
-**Claude Code** — requires marketplace publication. Skills cannot be manually dropped into the plugin cache.
+**Skills CLI (Claude Code, Antigravity CLI, and other agents)** — Install all skills globally via:
+```bash
+npx skills add zenithth/anibon-stream-synthesis --all -g
+```
 
 ---
 

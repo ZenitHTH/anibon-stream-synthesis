@@ -40,11 +40,13 @@ Ensure you have the following installed on your system:
 - Python 3.10+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) (for media downloads)
 
-Initialize the environment:
+Install skills to your agent via the Skills CLI:
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+# Install all skills globally
+npx skills add zenithth/anibon-stream-synthesis --all -g
+
+# Or install a specific skill (e.g. anibon-timestamper)
+npx skills add zenithth/anibon-stream-synthesis --skill anibon-timestamper -g -y
 ```
 
 ## Quick Start & Usage
