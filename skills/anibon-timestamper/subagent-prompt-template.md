@@ -69,7 +69,11 @@ If chunk is primarily talking/chatting:
 One line per timestamp. No headers, no intro, no explanation text.
 
 ## Step 7: Visual Reference Resolution
-If a transcript item contains an `"image"` field, use `view_file` to identify who/what is shown. Include the resolved name in the description.
+If a transcript item contains an `"image"` field:
+1. You MUST call `view_file` to load and inspect that image BEFORE writing the description.
+2. Use what you SEE on screen (game UI, boss name, HUD) to confirm the game title and activity.
+3. **NEVER name a game from transcript text alone if an image is available.** Transcript text is auto-generated and may misidentify the game. The screen is ground truth.
+4. If the image is unclear, describe what you see rather than guessing the name.
 
 ## Step 8: Density Self-Check (BEFORE submitting)
 Count your timestamps. If you have more than 2 for this chunk, you MUST merge until ≤ 2.

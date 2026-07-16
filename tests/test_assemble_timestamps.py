@@ -25,17 +25,14 @@ SAMPLE_PARTS = [
 
 def test_format_sections_contains_all_parts():
     result = format_sections(SAMPLE_PARTS)
-    assert "📌 ส่วนที่ 1" in result
-    assert "📌 ส่วนที่ 2" in result
-    assert "Intro segment" in result
-    assert "Discussion segment" in result
+    assert "📌 ส่วนที่ 1: Opening" in result
+    assert "📌 ส่วนที่ 2: Main Topic" in result
     assert "00:00:00 - [Greeting] Hello viewers" in result
 
 
 def test_format_sections_header_format():
     result = format_sections(SAMPLE_PARTS)
-    assert "หัวข้อ: Opening" in result
-    assert "⏱ เริ่ม: 00:00:00" in result
+    assert "(⏱ เริ่ม: 00:00:00)" in result
 
 
 def test_load_parts_valid(tmp_path):

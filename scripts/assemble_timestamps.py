@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 def format_sections(parts: list) -> str:
-    """Core logic: convert parts list into formatted markdown string."""
+    """Formats list of parts into a single markdown string with headers."""
     out = []
     for i, part in enumerate(parts, 1):
         out.append("═════════════════════════════════════════════════════════")

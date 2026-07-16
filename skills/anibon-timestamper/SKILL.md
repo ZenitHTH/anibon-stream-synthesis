@@ -81,6 +81,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - New timestamp ONLY on: game switch, speaker join/leave, completely new activity
    - Multiple sub-topics in same conversation → MERGE into 1
    - Subagent must run Density Self-Check (Step 8) and merge down to ≤ 2 before submitting
+   - **IMAGE VERIFICATION (MANDATORY)**: If any transcript item has an `"image"` field, you MUST call `view_file` to load the image and visually confirm the game title / activity shown on screen BEFORE writing the timestamp description. Never name a game from transcript text alone if an image is available.
 
 4. **Reduce Stage (Final Assembly)**
 
@@ -122,12 +123,14 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 ## 🧭 Orchestration Checklist (Cloud)
 1. Environment: Verify `yt-dlp`, `python3`.
 2. Download & Chunk: `python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30 --vision`
-3. Pre-flight: `python3 scripts/anibon-analyzer.py /path/to/workspace`. Resolve gaps, plan byte limits.
+3. Pre-flight: `python3 scripts/anibon-analyzer.py /path/to/workspace`. **MANDATORY: Resolve all detected gaps > 10 min BEFORE spawning subagents.** Do not skip.
 4. DB Bootstrap: Run check/build for FGO/YGO if needed.
 5. Parallel Analysis: Spawn chunk subagents using [subagent-prompt-template.md](subagent-prompt-template.md).
-6. Final Assembly: Save `parts.json` to workspace, then run:
+6. Gap Verification: After collecting all subagent results, scan chronological timestamp list for gaps > 10 min. Inject intermediate timestamps from raw transcript before assembly.
+7. Final Assembly: Save `parts.json` to workspace, then run:
    `python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
+   **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, fix `parts.json` before proceeding.**
 
 ## Iron Rules
 - **Publish date first**: Always check.
@@ -136,4 +139,6 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **OUTPUT IN WORKSPACE**: Save `parts.json` and `anibon_timestamps.md` to `~/youtube_<video_id>_workspace/`.
 - **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
 - **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit.
-- **NO GAPS**: Max 10 mins without timestamp unless verified silent.
+- **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
+- **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `assemble_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_assemble_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
+- **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
