@@ -15,13 +15,13 @@ Use this handoff protocol to save the session state, flush the context, and resu
 ---
 
 ## 🗺️ Plugin Directory Map (Do NOT use `ls`)
-You already know where everything is. Never search for files.
+You already know where everything is. Resolve `[PLUGIN_ROOT]` and `[WORKSPACE]` from the state file or from Step 0 of `anibon-timestamper-local`.
 - **Main Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
-- **Sub-scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`)
-- **Workspace**: `C:/Users/peter/youtube_<video_id>_workspace/`
-  - `/chunks/chunk_XX.txt`
-  - `/chunk_outputs/chunk_XX_output.md`
-  - `/anibon_timestamper_state.json`
+- **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`, `assemble_timestamps.py`)
+- **Workspace**: `[WORKSPACE]` — stored in state file as `workspace_path`
+  - `[WORKSPACE]/chunks/chunk_XX.txt`
+  - `[WORKSPACE]/chunk_outputs/chunk_XX_output.md`
+  - `[WORKSPACE]/anibon_timestamper_state.json`
 
 ## ⚡ Strict Rules
 - **No Curiosity / No Exploration**: Do NOT run `ls`, `find`, or explore the filesystem. Just blindly execute the paths. Do not list directory contents to "check progress".
@@ -32,14 +32,14 @@ You already know where everything is. Never search for files.
 
 If the local AI shows signs of context exhaustion (e.g. high latency, repetitive responses, forgetting instructions):
 
-1. **Write State File**: Write a JSON file named `anibon_timestamper_state.json` inside the active video workspace directory (e.g., `youtube_<video_id>_workspace/anibon_timestamper_state.json`).
+1. **Write State File**: Write `anibon_timestamper_state.json` to `[WORKSPACE]/anibon_timestamper_state.json`. Use the absolute path for `workspace_path` — no tildes or relative segments.
    
    **JSON Schema:**
    ```json
    {
      "video_id": "YOUR_YOUTUBE_VIDEO_ID",
      "video_url": "YOUR_YOUTUBE_VIDEO_URL",
-     "workspace_path": "/absolute/path/to/youtube_<video_id>_workspace",
+     "workspace_path": "/absolute/path/to/youtube_VIDEO_ID_workspace",
      "total_chunks": 48,
      "current_chunk": 12,
      "db_checked": {
@@ -47,7 +47,7 @@ If the local AI shows signs of context exhaustion (e.g. high latency, repetitive
        "ygo": false
      },
      "phase": "chunk_loop",
-     "last_updated": "2026-06-29T09:23:00Z"
+     "last_updated": "2026-07-17T09:23:00Z"
    }
    ```
 
@@ -67,15 +67,18 @@ When the user starts a fresh conversation session to resume work:
 > [!IMPORTANT]
 > **CRITICAL OVERRIDE**: Even if the user asks you to do a specific custom task immediately (e.g. "redo chunk-14", "skip to chunk 16"), you MUST complete Step 1 and Step 2 below FIRST to get your formatting rules. NEVER try to guess the markdown format or file paths from memory.
 
-1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Delete the exact text `skills\anibon-timestamper-handoff\SKILL.md` from the end of it. Replace all backslashes `\` with forward slashes `/`. This remaining path is your `[PLUGIN_ROOT]`.
-   - 🚨 **ANTI-TYPO WARNING**: You (the AI) are prone to confusing hyphens (`-`) and underscores (`_`) when typing from memory. The repository is `anibon-stream-synthesis` (HYPHENS). The skill folder is `anibon-timestamper` (HYPHENS). NEVER use underscores for these! Copy the path directly, do not retype it.
-2. **Read Local Rules**: You MUST read the core rules by calling the `read` tool on `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md`. You need its rules (no `<think>` tags, output format) to function correctly.
-3. **Read State File**: Extract the video ID from the user's URL. The state file is ALWAYS located at `C:/Users/peter/youtube_<video_id>_workspace/anibon_timestamper_state.json`. `read` this file directly. Do NOT run `ls -R` or search commands.
-4. **Verify Databases**: Even if `db_checked` says `true`, you MUST verify the database for FGO/YGO by running the exact commands below. If a `--check` command fails (exit code 1), do NOT debug paths or use `ls`. Just run the specific download command exactly as provided below!
+1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Strip the suffix `skills/anibon-timestamper-handoff/SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. Result is `[PLUGIN_ROOT]`.
+   - 🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper` (HYPHENS). Copy paths directly; never retype from memory.
+2. **Read Local Rules**: MUST read `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md` using the read tool. You need its output format and constraints.
+3. **Read State File**: The user should tell you the workspace path, or ask them. The state file is at `[WORKSPACE]/anibon_timestamper_state.json` where `[WORKSPACE]` = the `workspace_path` value stored in that file. Read it directly. Do NOT run `ls` or search.
+4. **Verify Databases**: Even if `db_checked` says `true`, verify:
    - FGO Check: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
-   - FGO Download (if check fails): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py"`
+   - FGO Build (if exit 1): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py"`
    - YGO Check: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
-   - YGO Download (if check fails): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py"`
-5. **Resume Step 3 (Loop)**: Do not repeat Step 1 or Step 2. Directly resume Step 3 (Sequential Chunk Loop) by immediately reading the chunk specified by `"current_chunk"`. Because this value represents the exact NEXT chunk to process, you should start with it. **CRITICAL**: The chunk files are zero-padded to two digits (e.g. if current_chunk is 2, the file is `chunk_02.txt`; if 12, it is `chunk_12.txt`).
-6. **Verify Stale State (CRITICAL)**: Sometimes the state file is stale because a previous session crashed before saving. Before you read the `.txt` file for `"current_chunk"`, you MUST use a bash command (e.g., `[ -f "C:/.../chunk_XX_output.md" ] && echo "Exists" || echo "Missing"`) to check if its output `.md` file *already exists*. If it exists, the state is stale! Increment your chunk counter and check the next one until you find the first chunk that is "Missing". That is where you actually resume!
-7. **Completion**: Once the loop finishes processing the final chunk, you MUST immediately proceed to **Step 4 (Topic Map & Assembly)** and **Step 5 (Verification Check)** exactly as described in `anibon-timestamper-local/SKILL.md`. Pay special attention to drafting the section summaries step-by-step!
+   - YGO Build (if exit 1): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py"`
+5. **Resume Step 3 (Loop)**: Go directly to the chunk number in `"current_chunk"`. Zero-pad to two digits (`chunk_02.txt` not `chunk_2.txt`).
+6. **Verify Stale State (CRITICAL)**: Before reading the chunk `.txt`, check if its output `.md` already exists.
+   - Mac/Linux: `[ -f "[WORKSPACE]/chunk_outputs/chunk_XX_output.md" ] && echo Exists || echo Missing`
+   - Windows: `Test-Path "[WORKSPACE]/chunk_outputs/chunk_XX_output.md"`
+   - If `Exists` → state is stale. Increment counter and check next chunk. Repeat until `Missing`. That is your real resume point.
+7. **Completion**: After final chunk, immediately proceed to Step 4 (Assembly) and Step 5 (Verify) as described in `anibon-timestamper-local/SKILL.md`.
