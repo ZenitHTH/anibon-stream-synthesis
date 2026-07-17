@@ -24,22 +24,54 @@ Instead of topic-flow analysis, detect these specific gameplay milestones:
 - **Reactions** — strong verbal reactions (laughing, shouting, celebrating)
 
 ### 2. Categories
+
+> **⛔ FORBIDDEN TAG: `[Gaming]` must NEVER be used.** It is a generic label that violates this skill. Any timestamp using `[Gaming]` is wrong — replace with the correct tag below.
+
 Use these specific gaming categories instead of generic labels:
 - `[Gameplay]` — General gameplay, exploration, missions (Note: Use `[Gameplay] (First Time)` if it's the first time playing a game)
 - `[Boss]` — Boss encounters, boss fights, challenging enemies
-- `[Death]` — Notable deaths, wipes, funny fails
+- `[Death]` — Notable deaths, wipes, funny fails (only if funny/memorable — NOT every death)
 - `[Victory]` — Clearing a boss, completing a quest, significant achievements
 - `[Gacha]` — Gacha pulls, loot boxes (NEVER reveal results; summarize briefly if there are many pulls)
 
+**Mapping rule:** When converting existing `[Gaming]` timestamps, ask: what is the *primary event*?
+- Starting/exploring a new area → `[Gameplay]`
+- Entering boss room → `[Boss]`
+- Character died → `[Death]` (only if notable)
+- Boss/quest cleared → `[Victory]`
+- Skill unlock, item found, NPC talk → `[Gameplay]`
+
 ### 3. Timestamp Density & Gaps
-- **Target Density**: Target ~1 timestamp per 8-15 minutes during active gameplay (lower density than talk segments).
-- **Handling Gaps**: Silent gameplay stretches of 15-30+ minutes are **expected** when the speaker plays silently. Instead of inserting forced entries, add a **single continuity marker** at the midpoint: `HH:MM:SS - [Gameplay] ยังเล่น [Game Name] ต่อ` so viewers know the timestamp list isn't broken. For very long gaps (>45 mins), insert at most 2 continuity markers evenly spaced to avoid clutter.
+
+**Target Density: 1 timestamp per 8–15 minutes. No exceptions.**
+
+- Do NOT emit timestamps for: reading tips, upgrading skills, talking while farming, minor NPC dialogue, routine exploration, every individual death in a boss attempt arc.
+- For a 5-minute chunk: emit 0–1 timestamps. 2 is MAX and only when two truly distinct events occur.
+- **Handling Gaps**: Silent gameplay stretches of 15–30+ minutes are **expected** when the speaker plays silently. Instead of inserting forced entries, add a **single continuity marker** at the midpoint: `HH:MM:SS - [Gameplay] ยังเล่น [Game Name] ต่อ` so viewers know the timestamp list isn't broken. For very long gaps (>45 mins), insert at most 2 continuity markers evenly spaced to avoid clutter.
 
 ### 4. Boss Fight Lifecycle Grouping
-A boss attempt arc (encounter → die → retry → die → win) should be grouped logically:
-- Timestamp the **first encounter** and the **final result** (victory or give-up).
-- Only add intermediate deaths if they're **funny or memorable** (e.g., instant one-shot death, rage moment).
-- Do NOT timestamp every single retry.
+
+A boss attempt arc (encounter → die → retry → die → win) is **ONE story arc**, not multiple timestamps.
+
+- Timestamp the **first encounter** with `[Boss]`: e.g., `[Boss] เจอบอส Genichiro เริ่มสู้`
+- Add `[Death]` ONLY for funny/memorable deaths (one-shot, rage quit, chat reacts "555")
+- Timestamp the **final result** with `[Victory]` when boss is cleared: e.g., `[Victory] ชนะบอส Genichiro ได้สำเร็จ`
+- Do NOT timestamp every single retry, every death in a long boss session, every HP check.
+
+**Example — bad (too dense):**
+```
+01:32:21 - [Gaming] ต่อสู้กับบอส
+01:34:38 - [Gaming] ตายครั้งแรก
+01:37:00 - [Gaming] ลองใหม่
+01:40:00 - [Gaming] ตายอีกครั้ง
+01:43:00 - [Gaming] ชนะบอส
+```
+
+**Example — correct (lifecycle grouped):**
+```
+01:32:21 - [Boss] เจอบอส Ashigenjiro เริ่มสู้
+01:43:00 - [Victory] ชนะบอส Ashigenjiro ได้สำเร็จ
+```
 
 ### 5. Game-Specific Research
 For non-FGO games, research boss names, area names, and in-game terms via:
@@ -58,6 +90,9 @@ For non-FGO games, research boss names, area names, and in-game terms via:
 ```
 
 ## Iron Rules
-- **NEVER spoil gacha results**: Preserve the excitement of card pulls. NEVER include pull results in Timestamp headings.
-- **Use gameplay continuity markers**: For silent gameplay gaps of 15+ minutes, insert a single `[Gameplay] ยังเล่น [Game Name] ต่อ` continuity marker.
+- **`[Gaming]` tag FORBIDDEN**: Never use. Replace with `[Gameplay]`, `[Boss]`, `[Death]`, or `[Victory]`.
+- **1 timestamp per 8–15 mins**: Do NOT emit one for every skill upgrade, NPC talk, or death attempt.
+- **Boss lifecycle = 1 arc**: Only `[Boss]` first encounter + `[Victory]` final result. `[Death]` only if memorable.
+- **NEVER spoil gacha results**: Preserve excitement of card pulls. NEVER include pull results in timestamp headings.
+- **Use gameplay continuity markers**: For silent gameplay gaps of 15+ minutes, insert single `[Gameplay] ยังเล่น [Game Name] ต่อ` continuity marker.
 - **Proper names must be exact**: Search via Google/SteamDB before finalizing any boss or area name.
