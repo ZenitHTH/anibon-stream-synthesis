@@ -43,7 +43,7 @@ For every valid timestamp event:
 - `[Talk]`: Chatting, chat interaction, story tangents, general discussion
 - `[News]`: Reading news or commenting on real-world events (apply safety metaphors!)
 - `[Chat]`: Speaker reads/responds to live chat message directly
-- `[Donation]`: Speaker responds to paid superchat/donation
+- `[Donation]`: Speaker responds to paid superchat/donation (Must load `anibon-donation-classifier` to classify description)
 - `[Gameplay]`: Playing a game / fighting stages
 - `[Gacha]`: Drawing cards / summoning (NEVER reveal pull results)
 - `[Boss]`: Boss fight / challenging enemy
@@ -62,6 +62,7 @@ If chunk is primarily talking/chatting:
 - One sentence. Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
 - If unsure of a name → omit it, describe the event instead.
+- For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `anibon-donation-classifier`.
 
 ## Step 6: Format Output
 `HH:MM:SS - [Tag] Description`
