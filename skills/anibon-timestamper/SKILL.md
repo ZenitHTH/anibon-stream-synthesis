@@ -34,8 +34,9 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 2. **MapReduce Strategy for Long Streams**
    
-   - **Parallel Subagent Processing**: For long streams, spawn multiple parallel subagents to process the JSON chunks concurrently. This map-reduce strategy is optimized for cloud models with large context windows. 
-   - **Explicit Parameters for Chunking**: ALWAYS use `--block 300 --overlap 30` (5-min segments). Do NOT invent arbitrary block sizes.
+   - **Parallel Subagent Processing**: For long streams, spawn multiple parallel subagents to process the JSON chunks concurrently. This map-reduce strategy is optimized for cloud models with large context windows.
+   - **REQUIRED SUB-SKILL:** Load `anibon-macro-density` before dispatching subagents. It overrides default density rules to keep final output compact (≤ 20 YouTube comments for a 9-hour stream).
+   - **Explicit Parameters for Chunking**: Default is `--block 300 --overlap 30` (5-min segments). For long talk-heavy streams, prefer `--block 600 --overlap 60` (10-min segments) to halve subagent count and enforce macro density naturally.
    - **Subagent Scripting Rule**: Subagents shouldn't need to write custom parsing scripts. They can read the generated chunks directly.
 
 3. **Transcript Auto-Detection → Sub-Skill Routing**
