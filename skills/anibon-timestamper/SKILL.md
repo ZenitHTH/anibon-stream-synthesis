@@ -90,6 +90,22 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - **Delegate to Summarizer Subagent**: Read [summarizer-subagent-guide.md](summarizer-subagent-guide.md) for the full prompt to send to the Summarizer Subagent. Do NOT write summaries or decide splits yourself — prevents context fatigue and errors.
    - **⚠️ SINGLE FILE RULE**: Save ALL parts into ONE `.md` file. Never create `part1.md`, `part2.md`, etc.
 
+## Local Audio Transcription (Alternative)
+
+If YouTube has no subtitles or auto-captions, transcribe the audio locally using `whisper.cpp`:
+1. **Audio Extraction**: Download audio stream as a mono 16kHz WAV file:
+   ```bash
+   yt-dlp -x --audio-format wav --audio-quality 16K "VIDEO_URL" -o "audio.wav"
+   ```
+2. **Local Transcription**: Run GPU-accelerated `whisper.cpp` build:
+   - For Windows (Vulkan/AMD):
+     ```powershell
+     .\whisper-cli.exe -m ggml-large-v3-turbo.bin -l th -f audio.wav -ot 540000 2>&1
+     ```
+     *(Note: Set the start offset `-ot 540000` (9 min) to skip silent start screens and avoid repetition loop bugs).*
+   - For full build options, platform configurations, and parameters, see [BUILD_GPU.md](BUILD_GPU.md).
+3. **Format Conversion**: Convert `whisper-cli` raw JSON output to pipeline-standard `raw_transcript.json`.
+
 ## Helper Scripts & Writing Code
 
 Available scripts (all in the `scripts/` directory next to this SKILL.md):

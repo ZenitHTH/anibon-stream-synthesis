@@ -109,7 +109,7 @@ python "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block
 
 > **Local LLM Note**: Always use `--format txt`. Do NOT use `--vision` — local models cannot process images.
 
-*(If blocked by YouTube, ask user for cookies file or `raw_transcript.json`.)*
+*(If blocked by YouTube, ask user for cookies file or `raw_transcript.json`. If subtitles/captions are completely missing, transcribe the audio locally using `whisper.cpp` as detailed in [BUILD_GPU.md](../anibon-timestamper/BUILD_GPU.md).)*
 
 ### Step 3: Sequential Chunk Loop
 

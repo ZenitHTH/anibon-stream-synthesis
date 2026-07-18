@@ -24,8 +24,8 @@ __pycache__/
 
 # Local SQLite databases (bootstrapped on-demand)
 # We ignore the database files themselves so they don't get uploaded to GitHub
-skills/anibon-timestamper/skills/reference/FGO and DATA/atlas_fgo.db
-skills/anibon-timestamper/skills/reference/Yu-Gi-Oh DATA/ygo_cards.db
+**/FGO and DATA/
+**/Yu-Gi-Oh DATA/
 
 # Old massive JSON files for FGO
 skills/anibon-timestamper/skills/reference/FGO and DATA/FGO JP Data/
