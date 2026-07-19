@@ -47,7 +47,7 @@ You already know where everything is. Resolve `[PLUGIN_ROOT]` in Step 0.
 
 - **Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
 - **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/`
-  - `fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`, `assemble_timestamps.py`
+  - `fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`
 - **Workspace**: `[WORKSPACE]` — set in Step 0
   - `[WORKSPACE]/chunks/chunk_XX.txt`
   - `[WORKSPACE]/chunk_outputs/chunk_XX_output.md`
@@ -208,19 +208,19 @@ Build `[WORKSPACE]/parts.json` from `raw_timestamps.txt` — one entry per secti
 ]
 ```
 
-Then run the assembler:
+Then run the packer:
 ```bash
-python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/assemble_timestamps.py" "[WORKSPACE]/parts.json"
+python3 "[PLUGIN_ROOT]/scripts/pack_timestamps.py" "[WORKSPACE]/timestamps.txt" --output "[WORKSPACE]/anibon_timestamps.md"
 ```
-Output: `[WORKSPACE]/anibon_timestamps.md`
+Output: `[WORKSPACE]/anibon_timestamps.md` + `[WORKSPACE]/timestamps_parts.json`
 
-If any section exceeds **15 timestamp lines**, split it into Part 1 / Part 2 in `parts.json`, then re-run the assembler.
+If any section exceeds **15 timestamp lines**, adjust `--byte-limit` or split the timestamp list, then re-run.
 
 ### Step 5: Verify
 ```bash
 python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/check_sections.py" "[WORKSPACE]/anibon_timestamps.md"
 ```
-Any ❌ or ⚠️ → fix `parts.json` → re-run `assemble_timestamps.py` → re-verify. Do not proceed until all sections pass.
+Any ❌ or ⚠️ → adjust `--byte-limit` or split timestamps → re-run `pack_timestamps.py` → re-verify. Do not proceed until all sections pass.
 
 ---
 

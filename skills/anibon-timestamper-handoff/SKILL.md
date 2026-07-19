@@ -17,7 +17,7 @@ Use this handoff protocol to save the session state, flush the context, and resu
 ## 🗺️ Plugin Directory Map (Do NOT use `ls`)
 You already know where everything is. Resolve `[PLUGIN_ROOT]` and `[WORKSPACE]` from the state file or from Step 0 of `anibon-timestamper-local`.
 - **Main Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
-- **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`, `assemble_timestamps.py`)
+- **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`)
 - **Workspace**: `[WORKSPACE]` — stored in state file as `workspace_path`
   - `[WORKSPACE]/chunks/chunk_XX.txt`
   - `[WORKSPACE]/chunk_outputs/chunk_XX_output.md`

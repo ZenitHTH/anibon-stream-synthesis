@@ -152,7 +152,7 @@ graph LR
         PV[prepare_video.py]
         CT[clean_transcript.py]
         CS[check_sections.py]
-        ASM[assemble_timestamps.py]
+        PK[pack_timestamps.py]
     end
 
     subgraph DBs["On-Demand SQLite DBs"]
@@ -259,24 +259,16 @@ python3 scripts/prepare_video.py <VIDEO_URL_OR_ID> --vision
 # → workspace/frames/frame_HH_MM_SS.jpg  (per visual cue)
 ```
 
-### `assemble_timestamps.py` — Section Assembly CLI
-Assembles a list of timestamp sections from a JSON file into a formatted Markdown file ready for YouTube. Always use this instead of writing a one-off assembly script.
+### `pack_timestamps.py` — Timestamp Packer & Section Assembly
+Packs a flat chronological timestamp list into byte-limited parts and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
 ```bash
-# Default output: anibon_timestamps.md next to parts.json
-python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json
+# Pack timestamps into parts (3500B target per part)
+python3 scripts/pack_timestamps.py /path/to/workspace/timestamps.txt
 
-# Custom output path
-python3 scripts/assemble_timestamps.py /path/to/workspace/parts.json --output /path/to/output.md
+# Custom byte limit and output path
+python3 scripts/pack_timestamps.py /path/to/workspace/timestamps.txt --byte-limit 3500 --output /path/to/output.md
 ```
-`parts.json` is a JSON array. Each object must have `title`, `start`, `desc`, and `body` keys:
-```json
-[
-  {
-    "title": "ชื่อหัวข้อ",
-    "start": "HH:MM:SS",
-    "desc": "สรุปภาพรวมของช่วงนี้ 1-2 บรรทัด",
-    "body": "HH:MM:SS - [Tag] คำอธิบาย\nHH:MM:SS - [Tag] คำอธิบาย"
-  }
+Input is a flat timestamp list (one per line): `HH:MM:SS - [Tag] Description`
 ]
 ```
 
@@ -389,7 +381,7 @@ Skill invocation uses plain names (`anibon-talk-stream`) — no tool-specific pr
 8. **Run `check_sections.py` after assembly** — never count YouTube comment chars manually. Split until all sections show ✅.
 9. **Anti-bot handling** — YouTube block → ask user for browser cookie permission immediately.
 10. **Transcript required** — if unavailable, reject the task; never guess timestamps.
-11. **No hardcoded assembly** — never write a one-off script with hardcoded `parts` data or output paths. Always use `assemble_timestamps.py` with a `parts.json` input file.
+11. **No hardcoded assembly** — never write a one-off script with hardcoded `parts` data or output paths. Always use `pack_timestamps.py` with a flat timestamp list input.
 
 ---
 

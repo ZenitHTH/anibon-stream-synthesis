@@ -69,7 +69,7 @@ Write the heading summary like a caveman:
 ═════════════════════════════════════════════════════════
 
 ```
-> **FORMAT LOCK:** `assemble_timestamps.py` and the unit tests in `test_assemble_timestamps.py` MUST produce output that exactly matches this block structure. This file is the canonical spec. If the script's output deviates, fix the script — never adjust this spec to match the script.
+> **FORMAT LOCK:** `pack_timestamps.py` and the unit tests in `test_pack_timestamps.py` MUST produce output that exactly matches this block structure. This file is the canonical spec. If the script's output deviates, fix the script — never adjust this spec to match the script.
 
 ## OUTPUT RULES
 

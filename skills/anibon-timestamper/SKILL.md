@@ -114,29 +114,24 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`anibon-analyzer.py`** — runs on the workspace folder to detect >10m timeline gaps, classify chunks for routing, and pre-calculate YouTube block byte sizes (warns >3500 bytes). Run BEFORE analysis to plan part splits.
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
-- **`assemble_timestamps.py`** — assembles a list of timestamp sections from a JSON file into a formatted Markdown output file. This is the reusable CLI replacement for ad-hoc assembly scripts.
+- **`pack_timestamps.py`** — packs a flat chronological timestamp list into byte-limited parts (3,500B target) and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
 
   **Usage:**
   ```bash
-  # Store parts.json INSIDE the workspace, then assemble (output lands beside it automatically)
-  python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json
-  # → produces ~/youtube_<video_id>_workspace/anibon_timestamps.md
+  # Pack timestamps list into parts (auto-named output)
+  python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt
+  # → produces ~/youtube_<video_id>_workspace/timestamps_packed.md
+  # → produces ~/youtube_<video_id>_workspace/timestamps_parts.json
 
-  # Or with an explicit path if needed
-  python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json --output ~/youtube_<video_id>_workspace/anibon_timestamps.md
+  # Custom output path
+  python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md
   ```
 
-  **`parts.json` format** — a JSON array where each object has:
-  ```json
-  [
-    {
-      "title": "ชื่อหัวข้อ",
-      "start": "HH:MM:SS",
-      "body": "HH:MM:SS - [Tag] คำอธิบาย\nHH:MM:SS - [Tag] คำอธิบาย"
-    }
-  ]
+  **Input format** — flat timestamp list, one per line:
   ```
-  > **Important:** Never hardcode the parts list or output path inside a one-off script. Always use `assemble_timestamps.py` with a `parts.json` input file. This keeps data and assembly logic separate and reusable across streams.
+  HH:MM:SS - [Tag] Description
+  ```
+  > **Important:** Never hardcode the parts list or output path inside a one-off script. Always use `pack_timestamps.py` with a flat timestamp list input. This keeps data and assembly logic separate and reusable across streams.
 
 ## 🧭 Orchestration Checklist (Cloud)
 1. Environment: Verify `yt-dlp`, `python3`.
@@ -145,10 +140,10 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 4. DB Bootstrap: Run check/build for FGO/YGO if needed.
 5. Parallel Analysis: Spawn chunk subagents using [subagent-prompt-template.md](subagent-prompt-template.md).
 6. Gap Verification: After collecting all subagent results, scan chronological timestamp list for gaps > 10 min. Inject intermediate timestamps from raw transcript before assembly.
-7. Final Assembly: Save `parts.json` to workspace, then run:
-   `python3 scripts/assemble_timestamps.py ~/youtube_<video_id>_workspace/parts.json`
+7. Final Assembly: Save chronological timestamp list to workspace, then pack:
+   `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
-   **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, fix `parts.json` before proceeding.**
+   **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
 
 ## Iron Rules
 - **Publish date first**: Always check.
@@ -158,5 +153,5 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
 - **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit.
 - **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
-- **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `assemble_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_assemble_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
+- **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
 - **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
