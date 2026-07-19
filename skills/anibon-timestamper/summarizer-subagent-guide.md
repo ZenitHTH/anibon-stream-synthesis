@@ -62,14 +62,13 @@ Write the heading summary like a caveman:
 ✅ Good: "Boat ถก Endfield. ติงระบบฐานไม่ต่อกับ combat เพราะทำให้ gameplay แยกส่วน."
 
 ## SEPARATOR FORMAT (FIXED — do not improvise)
-
-```
-═════════════════════════════════════════════════════════
-📌 ส่วนที่ N: [caveman summary]
-(⏱ เริ่ม: HH:MM:SS)
-═════════════════════════════════════════════════════════
 ```
 
+═════════════════════════════════════════════════════════
+ ส่วนที่ N: [caveman summary] (⏱ เริ่ม: HH:MM:SS)
+═════════════════════════════════════════════════════════
+
+```
 > **FORMAT LOCK:** `assemble_timestamps.py` and the unit tests in `test_assemble_timestamps.py` MUST produce output that exactly matches this block structure. This file is the canonical spec. If the script's output deviates, fix the script — never adjust this spec to match the script.
 
 ## OUTPUT RULES
