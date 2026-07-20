@@ -24,6 +24,8 @@ skills/                           Agent skills
   masking-royal-news/
   building-reusable-cli-tools/
   writing-plugin-readme/
+  whisper-corruption-recovery/
+  antigravity-vision-proxy/
 tests/                            Unit and integration tests
 plugin.json / package.json / hooks.json / gemini-extension.json   Plugin configs
 ```
@@ -110,6 +112,36 @@ See [`YGO_DB_Reference.md`](../skills/anibon-timestamper/skills/reference/Yu-Gi-
 | Yu-Gi-Oh! | `Yu-Gi-Oh DATA/ygo_cards.db` | `fetch_ygo_db.py` | ~13.4 MB | 14,422 cards, 43,768 set prints, 640 archetypes |
 
 > Always run `--check` before querying. Exit code 1 → run build script first.
+
+### `whisper-corruption-recovery` — Detection & Recovery
+
+For long audio where Whisper enters repetition loops. Detects corruption by comparing last 20 entries against a window 100 lines back. Recovery: split audio at corruption boundary → segment → re-run per segment → dedup-merge.
+
+```bash
+# Detection (run before any downstream processing on ≥2h audio)
+python3 -c "
+import json
+with open('raw_transcript.json') as f: j = json.load(f)
+last = [e['text'] for e in j[-20:]]
+win = [e['text'] for e in j[-100:-81]]
+r = sum(1 for a,b in zip(last,win) if a==b and len(a)>5)
+print(f'Corruption ratio: {r/len(last)}')
+"
+```
+
+### `antigravity-vision-proxy` — Vision Proxy via agy
+
+Stream image analysis when agent lacks vision. Requires `agy` in PATH.
+
+```bash
+# Extract frames every 60s
+for ($t=0; $t -lt $duration; $t+=60) {
+  $ts = "{0:D2}:{1:D2}:{2:D2}" -f [math]::Floor($t/3600),[math]::Floor(($t%3600)/60),($t%60)
+  ffmpeg -ss $ts -i full_video.mp4 -frames:v 1 -q:v 2 "frames\frame_$ts.jpg"
+}
+# Analyze via agy
+agy --model "Gemini 3.5 Flash (Low)" --dangerously-skip-permissions --print "Identify game and activity per frame" --add-dir frames
+```
 
 ## Platform Compatibility
 

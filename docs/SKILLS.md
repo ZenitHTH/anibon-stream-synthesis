@@ -13,6 +13,8 @@
 | [`masking-royal-news`](../skills/masking-royal-news/SKILL.md) | Sensitive political/royal content masking | Single source of truth for public safety compliance |
 | [`building-reusable-cli-tools`](../skills/building-reusable-cli-tools/SKILL.md) | CLI tool design guidance | Referenced when writing new processing scripts |
 | [`writing-plugin-readme`](../skills/writing-plugin-readme/SKILL.md) | README writing guidelines | Guidance for formatting this plugin's README files |
+| [`whisper-corruption-recovery`](../skills/whisper-corruption-recovery/SKILL.md) | Whisper repetition-loop detection & recovery | Load before `anibon-timestamper` for streams ≥4h or with suspiciously short transcripts |
+| [`antigravity-vision-proxy`](../skills/antigravity-vision-proxy/SKILL.md) | Proxy image analysis via agy + Gemini | Frame extraction + vision model invocation for game/hero identification |
 
 ## anibon-timestamper Sub-Skills
 
