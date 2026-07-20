@@ -41,7 +41,21 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
 3. **Transcript Auto-Detection → Sub-Skill Routing**
 
-   **DETECT FIRST, ROUTE SECOND.** Before routing any chunk, scan the transcript text for the signals below. This is not optional — do it for every chunk, including when using subagents.
+   **DETECT FIRST, ROUTE SECOND.** Before routing any chunk, classify its content type. Use `detect_topics.py` (see Helper Scripts) for keyword-based signal scanning instead of ad-hoc python/grep commands.
+
+   ```bash
+   # Quick classification scan across all chunks
+   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks \
+     -w "Kamen Rider,Super Sentai,Ultraman,โทคุซัทสึ" -c tokusatsu -o compact
+
+   # Detailed per-chunk matches for gaming content
+   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks \
+     -w "FGO,Fate,Arknights,กาชา,SSR,banner" -c gaming -o table
+
+   # Scan single chunk for political/royal keywords
+   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks/chunk_05.json \
+     -w "รัชกาล,สวรรคต,มาตรา 112" -c royal -o json
+   ```
 
    ### Detection Signals (scan the raw transcript text)
 
@@ -112,6 +126,7 @@ If YouTube has no subtitles or auto-captions, transcribe the audio locally using
 Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`prepare_video.py`** — downloads transcript, cleans, and chunks (Step 2).
 - **`anibon-analyzer.py`** — runs on the workspace folder to detect >10m timeline gaps, classify chunks for routing, and pre-calculate YouTube block byte sizes (warns >3500 bytes). Run BEFORE analysis to plan part splits.
+- **`detect_topics.py`** — keyword scanner across chunk JSONs. Takes file/dir + comma-separated words. Outputs table/json/compact. Replaces ad-hoc python -c/grep for topic detection. Run `-h` for full usage.
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
 - **`pack_timestamps.py`** — packs a flat chronological timestamp list into byte-limited parts (3,500B target) and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
@@ -147,6 +162,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 
 ## Iron Rules
 - **Publish date first**: Always check.
+- **Use detect_topics.py, not ad-hoc scanning**: Keyword detection across chunks must use `scripts/detect_topics.py`. No `python3 -c "..."`, no `grep`, no ad-hoc scripts. See `-h` for usage.
 - **Dynamic Routing**: Subagents load skills based on chunk content. No upfront guessing.
 - **ONE FILE**: Output is one `.md` file. Use `═══` blocks. No `part1.md`.
 - **OUTPUT IN WORKSPACE**: Save `parts.json` and `anibon_timestamps.md` to `~/youtube_<video_id>_workspace/`.

@@ -120,11 +120,18 @@ Process `chunk_00.txt`, `chunk_01.txt`, ... one at a time.
 For each chunk:
 
 1. **Read**: `[WORKSPACE]/chunks/chunk_XX.txt`
-2. **DB check** — ONLY if chunk text contains `FGO`, `Fate`, `YGO`, or `遊戯王`:
+2. **Topic detection** — use `detect_topics.py` for keyword scanning instead of manual text search:
+   ```bash
+   # Single chunk scan
+   python3 "[SKILL_ROOT]/scripts/detect_topics.py" "[WORKSPACE]/chunks/chunk_XX.json" \
+     -w "FGO,Fate,Arknights,กาชา,Kamen Rider,Super Sentai" -o compact
+   ```
+   This replaces ad-hoc `python3 -c`/grep checks for game/royal/tokusatsu content.
+3. **DB check** — ONLY if `detect_topics.py` or manual skim shows game keywords (`FGO`, `Fate`, `YGO`, `遊戯王`):
    - `python3 "[SKILL_ROOT]/scripts/fetch_fgo_db.py" --check`
    - `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py" --check`
    - Exit code 1 → re-run without `--check` to build DB. Exit code 0 → skip.
-3. **Generate timestamps**: follow the Prompt Template below. **DO NOT output the markdown into chat.**
+4. **Generate timestamps**: follow the Prompt Template below. **DO NOT output the markdown into chat.**
 4. **Write** to `[WORKSPACE]/chunk_outputs/chunk_XX_output.md` using the write tool.
 5. **Update State (CRITICAL)**: IMMEDIATELY overwrite `[WORKSPACE]/anibon_timestamper_state.json`. Set `"current_chunk"` to XX+1. Do this after EVERY chunk.
 6. **End Turn (CRITICAL)**: Stop immediately after state update. Output `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for the user to prompt you.
@@ -232,3 +239,4 @@ Any ❌ or ⚠️ → adjust `--byte-limit` or split timestamps → re-run `pack
 - **No `ls`**: You know the paths. Use them.
 - **No vision**: Local models use `--format txt`, not `--vision`.
 - **Handoff over crash**: If context > 10%, save state and hand off. Do not power through.
+- **Use detect_topics.py**: No ad-hoc `python3 -c` or grep for keyword scanning. Run `detect_topics.py` instead.
