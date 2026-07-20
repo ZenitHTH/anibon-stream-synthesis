@@ -1,67 +1,52 @@
 ---
 name: whisper-corruption-recovery
-description: Detect Whisper repetition-loop corruption in long audio, recover by splitting at corruption boundary, re-running on segments, and dedup-merging clean output.
+description: Use when Whisper transcription contains repetition loops, repeated identical phrases, or the last N entries of a long-audio transcript are nearly identical.
 ---
 
 # Whisper Corruption Recovery
 
-Whisper on long audio (5h+) can enter repetition loops — same phrase repeats indefinitely from some point onward. This skill detects and recovers.
+## Overview
+Whisper on audio ≥2h can enter repetition loops — same phrase repeating indefinitely from a corruption boundary onward. Recovery requires split → segment → re-run → dedup-merge. Never re-run Whisper on the full file.
 
-## Detection
+## Detection (REQUIRED before any analysis)
 
-Corruption signature: same N-word phrase repeats 3+ times with identical timestamps spacing.
-
-```
-powershell -c "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; `$json = (Get-Content -Encoding UTF8 'workspace\raw_transcript.json' -Raw | ConvertFrom-Json); `$last = `$json[-20..-1]; `$window = `$json[-100..-81]; `$repeat = 0; 0..(`$last.Count-1) | %% { if (`$last[`$_].text -eq `$window[`$_].text -and `$last[`$_].text.Length -gt 5) { `$repeat++ } }; Write-Host \"Repeat ratio: `$(`$repeat/`$last.Count)\""
-```
-
-Ratio >0.5 = corrupted. Note the start time of the first repeat entry (= corruption boundary).
-
-## Recovery
-
-1. **Split audio at corruption boundary** using ffmpeg:
-```
-ffmpeg -i workspace\full_video.mp4 -ss 02:35:00 -acodec pcm_s16le -ar 16000 workspace\tail_raw.wav
-```
-
-Or split into N equal segments from boundary to end:
-```
-ffmpeg -i workspace\tail_raw.wav -f segment -segment_time 900 -c copy workspace\tail_%02d.wav
-```
-
-2. **Re-run Whisper on each segment**:
-```
-whisper workspace\tail_01.wav --model large-v3-turbo --language th --output_dir workspace
-```
-
-Use `--temperature 0.2` and `--compression_ratio_threshold 2.0` on segments still showing corruption.
-
-3. **Merge** clean segments. Dedup by timestamp: if segment B starts before segment A ends, only keep entries from B with timestamps > last A timestamp.
+Corruption signature: last 20 entries match entries 100 lines back at >0.5 ratio.
 
 ```powershell
-# Simple dedup merge (PowerShell one-liner pattern):
-Get-ChildItem workspace\tail_*.json | Sort-Object Name | % { 
-  $data = (Get-Content -Encoding UTF8 $_.FullName -Raw | ConvertFrom-Json)
-  $data | ? { $_.start -gt $lastTs } | % { $_; $lastTs = $_.start }
-}
+$j = (Get-Content -Encoding UTF8 'raw_transcript.json' -Raw | ConvertFrom-Json)
+$last = $j[-20..-1]; $win = $j[-100..-81]
+$r = 0; 0..($last.Count-1) | % { if ($last[$_].text -eq $win[$_].text -and $last[$_].text.Length -gt 5) { $r++ } }
+Write-Host "Corruption ratio: $($r/$last.Count)"
 ```
 
-4. **Re-chunk** merged transcript with original block/overlap for downstream analysis.
+>0.5 = corrupted. First repeat entry's `start` = corruption boundary.
 
-## Prevention
+## Recovery Sequence
 
-For future streams ≥ 2h: never run Whisper on full audio. Process in 10-min segments from the start with overlap. Stitch clean. Corruption in one segment only costs that segment, not entire tail.
+1. **Split at boundary**: `ffmpeg -ss HH:MM:SS -i full_video.mp4 -acodec pcm_s16le -ar 16000 tail_raw.wav`
+2. **Segment** (900s chunks): `ffmpeg -i tail_raw.wav -f segment -segment_time 900 tail_%02d.wav`
+3. **Re-run per segment**: `whisper tail_01.wav --model large-v3-turbo --language th`
+   If segment still corrupts: `--temperature 0.2 --compression_ratio_threshold 2.0`
+4. **Dedup-merge by timestamp** (never by text):
+   ```powershell
+   gci tail_*.json | Sort Name | % {
+     $d = (gc $_ -Raw -Encoding UTF8 | ConvertFrom-Json)
+     $d | ? { $_.start -gt $lastTs } | % { $_; $lastTs = $_.start }
+   }
+   ```
+5. **Re-chunk** merged transcript with original block/overlap.
 
-## Integration
+## Common Mistakes
 
-Load before `anibon-timestamper` when:
-- Stream ≥ 4h. Long audio = higher corruption risk.
-- Raw transcript has suspiciously short total entries (< 100 for 1h audio).
-- Last 50 transcript entries are nearly identical text.
+| Mistake | Fix |
+|---------|-----|
+| Re-running Whisper on full file | Full re-run hits same corruption. Split first. |
+| Dedup by text | Gameplay legitimately repeats phrases. Dedup by timestamp only. |
+| Not checking for corruption | Required detection step before any downstream work on ≥2h audio. |
+| Skipping segment verify | `ffprobe tail_01.wav` before re-run. Segment durations can drift. |
 
-## Iron Rules
+## Prohibitions
 
-- Never re-run Whisper on the full audio file. Split first.
-- Verify segment duration with `ffprobe` before re-running.
-- Dedup by timestamp, not by text (legitimate repeated phrases exist in gameplay).
-- If `full_video.mp4` unavailable, re-download with `yt-dlp -f bestaudio`.
+- Never re-run Whisper on the full audio file. Not "just to be safe", not "with different settings". Split first.
+- "I'll run it on the full file with temperature changes" → Same corruption, different timing. Split is the only path.
+- "The corruption is small, I'll just trim that section" → Trimming without clean re-run leaves gaps.
