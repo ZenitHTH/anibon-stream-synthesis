@@ -28,8 +28,9 @@ To cut a video, we need to know *what* to cut.
 
 ### Phase 2: Highlight Planner
 Once the `.md` file is ready, you must invoke the planner.
+- **Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
 1. See `highlight-planner/SKILL.md`.
-2. Run: `python3 scripts/plan_highlight.py <your_markdown_file.md> --video-id <ID> --source <URL>`
+2. Run: `python3 "[SKILL_ROOT]/scripts/plan_highlight.py" <your_markdown_file.md> --video-id <ID> --source <URL>`
 3. Wait for the `highlight_plan_<id>.json` file to be generated.
 4. **CRITICAL DURATION CHECK:** Read the stdout from the planner script. If the total highlight duration exceeds **30 minutes**, STOP and warn the user. Tell them downloading will take a long time, and offer to list available resolutions/framerates using `yt-dlp -F <URL>`. If they choose a lower quality to save time, append `--format "<their_choice>"` during Phase 3.
 > **Iron Rule:** Never read the JSON file. It is for the machine only.
@@ -37,14 +38,14 @@ Once the `.md` file is ready, you must invoke the planner.
 ### Phase 3: Highlight Cutter (Subagent Delegation)
 Because video downloading and FFmpeg rendering can take time, this phase should ideally be handled cleanly.
 1. See `highlight-cutter/SKILL.md`.
-2. Run: `python3 scripts/cut_highlight.py <your_plan.json> --source <URL> [--format "chosen_format"]`
+2. Run: `python3 "[SKILL_ROOT]/scripts/cut_highlight.py" <your_plan.json> --source <URL> [--format "chosen_format"]`
 3. Monitor the background task or subagent. It will download the chunks (or use a local `--source`) and stitch them via FFmpeg `filter_complex`. 
 > **Tip:** If the user already downloaded the full video to avoid YouTube rate limits, pass the local file path to `--source` instead of the URL!
 
 ### Phase 4: Highlight Verifier
 Once the `.mp4` is rendered, we must QA check it.
 1. See `highlight-verifier/SKILL.md`.
-2. Run: `python3 scripts/verify_highlight.py <your_highlight.mp4> <your_plan.json>`
+2. Run: `python3 "[SKILL_ROOT]/scripts/verify_highlight.py" <your_highlight.mp4> <your_plan.json>`
 3. Read the output. If it PASSES, present the final MP4 file link to the user!
 
 ## Zero-Friction Execution

@@ -12,9 +12,10 @@ Automates the extraction of `[HH:MM:SS - HH:MM:SS]` scenes from a markdown docum
 - When a user provides a `livestream-scene-selection` markdown file and asks to prepare a highlight cut.
 
 ## AI Instructions
-1. Find `plan_highlight.py` in the plugin scripts directory.
+- **Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
+1. Find `plan_highlight.py` in the skill's scripts directory: `[SKILL_ROOT]/scripts/plan_highlight.py`.
 2. Run it against the target markdown file:
-   `python3 scripts/plan_highlight.py path/to/selection.md --video-id <ID> --source <URL_IF_KNOWN>`
+   `python3 "[SKILL_ROOT]/scripts/plan_highlight.py" path/to/selection.md --video-id <ID> --source <URL_IF_KNOWN>`
 3. Read the output.
 4. **DO NOT read the output JSON file.** The JSON is strictly machine-to-machine.
 

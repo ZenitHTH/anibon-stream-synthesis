@@ -43,11 +43,11 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 
 ## 🗺️ Plugin Directory Map (Do NOT use `ls`)
 
-You already know where everything is. Resolve `[PLUGIN_ROOT]` in Step 0.
+You already know where everything is. Resolve `[SKILL_ROOT]` in Step 0.
 
-- **Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
-- **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/`
-  - `fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`
+- **Scripts**: `[SKILL_ROOT]/scripts/prepare_video.py`
+- **DB + Check Scripts**: `[SKILL_ROOT]/scripts/`
+  - `fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`, `pack_timestamps.py`
 - **Workspace**: `[WORKSPACE]` — set in Step 0
   - `[WORKSPACE]/chunks/chunk_XX.txt`
   - `[WORKSPACE]/chunk_outputs/chunk_XX_output.md`
@@ -64,9 +64,9 @@ You already know where everything is. Resolve `[PLUGIN_ROOT]` in Step 0.
 
 ### Step 0: Resolve Plugin Root & Workspace (Cross-Platform)
 
-**Find `[PLUGIN_ROOT]`**: Look at the `<skill location="...">` tag at the top of your prompt.
-- Strip the suffix `skills/anibon-timestamper-local/SKILL.md` (or with backslashes `\` on Windows).
-- Replace all `\` with `/`. The result is `[PLUGIN_ROOT]`.
+**Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` tag at the top of your prompt.
+- Strip the filename `SKILL.md` (or with backslashes `\` on Windows).
+- Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
 
 🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper` (HYPHENS). NEVER use underscores. Copy paths directly; do not retype from memory.
 
@@ -100,11 +100,11 @@ python --version
 
 Mac/Linux:
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python3 "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
 Windows (PowerShell):
 ```powershell
-python "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
 ```
 
 > **Local LLM Note**: Always use `--format txt`. Do NOT use `--vision` — local models cannot process images.
@@ -121,8 +121,8 @@ For each chunk:
 
 1. **Read**: `[WORKSPACE]/chunks/chunk_XX.txt`
 2. **DB check** — ONLY if chunk text contains `FGO`, `Fate`, `YGO`, or `遊戯王`:
-   - `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
-   - `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
+   - `python3 "[SKILL_ROOT]/scripts/fetch_fgo_db.py" --check`
+   - `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py" --check`
    - Exit code 1 → re-run without `--check` to build DB. Exit code 0 → skip.
 3. **Generate timestamps**: follow the Prompt Template below. **DO NOT output the markdown into chat.**
 4. **Write** to `[WORKSPACE]/chunk_outputs/chunk_XX_output.md` using the write tool.
@@ -210,7 +210,7 @@ Build `[WORKSPACE]/parts.json` from `raw_timestamps.txt` — one entry per secti
 
 Then run the packer:
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/pack_timestamps.py" "[WORKSPACE]/timestamps.txt" --output "[WORKSPACE]/anibon_timestamps.md"
+python3 "[SKILL_ROOT]/scripts/pack_timestamps.py" "[WORKSPACE]/timestamps.txt" --output "[WORKSPACE]/anibon_timestamps.md"
 ```
 Output: `[WORKSPACE]/anibon_timestamps.md` + `[WORKSPACE]/timestamps_parts.json`
 
@@ -218,7 +218,7 @@ If any section exceeds **15 timestamp lines**, adjust `--byte-limit` or split th
 
 ### Step 5: Verify
 ```bash
-python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/check_sections.py" "[WORKSPACE]/anibon_timestamps.md"
+python3 "[SKILL_ROOT]/scripts/check_sections.py" "[WORKSPACE]/anibon_timestamps.md"
 ```
 Any ❌ or ⚠️ → adjust `--byte-limit` or split timestamps → re-run `pack_timestamps.py` → re-verify. Do not proceed until all sections pass.
 

@@ -15,9 +15,9 @@ Use this handoff protocol to save the session state, flush the context, and resu
 ---
 
 ## 🗺️ Plugin Directory Map (Do NOT use `ls`)
-You already know where everything is. Resolve `[PLUGIN_ROOT]` and `[WORKSPACE]` from the state file or from Step 0 of `anibon-timestamper-local`.
-- **Main Scripts**: `[PLUGIN_ROOT]/scripts/prepare_video.py`
-- **DB + Check Scripts**: `[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`)
+You already know where everything is. Resolve `[SKILL_ROOT]` and `[WORKSPACE]` from the state file or from Step 0 of `anibon-timestamper-local`.
+- **Main Scripts**: `[SKILL_ROOT]/scripts/prepare_video.py`
+- **DB + Check Scripts**: `[SKILL_ROOT]/scripts/` (`fetch_fgo_db.py`, `fetch_ygo_db.py`, `check_sections.py`)
 - **Workspace**: `[WORKSPACE]` — stored in state file as `workspace_path`
   - `[WORKSPACE]/chunks/chunk_XX.txt`
   - `[WORKSPACE]/chunk_outputs/chunk_XX_output.md`
@@ -67,15 +67,15 @@ When the user starts a fresh conversation session to resume work:
 > [!IMPORTANT]
 > **CRITICAL OVERRIDE**: Even if the user asks you to do a specific custom task immediately (e.g. "redo chunk-14", "skip to chunk 16"), you MUST complete Step 1 and Step 2 below FIRST to get your formatting rules. NEVER try to guess the markdown format or file paths from memory.
 
-1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Strip the suffix `skills/anibon-timestamper-handoff/SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. Result is `[PLUGIN_ROOT]`.
+1. **Resolve Plugin Path**: Look at the `<skill location="...">` XML tag at the top of your instructions. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. Result is `[SKILL_ROOT]`.
    - 🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper` (HYPHENS). Copy paths directly; never retype from memory.
-2. **Read Local Rules**: MUST read `[PLUGIN_ROOT]/skills/anibon-timestamper-local/SKILL.md` using the read tool. You need its output format and constraints.
+2. **Read Local Rules**: MUST read `[SKILL_ROOT]/../anibon-timestamper-local/SKILL.md` using the read tool. You need its output format and constraints.
 3. **Read State File**: The user should tell you the workspace path, or ask them. The state file is at `[WORKSPACE]/anibon_timestamper_state.json` where `[WORKSPACE]` = the `workspace_path` value stored in that file. Read it directly. Do NOT run `ls` or search.
 4. **Verify Databases**: Even if `db_checked` says `true`, verify:
-   - FGO Check: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py" --check`
-   - FGO Build (if exit 1): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_fgo_db.py"`
-   - YGO Check: `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py" --check`
-   - YGO Build (if exit 1): `python3 "[PLUGIN_ROOT]/skills/anibon-timestamper/scripts/fetch_ygo_db.py"`
+   - FGO Check: `python3 "[SKILL_ROOT]/scripts/fetch_fgo_db.py" --check`
+   - FGO Build (if exit 1): `python3 "[SKILL_ROOT]/scripts/fetch_fgo_db.py"`
+   - YGO Check: `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py" --check`
+   - YGO Build (if exit 1): `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py"`
 5. **Resume Step 3 (Loop)**: Go directly to the chunk number in `"current_chunk"`. Zero-pad to two digits (`chunk_02.txt` not `chunk_2.txt`).
 6. **Verify Stale State (CRITICAL)**: Before reading the chunk `.txt`, check if its output `.md` already exists.
    - Mac/Linux: `[ -f "[WORKSPACE]/chunk_outputs/chunk_XX_output.md" ] && echo Exists || echo Missing`

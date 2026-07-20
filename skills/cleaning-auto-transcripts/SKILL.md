@@ -30,10 +30,11 @@ A skill for processing, fetching, and noise-cleaning auto-generated YouTube tran
 
 ### Step 2: Prepare Workspace, Download, and Chunk Transcript
 **Action**: Run the `prepare_video.py` script. This script automatically handles creating the `youtube_VIDEO_ID_workspace`, safely downloading the transcript with native `yt-dlp`, and cleaning/chunking it in one go.
+- **Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
 - **Command**:
-  Use the shared pipeline script:
+  Use the pipeline script inside the skill directory:
   ```bash
-  python3 "$(find $HOME/.gemini $HOME/.config/opencode $HOME/.agents -path '*/anibon-stream-synthesis/scripts/prepare_video.py' 2>/dev/null | head -1)" "VIDEO_URL"
+  python3 "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL"
   ```
 
 ### Step 3: Verify Output
@@ -77,18 +78,18 @@ For convenient regex-based mapping cleanup, use:
 - **OpenCode / Cloud Sandbox run**: If you are in an isolated cloud environment, `--cookies-from-browser` WILL FAIL. Ask the user to download the transcript locally and upload `raw_transcript.json` to the session workspace.
 
 ### clean_transcript.py Usage
-Use simple positional arguments: `python clean_transcript.py <input.json> [custom_mappings.json] > output.json`
+Use simple positional arguments: `python3 "[SKILL_ROOT]/scripts/clean_transcript.py" <input.json> [custom_mappings.json] > output.json`
 
 ```bash
 # Default mapping (outputs single JSON to stdout)
-python scripts/clean_transcript.py raw_transcript.json > cleaned_transcript.json
+python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json > cleaned_transcript.json
 
 # Custom mapping
-python scripts/clean_transcript.py raw_transcript.json custom_mappings.json > cleaned_transcript.json
+python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json custom_mappings.json > cleaned_transcript.json
 
 # Chunking mode (for MapReduce pipelines like anibon-timestamper)
 # Use the --chunk flag to output segments with overlap directly to a folder, instead of stdout.
-python scripts/clean_transcript.py raw_transcript.json --chunk --chunk-dir chunks --block 900 --overlap 60
+python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json --chunk --chunk-dir chunks --block 900 --overlap 60
 ```
 
 ### Transcript Operations (Native One-Liners)

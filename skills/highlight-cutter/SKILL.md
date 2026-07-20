@@ -12,9 +12,10 @@ Orchestrates downloading chunks and merging them using `filter_complex` concat, 
 - When a `highlight_plan_<id>.json` is ready and the user wants to generate the video.
 
 ## AI Instructions
-1. Find `cut_highlight.py` in the plugin scripts directory.
+- **Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
+1. Find `cut_highlight.py` in the skill's scripts directory: `[SKILL_ROOT]/scripts/cut_highlight.py`.
 2. Run it, providing the JSON plan and the source URL/file:
-   `python3 scripts/cut_highlight.py path/to/highlight_plan_abc123.json --source <URL>`
+   `python3 "[SKILL_ROOT]/scripts/cut_highlight.py" path/to/highlight_plan_abc123.json --source <URL>`
 3. Monitor `stderr` for progress. The final output path will be printed on `stdout`.
 4. Proceed to `highlight-verifier` when finished.
 
