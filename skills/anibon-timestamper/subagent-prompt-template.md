@@ -59,7 +59,8 @@ If chunk is primarily talking/chatting:
 - Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
 
 ## Step 5: Write Description
-- One sentence. Macro summary only. Language: <User's Requested Language>.
+- Load `anibon-timestamp-description` and apply the 4-pillar framework: Point → Analysis → Impact → Live Comment → **one sentence**.
+- Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
 - If unsure of a name → omit it, describe the event instead.
 - For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `anibon-donation-classifier`.
