@@ -74,14 +74,14 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
    Because Boat never follows a set agenda and his streams are highly chaotic, a single 15-minute chunk may contain multiple distinct activities. **Subagents are permitted and encouraged to load MULTIPLE sub-skills simultaneously** if their chunk is highly mixed.
 
-   **Sub-skill locations** (nested under this skill):
-   - `skills/anibon-talk-stream/SKILL.md`
-   - `skills/anibon-gaming-stream/SKILL.md`
-   - `skills/anibon-marathon-stream/SKILL.md`
-   - `skills/anibon-event-stream/SKILL.md`
-   - `skills/anibon-tokusatsu-stream/SKILL.md`
-   - `skills/anibon-donation-classifier/SKILL.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
-   - `skills/anibon-timestamp-description/SKILL.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
+   **Sub-skill locations** (available at plugin top-level `skills/`):
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-talk-stream/SKILL.md`
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-gaming-stream/SKILL.md`
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-marathon-stream/SKILL.md`
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-event-stream/SKILL.md`
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-tokusatsu-stream/SKILL.md`
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-donation-classifier/SKILL.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
+   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamp-description/SKILL.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
 
    **Live Service Games Knowledge Base References**:
    - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.
