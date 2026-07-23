@@ -62,6 +62,9 @@ If chunk is primarily talking/chatting:
 - Load `anibon-timestamp-description` and apply the 4-pillar framework: Point → Analysis → Impact → Live Comment → **one sentence**.
 - Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
+- **Multilingual Naming Rule:** 
+  - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: `[Local Name] (English / 日本語)` e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
+  - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames/names only (e.g. `มาชู`, `ก๊อดดอฟ`) without parentheses.
 - If unsure of a name → omit it, describe the event instead.
 - For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `anibon-donation-classifier`.
 

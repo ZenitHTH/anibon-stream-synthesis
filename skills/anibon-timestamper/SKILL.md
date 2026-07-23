@@ -82,6 +82,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - `references/tokusatsu-stream.md`
    - `references/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
    - `references/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
+   - `references/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
 
    **Live Service Games Knowledge Base References**:
    - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.

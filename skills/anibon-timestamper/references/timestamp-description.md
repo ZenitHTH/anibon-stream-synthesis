@@ -261,6 +261,8 @@ Never force all 4. A good timestamp includes **2-3 strong pillars**. The 4th is 
 - **One sentence only.** If you need commas or dashes to connect, good. If you need a period and a second sentence, you picked too many pillars.
 - **Lead with the Point.** The timestamp reader needs to know what this is about in the first 3-4 words.
 - **No false specificity.** If Boat didn't analyze it, don't invent an analysis. Use a different pillar instead.
-- **Keep proper nouns exact.** Names, titles, numbers must be exact from transcript. No approximations.
+- **Keep proper nouns exact & annotated selectively:**
+  - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: `[Local Name] (English / 日本語)` e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
+  - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames/names only (e.g., `มาชู`, `ก๊อดดอฟ`) without parentheses.
 - **Caveman OK.** Drop articles, filler, pleasantries. Fragments allowed. Technical terms exact.
 - **Not for [Donation].** Use `anibon-donation-classifier` for donation timestamps instead.
