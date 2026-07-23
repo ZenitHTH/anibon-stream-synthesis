@@ -18,15 +18,15 @@
 
 ## anibon-timestamper Sub-Skills
 
-Nested under [`../skills/anibon-timestamper/skills/`](../skills/anibon-timestamper/skills/). The orchestrator **auto-detects** which sub-skill(s) to load by scanning transcript signals.
+Nested under [`../skills/anibon-timestamper/references/`](../skills/anibon-timestamper/references/). The orchestrator **auto-detects** which sub-skill(s) to load by scanning transcript signals.
 
 | Sub-Skill | Detection Signal | Tags |
 | :--- | :--- | :--- |
-| [`anibon-talk-stream`](../skills/anibon-timestamper/skills/anibon-talk-stream/SKILL.md) | Long monologues, reading chat, news, lore/story tangents, coded political talk | `[Talk]` `[News]` `[Chat]` `[Q&A]` `[Donation]` |
-| [`anibon-gaming-stream`](../skills/anibon-timestamper/skills/anibon-gaming-stream/SKILL.md) | Game-specific jargon dominates, sparse verbal reactions | `[Boss]` `[Death]` `[Victory]` `[Stage]` |
-| [`anibon-marathon-stream`](../skills/anibon-timestamper/skills/anibon-marathon-stream/SKILL.md) | Multiple distinct game titles in sequence | `[GameSwitch]` `[Session]` |
-| [`anibon-event-stream`](../skills/anibon-timestamper/skills/anibon-event-stream/SKILL.md) | Patch note reading, new event content, theorycrafting | `[Event]` `[PatchNote]` `[Theory]` |
-| [`anibon-tokusatsu-stream`](../skills/anibon-timestamper/skills/anibon-tokusatsu-stream/SKILL.md) | Tokusatsu franchise names, watch party, multi-speaker panel | `[WatchParty]` `[Reaction]` `[Discussion]` `[Lore]` `[Tierlist]` `[Review]` |
+| [`anibon-talk-stream`](../skills/anibon-timestamper/references/talk-stream.md) | Long monologues, reading chat, news, lore/story tangents, coded political talk | `[Talk]` `[News]` `[Chat]` `[Q&A]` `[Donation]` |
+| [`anibon-gaming-stream`](../skills/anibon-timestamper/references/gaming-stream.md) | Game-specific jargon dominates, sparse verbal reactions | `[Boss]` `[Death]` `[Victory]` `[Stage]` |
+| [`anibon-marathon-stream`](../skills/anibon-timestamper/references/marathon-stream.md) | Multiple distinct game titles in sequence | `[GameSwitch]` `[Session]` |
+| [`anibon-event-stream`](../skills/anibon-timestamper/references/event-stream.md) | Patch note reading, new event content, theorycrafting | `[Event]` `[PatchNote]` `[Theory]` |
+| [`anibon-tokusatsu-stream`](../skills/anibon-timestamper/references/tokusatsu-stream.md) | Tokusatsu franchise names, watch party, multi-speaker panel | `[WatchParty]` `[Reaction]` `[Discussion]` `[Lore]` `[Tierlist]` `[Review]` |
 
 ## Knowledge Base References
 

@@ -67,4 +67,5 @@ If the speaker is delivering a deep, continuous story/lecture while playing a ga
 
 - **Do NOT mask** general political party critique (พรรคก้าวไกล, เพื่อไทย, ประชาธิปัตย์), election commentary, civil policy discussion, or One Piece lore that is clearly about the anime story itself.
 - **Quick test before masking**: ถามตัวเองว่า "ถ้าโพสต์ข้อความนี้ใน YouTube comment ตรงๆ แล้วจะมีความเสี่ยงเรื่องมาตรา 112 ไหม?" ถ้าไม่มี → ไม่ต้อง mask
+- **Technical/Software Discussions**: When Boat discusses software issues, file formats/codecs (WebM/AV1), or PC setups, trigger Vision inspection (`ffmpeg` frame capture + `view_file`) if the raw transcript audio leaves technical terms ambiguous or incomplete.
 

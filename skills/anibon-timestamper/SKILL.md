@@ -74,14 +74,14 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
    Because Boat never follows a set agenda and his streams are highly chaotic, a single 15-minute chunk may contain multiple distinct activities. **Subagents are permitted and encouraged to load MULTIPLE sub-skills simultaneously** if their chunk is highly mixed.
 
-   **Sub-skill locations** (available at plugin top-level `skills/`):
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-talk-stream/SKILL.md`
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-gaming-stream/SKILL.md`
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-marathon-stream/SKILL.md`
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-event-stream/SKILL.md`
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-tokusatsu-stream/SKILL.md`
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-donation-classifier/SKILL.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
-   - `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamp-description/SKILL.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
+   **Sub-skill locations** (available in `references/`):
+   - `references/talk-stream.md`
+   - `references/gaming-stream.md`
+   - `references/marathon-stream.md`
+   - `references/event-stream.md`
+   - `references/tokusatsu-stream.md`
+   - `references/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
+   - `references/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
 
    **Live Service Games Knowledge Base References**:
    - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.
@@ -172,3 +172,5 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
 - **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
 - **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
+- **VISION VERIFICATION FOR AMBIGUOUS CONTEXT**: When the streamer discusses technical setups, file formats/codecs (WebM/AV1), on-screen errors, or game UI details that audio transcripts gloss over, extract relevant video frames via `ffmpeg` and inspect them with `view_file` to confirm exact context before writing descriptions.
+- **COMPLETE PART HEADERS**: Part titles in `═══` header blocks must be concise, short summaries (~5–10 words) that capture the section theme and end on complete words. Never truncate titles mid-sentence.
