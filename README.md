@@ -41,13 +41,19 @@ Generate timestamped Markdown meeting minutes from any YouTube video:
 
 ## Installation
 
-Choose your agent platform:
+### Recommended (Universal for any Agent CLI)
+Install globally across Claude Code, Antigravity, OpenCode, Codex, and other agents:
+
+```bash
+npx skills add zenithth/anibon-stream-synthesis --all -g
+```
+
+### Alternative Platform Commands
 
 | Platform | Command |
 |---|---|
 | **Antigravity CLI** | `agy plugin install https://github.com/zenithth/anibon-stream-synthesis` |
 | **OpenCode** | `opencode plugin -g anibon-stream-synthesis@git+https://github.com/ZenitHTH/anibon-stream-synthesis.git` |
-| **Claude Code / Skills CLI** | `npx skills add zenithth/anibon-stream-synthesis --all -g` |
 | **Pi Coding Agent** | `pi install https://github.com/ZenitHTH/anibon-stream-synthesis.git` |
 | **Manual Clone** | `git clone https://github.com/ZenitHTH/anibon-stream-synthesis.git` |
 
