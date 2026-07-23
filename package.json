@@ -1,6 +1,6 @@
 {
   "name": "anibon-stream-synthesis",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "YouTube stream transcription, noise cleaning, sensitive content masking, and FGO/YGO SQLite card lookup for Boat's streams.",
   "main": ".opencode/plugins/anibon-stream-synthesis.mjs",
   "keywords": ["pi-package", "pi", "skills", "anibon"],

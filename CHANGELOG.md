@@ -3,6 +3,13 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.1.2] — 2026-07-23
+
+### Changed
+- **Skill Organization & Structure (Matt Pocock Pattern)** — reorganized sub-skills from 29 flat directories down to 16 entry-points. Sub-skills used strictly by orchestrators (`anibon-timestamper`, `creating-highlight-video`, `anibon-timestamper-local`) are now neatly housed in `references/` directories within their orchestrator skill folder.
+- **Vision Verification Trigger Rules** — added explicit Vision inspection triggers (`ffmpeg` frame extraction + `view_file`) to `anibon-timestamper` and `anibon-talk-stream` for technical monologues, on-screen errors, and file container/codec discussions (e.g. WebM/AV1).
+- **Complete Part Header Rules** — added strict rule enforcing concise, non-truncated section headers (`═══`) in generated timestamp Markdown outputs.
+
 ---
 
 ## [1.1.0] — 2026-07-16
