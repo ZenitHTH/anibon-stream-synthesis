@@ -66,6 +66,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    | Multiple distinct game titles appear in sequence, clear "switching" transitions | `anibon-marathon-stream` |
    | Patch note reading, new event content, theorycrafting, dense game terminology released recently | `anibon-event-stream` |
    | Tokusatsu franchise names (Kamen Rider, Super Sentai, Ultraman, etc.), episode watch party, multi-speaker panel discussion about tokusatsu | `anibon-tokusatsu-stream` |
+   | Interactive bracket voting, Ideal Type World Cup, uwufufu.com website, character elimination ranks | `references/uwufufu-knowledge.md` |
 
    **Rules:**
    - A chunk **may match multiple signals** — load ALL matching sub-skills simultaneously.
@@ -83,6 +84,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - `references/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
    - `references/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
    - `references/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
+   - `references/uwufufu-knowledge.md` ← **interactive-knowledge**: UWUFUFU World Cup bracket rules & milestone density caps
 
    **Live Service Games Knowledge Base References**:
    - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.
