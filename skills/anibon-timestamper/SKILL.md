@@ -173,6 +173,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
 - **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit.
 - **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
+- **INTRO SEGMENT BREAKDOWN**: If the opening intro/setup exceeds 10 minutes before main activity starts, break it down into 3-5 min sub-topic milestones (`[Greeting]`, `[Talk] Stream Topic Intro`, `[Talk] Rules & Setup`, `[Talk] Scale/Context`). Never leave `00:00:00` to `00:15:00+` as a single timestamp block.
 - **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
 - **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
 - **VISION VERIFICATION FOR AMBIGUOUS CONTEXT**: When the streamer discusses technical setups, file formats/codecs (WebM/AV1), on-screen errors, or game UI details that audio transcripts gloss over, extract relevant video frames via `ffmpeg` and inspect them with `view_file` to confirm exact context before writing descriptions.

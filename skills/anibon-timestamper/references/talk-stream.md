@@ -17,6 +17,7 @@ This skill handles the timestamping and topic summarization for "talk-heavy" chu
 ### 1. Topic-Flow Analysis
 - **Core Strategy**: Identify which topics the speaker "flows into". Start a new timestamp whenever the topic shifts.
 - **Scan for timeline gaps**: If there are gaps of 15+ minutes with no timestamps, deeply inspect the transcript for casual, off-topic, or chat-driven discussions that were overlooked.
+- **Opening Stream Setup**: When the streamer talks for 10+ minutes before starting the main agenda/gameplay, extract 3-5 min milestones: Stream Greeting → Topic Announcement → Rules & Setup → Pre-game Discussion.
 
 ### 2. Categories
 Use these categories for timestamp labels:
