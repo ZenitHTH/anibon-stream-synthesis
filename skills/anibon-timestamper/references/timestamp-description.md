@@ -258,7 +258,8 @@ Never force all 4. A good timestamp includes **2-3 strong pillars**. The 4th is 
 
 ## Iron Rules
 
-- **One sentence only.** If you need commas or dashes to connect, good. If you need a period and a second sentence, you picked too many pillars.
+- **Ultra-Concise Length Cap:** Max 10–12 words (~100 characters max) per description. Use short, punchy single phrases. Avoid long multi-clause explanations.
+- **One sentence / phrase only.** Lead with the core topic or point immediately.
 - **Lead with the Point.** The timestamp reader needs to know what this is about in the first 3-4 words.
 - **No false specificity.** If Boat didn't analyze it, don't invent an analysis. Use a different pillar instead.
 - **Keep proper nouns exact & annotated selectively:**

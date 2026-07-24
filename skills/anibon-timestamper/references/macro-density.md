@@ -49,7 +49,9 @@ After Map stage collects all subagent results, the Summarizer MUST:
 - Target **≤ 20 final parts** for streams up to 9 hours.
 - Pack each part toward the 3,500-byte ceiling before splitting.
 - Merge any two adjacent parts whose combined bytes stay under 3,200 — always.
-- A final part with < 4 timestamps is a smell; merge it with its neighbor unless byte limit prevents it.
+- **Thematic Boundary Alignment:** Align section splits with natural topic transitions (e.g., food/health clips, news threads, gaming sessions) rather than arbitrary byte boundaries. Keep closely related topics together in the same section.
+- **Tail Part Balancing:** When the final part contains < 4 timestamps and cannot be merged into the previous part due to byte limits, shift the preceding thematic cluster into the final part. This preserves theme continuity while balancing item counts across trailing sections.
+- A final part with < 4 timestamps is a smell; merge it with its neighbor or rebalance using thematic clustering unless byte limit prevents it.
 
 ## Chunking Parameter Override
 

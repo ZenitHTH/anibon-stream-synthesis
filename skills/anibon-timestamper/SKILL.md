@@ -162,6 +162,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 7. Final Assembly: Save chronological timestamp list to workspace, then pack:
    `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
+   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words. Verify section splits align with natural thematic transitions (e.g. food/health clips, news threads, gaming) rather than cutting mid-theme. If the final section has < 4 timestamps, shift the preceding thematic cluster into the final section to balance item counts.
    **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
 
 ## Iron Rules

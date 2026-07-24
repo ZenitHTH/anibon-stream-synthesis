@@ -63,6 +63,16 @@ def _header_bytes(part_index: int, title: str) -> int:
     return len(sep.encode("utf-8")) * 2 + len(line2.encode("utf-8"))
 
 
+def _clean_title(desc: str, max_len: int = 60) -> str:
+    """Cleanly truncate title on space boundary without cut-off words."""
+    if len(desc) <= max_len:
+        return desc
+    truncated = desc[:max_len]
+    if " " in truncated:
+        truncated = truncated.rsplit(" ", 1)[0]
+    return truncated + "..."
+
+
 def pack_parts(timestamps: list, byte_limit: int) -> list:
     """Group timestamps into parts respecting byte_limit."""
     parts = []
@@ -71,7 +81,7 @@ def pack_parts(timestamps: list, byte_limit: int) -> list:
 
     for ts in timestamps:
         if not current["entries"]:
-            current["title"] = ts["desc"][:80]
+            current["title"] = _clean_title(ts["desc"])
             current["start"] = ts["time"]
             current["bytes"] = 0
 
@@ -83,7 +93,7 @@ def pack_parts(timestamps: list, byte_limit: int) -> list:
             part_index += 1
             parts.append(current)
             current = {"entries": [], "bytes": 0,
-                       "title": ts["desc"][:80], "start": ts["time"]}
+                       "title": _clean_title(ts["desc"]), "start": ts["time"]}
 
         current["entries"].append(ts)
         current["bytes"] += ts["bytes"] + 1

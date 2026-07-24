@@ -59,7 +59,8 @@ If chunk is primarily talking/chatting:
 - Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
 
 ## Step 5: Write Description
-- Load `anibon-timestamp-description` and apply the 4-pillar framework: Point → Analysis → Impact → Live Comment → **one sentence**.
+- Load `anibon-timestamp-description`.
+- **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
 - Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
 - **Multilingual Naming Rule:** 
