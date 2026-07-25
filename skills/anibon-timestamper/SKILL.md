@@ -66,7 +66,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    | Multiple distinct game titles appear in sequence, clear "switching" transitions | `anibon-marathon-stream` |
    | Patch note reading, new event content, theorycrafting, dense game terminology released recently | `anibon-event-stream` |
    | Tokusatsu franchise names (Kamen Rider, Super Sentai, Ultraman, etc.), episode watch party, multi-speaker panel discussion about tokusatsu | `anibon-tokusatsu-stream` |
-   | Interactive bracket voting, Ideal Type World Cup, uwufufu.com website, character elimination ranks | `references/uwufufu-knowledge.md` |
+   | Interactive bracket voting, Ideal Type World Cup, uwufufu.com website, character elimination ranks | `references/stream/uwufufu-knowledge.md` |
 
    **Rules:**
    - A chunk **may match multiple signals** — load ALL matching sub-skills simultaneously.
@@ -75,20 +75,20 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
 
    Because Boat never follows a set agenda and his streams are highly chaotic, a single 15-minute chunk may contain multiple distinct activities. **Subagents are permitted and encouraged to load MULTIPLE sub-skills simultaneously** if their chunk is highly mixed.
 
-   **Sub-skill locations** (available in `references/`):
-   - `references/talk-stream.md`
-   - `references/gaming-stream.md`
-   - `references/marathon-stream.md`
-   - `references/event-stream.md`
-   - `references/tokusatsu-stream.md`
-   - `references/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
-   - `references/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
-   - `references/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
-   - `references/uwufufu-knowledge.md` ← **interactive-knowledge**: UWUFUFU World Cup bracket rules & milestone density caps
-   - `references/phuboat-anime-talking-style.md` ← **anime-talking**: PhuBoat's recurring anime analytical frameworks, dual-synthesis, and rant patterns
+   **Sub-skill locations** (available in `references/stream/`):
+   - `references/stream/talk-stream.md`
+   - `references/stream/gaming-stream.md`
+   - `references/stream/marathon-stream.md`
+   - `references/stream/event-stream.md`
+   - `references/stream/tokusatsu-stream.md`
+   - `references/stream/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
+   - `references/stream/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
+   - `references/stream/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
+   - `references/stream/uwufufu-knowledge.md` ← **interactive-knowledge**: UWUFUFU World Cup bracket rules & milestone density caps
+   - `references/stream/phuboat-anime-talking-style.md` ← **anime-talking**: PhuBoat's recurring anime analytical frameworks, dual-synthesis, and rant patterns
 
    **Live Service Games Knowledge Base References**:
-   - See [INDEX.md](../reference/INDEX.md) for all game lore, mechanics, and DB query guides.
+   - See [INDEX.md](references/games/INDEX.md) for all game lore, mechanics, and DB query guides.
 
    **⚡ DB Bootstrap** (Run before lookup):
    - FGO: `python3 scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db" || python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"`

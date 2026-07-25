@@ -45,10 +45,10 @@ This skill handles timestamping for tokusatsu discussion streams and watch-party
 
 ### Franchise Knowledge Base References
 For detailed lists of series, terms, and context, see the following references:
-- **[Kamen Rider Series & Lore](references/Kamen_Rider.md)**
-- **[Super Sentai & Project R Terms](references/Super_Sentai.md)**
-- **[Ultraman Key Terms](references/Ultraman.md)**
-- **[Gridman Universe Lore](references/Gridman.md)**
+- **[Kamen Rider Series & Lore](tokusatsu/Kamen_Rider.md)**
+- **[Super Sentai & Project R Terms](tokusatsu/Super_Sentai.md)**
+- **[Ultraman Key Terms](tokusatsu/Ultraman.md)**
+- **[Gridman Universe Lore](tokusatsu/Gridman.md)**
 
 ### Common Tokusatsu Discussion Topics (Boat streams)
 - Henshin (変身) transformation sequence quality debates
