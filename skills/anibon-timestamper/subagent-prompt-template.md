@@ -52,13 +52,32 @@ For every valid timestamp event:
 - `[WatchParty]`: Watch-along reaction / episode review
 - `[Reaction]`: General reaction to trailers or videos
 
-## Step 4: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
+## Step 4: Story Enrichment (For [Story] Entries Only)
+
+If tag = `[Story]` AND source game/scene is identifiable:
+
+1. **Identify Source:** Extract game title + chapter/scene name from transcript or frame.
+2. **Ask User:**
+   ```
+   Found story segment from [Game Title] — scene: [desc].
+   Search web for official synopsis to enrich timestamp? (y/n)
+   ```
+3. **If yes** → run `fetch_story_ref.py --game "Title" --scene "desc"` → append `(ref: game script)` to description.
+4. **If no** → use existing description as-is.
+5. **Cache reuse:** If synopsis already cached, use it without asking again.
+
+Format: `[Story] [Game] [Chapter/Scene] — [Synopsis] (ref: game script)`
+Keep total ≤ 12 words.
+
+Load `anibon-story-enrichment` for full protocol.
+
+## Step 5: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
 If chunk is primarily talking/chatting:
 - Track MACRO topic only. Multiple paragraph shifts = same timestamp if same conversation thread.
 - Chat/donation cues: "ในแชทบอกว่า", "คุณ... บอกว่า" → tag as `[Chat]` or `[Donation]`.
 - Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
 
-## Step 5: Write Description
+## Step 6: Write Description
 - Load `anibon-timestamp-description`.
 - **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
 - Macro summary only. Language: <User's Requested Language>.
@@ -69,19 +88,19 @@ If chunk is primarily talking/chatting:
 - If unsure of a name → omit it, describe the event instead.
 - For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `anibon-donation-classifier`.
 
-## Step 6: Format Output
+## Step 7: Format Output
 `HH:MM:SS - [Tag] Description`
 
 One line per timestamp. No headers, no intro, no explanation text.
 
-## Step 7: Visual Reference Resolution
+## Step 8: Visual Reference Resolution
 If a transcript item contains an `"image"` field:
 1. You MUST call `view_file` to load and inspect that image BEFORE writing the description.
 2. Use what you SEE on screen (game UI, boss name, HUD) to confirm the game title and activity.
 3. **NEVER name a game from transcript text alone if an image is available.** Transcript text is auto-generated and may misidentify the game. The screen is ground truth.
 4. If the image is unclear, describe what you see rather than guessing the name.
 
-## Step 8: Density Self-Check (BEFORE submitting)
+## Step 9: Density Self-Check (BEFORE submitting)
 Count your timestamps. If you have more than 2 for this chunk, you MUST merge until ≤ 2.
 
 Red flags — merge immediately or output 0 timestamps:

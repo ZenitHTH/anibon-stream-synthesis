@@ -72,6 +72,27 @@ def parse_timestamps(lines: list) -> list:
 
 
 # ─────────────────────────────────────────────────────────────
+# Pre-processing — merge consecutive [Story] entries
+# ─────────────────────────────────────────────────────────────
+
+STORY_TAG = "[Story]"
+
+
+def merge_consecutive_story(timestamps: list[dict]) -> list[dict]:
+    """Collapse consecutive [Story] entries into one. Keeps first entry's
+    time and description; drops redundant follow-on entries that are
+    part of same continuous story-reading session."""
+    if not timestamps:
+        return []
+    merged: list[dict] = [timestamps[0]]
+    for ts in timestamps[1:]:
+        if ts["tag"] == STORY_TAG and merged[-1]["tag"] == STORY_TAG:
+            continue
+        merged.append(ts)
+    return merged
+
+
+# ─────────────────────────────────────────────────────────────
 # Overhead accounting
 # ─────────────────────────────────────────────────────────────
 
@@ -180,6 +201,7 @@ TAG_MACRO_MAP = {
     "Donation": "TALK",
     "Chat": "TALK",
     "Greeting": "TALK",
+    "Story": "TALK",
     "Gameplay": "GAMEPLAY",
     "Boss": "GAMEPLAY",
     "Victory": "GAMEPLAY",
@@ -194,6 +216,9 @@ def _primary_tag(tag: str) -> str:
     m = _TAG_EXTRACT.match(tag)
     raw_tag = m.group(1) if m else tag
     return TAG_MACRO_MAP.get(raw_tag, raw_tag)
+
+
+
 
 
 def cluster_by_tag(timestamps: list[dict]) -> list[list[dict]]:
@@ -283,85 +308,49 @@ def normalise_segments(
 
 def balanced_pack(timestamps: list[dict], byte_limit: int) -> list[list[dict]]:
     """
-    Three-pass context-first balanced partition:
-      Pass 1 — cluster_by_tag:      group consecutive timestamps by theme
-      Pass 2 — normalise_segments:  ensure every segment fits in body budget
-      Pass 3 — Painter's Partition DP over segment boundaries only,
-               minimising max_size - min_size spread
-    Chronological order preserved. No part exceeds byte_limit.
+    Greedy context-aware pack:
+      Pass 1 — cluster_by_tag: group consecutive timestamps by theme
+      Pass 2 — normalise_segments: ensure every cluster fits in body budget
+      Pass 3 — Greedy fill: pack entries to body_limit, start new part on
+               overflow. No part exceeds byte_limit.
+    Produces minimum part count at byte_limit. Tag continuity naturally
+    preserved within each part.
     """
     if not timestamps:
         return []
 
     body_limit = byte_limit - HEADER_OVERHEAD
 
-    # Pass 1 & 2 — context segments
     raw_segments = cluster_by_tag(timestamps)
     segments = normalise_segments(raw_segments, body_limit)
 
-    S = len(segments)
-    if S == 0:
+    # Flatten all entries in chronological order
+    all_entries: list[dict] = []
+    for seg in segments:
+        all_entries.extend(seg)
+
+    if not all_entries:
         return []
-    if S == 1:
-        return [segments[0]]
+    if len(all_entries) == 1:
+        return [all_entries]
 
-    # Segment body sizes and prefix sums
-    seg_bytes = [_body_bytes_of(s) for s in segments]
-    seg_prefix = [0] * (S + 1)
-    for i, b in enumerate(seg_bytes):
-        seg_prefix[i + 1] = seg_prefix[i] + b
+    # Greedy fill to body_limit
+    groups: list[list[dict]] = []
+    current: list[dict] = []
+    running = 0
 
-    def seg_range_bytes(lo: int, hi: int) -> int:
-        return seg_prefix[hi] - seg_prefix[lo]
-
-    # K = minimum parts at segment granularity
-    K, running = 0, 0
-    for b in seg_bytes:
-        if running > 0 and running + b > body_limit:
-            K += 1
+    for e in all_entries:
+        b = e["bytes"] + 1
+        if current and running + b > body_limit:
+            groups.append(current)
+            current = [e]
             running = b
         else:
+            current.append(e)
             running += b
-    K += 1
 
-    # ── Painter's Partition DP over S segments into K parts ──
-    BIG = 10 ** 9
-    dp    = [[BIG] * (K + 1) for _ in range(S + 1)]
-    split = [[-1]  * (K + 1) for _ in range(S + 1)]
-    dp[0][0] = 0
-
-    for j in range(1, K + 1):
-        for i in range(j, S + 1):
-            for m in range(j - 1, i):
-                body = seg_range_bytes(m, i)
-                if body > body_limit:
-                    continue
-                prev = dp[m][j - 1]
-                if prev == BIG:
-                    continue
-                cand = max(prev, body)
-                if cand < dp[i][j]:
-                    dp[i][j] = cand
-                    split[i][j] = m
-
-    # ── Back-track ───────────────────────────────────────────
-    boundaries = []
-    i, j = S, K
-    while j > 0:
-        m = split[i][j]
-        boundaries.append((m, i))
-        i = m
-        j -= 1
-    boundaries.reverse()
-
-    # ── Assemble groups from segment slices ──────────────────
-    groups = []
-    for (lo, hi) in boundaries:
-        merged: list[dict] = []
-        for seg in segments[lo:hi]:
-            merged.extend(seg)
-        if merged:
-            groups.append(merged)
+    if current:
+        groups.append(current)
 
     return groups
 
@@ -378,8 +367,11 @@ def _group_to_part(group: list[dict]) -> dict:
     tag_counter: Counter = Counter(_primary_tag(e["tag"]) for e in group)
     dominant_tag = tag_counter.most_common(1)[0][0]
     title_entry = next(
-        (e for e in group if _primary_tag(e["tag"]) == dominant_tag),
-        group[0],
+        (e for e in group if _primary_tag(e["tag"]) == dominant_tag and e["tag"] != "[Story]"),
+        next(
+            (e for e in group if _primary_tag(e["tag"]) == dominant_tag),
+            group[0],
+        ),
     )
     return {
         "entries": group,
@@ -440,6 +432,11 @@ def main():
         sys.exit(1)
 
     print(f"[*] Parsed {len(timestamps)} timestamps.", file=sys.stderr)
+
+    pre = len(timestamps)
+    timestamps = merge_consecutive_story(timestamps)
+    if len(timestamps) < pre:
+        print(f"[*] Merged {pre - len(timestamps)} consecutive [Story] entries.", file=sys.stderr)
 
     groups = balanced_pack(timestamps, args.byte_limit)
     parts  = [_group_to_part(g) for g in groups]

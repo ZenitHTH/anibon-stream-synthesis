@@ -86,6 +86,7 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - `references/stream/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
    - `references/stream/uwufufu-knowledge.md` ← **interactive-knowledge**: UWUFUFU World Cup bracket rules & milestone density caps
    - `references/stream/phuboat-anime-talking-style.md` ← **anime-talking**: PhuBoat's recurring anime analytical frameworks, dual-synthesis, and rant patterns
+- `references/stream/story-enrichment.md` ← **story-enrichment**: Load when any chunk generates `[Story]` entries. Enriches descriptions with source game/chapter + websearch synopsis.
 
    **Live Service Games Knowledge Base References**:
    - See [INDEX.md](references/games/INDEX.md) for all game lore, mechanics, and DB query guides.
@@ -134,6 +135,16 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **`detect_topics.py`** — keyword scanner across chunk JSONs. Takes file/dir + comma-separated words. Outputs table/json/compact. Replaces ad-hoc python -c/grep for topic detection. Run `-h` for full usage.
 - **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
 - **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
+- **`fetch_story_ref.py`** — fetches story synopsis via websearch and caches locally. Used when subagent enriches `[Story]` entries with source context. Requires user confirmation before searching.
+  
+  **Usage:**
+  ```bash
+  python3 scripts/fetch_story_ref.py --game "FGO" --scene "Babylonia Tiamat war"
+  python3 scripts/fetch_story_ref.py --list  # show cached entries
+  ```
+  
+  Cache stored in `references/stories/` — one `.md` file per unique game+scene.
+  
 - **`pack_timestamps.py`** — packs a flat chronological timestamp list into byte-limited parts (3,500B target) and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
 
   **Usage:**
@@ -182,3 +193,5 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **COMPLETE PART HEADERS**: Part titles in `═══` header blocks must be concise, short summaries (~5–10 words) that capture the macro section theme and end on complete words. Never truncate titles mid-sentence or copy generic opening greetings as the part title.
 - **NO AD-HOC TIMESTAMP GENERATION**: Never write custom Python scripts to generate timestamps from chunks. The only valid path is: spawn parallel subagents via `subagent-prompt-template.md` → collect results → run `pack_timestamps.py`. Shortcutting this pipeline produces shallow, generic, templated output and is a hard failure. A script that keyword-matches chunks and emits repeated generic labels (`[Talk] ตอบคำถามแชท`) is not a timestamp — it is noise.
 - **SUBAGENT PIPELINE IS MANDATORY**: Step 5 (Parallel Analysis via chunk subagents) is not optional. Even for short streams, every chunk must be processed by a subagent that reads the chunk JSON, loads the matching sub-skills (`talk-stream.md`, `fgo-knowledge.md`, `phuboat-anime-talking-style.md`, etc.), and inspects image frames where present. The orchestrator cannot read chunks inline and write timestamps itself — it lacks the domain knowledge loaded by sub-skills and will produce generic output.
+- **STORY ENRICHMENT REQUIRES USER CONSENT**: Never websearch for story synopsis without asking user first. The `anibon-story-enrichment` protocol (Step 4 in subagent template) defines the exact ask format. Cache hits do not need re-asking.
+- **JP VA NO-COMMENTARY = REFERENCE, NOT TARGET**: No-commentary JP VA videos exist solely as reference to classify Story vs Talk in commentary streams — by comparing aligned audio. Do not timestamp reference videos as standalone content.
