@@ -163,7 +163,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 7. Final Assembly: Save chronological timestamp list to workspace, then pack:
    `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
-   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words. Verify section splits align with natural thematic transitions (e.g. food/health clips, news threads, gaming) rather than cutting mid-theme. If the final section has < 4 timestamps, shift the preceding thematic cluster into the final section to balance item counts.
+   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed narrative chapter markers (`📌 [ช่วงที่ N: <Theme>]`) inside section blocks to track topic progression.
    **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
 
 ## Iron Rules
@@ -179,4 +179,4 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
 - **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
 - **VISION VERIFICATION FOR AMBIGUOUS CONTEXT**: When the streamer discusses technical setups, file formats/codecs (WebM/AV1), on-screen errors, or game UI details that audio transcripts gloss over, extract relevant video frames via `ffmpeg` and inspect them with `view_file` to confirm exact context before writing descriptions.
-- **COMPLETE PART HEADERS**: Part titles in `═══` header blocks must be concise, short summaries (~5–10 words) that capture the section theme and end on complete words. Never truncate titles mid-sentence.
+- **COMPLETE PART HEADERS**: Part titles in `═══` header blocks must be concise, short summaries (~5–10 words) that capture the macro section theme and end on complete words. Never truncate titles mid-sentence or copy generic opening greetings as the part title.
