@@ -27,6 +27,7 @@ Nested under [`../skills/anibon-timestamper/references/`](../skills/anibon-times
 | [`anibon-marathon-stream`](../skills/anibon-timestamper/references/marathon-stream.md) | Multiple distinct game titles in sequence | `[GameSwitch]` `[Session]` |
 | [`anibon-event-stream`](../skills/anibon-timestamper/references/event-stream.md) | Patch note reading, new event content, theorycrafting | `[Event]` `[PatchNote]` `[Theory]` |
 | [`anibon-tokusatsu-stream`](../skills/anibon-timestamper/references/tokusatsu-stream.md) | Tokusatsu franchise names, watch party, multi-speaker panel | `[WatchParty]` `[Reaction]` `[Discussion]` `[Lore]` `[Tierlist]` `[Review]` |
+| [`story-enrichment`](../skills/anibon-timestamper/references/stream/story-enrichment.md) | `[Story]` tag + identifiable source game/scene | Enriches description with game/chapter synopsis |
 
 ## Knowledge Base References
 
@@ -43,3 +44,7 @@ Nested under [`../skills/anibon-timestamper/skills/reference/`](../skills/anibon
 - [Arknights: Endfield](../skills/anibon-timestamper/skills/reference/Arknights_Endfield.md) — Setup, dates, gameplay mechanics
 - [Limbus Company](../skills/anibon-timestamper/skills/reference/Limbus_Company.md) — Key updates, gameplay styles
 - [Pokémon Radical Red](../skills/anibon-timestamper/skills/reference/Pokemon_Radical_Red.md) — Difficulty modes, bosses, Version 4.1
+
+## Story Enrichment Cache
+
+Nested under [`../skills/anibon-timestamper/references/stories/`](../skills/anibon-timestamper/references/stories/). Cached synopsis `.md` files for enriched `[Story]` timestamps, keyed by game+scene slug. Reused across streams — no redundant websearch.

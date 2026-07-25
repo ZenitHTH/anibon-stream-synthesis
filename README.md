@@ -1,5 +1,8 @@
 # Anibon Stream Synthesis Plugin
 
+![Version](https://img.shields.io/badge/version-1.1.3-blue)
+[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.1.3)
+
 A suite of AI agent skills for deep research, live-stream transcript processing, automated timestamping, and highlight video cutting. Works across **Antigravity CLI**, **Claude Code**, **OpenCode**, and **Pi Coding Agent**.
 
 ---
@@ -20,10 +23,12 @@ A suite of AI agent skills for deep research, live-stream transcript processing,
 Once installed, simply trigger the skills in your AI agent:
 
 ### 1. Generate Stream Timestamps
-Extract key topics, gaming moments, and donations into YouTube comment-ready blocks:
+Extract key topics, gaming moments, story readings, and donations into YouTube comment-ready blocks:
 ```text
 /anibon-timestamper https://www.youtube.com/watch?v=VIDEO_ID
 ```
+
+Subagents auto-classify Boat reading story (`[Story]`) vs analysis (`[Talk]`). Consecutive story segments merge into one entry. Story timestamps can be enriched with source game/chapter synopses via websearch (user-confirmed).
 
 ### 2. Cut Highlight Videos
 Select key scenes and automatically generate non-jumpcut FFmpeg video edits:
@@ -70,6 +75,7 @@ npx skills add zenithth/anibon-stream-synthesis --all -g
 | `youtube-minutes-synthesis` | Extract YouTube transcripts into structured meeting minutes | `/youtube-minutes-synthesis <URL>` |
 | `preparing-tools` | Pre-flight system tool verifier (`yt-dlp`, `ffmpeg`, `sqlite3`) | Auto-called by orchestrators |
 | `antigravity-vision-proxy` | Frame extraction & visual inspection proxy for game/UI context | Visual verification fallback |
+| `story-enrichment` | Enrich `[Story]` timestamps with source game/chapter synopses via websearch | Auto-loaded for story chunks |
 
 ---
 

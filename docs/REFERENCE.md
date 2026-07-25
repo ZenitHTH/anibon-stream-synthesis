@@ -13,7 +13,12 @@ scripts/                          Root-level Python utilities
   plan_highlight.py / cut_highlight.py / verify_highlight.py  Video highlight tools
 skills/                           Agent skills
   anibon-timestamper/             Main orchestrator
-    scripts/                      Specialized sub-scripts (DB fetchers, merge, validate)
+    scripts/                      Specialized sub-scripts (DB fetchers, merge, validate, story ref)
+      fetch_story_ref.py          Websearch + cache story synopses for [Story] enrichment
+    references/                   Cross-stream references
+      stream/                     Talk, Gaming, Marathon, Event, Tokusatsu, Donation, Macros
+        story-enrichment.md       Protocol: source ID → ask user → enrich timestamp
+      stories/                    Cache dir for fetched story synopses (.md files)
     skills/                       Sub-skills (Talk, Gaming, Marathon, Event, Tokusatsu)
       reference/                  Game lore files + SQLite DB schemas
     skills/reference/FGO and DATA/   FGO: atlas_fgo.db (~1.9 MB)
@@ -53,7 +58,13 @@ With `--vision`, downloads a low-resolution (≤ 480p) reference copy for visual
 
 ### `pack_timestamps.py` — Timestamp Packer & Assembly
 
-Packs flat chronological timestamp list into byte-limited parts with separator blocks matching the canonical spec. Writes both `.md` and `parts.json`.
+Packs flat chronological timestamp list into byte-limited parts using **greedy fill** (minimum part count at byte_limit, preserves tag continuity). Writes both `.md` and `parts.json`.
+
+**v1.1.3+ algorithm:**
+1. **merge_consecutive_story()** — collapse adjacent `[Story]` entries (keeps first timestamp + description)
+2. **cluster_by_tag()** — group consecutive entries by macro tag (TALK, GAMEPLAY, CUTSCENE)
+3. **Greedy fill** — pack to body_limit, start new part on overflow
+4. **Title preference** — within same macro-tag group, skip `[Story]` entries for title if `[Talk]`/`[Reaction]` exist
 
 ```bash
 python3 scripts/pack_timestamps.py /path/to/timestamps.txt
@@ -61,6 +72,8 @@ python3 scripts/pack_timestamps.py /path/to/timestamps.txt --byte-limit 3500 --o
 ```
 
 Input format (one per line): `HH:MM:SS - [Tag] Description`
+
+**TAG_MACRO_MAP:** `Story`→`TALK`, `WatchParty`→`NEWS` for density-aware grouping.
 
 ### `clean_transcript.py` — Normalization & Chunking
 
@@ -79,6 +92,18 @@ Flags sections exceeding YouTube's Thai character limit. Run after assembly.
 python3 scripts/check_sections.py anibon_timestamps.md
 # Output: ✅ OK / ⚠️ WARN (>4,500) / ❌ OVER (>5,000) per section
 ```
+
+### `fetch_story_ref.py` — Story Synopsis Fetcher & Cache
+
+Websearches for official game story synopsis when subagent detects `[Story]` and identifies source game/scene. Requires user confirmation before searching.
+
+```bash
+python3 scripts/fetch_story_ref.py --game "FGO" --scene "Babylonia Tiamat war"
+python3 scripts/fetch_story_ref.py --list   # Show cached entries
+python3 scripts/fetch_story_ref.py --game "HSR" --scene "Penacony Sunday" --cache /path/to/cache
+```
+
+Cache: one `.md` file per unique game+scene slug in `skills/anibon-timestamper/references/stories/`. Cache hits skip websearch. Synopsis ≤ 100 chars, appended to timestamp as `(ref: game script)`.
 
 ### `fetch_fgo_db.py` — FGO Database Bootstrap
 

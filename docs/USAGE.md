@@ -23,6 +23,18 @@ Local models (gemma, qwen) have limited working memory and loop-prone behavior:
 4. **No Curiosity** — ban `ls`/`find`; blindly execute fallback commands instead of debugging paths
 5. **Handoff** — invoke `anibon-timestamper-handoff` before context exhaustion
 
+### Story vs Talk Classification
+
+Subagents classify Boat's activity:
+- **`[Story]`** = Boat reads game/dialogue aloud. Consecutive `[Story]` entries merge into one.
+- **`[Talk]`** = Boat analyzes/explains. Individual entries preserved.
+- **Reference videos (JP VA no-commentary)** = pure story ground truth. Use aligned audio comparison to determine if commentary stream = Story or Talk.
+- **Story Enrichment**: When `[Story]` source game/scene is identifiable, subagent asks user for permission to websearch synopsis → enriches timestamp with `(ref: game script)`.
+
+### Final Assembly
+
+`pack_timestamps.py` now uses **greedy fill** (not DP partition). Produces minimum part count at byte_limit while preserving tag continuity within each part. Adjacent `[Story]` entries automatically merge.
+
 ### Final Assembly (Windows)
 
 ```powershell
@@ -59,3 +71,6 @@ Not applied by default. Only triggers on actual legal-risk signals:
 9. **Anti-bot handling** — YouTube block → ask for browser cookie permission.
 10. **Transcript required** — if unavailable, reject task; never guess timestamps.
 11. **No hardcoded assembly** — always use `pack_timestamps.py` with flat timestamp list input.
+12. **Story enrichment requires user consent** — never websearch for synopsis without asking.
+13. **No-commentary JP VA = reference, not target** — exists solely to classify Story vs Talk in commentary streams.
+14. **Greedy pack preserves tag continuity** — `pack_timestamps.py` fills to byte_limit, keeps same-tag clusters together.
