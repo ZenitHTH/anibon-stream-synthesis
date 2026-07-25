@@ -174,11 +174,26 @@ def _range_body_bytes(prefix: list, lo: int, hi: int) -> int:
 
 _TAG_EXTRACT = re.compile(r"\[([^\]]+)\]")
 
+TAG_MACRO_MAP = {
+    "Talk": "TALK",
+    "Reaction": "TALK",
+    "Donation": "TALK",
+    "Chat": "TALK",
+    "Greeting": "TALK",
+    "Gameplay": "GAMEPLAY",
+    "Boss": "GAMEPLAY",
+    "Victory": "GAMEPLAY",
+    "News": "NEWS",
+    "WatchParty": "NEWS",
+    "Gacha": "NEWS",
+}
+
 
 def _primary_tag(tag: str) -> str:
-    """Extract the first bracketed label, or the full tag string."""
+    """Extract the first bracketed label, or the full tag string, mapped to macro category."""
     m = _TAG_EXTRACT.match(tag)
-    return m.group(1) if m else tag
+    raw_tag = m.group(1) if m else tag
+    return TAG_MACRO_MAP.get(raw_tag, raw_tag)
 
 
 def cluster_by_tag(timestamps: list[dict]) -> list[list[dict]]:
