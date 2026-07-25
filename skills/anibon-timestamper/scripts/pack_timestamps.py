@@ -64,13 +64,14 @@ def _header_bytes(part_index: int, title: str) -> int:
 
 
 def _clean_title(desc: str, max_len: int = 60) -> str:
-    """Cleanly truncate title on space boundary without cut-off words."""
+    """Return a clean, short title that does not cut mid-word."""
     if len(desc) <= max_len:
         return desc
     truncated = desc[:max_len]
-    if " " in truncated:
-        truncated = truncated.rsplit(" ", 1)[0]
-    return truncated + "..."
+    last_space = max(truncated.rfind(' '), truncated.rfind('،'), truncated.rfind(')'))
+    if last_space > 20:
+        return truncated[:last_space]
+    return truncated
 
 
 def pack_parts(timestamps: list, byte_limit: int) -> list:
