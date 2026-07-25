@@ -82,14 +82,23 @@ def _header_bytes(part_index: int, title: str, start: str) -> int:
     return len(sep.encode("utf-8")) * 2 + len(line2.encode("utf-8"))
 
 
-def _clean_title(desc: str, max_len: int = 60) -> str:
-    """Short title that does not cut mid-word."""
+THAI_LEADING_VOWELS = set("เแโใไ")
+
+
+def _clean_title(desc: str, max_len: int = 100) -> str:
+    """Clean title that preserves complete Thai words and avoids cutting mid-word/mid-vowel."""
+    desc = desc.strip()
     if len(desc) <= max_len:
         return desc
+
     truncated = desc[:max_len]
     last_space = max(truncated.rfind(" "), truncated.rfind("،"), truncated.rfind(")"))
-    if last_space > 20:
-        return truncated[:last_space]
+    if last_space > 30:
+        truncated = truncated[:last_space]
+
+    while truncated and (truncated[-1] in THAI_LEADING_VOWELS or not truncated[-1].isalnum()):
+        truncated = truncated[:-1].strip()
+
     return truncated
 
 
