@@ -105,7 +105,21 @@ A routing skill for analyzing data, conversations, or transcripts from live stre
    - Subagent must run Density Self-Check (Step 8) and merge down to ≤ 2 before submitting
    - **IMAGE VERIFICATION (MANDATORY)**: If any transcript item has an `"image"` field, you MUST call `view_file` to load the image and visually confirm the game title / activity shown on screen BEFORE writing the timestamp description. Never name a game from transcript text alone if an image is available.
 
-4. **Reduce Stage (Final Assembly)**
+4. **World Identity Verification Gate** (before writing story stamps)
+
+   > **CRITICAL for post-cutoff games**: LLM training data may not include current game version. Inference alone produces hallucinated names. Example failure: "พนาคเดีย" → Penacony (wrong, should be Planarcadia), "ย่าวกวง" → Jing Yuan (wrong, should be Yao Guang). Both preventable by reading `references/games/Honkai_Star_Rail.md`.
+
+   **Priority chain:** Local references first → cached story refs → reference SRT → websearch fallback
+
+   a. **Check local game references** (`references/games/*.md`): contains patch chronologies, character names, faction lists for major gacha games. This is the fastest and most reliable source. The `Honkai_Star_Rail.md` already has Planarcadia 4.x + Yao Guang.
+   b. **Check cached story refs** via `fetch_story_ref.py --list` or browse `references/stories/` for previously fetched synopses.
+   c. **Reference SRT** (if reference video URL exists): `yt-dlp --write-subs --sub-lang en --skip-download <ref_url>` → parse for character/location names. Use `align_ref_timeline.py` to match ref timestamps against stream chunks automatically.
+   d. **Build name map**: Thai transcript phoneme → verified EN name from sources above
+   e. **Scan chunks** at story boundary for each candidate, match against verified map
+   f. **Websearch fallback** only if local + cached + SRT all insufficient: `fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"`
+   g. **Reject**: training-data inference, older-version character, unconfirmed phonetic match
+
+5. **Reduce Stage (Final Assembly)**
 
    - **Gather**: Combine all chunk subagent results chronologically.
    - **Delegate to Summarizer Subagent**: Read [summarizer-subagent-guide.md](summarizer-subagent-guide.md) for the full prompt to send to the Summarizer Subagent. Do NOT write summaries or decide splits yourself — prevents context fatigue and errors.
@@ -146,6 +160,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
   Cache stored in `references/stories/` — one `.md` file per unique game+scene.
   
 - **`pack_timestamps.py`** — packs a flat chronological timestamp list into byte-limited parts (3,500B target) and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
+- **`align_ref_timeline.py`** — aligns reference video SRT timestamps with stream chunk timestamps. Parses SRT, extracts keyword scenes, searches chunks for first occurrence. Builds alignment table for verification. See step 6 of Orchestration Checklist.
 
   **Usage:**
   ```bash
@@ -170,8 +185,21 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 3. Pre-flight: `python3 scripts/anibon-analyzer.py /path/to/workspace`. **MANDATORY: Resolve all detected gaps > 10 min BEFORE spawning subagents.** Do not skip.
 4. DB Bootstrap: Run check/build for FGO/YGO if needed.
 5. Parallel Analysis: Spawn chunk subagents using [subagent-prompt-template.md](subagent-prompt-template.md).
-6. Gap Verification: After collecting all subagent results, scan chronological timestamp list for gaps > 10 min. Inject intermediate timestamps from raw transcript before assembly.
-7. Final Assembly: Save chronological timestamp list to workspace, then pack:
+6. **World Identity Verification** (MANDATORY for post-cutoff games)
+
+   > If stream covers game version AFTER training data cutoff → model hallucinates wrong names/lore from inference. MUST verify. Priority: local refs → cached → SRT → websearch.
+
+   a. **Check local game refs** first: `references/games/*.md` has patch notes, chars, factions. Reads faster than websearch + more reliable.
+   b. **Cached story refs**: `python3 scripts/fetch_story_ref.py --list` or browse `references/stories/`.
+   c. **Reference SRT** (if available): `yt-dlp --write-subs --sub-lang en --skip-download <ref_url>` → `python3 scripts/align_ref_timeline.py <srt> <chunks/ > alignment.json`
+   d. **Build name map**: Thai phoneme → verified EN name from sources above
+   e. **Websearch fallback**: only if local + cached + SRT insufficient — use `fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"`
+   f. **Reject**: training-data inference, older-version character, unconfirmed phonetic match
+
+   **Only then** write story/event stamp descriptions.
+
+7. Gap Verification: After collecting all subagent results, scan chronological timestamp list for gaps > 10 min. Inject intermediate timestamps from raw transcript before assembly.
+8. Final Assembly: Save chronological timestamp list to workspace, then pack:
    `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed local narrative chapter markers (`📌 [ช่วงที่ 1: <Theme>]`, `📌 [ช่วงที่ 2: ...]`) restarting index at 1 ONLY when a section block contains 2+ chapter groups (omit `📌 [ช่วงที่ ...]` if section block has only 1 chapter group).
