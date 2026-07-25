@@ -163,7 +163,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 7. Final Assembly: Save chronological timestamp list to workspace, then pack:
    `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
-   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed local narrative chapter markers (`📌 [ช่วงที่ 1: <Theme>]`, `📌 [ช่วงที่ 2: ...]`) restarting index at 1 for each comment section block.
+   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed local narrative chapter markers (`📌 [ช่วงที่ 1: <Theme>]`, `📌 [ช่วงที่ 2: ...]`) restarting index at 1 ONLY when a section block contains 2+ chapter groups (omit `📌 [ช่วงที่ ...]` if section block has only 1 chapter group).
    **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
 
 ## Iron Rules

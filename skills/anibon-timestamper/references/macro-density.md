@@ -50,7 +50,7 @@ After Map stage collects all subagent results, the Summarizer MUST:
 - Pack each part toward the 3,500-byte ceiling before splitting.
 - Merge any two adjacent parts whose combined bytes stay under 3,200 — always.
 - **Section Title Rule (No Greeting Headers)**: A section header line (`ส่วนที่ N: <Title>`) MUST describe the dominant macro topic of that entire comment block. NEVER name a section header after a generic first line like "เริ่มสตรีม" or opening greetings.
-- **Narrative Chapter Markers**: For long streams (> 6 hours), group chronological timestamp items under local chapter markers `📌 [ช่วงที่ 1: <Narrative Topic>]`, `📌 [ช่วงที่ 2: ...]`, restarting index at 1 for each comment section block.
+- **Narrative Chapter Markers**: For long streams (> 6 hours), group chronological timestamp items under local chapter markers `📌 [ช่วงที่ 1: <Narrative Topic>]`, `📌 [ช่วงที่ 2: ...]`, restarting index at 1 ONLY when a section block contains 2+ chapter groups (omit `📌 [ช่วงที่ ...]` if section block has only 1 chapter group).
 - **Thematic Boundary Alignment:** Align section splits with natural topic transitions (e.g., food/health clips, news threads, gaming sessions) rather than arbitrary byte boundaries. Keep closely related topics together in the same section.
 - **Tail Part Balancing:** When the final part contains < 4 timestamps and cannot be merged into the previous part due to byte limits, shift the preceding thematic cluster into the final part. This preserves theme continuity while balancing item counts across trailing sections.
 - A final part with < 4 timestamps is a smell; merge it with its neighbor or rebalance using thematic clustering unless byte limit prevents it.
