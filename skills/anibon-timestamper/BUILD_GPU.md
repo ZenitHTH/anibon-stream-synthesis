@@ -50,6 +50,74 @@ cmake --build build -j --config Release
 | `GGML_CUDA_FORCE_MMQ` | OFF | Force matrix multiplication kernels |
 | `CUDA_ARCHITECTURES` | auto | e.g. `"89;90"` for RTX 4090 |
 
+#### GCC > 15 (too new for nvcc)
+
+Add `--allow-unsupported-compiler`:
+
+```bash
+cmake -B build -DGGML_CUDA=1 -DCMAKE_CUDA_FLAGS="--allow-unsupported-compiler"
+```
+
+Do NOT patch `host_config.h`. Use the flag above.
+
+#### CUDA in non-standard path
+
+```bash
+export PATH="/path/to/cuda/bin:$PATH"
+export CUDA_PATH="/path/to/cuda"
+export LD_LIBRARY_PATH="/path/to/cuda/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"
+cmake -B build -DGGML_CUDA=1
+```
+
+#### Install CUDA toolkit without root (Linux)
+
+Download + extract RPMs from NVIDIA repo:
+
+```bash
+BASE="https://developer.download.nvidia.com/compute/cuda/repos/fedora44/x86_64"
+for pkg in \
+  cuda-nvcc-13-3-13.3.73-1.x86_64.rpm \
+  cuda-crt-13-3-13.3.73-1.x86_64.rpm \
+  libnvvm-13-3-13.3.73-1.x86_64.rpm \
+  cuda-compiler-13-3-13.3.1-1.x86_64.rpm \
+  cuda-cudart-13-3-13.3.29-1.x86_64.rpm \
+  cuda-cudart-devel-13-3-13.3.29-1.x86_64.rpm \
+  libcublas-13-3-13.5.1.27-1.x86_64.rpm \
+  libcublas-devel-13-3-13.5.1.27-1.x86_64.rpm; do
+  curl -sL "$BASE/$pkg" -o "$pkg"
+done
+mkdir -p ~/cuda/usr/local/cuda-13.3
+for rpm in *.rpm; do rpm2cpio "$rpm" | cpio -idmv -D ~/cuda; done
+```
+
+**Symlink trap**: `lib64` = symlink to `targets/x86_64-linux/lib` (same dir).  
+Wrong: `lib64/libfoo.so -> ../targets/x86_64-linux/lib/libfoo.so` doubles path segment.  
+Correct: from `targets/x86_64-linux/lib/`:
+```bash
+ln -sf libcublasLt.so.13.5.1.27 libcublasLt.so.13
+ln -sf libcublasLt.so.13 libcublasLt.so
+```
+
+Then:
+```bash
+CUDA_HOME=~/cuda/usr/local/cuda-13.3
+export PATH="$CUDA_HOME/bin:$PATH"
+export CUDA_PATH="$CUDA_HOME"
+export LD_LIBRARY_PATH="$CUDA_HOME/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"
+```
+
+#### Architecture flags
+
+| GPU | Compute Capability | Flag |
+|-----|-------------------|------|
+| GTX 1660 Super | 7.5 | `75-real` |
+| RTX 3060 | 8.6 | `86-real` |
+| RTX 4090 | 8.9 | `89-real` |
+
+```bash
+cmake -B build -DGGML_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES="75-real"
+```
+
 ### AMD HIP (Linux)
 
 ```bash
@@ -189,6 +257,23 @@ Use a smaller model or quantized variant:
 ```bash
 models/download-ggml-model.sh large-v3-turbo-q5_0
 ```
+
+### CUDA: `undefined reference to cublasSgemm_v2@libcublas.so.13`
+
+Missing `LD_LIBRARY_PATH` during link. Set before `cmake --build`:
+
+```bash
+export LD_LIBRARY_PATH="/path/to/cuda/targets/x86_64-linux/lib:$LD_LIBRARY_PATH"
+```
+
+### CUDA: `libcublasLt.so` ELF section name out of range / corrupt
+
+cublasLt 13.6.0.2 ships with broken ELF section headers. Use 13.5.1.27 instead.
+
+### CUDA: `CUDA::cublas` target not found
+
+cmake FindCUDAToolkit needs `libcublas.so` in same dir as `libcudart.so`.  
+Check `cmake -LA | grep CUDA_cublas` to confirm path.
 
 ### Slow performance on Vulkan
 
