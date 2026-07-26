@@ -5,222 +5,75 @@ description: Use when generating detailed timestamps or topic summaries for long
 
 # Anibon Timestamper (Orchestrator)
 
-## Overview
-
-A routing skill for analyzing data, conversations, or transcripts from live streams to generate timestamps in YouTube Description/Comment format. It dynamically detects the stream type (Talk, Gaming, Marathon, Event) and delegates the actual processing to specialized sub-skills.
+A routing skill for analyzing live stream transcripts to generate timestamps in YouTube format. Dynamically detects stream type and delegates to specialized sub-skills.
 
 ## When to Use
 
-- You need to extract key moments and generate timed topic labels for a video or stream by speaker "Boat" from **Anibon Official**.
+Streams or videos by "Boat" from Anibon Official that need timed topic labels.
 
----
+## Sub-Skills
 
-## Process Flow: Dynamic Subagent Routing
+**REQUIRED (first):** Load `preparing-tools` to verify dependencies (`yt-dlp`, `ffmpeg`, `python3`).
 
-> [!IMPORTANT]
-> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `ffmpeg`, `python3`, `sqlite3`). Do NOT proceed if any tool is missing.
+Loaded by signal (add to prompt when needed):
+- `anibon-world-identity` — verify game/char names against references before story stamps
+- `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 
-0. **Environment Setup**
-   
-   - **Native PATH**: Rely entirely on the OS `$env:PATH` to resolve python and tools. Do NOT write boilerplate to detect python paths or set PYTHONPATH.
-   - **File Conventions**: Store working files in a session working directory. Example filenames: `anibon_<video_id>_transcript.json`, `anibon_<video_id>_chunks/`.
+## Pipeline
 
-1. **Initialization & Context**
-   
-   - Greet the user and **Ask for Output Language**: "What language would you like the timestamps generated in? (e.g., Thai, English, etc.)" Do not proceed to timestamp generation until the user confirms.
-   - **Channel Ownership Check**: Verify the channel is Anibon Official (uploader name matches Phuboat, ปู่โบ๊ต, โบ๊ต, Boat, or ANIBON). If not, do NOT call the speaker "Boat".
-   - **Video Publish Date Check**: Run `yt-dlp --print uploader,upload_date "<url>"` via a shell command (`Bash` in Claude Code, `run_command` in Antigravity, native bash in OpenCode). If `yt-dlp` is unavailable, fetch the page via the available web-fetch tool. **Compare the stream's upload date to the CURRENT DATE** to determine if you are analyzing a retrospective/old video, as news context changes over time. **CRITICAL**: Do NOT write ad-hoc `python -c` scripts to scrape YouTube HTML.
-   - **Transcript & Preparation**: See Step 2 and Step 3 of the Step-by-Step Guide for downloading and chunking.
+### 0. Environment Setup
 
-2. **MapReduce Strategy for Long Streams**
-   
-   - **Parallel Subagent Processing**: For long streams, spawn multiple parallel subagents to process the JSON chunks concurrently. This map-reduce strategy is optimized for cloud models with large context windows.
-   - **REQUIRED SUB-SKILL:** Load `anibon-macro-density` before dispatching subagents. It overrides default density rules to keep final output compact (≤ 20 YouTube comments for a 9-hour stream).
-   - **Explicit Parameters for Chunking**: Default is `--block 300 --overlap 30` (5-min segments). For long talk-heavy streams, prefer `--block 600 --overlap 60` (10-min segments) to halve subagent count and enforce macro density naturally.
-   - **Subagent Scripting Rule**: Subagents shouldn't need to write custom parsing scripts. They can read the generated chunks directly.
+Use OS PATH to resolve tools. Store working files in `youtube_<video_id>_workspace/`.
 
-3. **Transcript Auto-Detection → Sub-Skill Routing**
+### 1. Initialize & Context
 
-   **DETECT FIRST, ROUTE SECOND.** Before routing any chunk, classify its content type. Use `detect_topics.py` (see Helper Scripts) for keyword-based signal scanning instead of ad-hoc python/grep commands.
+Ask output language. Verify channel is Anibon Official (Phuboat/ปู่โบ๊ต/Boat/ANIBON). Check upload date vs current date.
 
-   ```bash
-   # Quick classification scan across all chunks
-   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks \
-     -w "Kamen Rider,Super Sentai,Ultraman,โทคุซัทสึ" -c tokusatsu -o compact
+### 2. Download, Clean & Chunk
 
-   # Detailed per-chunk matches for gaming content
-   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks \
-     -w "FGO,Fate,Arknights,กาชา,SSR,banner" -c gaming -o table
+`python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30 --vision`
+Talk-heavy → `--block 600 --overlap 60` for larger chunks.
 
-   # Scan single chunk for political/royal keywords
-   python3 scripts/detect_topics.py ~/youtube_<video_id>_workspace/chunks/chunk_05.json \
-     -w "รัชกาล,สวรรคต,มาตรา 112" -c royal -o json
-   ```
+### 3. Signal Detection → Knowledge Routing
 
-   ### Detection Signals (scan the raw transcript text)
+Run TF-IDF across all chunks. Signal terms auto-match knowledge files by filename substring (see `references/INDEX.md`). Inject `[DETECTION SIGNAL]` + matched knowledge into each subagent's prompt. No hardcoded terms.
 
-   | Signal found in chunk | → Load sub-skill |
-   |---|---|
-   | Long monologues, reading chat, news discussion, lore/story tangents, "coded" political talk (e.g., One Piece metaphors for Thai news) | `anibon-talk-stream` |
-   | Game-specific jargon (boss names, stage names, skill names) dominate with sparse verbal reactions | `anibon-gaming-stream` |
-   | Multiple distinct game titles appear in sequence, clear "switching" transitions | `anibon-marathon-stream` |
-   | Patch note reading, new event content, theorycrafting, dense game terminology released recently | `anibon-event-stream` |
-   | Tokusatsu franchise names (Kamen Rider, Super Sentai, Ultraman, etc.), episode watch party, multi-speaker panel discussion about tokusatsu | `anibon-tokusatsu-stream` |
-   | Interactive bracket voting, Ideal Type World Cup, uwufufu.com website, character elimination ranks | `references/stream/uwufufu-knowledge.md` |
+```bash
+python3 scripts/detect_signals.py ~/youtube_<id>_workspace/chunks \
+  --output json \
+  --match-knowledge skills/anibon-timestamper/references/ > signals.json
+```
 
-   **Rules:**
-   - A chunk **may match multiple signals** — load ALL matching sub-skills simultaneously.
-   - If uncertain between `talk` and `gaming`: default to `anibon-talk-stream` (Boat almost always talks).
-   - If the chunk is clearly mixed (e.g., gaming + political lore): load both `anibon-gaming-stream` + `anibon-talk-stream`.
+### 4. Spawn Subagents (Parallel)
 
-   Because Boat never follows a set agenda and his streams are highly chaotic, a single 15-minute chunk may contain multiple distinct activities. **Subagents are permitted and encouraged to load MULTIPLE sub-skills simultaneously** if their chunk is highly mixed.
+Use `subagent-prompt-template.md`. Inject per-chunk signal + knowledge files. Each subagent returns 0-2 timestamps. Collect chronologically.
 
-   **Sub-skill locations** (available in `references/stream/`):
-   - `references/stream/talk-stream.md`
-   - `references/stream/gaming-stream.md`
-   - `references/stream/marathon-stream.md`
-   - `references/stream/event-stream.md`
-   - `references/stream/tokusatsu-stream.md`
-   - `references/stream/donation-classifier.md` ← **cross-stream**: load alongside any primary skill when the chunk contains [Donation] entries
-   - `references/stream/timestamp-description.md` ← **cross-stream**: load alongside ANY subagent when writing timestamp descriptions; defines the 4-pillar framework (Point → Analysis → Impact → Live Comment → one sentence)
-   - `references/stream/fgo-knowledge.md` ← **game-knowledge**: FGO servant naming conventions & Thai community nicknames dictionary
-   - `references/stream/uwufufu-knowledge.md` ← **interactive-knowledge**: UWUFUFU World Cup bracket rules & milestone density caps
-   - `references/stream/phuboat-anime-talking-style.md` ← **anime-talking**: PhuBoat's recurring anime analytical frameworks, dual-synthesis, and rant patterns
-- `references/stream/story-enrichment.md` ← **story-enrichment**: Load when any chunk generates `[Story]` entries. Enriches descriptions with source game/chapter + websearch synopsis.
+### 5. World Identity Verify
 
-   **Live Service Games Knowledge Base References**:
-   - See [INDEX.md](references/games/INDEX.md) for all game lore, mechanics, and DB query guides.
+If stream covers post-cutoff games → load `anibon-world-identity` before writing story stamps. Priority: local refs → cached story refs → SRT → websearch.
 
-   **⚡ DB Bootstrap** (Run before lookup):
-   - FGO: `python3 scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db" || python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"`
-   - YGO: `python3 scripts/fetch_ygo_db.py --check --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db" || python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"`
+### 6. Reduce & Assemble
 
-   **Canonical Subagent Prompt Template:**
-   Read [subagent-prompt-template.md](subagent-prompt-template.md) for the full prompt to send to each chunk subagent.
+Collect all timestamps → delegate to `summarizer-subagent-guide.md` for dedup, part splitting, header review. Run `check_sections.py` on output. Single `.md` file with `═══` section blocks.
 
-   **Key rule injected into every subagent prompt:**
-   - 5-min chunk → **1 timestamp default, 2 MAX**
-   - New timestamp ONLY on: game switch, speaker join/leave, completely new activity
-   - Multiple sub-topics in same conversation → MERGE into 1
-   - Subagent must run Density Self-Check (Step 8) and merge down to ≤ 2 before submitting
-   - **IMAGE VERIFICATION (MANDATORY)**: If any transcript item has an `"image"` field, you MUST call `view_file` to load the image and visually confirm the game title / activity shown on screen BEFORE writing the timestamp description. Never name a game from transcript text alone if an image is available.
+## Helper Scripts
 
-4. **World Identity Verification Gate** (before writing story stamps)
+All in `scripts/`. Run `<name>.py --help` for full usage:
 
-   > **CRITICAL for post-cutoff games**: LLM training data may not include current game version. Inference alone produces hallucinated names. Example failure: "พนาคเดีย" → Penacony (wrong, should be Planarcadia), "ย่าวกวง" → Jing Yuan (wrong, should be Yao Guang). Both preventable by reading `references/games/Honkai_Star_Rail.md`.
-
-   **Priority chain:** Local references first → cached story refs → reference SRT → websearch fallback
-
-   a. **Check local game references** (`references/games/*.md`): contains patch chronologies, character names, faction lists for major gacha games. This is the fastest and most reliable source. The `Honkai_Star_Rail.md` already has Planarcadia 4.x + Yao Guang.
-   b. **Check cached story refs** via `fetch_story_ref.py --list` or browse `references/stories/` for previously fetched synopses.
-   c. **Reference SRT** (if reference video URL exists): `yt-dlp --write-subs --sub-lang en --skip-download <ref_url>` → parse for character/location names. Use `align_ref_timeline.py` to match ref timestamps against stream chunks automatically.
-   d. **Build name map**: Thai transcript phoneme → verified EN name from sources above
-   e. **Scan chunks** at story boundary for each candidate, match against verified map
-   f. **Websearch fallback** only if local + cached + SRT all insufficient: `fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"`
-   g. **Reject**: training-data inference, older-version character, unconfirmed phonetic match
-
-5. **Reduce Stage (Final Assembly)**
-
-   - **Gather**: Combine all chunk subagent results chronologically.
-   - **Delegate to Summarizer Subagent**: Read [summarizer-subagent-guide.md](summarizer-subagent-guide.md) for the full prompt to send to the Summarizer Subagent. Do NOT write summaries or decide splits yourself — prevents context fatigue and errors.
-   - **⚠️ SINGLE FILE RULE**: Save ALL parts into ONE `.md` file. Never create `part1.md`, `part2.md`, etc.
-
-## Local Audio Transcription (Alternative)
-
-If YouTube has no subtitles or auto-captions, transcribe the audio locally using `whisper.cpp`:
-1. **Audio Extraction**: Download audio stream as a mono 16kHz WAV file:
-   ```bash
-   yt-dlp -x --audio-format wav --audio-quality 16K "VIDEO_URL" -o "audio.wav"
-   ```
-2. **Local Transcription**: Run GPU-accelerated `whisper.cpp` build:
-   - For Windows (Vulkan/AMD):
-     ```powershell
-     .\whisper-cli.exe -m ggml-large-v3-turbo.bin -l th -f audio.wav -ot 540000 2>&1
-     ```
-     *(Note: Set the start offset `-ot 540000` (9 min) to skip silent start screens and avoid repetition loop bugs).*
-   - For full build options, platform configurations, and parameters, see [BUILD_GPU.md](BUILD_GPU.md).
-3. **Format Conversion**: Convert `whisper-cli` raw JSON output to pipeline-standard `raw_transcript.json`.
-
-## Helper Scripts & Writing Code
-
-Available scripts (all in the `scripts/` directory next to this SKILL.md):
-- **`prepare_video.py`** — downloads transcript, cleans, and chunks (Step 2).
-- **`anibon-analyzer.py`** — runs on the workspace folder to detect >10m timeline gaps, classify chunks for routing, and pre-calculate YouTube block byte sizes (warns >3500 bytes). Run BEFORE analysis to plan part splits.
-- **`detect_topics.py`** — keyword scanner across chunk JSONs. Takes file/dir + comma-separated words. Outputs table/json/compact. Replaces ad-hoc python -c/grep for topic detection. Run `-h` for full usage.
-- **`clean_transcript.py`** — cleans raw json3 and/or outputs chunks (called by prepare_video).
-- **`check_sections.py`** — checks section sizes in the final timestamp `.md` file, flags sections over 4,500/5,000 chars, and suggests midpoint split timestamps. Run after assembly.
-- **`fetch_story_ref.py`** — fetches story synopsis via websearch and caches locally. Used when subagent enriches `[Story]` entries with source context. Requires user confirmation before searching.
-  
-  **Usage:**
-  ```bash
-  python3 scripts/fetch_story_ref.py --game "FGO" --scene "Babylonia Tiamat war"
-  python3 scripts/fetch_story_ref.py --list  # show cached entries
-  ```
-  
-  Cache stored in `references/stories/` — one `.md` file per unique game+scene.
-  
-- **`pack_timestamps.py`** — packs a flat chronological timestamp list into byte-limited parts (3,500B target) and outputs formatted Markdown with separator blocks. Also writes a `parts.json` alongside for manual editing/reassembly.
-- **`align_ref_timeline.py`** — aligns reference video SRT timestamps with stream chunk timestamps. Parses SRT, extracts keyword scenes, searches chunks for first occurrence. Builds alignment table for verification. See step 6 of Orchestration Checklist.
-
-  **Usage:**
-  ```bash
-  # Pack timestamps list into parts (auto-named output)
-  python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt
-  # → produces ~/youtube_<video_id>_workspace/timestamps_packed.md
-  # → produces ~/youtube_<video_id>_workspace/timestamps_parts.json
-
-  # Custom output path
-  python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md
-  ```
-
-  **Input format** — flat timestamp list, one per line:
-  ```
-  HH:MM:SS - [Tag] Description
-  ```
-  > **Important:** Never hardcode the parts list or output path inside a one-off script. Always use `pack_timestamps.py` with a flat timestamp list input. This keeps data and assembly logic separate and reusable across streams.
-
-## 🧭 Orchestration Checklist (Cloud)
-1. Environment: Verify `yt-dlp`, `python3`.
-2. Download & Chunk: `python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30 --vision`
-3. Pre-flight: `python3 scripts/anibon-analyzer.py /path/to/workspace`. **MANDATORY: Resolve all detected gaps > 10 min BEFORE spawning subagents.** Do not skip.
-4. DB Bootstrap: Run check/build for FGO/YGO if needed.
-5. Parallel Analysis: Spawn chunk subagents using [subagent-prompt-template.md](subagent-prompt-template.md).
-6. **World Identity Verification** (MANDATORY for post-cutoff games)
-
-   > If stream covers game version AFTER training data cutoff → model hallucinates wrong names/lore from inference. MUST verify. Priority: local refs → cached → SRT → websearch.
-
-   a. **Check local game refs** first: `references/games/*.md` has patch notes, chars, factions. Reads faster than websearch + more reliable.
-   b. **Cached story refs**: `python3 scripts/fetch_story_ref.py --list` or browse `references/stories/`.
-   c. **Reference SRT** (if available): `yt-dlp --write-subs --sub-lang en --skip-download <ref_url>` → `python3 scripts/align_ref_timeline.py <srt> <chunks/ > alignment.json`
-   d. **Build name map**: Thai phoneme → verified EN name from sources above
-   e. **Websearch fallback**: only if local + cached + SRT insufficient — use `fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"`
-   f. **Reject**: training-data inference, older-version character, unconfirmed phonetic match
-
-   **Only then** write story/event stamp descriptions.
-
-7. Gap Verification: After collecting all subagent results, scan chronological timestamp list for gaps > 10 min. Inject intermediate timestamps from raw transcript before assembly.
-8. Final Assembly: Save chronological timestamp list to workspace, then pack:
-   `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
-   `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
-   **Thematic Split Override**: If user requests re-balancing with explicit thematic boundaries (e.g., "Part 1 = watch/news, Part 2 = gameplay"), honor the boundary even if parts are under 3500B. Procedure: split `timestamps.txt` at the transition timestamp → pack each half separately with `pack_timestamps.py` → combine outputs into one file with correct `ส่วนที่ N` numbering. Both parts must still pass `check_sections.py`.
-   **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed local narrative chapter markers (`📌 [ช่วงที่ 1: <Theme>]`, `📌 [ช่วงที่ 2: ...]`) restarting index at 1 ONLY when a section block contains 2+ chapter groups (omit `📌 [ช่วงที่ ...]` if section block has only 1 chapter group).
-   **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
+- `prepare_video.py` — download, clean, chunk
+- `anibon-analyzer.py` — pre-flight: gap detection, chunk classification, byte cap check
+- `detect_signals.py` — TF-IDF signal + knowledge matching (replaces `detect_topics.py`)
+- `clean_transcript.py` — raw json3 cleaner (called by prepare_video)
+- `check_sections.py` — validate byte caps on assembled output
+- `fetch_story_ref.py` — fetch/cache story synopses (user consent required for websearch)
+- `pack_timestamps.py` — pack flat timestamp list into byte-limited parts
+- `align_ref_timeline.py` — align reference SRT timestamps with stream chunks
+- `fetch_fgo_db.py`, `fetch_ygo_db.py` — build card databases (for World Identity)
 
 ## Iron Rules
-- **Publish date first**: Always check.
-- **Use detect_topics.py, not ad-hoc scanning**: Keyword detection across chunks must use `scripts/detect_topics.py`. No `python3 -c "..."`, no `grep`, no ad-hoc scripts. See `-h` for usage.
-- **Dynamic Routing**: Subagents load skills based on chunk content. No upfront guessing.
-- **ONE FILE**: Output is one `.md` file. Use `═══` blocks. No `part1.md`.
-- **OUTPUT IN WORKSPACE**: Save `parts.json` and `anibon_timestamps.md` to `~/youtube_<video_id>_workspace/`.
-- **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
-- **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit. **Exception: if user requests thematic re-balancing, split at specified boundary even if parts are under byte limit.**
-- **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
-- **INTRO SEGMENT BREAKDOWN**: If the opening intro/setup exceeds 10 minutes before main activity starts, break it down into 3-5 min sub-topic milestones (`[Greeting]`, `[Talk] Stream Topic Intro`, `[Talk] Rules & Setup`, `[Talk] Scale/Context`). Never leave `00:00:00` to `00:15:00+` as a single timestamp block.
-- **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.
-- **IMAGE FIRST**: If a chunk item has an `"image"` field, load and inspect it with `view_file` BEFORE naming any game or activity.
-- **VISION VERIFICATION FOR AMBIGUOUS CONTEXT**: When the streamer discusses technical setups, file formats/codecs (WebM/AV1), on-screen errors, or game UI details that audio transcripts gloss over, extract relevant video frames via `ffmpeg` and inspect them with `view_file` to confirm exact context before writing descriptions.
-- **COMPLETE PART HEADERS**: Part titles in `═══` header blocks must be concise, short summaries (~5–10 words) that capture the macro section theme and end on complete words. Never truncate titles mid-sentence or copy generic opening greetings as the part title.
-- **NO AD-HOC TIMESTAMP GENERATION**: Never write custom Python scripts to generate timestamps from chunks. The only valid path is: spawn parallel subagents via `subagent-prompt-template.md` → collect results → run `pack_timestamps.py`. Shortcutting this pipeline produces shallow, generic, templated output and is a hard failure. A script that keyword-matches chunks and emits repeated generic labels (`[Talk] ตอบคำถามแชท`) is not a timestamp — it is noise.
-- **SUBAGENT PIPELINE IS MANDATORY**: Step 5 (Parallel Analysis via chunk subagents) is not optional. Even for short streams, every chunk must be processed by a subagent that reads the chunk JSON, loads the matching sub-skills (`talk-stream.md`, `fgo-knowledge.md`, `phuboat-anime-talking-style.md`, etc.), and inspects image frames where present. The orchestrator cannot read chunks inline and write timestamps itself — it lacks the domain knowledge loaded by sub-skills and will produce generic output.
-- **STORY ENRICHMENT REQUIRES USER CONSENT**: Never websearch for story synopsis without asking user first. The `anibon-story-enrichment` protocol (Step 4 in subagent template) defines the exact ask format. Cache hits do not need re-asking.
-- **JP VA NO-COMMENTARY = REFERENCE, NOT TARGET**: No-commentary JP VA videos exist solely as reference to classify Story vs Talk in commentary streams — by comparing aligned audio. Do not timestamp reference videos as standalone content.
+
+- **Use detect_signals.py** — no ad-hoc grep/inline scanning. TF-IDF only.
+- **ONE FILE** — single `.md` with `═══` section blocks. No `part1.md`.
+- **NO GAPS** — max 10 min between timestamps unless verified silent.
+- **INTRO BREAKDOWN** — intro >10 min → break into 3-5 min sub-topic milestones.
+- **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `pack_timestamps.py`.

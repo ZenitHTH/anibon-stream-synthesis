@@ -14,6 +14,17 @@ Fill in the `<placeholders>` before sending.
 You are processing Chunk <N>.
 CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 
+DETECTION SIGNALS:
+<Orchestrator: inject detect_signals.py --output block for this chunk here>
+
+KNOWLEDGE FILES:
+<Orchestrator: inject matched references file paths here>
+
+The detection signals above are machine-computed TF-IDF terms (frequency × rarity).
+Use them to identify the PRIMARY topic of this chunk, but ALWAYS verify against
+the transcript text. The knowledge files contain canonical names — use them to
+correct Whisper's phonetic spelling of game/character names.
+
 ## OUTPUT CONTRACT (read before anything else)
 
 One 5-minute chunk → **1 timestamp by default, 2 MAX. (0 is allowed!)**.
@@ -28,10 +39,8 @@ A new timestamp is only valid when ONE of these occurs:
 Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description, or emit 0 if it's all one long continuous flow.
 If unsure → merge. Never split.
 
-## Step 1: Scan and Detect Signals
-Read the transcript. Identify the PRIMARY activity of this chunk.
-- Gacha pulls, gameplay, talk/news, tokusatsu, watch parties, greetings.
-- Match card/game terms against FGO/YGO database records if provided.
+## Step 1: Verify Signal Against Transcript
+The [DETECTION SIGNAL] block above suggests the primary topic(s). Confirm by reading the transcript text. If signal says FGO but transcript shows WuWa → trust transcript. Match card/game terms against FGO/YGO database records if provided.
 
 ## Step 2: Time Alignment
 For every valid timestamp event:
@@ -79,6 +88,7 @@ If chunk is primarily talking/chatting:
 
 ## Step 6: Write Description
 - Load `anibon-timestamp-description`.
+- If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.
 - **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
 - Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
@@ -100,6 +110,8 @@ If a transcript item contains an `"image"` field:
 3. **NEVER name a game from transcript text alone if an image is available.** Transcript text is auto-generated and may misidentify the game. The screen is ground truth.
 4. If the image is unclear, describe what you see rather than guessing the name.
 
+Also use vision when the streamer discusses technical setups, file formats/codecs (WebM/AV1), on-screen errors, or game UI details that audio transcript glosses over — extract relevant video frames via `ffmpeg` and inspect with `view_file` to confirm exact context.
+
 ## Step 9: Density Self-Check (BEFORE submitting)
 Count your timestamps. If you have more than 2 for this chunk, you MUST merge until ≤ 2.
 
@@ -109,7 +121,7 @@ Red flags — merge immediately or output 0 timestamps:
 - Sub-topic shift within same game session → merge
 - "They mentioned a new detail" → add to existing description, no new line
 
-CRITICAL RULES: <Orchestrator: inject 3-4 bullet Iron Rules from matching sub-skills here>
+CRITICAL RULES: <Orchestrator: inject 3-4 bullet Iron Rules from matching sub-skills here. Include knowledge file instructions from matched files.>
 TRANSCRIPT JSON:
 <Orchestrator: inject full JSON content of this 5-minute chunk here>
 ```

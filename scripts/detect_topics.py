@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+# DEPRECATED: Use detect_signals.py instead.
+# detect_signals.py uses TF-IDF (frequency-based) detection with zero
+# hardcoded terms. It adapts to any workspace automatically.
+# See: python3 scripts/detect_signals.py --help
+#
+# This file is kept for backward compatibility but will be removed
+# in a future update.
+
 """Detect topic keywords across chunk JSON files.
 
 Usage:
