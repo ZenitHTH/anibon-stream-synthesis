@@ -165,7 +165,7 @@ for ($t=0; $t -lt $duration; $t+=60) {
   ffmpeg -ss $ts -i full_video.mp4 -frames:v 1 -q:v 2 "frames\frame_$ts.jpg"
 }
 # Analyze via agy
-agy --model "Gemini 3.5 Flash (Low)" --dangerously-skip-permissions --print "Identify game and activity per frame" --add-dir frames
+agy --model "Gemini 3.6 Flash" --dangerously-skip-permissions --print "Identify game and activity per frame" --add-dir frames
 ```
 
 ## Platform Compatibility

@@ -202,6 +202,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 8. Final Assembly: Save chronological timestamp list to workspace, then pack:
    `python3 scripts/pack_timestamps.py ~/youtube_<video_id>_workspace/timestamps.txt --output ~/youtube_<video_id>_workspace/anibon_timestamps.md`
    `python3 scripts/check_sections.py ~/youtube_<video_id>_workspace/anibon_timestamps.md`
+   **Thematic Split Override**: If user requests re-balancing with explicit thematic boundaries (e.g., "Part 1 = watch/news, Part 2 = gameplay"), honor the boundary even if parts are under 3500B. Procedure: split `timestamps.txt` at the transition timestamp → pack each half separately with `pack_timestamps.py` → combine outputs into one file with correct `ส่วนที่ N` numbering. Both parts must still pass `check_sections.py`.
    **Header Title & Boundary Review:** Inspect section header titles (`═══ ส่วนที่ N: <Title> ═══`) in `anibon_timestamps.md` to ensure titles are concise, complete summaries (~5–10 words) ending on whole words that describe the MACRO THEME of the entire section. NEVER allow a section header to be titled after a generic first timestamp like "เริ่มสตรีม" (Stream Start). For streams > 6 hours, embed local narrative chapter markers (`📌 [ช่วงที่ 1: <Theme>]`, `📌 [ช่วงที่ 2: ...]`) restarting index at 1 ONLY when a section block contains 2+ chapter groups (omit `📌 [ช่วงที่ ...]` if section block has only 1 chapter group).
    **If `check_sections.py` shows ⚠️ WARN or ❌ FAIL, adjust `--byte-limit` or split timestamps before proceeding.**
 
@@ -212,7 +213,7 @@ Available scripts (all in the `scripts/` directory next to this SKILL.md):
 - **ONE FILE**: Output is one `.md` file. Use `═══` blocks. No `part1.md`.
 - **OUTPUT IN WORKSPACE**: Save `parts.json` and `anibon_timestamps.md` to `~/youtube_<video_id>_workspace/`.
 - **4,500 BYTE CAP**: Target 3,500 bytes per pasted block. Run `check_sections.py`.
-- **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit.
+- **PRE-SPLIT**: Pack timestamps to hit 3,500-byte limit first. Combine small topics. Only split if combining overflows limit. **Exception: if user requests thematic re-balancing, split at specified boundary even if parts are under byte limit.**
 - **NO GAPS**: Max 10 mins without timestamp unless verified silent. **No exceptions — verify gaps before AND after assembly.**
 - **INTRO SEGMENT BREAKDOWN**: If the opening intro/setup exceeds 10 minutes before main activity starts, break it down into 3-5 min sub-topic milestones (`[Greeting]`, `[Talk] Stream Topic Intro`, `[Talk] Rules & Setup`, `[Talk] Scale/Context`). Never leave `00:00:00` to `00:15:00+` as a single timestamp block.
 - **FORMAT LOCK**: The separator format is defined in `summarizer-subagent-guide.md` (lines 64–71). Any change to `pack_timestamps.py` formatting MUST match that spec exactly. The unit tests in `tests/test_pack_timestamps.py` are the contract — if tests pass but the format still diverges from the guide, fix the guide, not the tests.

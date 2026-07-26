@@ -14,3 +14,7 @@ Symptoms of a violation:
 - Zero reference to specific characters, story beats, or game events that were actually discussed.
 
 Correct behavior: After `anibon-analyzer.py` passes, the next step is **always** `invoke_subagent` per chunk using `subagent-prompt-template.md`.
+
+## agy Model Rule
+
+When using `agy` for vision proxy, always use the newest model. Never pin to an older version like Gemini 3.5. Old models have context/quality limitations that cause failures. Current: `Gemini 3.6 Flash`.
