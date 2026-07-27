@@ -21,6 +21,7 @@
     {"pattern": "ฮกสตาร", "replacement": "Honkai Star Rail"},
     {"pattern": "wing\\s*wave", "replacement": "Wuthering Waves"},
     {"pattern": "Wing\\s*Wave", "replacement": "Wuthering Waves"},
+    {"pattern": "Wuthering\\s*Wave\\b", "replacement": "Wuthering Waves"},
     {"pattern": "seele\\s*leaks?", "replacement": "Seele Leaks"}
   ]
 }
