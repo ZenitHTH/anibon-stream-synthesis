@@ -43,18 +43,19 @@ MIN_FREQ = 3          # min word freq in chunk to be discovery candidate
 MIN_LEN = 4           # min word length for discovery
 WIKI_DELAY = 1.0      # seconds between wiki API calls
 CATEGORY_KEYWORDS = {
-    "game": ["video game", "game", "เกม", "gacha", "rpg", "fps", "gaming", "console", "pc game", "mobile game",
-             "nintendo", "playstation", "xbox", "steam", "android", "ios", "software", "expansion", "dlc",
-             "patch", "open world", "mmo", "strategy", "simulation", "gameplay", "playable",
-             "entertainment", "comic", "franchise", "release", "role playing", "game series",
-             "dark souls", "souls", "elden ring", "battle royale", "battleground", "playstation",
-             "nintendo switch", "gacha game"],
-    "anime": ["anime", "manga", "อนิเมะ", "มังงะ", "light novel", "japanese animation", "japanese series",
-              "manga series", "anime series", "fictional", "protagonist", "voice actor", "jujutsu", "episode",
-              "television series", "ova", "anime television", "shonen", "seinen", "otaku",
-              "series", "anime film", "character"],
+    "game": ["video game", "gacha", "rpg", "fps", "gaming", "console", "mobile game",
+             "nintendo", "playstation", "xbox", "steam", "gameplay", "playable",
+             "entertainment", "comic", "franchise", "game series", "dark souls",
+             "battle royale", "gacha game", "open-world", "expansion", "dlc",
+             "mmo", "strategy game", "simulation game", "role-playing", "fighting game",
+             "video game series", "video game character", "game developer"],
+    "anime": ["anime", "manga", "อนิเมะ", "มังงะ", "light novel",
+              "anime series", "manga series", "voice actor",
+              "episode", "television series", "ova", "shonen", "seinen",
+              "series", "anime film", "japanese manga", "film series",
+              "anime television", "chinese animation"],
     "character": ["character", "ตัวละคร", "fictional character", "video game character", "playable",
-                  "main character", "villain", "hero", "protagonist", "antagonist", "supporting character"],
+                  "main character", "villain", "hero", "protagonist", "antagonist"],
     "tokusatsu": ["tokusatsu", "kamen rider", "super sentai", "ultraman", "kaiju", "godzilla"],
 }
 
@@ -240,6 +241,12 @@ class WikiClassifier:
             if not results:
                 return None
             
+            # Skip disambiguation pages (generic words)
+            non_disambig = [r for r in results 
+                          if "(disambiguation)" not in r.get("title", "").lower()]
+            if non_disambig:
+                results = non_disambig
+            
             # Combine snippets from top results
             full_snippet = " ".join(r.get("snippet", "") for r in results[:5])
             full_snippet = re.sub(r"<[^>]+>", "", full_snippet)
@@ -259,65 +266,68 @@ class WikiClassifier:
     def _categorize(self, titles, snippet, word):
         """Classify word using Wikipedia titles + snippet.
         
-        Game/anime character = strong signal from title context.
+        STRONG signal: title has "(video game)", "(anime)", "(character)" suffix.
+        WEAK signal: snippet mentions game/anime near the searched word.
+        Returns category (str) or None.
         """
         snippet_lower = snippet.lower()
         word_lower = word.lower()
-        
-        # ---- Check titles first (strongest signal) ----
-        for title in titles:
-            title_lower = title.lower()
-            # Title explicitly mentions game/anime context
-            if "(video game)" in title_lower or "(game)" in title_lower:
-                return "game"
-            if "(anime)" in title_lower or "(tv series)" in title_lower or "(manga)" in title_lower:
-                return "anime"
-            if "(character)" in title_lower:
-                return "character"
-            if "(series)" in title_lower:
-                return "anime"
-            # Title with franchise keywords + word match
-            if any(kw in title_lower for kw in ["game", "anime", "manga", "series", "franchise"]):
-                if word_lower in title_lower:
-                    return "game"
-        
-        # ---- Snippet analysis ----
-        # Word must appear in snippet
         word_variants = {word_lower, word_lower + 's', word_lower.rstrip('s')}
-        if not any(v in snippet_lower for v in word_variants):
+        
+        # ── Phase 1: Title suffix check (strongest signal) ──
+        for title in titles:
+            tl = title.lower()
+            if "(video game)" in tl or "(game)" in tl or "video game" in tl:
+                return "game"
+            if "(anime)" in tl or "(tv series)" in tl or "(manga)" in tl:
+                return "anime"
+            if "(character)" in tl:
+                return "character"
+        
+        # ── Phase 2: Check if word appears as whole word in snippet ──
+        if not any(re.search(r'(?<![a-z])' + re.escape(v) + r'(?![a-z])', snippet_lower) 
+                   for v in word_variants if v):
             return None
         
-        # Score each category
+        # ── Phase 3: Snippet proximity analysis ──
+        # Check if category keywords appear near the searched word
+        kw_patterns = {cat: [re.compile(re.escape(kw), re.IGNORECASE) for kw in kws]
+                      for cat, kws in CATEGORY_KEYWORDS.items()}
+        word_pattern = re.compile(r'(?<![a-z])(' + '|'.join(re.escape(v) for v in word_variants if v) + r')(?![a-z])')
+        
+        # Find all word positions
+        word_positions = [m.start() for m in word_pattern.finditer(snippet_lower)]
+        
         scores = {}
-        for cat, keywords in CATEGORY_KEYWORDS.items():
+        for cat, patterns in kw_patterns.items():
             score = 0
-            for kw in keywords:
-                if kw in snippet_lower:
-                    kw_pos = snippet_lower.find(kw)
-                    # Check if searched word is near this keyword
-                    for variant in word_variants:
-                        wp = snippet_lower.find(variant)
-                        if wp >= 0:
-                            distance = abs(kw_pos - wp)
-                            if distance < 120:
-                                score += 3  # close match
-                                break
-                            elif distance < 300:
-                                score += 2  # medium closeness
-                                break
+            for pat in patterns:
+                for m in pat.finditer(snippet_lower):
+                    kw_pos = m.start()
+                    # Find nearest word position
+                    closest = min((abs(kw_pos - wp) for wp in word_positions), default=999)
+                    if closest < 120:
+                        score += 3
+                    elif closest < 400:
+                        score += 2
                     else:
-                        score += 1  # kw found but word not nearby
+                        score += 1
             if score > 0:
                 scores[cat] = score
         
         if not scores:
             return None
         
+        # Check if this is a generic word (exact title match, common concept)
+        is_generic = any(tl == word_lower or tl == word_lower + 's' 
+                        for tl in (t.lower() for t in titles))
+        
         best_cat = max(scores, key=scores.get)
         best_score = scores[best_cat]
         
-        # Require score >= 3 (word + keyword in proximity)
-        if best_score < 3:
+        # Stricter threshold for generic words
+        min_score = 4 if is_generic else 3
+        if best_score < min_score:
             return None
         
         return best_cat
