@@ -31,7 +31,7 @@ Knowledge JSON format:
 Git: uses --git-dir from skill root. Only commits if changes made.
 """
 
-import sys, json, os, re, time, subprocess
+import sys, json, os, re, time, subprocess, xml.etree.ElementTree as ET
 from pathlib import Path
 from collections import Counter
 from urllib.request import Request, urlopen
@@ -149,23 +149,61 @@ def save_knowledge(path, entries, discovered):
     return True
 
 
+def _load_chunk_json(path: Path):
+    """Load a single JSON chunk. Returns (name, start_sec, full_text)."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    texts = [it.get("text", "").strip() for it in data.get("items", []) if it.get("text")]
+    return path.stem, data.get("start_sec", 0), " ".join(texts)
+
+
+def _load_chunk_xml(path: Path):
+    """Load a single XML chunk. Returns (name, start_sec, full_text)."""
+    tree = ET.parse(path)
+    root = tree.getroot()
+    texts = []
+    for item in root.iter("item"):
+        t = (item.text or "").strip()
+        if t:
+            texts.append(t)
+    start_sec = int(root.get("start_sec", 0))
+    return path.stem, start_sec, " ".join(texts)
+
+
+def _chunk_sort_key(f: Path) -> int:
+    """Extract chunk index from filename (chunk_03.json → 3)."""
+    try:
+        return int(f.stem.split("_")[-1])
+    except (ValueError, IndexError):
+        return 0
+
+
 def load_chunks(path):
-    """Yield (name, start_sec, full_text) for each chunk JSON."""
+    """Yield (name, start_sec, full_text) for each chunk.
+
+    Supports:
+    - Directory of JSON files (preferred) or XML files
+    - Single JSON or XML file
+    - Mixed dir: ONLY one format (JSON wins if both exist)
+    """
     p = Path(path)
     if p.is_file():
-        with open(p, encoding="utf-8") as f:
-            data = json.load(f)
-        texts = [it.get("text", "").strip() for it in data.get("items", []) if it.get("text")]
-        yield p.stem, data.get("start_sec", 0), " ".join(texts)
+        if p.suffix == ".xml":
+            yield _load_chunk_xml(p)
+        else:
+            yield _load_chunk_json(p)
         return
-    
-    for f in sorted(p.iterdir()):
-        if f.suffix != ".json":
-            continue
-        with open(f, encoding="utf-8") as fh:
-            data = json.load(fh)
-        texts = [it.get("text", "").strip() for it in data.get("items", []) if it.get("text")]
-        yield f.stem, data.get("start_sec", 0), " ".join(texts)
+
+    # Prefer JSON; fall back to XML
+    candidates = sorted(p.glob("chunk_*.json"), key=_chunk_sort_key)
+    fmt = "json"
+    if not candidates:
+        candidates = sorted(p.glob("chunk_*.xml"), key=_chunk_sort_key)
+        fmt = "xml"
+
+    loader = _load_chunk_xml if fmt == "xml" else _load_chunk_json
+    for f in candidates:
+        yield loader(f)
 
 
 def tokenize(text):
