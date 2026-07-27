@@ -43,6 +43,28 @@ def load_tag_macros() -> dict[str, str]:
     return data.get("mapping", {})
 
 
+# ── Garbled English clean (reuse from sibling script) ──────────
+def _load_garbled_cleaner():
+    """Lazy-import clean_text from clean_garbled_english.py.
+    Falls back to a no-op if the module is missing."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "clean_garbled_english",
+            _SCRIPT_DIR / "clean_garbled_english.py",
+        )
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            return mod.clean_text
+    except Exception:
+        pass
+    return lambda t: t  # no-op fallback
+
+
+_clean_desc = _load_garbled_cleaner()
+
+
 # Byte cost of the ═══ separator block (two sep lines ~172B each + title line ~140B).
 # Both greedy K estimation and DP ceiling use this so they stay consistent.
 HEADER_OVERHEAD = 500
@@ -68,6 +90,7 @@ def parse_timestamps(lines: list) -> list:
             print(f"[!] Skipping unparsable line {i+1}: {line[:60]}", file=sys.stderr)
             continue
         time_str, tag, desc = m.groups()
+        desc = _clean_desc(desc)
         parts = list(map(int, time_str.split(":")))
         seconds = parts[0] * 3600 + parts[1] * 60 + parts[2]
         raw = f"{time_str} - {tag} {desc}"
