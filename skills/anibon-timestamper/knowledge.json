@@ -3,96 +3,399 @@
   "updated": "2026-07-27",
   "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
   "entries": {
-    "wuthering waves": {"kind": "game", "file": "skills/reference/Wuthering_Waves.md"},
-    "wuthering wave": {"kind": "game", "file": "skills/reference/Wuthering_Waves.md"},
-    "wuwa": {"kind": "game", "file": "skills/reference/Wuthering_Waves.md"},
-    "คลื่นเวฟ": {"kind": "game", "file": "skills/reference/Wuthering_Waves.md"},
-    "wuthering": {"kind": "game", "file": "skills/reference/Wuthering_Waves.md"},
-    "genshin": {"kind": "game", "file": "skills/reference/Genshin_Impact.md"},
-    "genshin impact": {"kind": "game", "file": "skills/reference/Genshin_Impact.md"},
-    "เกนชิน": {"kind": "game", "file": "skills/reference/Genshin_Impact.md"},
-    "zenless": {"kind": "game", "file": "skills/reference/Zenless_Zone_Zero.md"},
-    "zenless zone zero": {"kind": "game", "file": "skills/reference/Zenless_Zone_Zero.md"},
-    "zzz": {"kind": "game", "file": "skills/reference/Zenless_Zone_Zero.md"},
-    "เซนเลส": {"kind": "game", "file": "skills/reference/Zenless_Zone_Zero.md"},
-    "honkai": {"kind": "game", "file": "skills/reference/Honkai_Impact_3.md"},
-    "honkai impact": {"kind": "game", "file": "skills/reference/Honkai_Impact_3.md"},
-    "honkai impact 3rd": {"kind": "game", "file": "skills/reference/Honkai_Impact_3.md"},
-    "สามเค": {"kind": "game", "file": "skills/reference/Honkai_Impact_3.md"},
-    "honkai star rail": {"kind": "game", "file": "skills/reference/Honkai_Star_Rail.md"},
-    "hsr": {"kind": "game", "file": "skills/reference/Honkai_Star_Rail.md"},
-    "star rail": {"kind": "game", "file": "skills/reference/Honkai_Star_Rail.md"},
-    "รางดาว": {"kind": "game", "file": "skills/reference/Honkai_Star_Rail.md"},
-    "arknights": {"kind": "game", "file": "skills/reference/Arknights.md"},
-    "อาร์กไนท์": {"kind": "game", "file": "skills/reference/Arknights.md"},
-    "อาร์กนก": {"kind": "game", "file": "skills/reference/Arknights.md"},
-    "arknights endfield": {"kind": "game", "file": "skills/reference/Arknights_Endfield.md"},
-    "endfield": {"kind": "game", "file": "skills/reference/Arknights_Endfield.md"},
-    "limbus": {"kind": "game", "file": "skills/reference/Limbus_Company.md"},
-    "limbus company": {"kind": "game", "file": "skills/reference/Limbus_Company.md"},
-    "ลิมบัส": {"kind": "game", "file": "skills/reference/Limbus_Company.md"},
-    "fgo": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "fate": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "fate grand order": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "grand order": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "เฟท": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "เซอร์แวนท์": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "servant": {"kind": "game", "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"},
-    "pokemon": {"kind": "game", "file": "skills/reference/Pokemon_PvP.md"},
-    "pokémon": {"kind": "game", "file": "skills/reference/Pokemon_PvP.md"},
-    "โปเกม่อน": {"kind": "game", "file": "skills/reference/Pokemon_PvP.md"},
-    "radical red": {"kind": "game", "file": "skills/reference/Pokemon_Radical_Red.md"},
-    "yu-gi-oh": {"kind": "game", "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"},
-    "yugioh": {"kind": "game", "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"},
-    "ygo": {"kind": "game", "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"},
-    "ยูกิ": {"kind": "game", "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"},
-    "chaos zero nightmare": {"kind": "game", "file": "skills/reference/Chaos_Zero_Nightmare.md"},
-    "chaos zero": {"kind": "game", "file": "skills/reference/Chaos_Zero_Nightmare.md"},
-    "เคออสซีโร่": {"kind": "game", "file": "skills/reference/Chaos_Zero_Nightmare.md"},
-    "palworld": {"kind": "game", "file": null},
-    "sekiro": {"kind": "game", "file": null},
-    "bleach": {"kind": "anime", "file": null},
-    "เรื่อง anime": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "a-n-i-m-e": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "anime": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "อนิเมะ": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "มังงะ": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "manga": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "การ์ตูน": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "series": {"kind": "anime", "file": "references/stream/phuboat-anime-talking-style.md"},
-    "uwufufu": {"kind": "domain", "file": "references/stream/uwufufu-knowledge.md"},
-    "world cup": {"kind": "domain", "file": "references/stream/uwufufu-knowledge.md"},
-    "bracket": {"kind": "domain", "file": "references/stream/uwufufu-knowledge.md"},
-    "donate": {"kind": "domain", "file": "references/stream/donation-classifier.md"},
-    "donation": {"kind": "domain", "file": "references/stream/donation-classifier.md"},
-    "superchat": {"kind": "domain", "file": "references/stream/donation-classifier.md"},
-    "ซุปเปอร์แชท": {"kind": "domain", "file": "references/stream/donation-classifier.md"},
-    "story": {"kind": "domain", "file": "references/stream/story-enrichment.md"},
-    "lore": {"kind": "domain", "file": "references/stream/story-enrichment.md"},
-    "plot": {"kind": "domain", "file": "references/stream/story-enrichment.md"},
-    "เนื้อเรื่อง": {"kind": "domain", "file": "references/stream/story-enrichment.md"},
-    "talk": {"kind": "stream_type", "file": "references/stream/talk-stream.md"},
-    "discussion": {"kind": "stream_type", "file": "references/stream/talk-stream.md"},
-    "discuss": {"kind": "stream_type", "file": "references/stream/talk-stream.md"},
-    "คุย": {"kind": "stream_type", "file": "references/stream/talk-stream.md"},
-    "เม้าท์": {"kind": "stream_type", "file": "references/stream/talk-stream.md"},
-    "game": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "gameplay": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "play": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "gaming": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "เกม": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "เล่น": {"kind": "stream_type", "file": "references/stream/gaming-stream.md"},
-    "event": {"kind": "stream_type", "file": "references/stream/event-stream.md"},
-    "อีเวนท์": {"kind": "stream_type", "file": "references/stream/event-stream.md"},
-    "update": {"kind": "stream_type", "file": "references/stream/event-stream.md"},
-    "patch": {"kind": "stream_type", "file": "references/stream/event-stream.md"},
-    "kamen rider": {"kind": "stream_type", "file": "references/stream/tokusatsu-stream.md"},
-    "kamen": {"kind": "stream_type", "file": "references/stream/tokusatsu-stream.md"},
-    "super sentai": {"kind": "stream_type", "file": "references/stream/tokusatsu-stream.md"},
-    "ultraman": {"kind": "stream_type", "file": "references/stream/tokusatsu-stream.md"},
-    "tokusatsu": {"kind": "stream_type", "file": "references/stream/tokusatsu-stream.md"},
-    "marathon": {"kind": "stream_type", "file": "references/stream/marathon-stream.md"},
-    "subathon": {"kind": "stream_type", "file": "references/stream/marathon-stream.md"}
+    "a-n-i-m-e": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "anime": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "arknights": {
+      "kind": "game",
+      "file": "skills/reference/Arknights.md"
+    },
+    "arknights endfield": {
+      "kind": "game",
+      "file": "skills/reference/Arknights_Endfield.md"
+    },
+    "bleach": {
+      "kind": "anime",
+      "file": null
+    },
+    "bracket": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "chaos zero": {
+      "kind": "game",
+      "file": "skills/reference/Chaos_Zero_Nightmare.md"
+    },
+    "chaos zero nightmare": {
+      "kind": "game",
+      "file": "skills/reference/Chaos_Zero_Nightmare.md"
+    },
+    "discuss": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "discussion": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "donate": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "donation": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "endfield": {
+      "kind": "game",
+      "file": "skills/reference/Arknights_Endfield.md"
+    },
+    "event": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "fate": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "fate grand order": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "fgo": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "game": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "gameplay": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "gaming": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "genshin": {
+      "kind": "game",
+      "file": "skills/reference/Genshin_Impact.md"
+    },
+    "genshin impact": {
+      "kind": "game",
+      "file": "skills/reference/Genshin_Impact.md"
+    },
+    "grand order": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "honkai": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Impact_3.md"
+    },
+    "honkai impact": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Impact_3.md"
+    },
+    "honkai impact 3rd": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Impact_3.md"
+    },
+    "honkai star rail": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "hsr": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "hunter": {
+      "kind": "anime",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "kamen": {
+      "kind": "stream_type",
+      "file": "references/stream/tokusatsu-stream.md"
+    },
+    "kamen rider": {
+      "kind": "stream_type",
+      "file": "references/stream/tokusatsu-stream.md"
+    },
+    "limbus": {
+      "kind": "game",
+      "file": "skills/reference/Limbus_Company.md"
+    },
+    "limbus company": {
+      "kind": "game",
+      "file": "skills/reference/Limbus_Company.md"
+    },
+    "lore": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "manga": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "marathon": {
+      "kind": "stream_type",
+      "file": "references/stream/marathon-stream.md"
+    },
+    "marvel": {
+      "kind": "game",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "palworld": {
+      "kind": "game",
+      "file": null
+    },
+    "patch": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "play": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "plot": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "pokemon": {
+      "kind": "game",
+      "file": "skills/reference/Pokemon_PvP.md"
+    },
+    "pokémon": {
+      "kind": "game",
+      "file": "skills/reference/Pokemon_PvP.md"
+    },
+    "radical red": {
+      "kind": "game",
+      "file": "skills/reference/Pokemon_Radical_Red.md"
+    },
+    "sekiro": {
+      "kind": "game",
+      "file": null
+    },
+    "series": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "servant": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "star rail": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "story": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "subathon": {
+      "kind": "stream_type",
+      "file": "references/stream/marathon-stream.md"
+    },
+    "super sentai": {
+      "kind": "stream_type",
+      "file": "references/stream/tokusatsu-stream.md"
+    },
+    "superchat": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "talk": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "tokusatsu": {
+      "kind": "stream_type",
+      "file": "references/stream/tokusatsu-stream.md"
+    },
+    "ultraman": {
+      "kind": "stream_type",
+      "file": "references/stream/tokusatsu-stream.md"
+    },
+    "update": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "uwufufu": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "world cup": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "wuthering": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "wuthering wave": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "wuthering waves": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "wuwa": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "ygo": {
+      "kind": "game",
+      "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+    },
+    "yu-gi-oh": {
+      "kind": "game",
+      "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+    },
+    "yugioh": {
+      "kind": "game",
+      "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+    },
+    "zenless": {
+      "kind": "game",
+      "file": "skills/reference/Zenless_Zone_Zero.md"
+    },
+    "zenless zone zero": {
+      "kind": "game",
+      "file": "skills/reference/Zenless_Zone_Zero.md"
+    },
+    "zzz": {
+      "kind": "game",
+      "file": "skills/reference/Zenless_Zone_Zero.md"
+    },
+    "การ์ตูน": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "คลื่นเวฟ": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "คุย": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "ซุปเปอร์แชท": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "มังงะ": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "ยูกิ": {
+      "kind": "game",
+      "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+    },
+    "รางดาว": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "ลิมบัส": {
+      "kind": "game",
+      "file": "skills/reference/Limbus_Company.md"
+    },
+    "สามเค": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Impact_3.md"
+    },
+    "อนิเมะ": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "อาร์กนก": {
+      "kind": "game",
+      "file": "skills/reference/Arknights.md"
+    },
+    "อาร์กไนท์": {
+      "kind": "game",
+      "file": "skills/reference/Arknights.md"
+    },
+    "อีเวนท์": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "เกนชิน": {
+      "kind": "game",
+      "file": "skills/reference/Genshin_Impact.md"
+    },
+    "เกม": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "เคออสซีโร่": {
+      "kind": "game",
+      "file": "skills/reference/Chaos_Zero_Nightmare.md"
+    },
+    "เซนเลส": {
+      "kind": "game",
+      "file": "skills/reference/Zenless_Zone_Zero.md"
+    },
+    "เซอร์แวนท์": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "เนื้อเรื่อง": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "เฟท": {
+      "kind": "game",
+      "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "เม้าท์": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "เรื่อง anime": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "เล่น": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "โปเกม่อน": {
+      "kind": "game",
+      "file": "skills/reference/Pokemon_PvP.md"
+    }
   },
-  "_discovered": {}
+  "_discovered": {
+    "marvel": {
+      "kind": "game",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "hunter": {
+      "kind": "anime",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
+      "_added": "2026-07-27T09:08:06"
+    }
+  }
 }
