@@ -1,0 +1,26 @@
+{
+  "description": "Garbled English → correct mapping for clean_garbled_english.py",
+  "note": "First-match wins. Order matters: put longer/more specific patterns first.",
+  "replacements": [
+    {"pattern": "one\\s+พ[ั้]?man", "replacement": "One Punch Man"},
+    {"pattern": "one\\s+punch\\s*man", "replacement": "One Punch Man"},
+    {"pattern": "แมป[ป]?[าa]", "replacement": "MAPPA"},
+    {"pattern": "JC\\s*Star", "replacement": "JC Staff"},
+    {"pattern": "J\\.C\\.\\s*Star", "replacement": "JC Staff"},
+    {"pattern": "เจซี\\s*สตาฟ[ฟ]?", "replacement": "JC Staff"},
+    {"pattern": "foage", "replacement": "footage"},
+    {"pattern": "ฟ[ุู]ตเท[จก]", "replacement": "footage"},
+    {"pattern": "ad\\s*[ดดี]apt(?!ation)", "replacement": "adapt"},
+    {"pattern": "ad\\s*[ดดี]aptation", "replacement": "adaptation"},
+    {"pattern": "adapt\\s*ation", "replacement": "adaptation"},
+    {"pattern": "\\borigal\\b", "replacement": "original"},
+    {"pattern": "อริจินอ", "replacement": "original"},
+    {"pattern": "[fฟ]อ[ื]?ม(?=[\\s,.]|$)", "replacement": "form"},
+    {"pattern": "time\\s*m[รฤ]fr", "replacement": "timeline"},
+    {"pattern": "time\\s*[fฟ]ร[ั]?ม", "replacement": "timeline"},
+    {"pattern": "ฮกสตาร", "replacement": "Honkai Star Rail"},
+    {"pattern": "wing\\s*wave", "replacement": "Wuthering Waves"},
+    {"pattern": "Wing\\s*Wave", "replacement": "Wuthering Waves"},
+    {"pattern": "seele\\s*leaks?", "replacement": "Seele Leaks"}
+  ]
+}

@@ -14,6 +14,17 @@ Fill in the `<placeholders>` before sending.
 You are processing Chunk <N>.
 CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 
+PREVIOUS CHUNK PRIMARY TOPIC: <Orchestrator: inject topic of previous chunk>
+CURRENT CHUNK PRIMARY TOPIC: <Orchestrator: inject topic from detect_signals.py>
+
+TOPIC CONTINUITY RULE (READ FIRST):
+If CURRENT_CHUNK_PRIMARY_TOPIC matches PREVIOUS_CHUNK_PRIMARY_TOPIC,
+output 0 timestamps UNLESS there is a clear EVENT change
+(Boss/Death/Victory/Cutscene/Donation).
+
+A "slightly different subtopic" is NOT a topic change.
+Only when the GAME or MAJOR ACTIVITY changes.
+
 DETECTION SIGNALS:
 <Orchestrator: inject detect_signals.py --output block for this chunk here>
 
@@ -60,6 +71,48 @@ For every valid timestamp event:
 - `[Victory]`: Boss cleared / quest completed
 - `[WatchParty]`: Watch-along reaction / episode review
 - `[Reaction]`: General reaction to trailers or videos
+
+## Step 3.5: Garbled-English + Contextual Safety Gate (Before Writing)
+
+If the chunk has been through `clean_garbled_english.py`, most English loanwords
+(One Punch Man, MAPPA, JC Staff, footage, adapt, original) are already normalised.
+
+### A. Garbled-English Check
+If you still see partially garbled English (e.g. half-Thai-half-English words,
+unrecognisable studio names, game titles that look wrong):
+
+1. Search web to verify the correct name before writing.
+2. Common garbles not yet caught by the cleaner:
+   - `Kagurabachi` — may be real (business newspaper leak) or hallucinated
+   - Studio names with Thai suffixes
+   - Romanised Japanese titles with mixed Thai characters
+
+### B. Contextual Plausibility Check (Prevents Game-Hallucination)
+**Every game/anime name you write MUST appear in (or be unambiguously implied by)
+the transcript text you see.** Rules:
+
+1. **Cross-reference**: If the transcript discusses Blue Archive gacha mechanics,
+   do NOT write "WuWa" or "Genshin" even if those names appear in the same chunk.
+   The PRIMARY topic by volume determines the game.
+
+2. **Single-mention trap**: If a game name appears only ONCE in garbled form
+   (e.g. "บัวใคร") and the remaining 59+ transcript lines are about a different
+   topic (economy, movies, etc.), DO NOT name that game — describe the event.
+
+3. **Dominant topic wins**: When transcript mixes games, count lines. The game
+   with the most discussion lines is the timestamp's subject. Mention other games
+   only in description, never as the primary title.
+
+4. **ASR ghost names**: The following are common ASR phoneme-garbles that do NOT
+   represent real titles:
+   - `บัวใคร` → is `Blue Archive`, not a real game called "Bua Krai"
+   - `Wing Wave` → is `Wuthering Waves` / `WuWa`, not a real game called "Wing Wave"
+
+### C. Hallucination Rule
+If all game names in the chunk are garbled AND you cannot confidently resolve
+them → output `[Talk]` tag with event description only. Never invent a game title.
+
+**Never guess. If unsure → describe the event, not the title.**
 
 ## Step 4: Story Enrichment (For [Story] Entries Only)
 

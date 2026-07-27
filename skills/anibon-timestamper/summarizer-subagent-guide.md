@@ -30,7 +30,7 @@ You MUST deduplicate them:
 
 ## PART SPLIT & CONSOLIDATION RULES
 
-- **PACKING DENSITY PRIORITY**: The primary goal is packing as many timestamps as possible into each part to approach the 3,500-byte target ceiling first. Splitting or sorting by topic/activity is secondary. Combine different topics into a single part if they fit under 3,500 bytes. Do not split by topic unless the byte limit is actually reached.
+- **TOPIC COHERENCE PRIORITY (CRITICAL)**: The primary goal is grouping timestamps by the SAME topic/activity within each part. Byte packing is secondary. Each part MUST contain stamps from ONE coherent topic only. If adjacent stamps cover DIFFERENT topics → SPLIT the part even if this means some parts are below 3,500 bytes. Topic-boundary test: Same game = same topic ✓. Game A → Game B = different topic → MUST split. Talk about game A → Talk about game B = different topic → MUST split. Boss fight + story = same game → same topic ✓.
 - Split a section into Part A / Part B only when:
   - Talk section > 15 minutes of continuous content
   - Gameplay section > 60 minutes
@@ -39,9 +39,12 @@ You MUST deduplicate them:
 When splitting: divide evenly by timestamp count. Each sub-part gets its own separator block.
 
 **Consolidation / Wrapping Constraint (CRITICAL)**:
-- Do NOT create parts containing only 1–3 timestamps unless the entire video has only 1–3 timestamps.
-- If a part has only 1–3 timestamps, or if adjacent parts/topics can be combined under 3,500 bytes, you MUST wrap/merge them. Keep packing timestamps into each part until the section size approaches the target ceiling (3,500 bytes) to maximize character usage per pasted block.
-- **FLOODING OVERFLOW EXCEPTION**: If a single topic is so long that combining it with another topic causes a part to exceed the 3,500-byte ceiling, do NOT pack them together and split them down the middle. Instead, split them cleanly at the topic boundary. The long topic should occupy its own dedicated part, and the overflowed topic can sit in its own part, even if it has only 1–3 timestamps, to avoid awkward spillovers across parts.
+- Do NOT create parts containing only 1–3 timestamps unless:
+  1. The entire video has only 1–3 timestamps, OR
+  2. The topic is genuinely unique and cannot be merged with adjacent parts without breaking topic coherence (e.g., a single donation read between two game sessions).
+- Never merge different topics just to fill byte space. Topic purity > byte utilization.
+- If adjacent parts share the same topic AND fit under 3,500 bytes combined → merge them.
+- **FLOODING OVERFLOW EXCEPTION**: If a single topic is so long that combining it with another topic causes a part to exceed the 3,500-byte ceiling, do NOT pack them together. Instead, split them cleanly at the topic boundary. The long topic should occupy its own dedicated part, and the overflowed topic can sit in its own part, even if it has only 1–3 timestamps.
 
 ## BYTE LIMITS
 

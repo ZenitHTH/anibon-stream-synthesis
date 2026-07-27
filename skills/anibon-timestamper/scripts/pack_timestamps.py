@@ -31,6 +31,18 @@ import json
 import argparse
 from pathlib import Path
 
+# ── Resources ───────────────────────────────────────────────────
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
+
+
+def load_tag_macros() -> dict[str, str]:
+    """Load tag→macro mapping from JSON config."""
+    path = _RESOURCES_DIR / "tag_macros.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return data.get("mapping", {})
+
+
 # Byte cost of the ═══ separator block (two sep lines ~172B each + title line ~140B).
 # Both greedy K estimation and DP ceiling use this so they stay consistent.
 HEADER_OVERHEAD = 500
@@ -195,20 +207,7 @@ def _range_body_bytes(prefix: list, lo: int, hi: int) -> int:
 
 _TAG_EXTRACT = re.compile(r"\[([^\]]+)\]")
 
-TAG_MACRO_MAP = {
-    "Talk": "TALK",
-    "Reaction": "TALK",
-    "Donation": "TALK",
-    "Chat": "TALK",
-    "Greeting": "TALK",
-    "Story": "TALK",
-    "Gameplay": "GAMEPLAY",
-    "Boss": "GAMEPLAY",
-    "Victory": "GAMEPLAY",
-    "News": "NEWS",
-    "WatchParty": "NEWS",
-    "Gacha": "NEWS",
-}
+TAG_MACRO_MAP = load_tag_macros()
 
 
 def _primary_tag(tag: str) -> str:
@@ -266,6 +265,67 @@ def _body_bytes_of(entries: list[dict]) -> int:
     return sum(e["bytes"] + 1 for e in entries)
 
 
+def cluster_by_topic(timestamps: list[dict], topic_map: list[dict]) -> list[list[dict]]:
+    """
+    Group timestamps by topic labels from --topic-json.
+
+    Each topic_map entry: {start: "HH:MM:SS", end: "HH:MM:SS", label: str}
+    Timestamps are assigned to the topic whose [start, end) range contains them.
+    Timestamps outside any topic range get their own single-entry segment.
+    This produces coherent segments that respect topic boundaries.
+    """
+    if not timestamps or not topic_map:
+        return cluster_by_tag(timestamps)  # fallback
+
+    # Convert topic_map start/end to seconds for comparison
+    def _to_sec(t: str) -> int:
+        p = list(map(int, t.split(":")))
+        return p[0] * 3600 + p[1] * 60 + p[2]
+
+    topics = []
+    for tm in topic_map:
+        topics.append({
+            "start_sec": _to_sec(tm["start"]),
+            "end_sec": _to_sec(tm.get("end", "99:59:59")),
+            "label": tm.get("label", ""),
+        })
+
+    # Assign each timestamp to its topic segment
+    segments: list[list[dict]] = []
+    current_seg: list[dict] = []
+    current_label: str | None = None
+
+    for ts in timestamps:
+        sec = ts["sec"]
+        # Find matching topic
+        matched_label = None
+        for tp in topics:
+            if tp["start_sec"] <= sec < tp["end_sec"]:
+                matched_label = tp["label"]
+                break
+
+        if matched_label is None:
+            # Outside any known topic → standalone
+            if current_seg:
+                segments.append(current_seg)
+            segments.append([ts])
+            current_seg = []
+            current_label = None
+        elif matched_label != current_label:
+            # Topic boundary crossed
+            if current_seg:
+                segments.append(current_seg)
+            current_seg = [ts]
+            current_label = matched_label
+        else:
+            current_seg.append(ts)
+
+    if current_seg:
+        segments.append(current_seg)
+
+    return segments
+
+
 def normalise_segments(
     segments: list[list[dict]], body_limit: int
 ) -> list[list[dict]]:
@@ -306,22 +366,28 @@ def normalise_segments(
     return [s for s in merged if s]
 
 
-def balanced_pack(timestamps: list[dict], byte_limit: int) -> list[list[dict]]:
+def balanced_pack(timestamps: list[dict], byte_limit: int,
+                  topic_map: list[dict] | None = None) -> list[list[dict]]:
     """
     Greedy context-aware pack:
-      Pass 1 — cluster_by_tag: group consecutive timestamps by theme
+      Pass 1 — cluster_by_tag (or cluster_by_topic if topic_map provided):
+               group consecutive timestamps by theme
       Pass 2 — normalise_segments: ensure every cluster fits in body budget
       Pass 3 — Greedy fill: pack entries to body_limit, start new part on
                overflow. No part exceeds byte_limit.
     Produces minimum part count at byte_limit. Tag continuity naturally
-    preserved within each part.
+    preserved within each part. Topic boundaries from --topic-json are
+    respected when provided.
     """
     if not timestamps:
         return []
 
     body_limit = byte_limit - HEADER_OVERHEAD
 
-    raw_segments = cluster_by_tag(timestamps)
+    if topic_map:
+        raw_segments = cluster_by_topic(timestamps, topic_map)
+    else:
+        raw_segments = cluster_by_tag(timestamps)
     segments = normalise_segments(raw_segments, body_limit)
 
     # Flatten all entries in chronological order
@@ -416,6 +482,10 @@ def main():
     ap.add_argument("input", type=Path, help="Timestamp list file")
     ap.add_argument("--byte-limit", type=int, default=3500,
                     help="Hard ceiling bytes per part (default: 3500)")
+    ap.add_argument("--break-at", type=str, default=None,
+                    help="Comma-separated timestamps to force section breaks (e.g. '04:35:28,05:15:00')")
+    ap.add_argument("--topic-json", type=Path, default=None,
+                    help="JSON file with detected topic boundaries: [{start, end, label}]")
     ap.add_argument("--output", "-o", type=Path, default=None)
     ap.add_argument("--title", default="วิดีโอสตรีม ANIBON")
     ap.add_argument("--parts-json", type=Path, default=None)
@@ -424,6 +494,11 @@ def main():
     if not args.input.exists():
         print(f"[!] File not found: {args.input}", file=sys.stderr)
         sys.exit(1)
+
+    break_at = set()
+    if args.break_at:
+        break_at = set(t.strip() for t in args.break_at.split(","))
+        print(f"[*] Forced breaks at: {sorted(break_at)}", file=sys.stderr)
 
     raw = args.input.read_text(encoding="utf-8").splitlines()
     timestamps = parse_timestamps(raw)
@@ -438,7 +513,34 @@ def main():
     if len(timestamps) < pre:
         print(f"[*] Merged {pre - len(timestamps)} consecutive [Story] entries.", file=sys.stderr)
 
-    groups = balanced_pack(timestamps, args.byte_limit)
+    # Load topic boundaries from --topic-json if provided
+    topic_map = None
+    if args.topic_json:
+        if not args.topic_json.exists():
+            print(f"[!] Topic JSON not found: {args.topic_json}", file=sys.stderr)
+            sys.exit(1)
+        topic_map = json.loads(args.topic_json.read_text(encoding="utf-8"))
+        print(f"[*] Loaded {len(topic_map)} topic boundaries from {args.topic_json}", file=sys.stderr)
+
+    # Apply forced breaks — split into segments at break timestamps
+    if break_at:
+        segments = []
+        current_seg = []
+        for ts in timestamps:
+            if current_seg and ts["time"] in break_at:
+                segments.append(current_seg)
+                current_seg = []
+            current_seg.append(ts)
+        if current_seg:
+            segments.append(current_seg)
+        # balanced_pack each segment, flatten groups
+        all_groups = []
+        for seg in segments:
+            all_groups.extend(balanced_pack(seg, args.byte_limit, topic_map))
+        groups = all_groups
+    else:
+        groups = balanced_pack(timestamps, args.byte_limit, topic_map)
+
     parts  = [_group_to_part(g) for g in groups]
 
     sizes = [p["bytes"] for p in parts]

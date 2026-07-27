@@ -1,5 +1,27 @@
-import sys, re
+import sys, re, json
 from pathlib import Path
+
+# ── Resources path ───────────────────────────────────────────────
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
+
+
+def load_asr_garbled_patterns() -> list[tuple[re.Pattern, str]]:
+    """Load ASR garbled patterns from JSON config."""
+    path = _RESOURCES_DIR / "asr_garbled_patterns.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    compiled = []
+    for entry in data.get("patterns", []):
+        compiled.append((re.compile(entry["pattern"]), entry["message"]))
+    return compiled
+
+
+# ── ASR Garbled Pattern Scan ─────────────────────────────────────
+# Known garbled patterns that should have been caught by
+# clean_garbled_english.py. Warn if any appear in the output.
+ASR_GARBLED_PATTERNS = load_asr_garbled_patterns()
+
+
 
 # ponytail: replaces manual copy-paste-count workflow for section size checking.
 #
@@ -62,10 +84,22 @@ def suggest_split(body: str) -> str | None:
     return best_ts
 
 
+def _scan_asr_garbles(text: str) -> list[str]:
+    """Scan text for known ASR garbled patterns. Returns list of warnings."""
+    warnings = []
+    for pattern, msg in ASR_GARBLED_PATTERNS:
+        matches = re.findall(pattern, text)
+        if matches:
+            warnings.append(f"  ⚠️  Found {len(matches)}× {msg}")
+    return warnings
+
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("file", help="Timestamp .md file")
+    ap.add_argument("--no-garbled-check", action="store_true",
+                    help="Skip ASR garbled pattern scan")
     args = ap.parse_args()
     
     path = Path(args.file)
@@ -115,6 +149,17 @@ def main():
         sys.exit(1)
     else:
         print("\n✅ All sections are within the YouTube comment byte limit.")
+
+    # ── ASR garbled scan ──────────────────────────────────────────────
+    if not args.no_garbled_check:
+        asr_warnings = _scan_asr_garbles(text)
+        if asr_warnings:
+            print("\n⚠️  ASR Garbled Patterns Detected (run clean_garbled_english.py):")
+            for w in asr_warnings:
+                print(w)
+            print()
+        else:
+            print("✅ No ASR garbled patterns found.")
 
 if __name__ == "__main__":
     main()

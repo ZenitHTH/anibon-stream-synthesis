@@ -1,0 +1,18 @@
+{
+  "description": "Tag → macro group mapping for pack_timestamps.py and validate_part_coherence.py",
+  "note": "Maps individual timestamp tags (case-sensitive) to high-level macro categories for grouping logic",
+  "mapping": {
+    "Talk": "TALK",
+    "Reaction": "TALK",
+    "Donation": "TALK",
+    "Chat": "TALK",
+    "Greeting": "TALK",
+    "Story": "TALK",
+    "Gameplay": "GAMEPLAY",
+    "Boss": "GAMEPLAY",
+    "Victory": "GAMEPLAY",
+    "News": "NEWS",
+    "WatchParty": "NEWS",
+    "Gacha": "NEWS"
+  }
+}
