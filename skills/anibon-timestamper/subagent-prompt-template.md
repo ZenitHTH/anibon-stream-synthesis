@@ -24,6 +24,9 @@ output 0 timestamps UNLESS there is a clear EVENT change
 
 A "slightly different subtopic" is NOT a topic change.
 Only when the GAME or MAJOR ACTIVITY changes.
+EXCEPTION: Q&A/interview format — each explicit question frame
+("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "สุดท้ายคำถาม") counts
+as topic switch regardless of same domain.
 
 DETECTION SIGNALS:
 <Orchestrator: inject detect_signals.py --output block for this chunk here>
@@ -48,6 +51,11 @@ A new timestamp is only valid when ONE of these occurs:
 **CRITICAL:** If this chunk is simply CONTINUING the exact same topic, story, or game activity from the previous chunk, you should output **0 timestamps**. Do not emit a timestamp just because your chunk started.
 
 Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description, or emit 0 if it's all one long continuous flow.
+Q&A FORMAT EXCEPTION: Structured Q&A where each question is
+explicitly framed by host/guest is NOT "continuous talk."
+Each distinct question frame = topic boundary → emit 1 stamp.
+Detect phrases like "เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...",
+"คำถามสุดท้าย", explicit question markers.
 If unsure → merge. Never split.
 
 ## Step 1: Verify Signal Against Transcript
@@ -136,6 +144,8 @@ Load `anibon-story-enrichment` for full protocol.
 ## Step 5: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
 If chunk is primarily talking/chatting:
 - Track MACRO topic only. Multiple paragraph shifts = same timestamp if same conversation thread.
+- Q&A/interview format: explicit question frames ("เดี๋ยวตอบคำถามนี้",
+  "ปู่ปู่ว่า...") reset topic. Do NOT merge across question boundaries.
 - Chat/donation cues: "ในแชทบอกว่า", "คุณ... บอกว่า" → tag as `[Chat]` or `[Donation]`.
 - Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
 

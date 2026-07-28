@@ -33,7 +33,7 @@ For full build options and platform configurations, see [BUILD_GPU.md](BUILD_GPU
 Convert whisper-cli raw JSON output to pipeline-standard `raw_transcript.json`:
 
 ```bash
-python3 scripts/clean_transcript.py whisper_output.json --format whisper --output raw_transcript.json
+python3 ../cleaning-auto-transcripts/scripts/clean_transcript.py whisper_output.json --format whisper --output raw_transcript.json
 ```
 
 Then proceed with the standard pipeline (chunking, signal detection, subagents).

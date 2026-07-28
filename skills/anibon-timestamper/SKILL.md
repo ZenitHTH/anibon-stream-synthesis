@@ -19,135 +19,153 @@ Loaded by signal (add to prompt when needed):
 - `anibon-world-identity` — verify game/char names against references before story stamps
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 
-## Pipeline
+## Pipeline (Linear, Top-to-Bottom)
 
-### 0. Environment Setup
+All paths relative to `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/`.
 
-Use OS PATH to resolve tools. Store working files in `youtube_<video_id>_workspace/`.
+### 0. Environment
 
-### 1. Initialize & Context
+`scripts/` directory contains all helper scripts. Run `<script>.py --help` for flags.
+Store working files in `youtube_<video_id>_workspace/`.
 
-Ask output language. Verify channel is Anibon Official (Phuboat/ปู่โบ๊ต/Boat/ANIBON). Check upload date vs current date.
+### 1. Initialize
 
-### 2. Download, Clean & Chunk
+Ask output language. Verify channel is ANIBON (Boat/PhuBoat). Check upload date.
 
-`python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30 --vision`
-Talk-heavy → `--block 600 --overlap 60` for larger chunks.
-
-### 2.5 Clean Garbled English (NEW)
-
-Run after chunking, before signal detection. Normalises Thai-Whisper garbled English:
-`one พman` → `One Punch Man`, `JC Star` → `JC Staff`, `foage` → `footage`.
+### 2. Prepare Video
 
 ```bash
-python3 scripts/clean_garbled_english.py \
-  --chunks ~/youtube_<id>_workspace/chunks/
+python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30
+# Talk-heavy → --block 600 --overlap 60
 ```
 
-Add `--dry-run` to preview changes without modifying files.
+Downloads transcript, creates `<workspace>/chunks/chunk_*.xml`.
 
-### 3. Signal Detection → Knowledge Routing
+### 3. Clean Transcript (Optional)
 
-Run TF-IDF across all chunks. Signal terms auto-match knowledge files by filename substring (see `references/INDEX.md`). Inject `[DETECTION SIGNAL]` + matched knowledge into each subagent's prompt. No hardcoded terms.
+Normalizes Thai-Whisper garbled English before signal detection.
 
 ```bash
-python3 scripts/detect_signals.py ~/youtube_<id>_workspace/chunks \
-  --output json \
-  --match-knowledge skills/anibon-timestamper/references/ > signals.json
+python3 scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
 ```
 
-### 3.5 Pre-pass — Detect Topic Boundaries (NEW)
+### 4. Analyze (Pre-flight)
 
-Before spawning subagents, compute topic transitions from signal data.
-This identifies exactly where topics shift (GL/BL→Umigari, Umigari→Mewgenics).
-Pass boundaries to `pack_timestamps.py` via `--topic-json`.
-Subagents receive boundary info so they do not fabricate across topic lines.
+Quick summary of chunk categories, gaps, byte sizes.
 
 ```bash
-python3 scripts/detect_boundaries.py ~/youtube_<id>_workspace/chunks/ \
-  --output boundaries.json \
-  --signals signals.json
+python3 scripts/anibon-analyzer.py ~/youtube_<id>_workspace/
 ```
 
-If `detect_boundaries.py` is not yet available, manually identify topic
-transition timestamps by scanning chunk-level topic signals and mark them
-with `--break-at` in Step 6.
+### 5. Detect Signals → Match Knowledge Files
 
-### 4. Spawn Subagents (Parallel)
-
-Use `subagent-prompt-template.md`. Inject per-chunk signal + knowledge files.
-Fill `PREVIOUS_CHUNK_PRIMARY_TOPIC` and `CURRENT_CHUNK_PRIMARY_TOPIC`
-placeholders with chunk-level topics from `signals.json`.
-Each subagent returns 0-2 timestamps. Collect chronologically.
-
-### 5. World Identity Verify
-
-If stream covers post-cutoff games → load `anibon-world-identity` before writing story stamps. Priority: local refs → cached story refs → SRT → websearch.
-
-### 6. Reduce & Assemble
-
-Collect all timestamps → delegate to `summarizer-subagent-guide.md` for dedup, part splitting, header review.
-
-Pack into byte-limited sections with optional forced topic breaks:
-```bash
-python3 scripts/pack_timestamps.py all_timestamps.txt \
-  --break-at 04:35:28,05:15:00
-```
-Use `--break-at` to force new sections at specific timestamps (prevents topic bleed across sections).
-
-Validate output with ASR garbled check:
-```bash
-python3 scripts/check_sections.py output.md
-```
-Use `--no-garbled-check` to skip ASR scan. Single `.md` file with `═══` section blocks.
-
-### 6.5 Validate Topic Coherence (NEW)
-
-Run BEFORE publishing. Uses `signals.json` from Step 3 as ground truth for game names:
+TF-IDF across all chunks. Matches keywords to knowledge files per chunk.
 
 ```bash
-python3 scripts/validate_part_coherence.py output.md \
-  --signals signals.json
+python3 scripts/detect_signals.py \
+  --chunks ~/youtube_<id>_workspace/chunks/ \
+  --knowledge ./knowledge.json \
+  --output ~/youtube_<id>_workspace/signals.json
 ```
 
-Checks performed:
-- **Tag diversity** — mixed tag macros in same part
-- **Game diversity** — different games mentioned in same part
-- **Signal cross-reference** — timestamp game name vs chunk-level signals (flags fabricated names)
-- **Keyword coherence** — description tokens share common thread
-- **Tag continuity** — no flips between disparate categories
+Output: `signals.json` — per-chunk matched knowledge files + signal scores.
 
-If validation FAILS:
-1. Read flagged parts — identify which stamps are off-topic
-2. Move or delete offending stamps
-3. Re-run `pack_timestamps.py` with corrected list + `--topic-json` or `--break-at`
+### 6. Detect Topic Boundaries (Optional)
 
-Optional: cross-reference against chunk transcripts for deeper verification:
+For long streams with clear topic shifts. If `detect_boundaries.py` is not available (not yet implemented), identify topic shifts manually from `signals.json`: look for chunks where `matched_files` changes (e.g., gaming→Genshin→FGO). Note timestamps for `--break-at` in Step 9.
+
+### 7. Spawn Subagents (Parallel)
+
+Divide chunks into groups of 4-5 (40-50 min each). One Task agent per group.
+
+**Each subagent prompt MUST contain:**
+- Chunk file paths (agent reads XML directly — do NOT read chunks yourself)
+- Per-chunk detection signals from `signals.json` (inject `matched_files` + `signal_score`)
+- The `subagent-prompt-template.md` output contract (0-2 stamps per chunk, merge same topic → 0)
+- Knowledge file content for matched references (e.g., gaming-stream.md, phuboat-anime-talking-style.md, game reference files)
+
+**CRITICAL:** Do NOT write topic descriptions yourself. Let the agent read the XML + signals. Inject signals.json data, not your analysis.
+
+Each agent returns timestamps as plain text lines.
+
+### 8. Merge Timestamps
+
+Write each agent's output to its own file (e.g., `agent_1.txt`, `agent_2.txt`). Then merge + sort chronologically:
+
 ```bash
-python3 scripts/validate_part_coherence.py output.md \
-  --signals signals.json \
-  --chunks ~/youtube_<id>_workspace/chunks/
+python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/agent_*.txt \
+  -o ~/youtube_<id>_workspace/all_timestamps.txt
+```
+
+### 9. Pack into Sections
+
+Split into byte-limited sections (YouTube comment cap ~3500B). Use `--break-at` for forced topic boundaries from Step 6.
+
+```bash
+python3 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
+  --break-at 04:35:28,05:15:00 \
+  --title "Video Title | ANIBON" \
+  -o ~/youtube_<id>_workspace/output.md
+```
+
+### 10. Validate Sections
+
+```bash
+python3 scripts/check_sections.py ~/youtube_<id>_workspace/output.md
+```
+
+Checks: byte cap per section ✅, no ASR garbled patterns.
+
+### 11. Validate Topic Coherence (Optional)
+
+Cross-references timestamp game names against `signals.json` ground truth. Flags fabricated names or topic bleed between parts.
+
+```bash
+python3 scripts/validate_part_coherence.py ~/youtube_<id>_workspace/output.md \
+  --signals ~/youtube_<id>_workspace/signals.json
+```
+
+## Output Format
+
+Single `.md` file with `═══` section blocks:
+
+```
+# Title | ANIBON
+
+═════════════════════════════════════════════════════
+ Part 1: Section Header (⏱ เริ่ม: HH:MM:SS)
+═════════════════════════════════════════════════════
+HH:MM:SS - [Tag] Description
+...
+
+═════════════════════════════════════════════════════
+ Part 2: Section Header (⏱ เริ่ม: HH:MM:SS)
+═════════════════════════════════════════════════════
+...
 ```
 
 ## Helper Scripts
 
-All in `scripts/`. Run `<name>.py --help` for full usage:
-
-- `prepare_video.py` — download, clean, chunk
-- `anibon-analyzer.py` — pre-flight: gap detection, chunk classification, byte cap check
-- `detect_signals.py` — TF-IDF signal + knowledge matching (replaces `detect_topics.py`)
-- `clean_transcript.py` — raw json3 cleaner (called by prepare_video)
-- `check_sections.py` — validate byte caps on assembled output
-- `fetch_story_ref.py` — fetch/cache story synopses (user consent required for websearch)
-- `pack_timestamps.py` — pack flat timestamp list into byte-limited parts (supports `--topic-json`)
-- `validate_part_coherence.py` — validate topic coherence per part (NEW)
-- `align_ref_timeline.py` — align reference SRT timestamps with stream chunks
-- `fetch_fgo_db.py`, `fetch_ygo_db.py` — build card databases (for World Identity)
+| Script | Purpose |
+|--------|---------|
+| `prepare_video.py` | Download + clean + chunk |
+| `clean_garbled_english.py` | Normalize Thai-Whisper garbled English |
+| `anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
+| `detect_signals.py` | TF-IDF signal + knowledge file matching |
+| `merge_timestamps.py` | Combine + sort subagent outputs |
+| `pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
+| `check_sections.py` | Validate byte cap + ASR garbles |
+| `validate_part_coherence.py` | Cross-reference game names vs signals |
+| `clean_transcript.py` | Raw json3 cleaner (called by prepare_video) |
+| `fetch_story_ref.py` | Fetch/cache story synopses (user consent for websearch) |
+| `align_ref_timeline.py` | Align reference SRT timestamps with chunks |
+| `fetch_fgo_db.py`, `fetch_ygo_db.py` | Build card databases (World Identity) |
 
 ## Iron Rules
 
-- **Use detect_signals.py** — no ad-hoc grep/inline scanning. TF-IDF only.
+- **Use detect_signals.py** — TF-IDF only. No ad-hoc grep/inline scanning.
+- **Don't read chunks yourself** — subagents read XML. Inject signals.json data into prompts.
 - **ONE FILE** — single `.md` with `═══` section blocks. No `part1.md`.
 - **NO GAPS** — max 10 min between timestamps unless verified silent.
 - **INTRO BREAKDOWN** — intro >10 min → break into 3-5 min sub-topic milestones.
-- **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `pack_timestamps.py`.
+- **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `merge_timestamps.py` → `pack_timestamps.py`.

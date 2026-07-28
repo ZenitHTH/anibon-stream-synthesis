@@ -120,14 +120,13 @@ Process `chunk_00.txt`, `chunk_01.txt`, ... one at a time.
 For each chunk:
 
 1. **Read**: `[WORKSPACE]/chunks/chunk_XX.txt`
-2. **Topic detection** — use `detect_topics.py` for keyword scanning instead of manual text search:
+2. **Topic detection** — keyword-scan chunk text for game/royal/tokusatsu signals:
    ```bash
-   # Single chunk scan
-   python3 "[SKILL_ROOT]/scripts/detect_topics.py" "[WORKSPACE]/chunks/chunk_XX.json" \
-     -w "FGO,Fate,Arknights,กาชา,Kamen Rider,Super Sentai" -o compact
+   # Scan keywords directly (no dedicated script — detect_topics.py deprecated)
+   grep -iE "FGO|Fate|Arknights|ไรเดอร์|Rider|เซนไต|Sentai|royal|imu|112" "[WORKSPACE]/chunks/chunk_XX.txt"
    ```
-   This replaces ad-hoc `python3 -c`/grep checks for game/royal/tokusatsu content.
-3. **DB check** — ONLY if `detect_topics.py` or manual skim shows game keywords (`FGO`, `Fate`, `YGO`, `遊戯王`):
+   Use grep for speed; only install `detect_signals.py` pipeline for bulk analysis.
+3. **DB check** — ONLY if topic scan shows game keywords (`FGO`, `Fate`, `YGO`, `遊戯王`):
    - `python3 "[SKILL_ROOT]/scripts/fetch_fgo_db.py" --check`
    - `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py" --check`
    - Exit code 1 → re-run without `--check` to build DB. Exit code 0 → skip.
@@ -239,4 +238,4 @@ Any ❌ or ⚠️ → adjust `--byte-limit` or split timestamps → re-run `pack
 - **No `ls`**: You know the paths. Use them.
 - **No vision**: Local models use `--format txt`, not `--vision`.
 - **Handoff over crash**: If context > 10%, save state and hand off. Do not power through.
-- **Use detect_topics.py**: No ad-hoc `python3 -c` or grep for keyword scanning. Run `detect_topics.py` instead.
+- **Use grep for topic scan**: `detect_topics.py` deprecated/deleted. Use `grep -iE` on chunk text instead.

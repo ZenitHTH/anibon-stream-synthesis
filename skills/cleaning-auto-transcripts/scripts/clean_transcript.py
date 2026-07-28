@@ -5,21 +5,11 @@ import re
 import argparse
 from pathlib import Path
 
-# Add script's directory to python path
-sys.path.insert(0, str(Path(__file__).parent))
+# Point to shared lib/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "lib"))
 
-def format_time(s: float) -> str:
-    return f"{int(s//3600):02d}:{int((s%3600)//60):02d}:{int(s%60):02d}"
-
-def clean_text(text: str, mappings: dict) -> str:
-    text = re.sub(r'\s+', ' ', text).strip()
-    for mapping in mappings.get('mappings', []):
-        for pat in mapping.get('patterns', []):
-            excludes = mapping.get('exclude_if_contains', [])
-            if any(re.search(re.escape(ex), text, re.I) for ex in excludes):
-                continue
-            text = re.sub(re.escape(pat), lambda m: mapping['correct'], text, flags=re.I)
-    return text
+from anibon.ytdlp import flatten_json3
+from anibon.cleaner import correct_transcript
 
 def main():
     ap = argparse.ArgumentParser(description="Clean and chunk auto-transcripts.")
@@ -39,8 +29,7 @@ def main():
     raw = json.loads(input_path.read_text(encoding="utf-8"))
     
     # Flatten if json3 format
-    from _transcript import _flatten_json3
-    items = _flatten_json3(raw) if "events" in raw else raw
+    items = flatten_json3(raw) if "events" in raw else raw
 
     # Load mappings
     if args.custom_mappings:
@@ -51,8 +40,7 @@ def main():
     mappings = json.loads(map_path.read_text(encoding="utf-8")) if map_path.exists() else {"mappings": []}
 
     # Clean text
-    for item in items:
-        item["text"] = clean_text(item["text"], mappings)
+    items = correct_transcript(items, mappings)
 
     if not args.chunk:
         # Output clean JSON to stdout

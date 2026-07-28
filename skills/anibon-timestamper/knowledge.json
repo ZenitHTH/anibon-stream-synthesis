@@ -259,6 +259,28 @@
       "kind": "game",
       "file": "skills/reference/Wuthering_Waves.md"
     },
+    "wing wave": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "seele leaks": {
+      "kind": "domain",
+      "file": null,
+      "_note": "Twitter leaker account covering all MiHoYo/HoYoverse games (Genshin, HSR, HI3, ZZZ)"
+    },
+    "one punch man": {
+      "kind": "anime",
+      "file": null,
+      "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
+    },
+    "น้องข้าว": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "castorice": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
     "ygo": {
       "kind": "game",
       "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
@@ -378,6 +400,30 @@
     "โปเกม่อน": {
       "kind": "game",
       "file": "skills/reference/Pokemon_PvP.md"
+    },
+    "งาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "ทำงาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "pipeline": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "vlog": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "วล็อก": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "work": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
     }
   },
   "_discovered": {

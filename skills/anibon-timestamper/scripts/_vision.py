@@ -54,8 +54,8 @@ def run(workspace: Path, video_url: str) -> int:
         print(f"[!] raw_transcript.json not found in {workspace}", file=sys.stderr)
         return 0
 
-    from _transcript import load
-    items = load(workspace)
+    from anibon.ytdlp import load_transcript
+    items = load_transcript(workspace)
     
     patterns = [re.compile(p, re.I) for p in KEYWORDS]
     

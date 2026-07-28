@@ -25,6 +25,22 @@ This skill handles timestamping and topic summarization for "talk-heavy" chunks 
   4. `[Anime/Industry] Economics & Purchasing Power`: Production Committee decisions, "แม่ยก" purchasing power, or fan response.
   5. `[Talk] Conclusion & Viewer Advice`: PhuBoat's final takeaway or advice to live chat.
 
+### 1.1 Vlog / Worksite Content
+When Boat streams pipeline/construction/site work as a vlog:
+
+**Core Strategy**: Track both the work activity AND the conversation. Work vlogs have dual narrative — what Boat is doing physically + what he's discussing verbally.
+
+**Vlog Breakdown Pattern** (for 20-30 min continuous worksite segments):
+1. `[Work]` Task Start / Tool Setup: Boat begins a specific task, explains tools/materials.
+2. `[Work]` Process & Technique: Demonstrates method, shares tips, troubleshoots.
+3. `[Talk]` Story / Tangent: While working hands-free, Boat goes into personal story, industry rant, or chat Q&A.
+4. `[Chat]` Viewer Interaction: Reads chat, answers questions about the work or off-topic.
+5. `[Work]` Milestone / Completion: Finishes a task segment, shows result.
+
+**Visual+Audio Synthesis for Vlogs**: The Dual-Synthesis rule (Section 2) applies strongly — Boat may be welding/cutting/driving while discussing anime or politics. Capture BOTH the physical context AND the spoken topic. Example: `[Work] เชื่อมท่อながら discussing FGO story finale` — include both.
+
+**Environmental Audio Cues**: Note when background noise (machinery, traffic, wind) affects readability or signals context shift (e.g., moving indoors → outdoors).
+
 ### 2. Dual-Synthesis Timestamp Analysis (Visual Action + Spoken Audio)
 - **The Dual-Synthesis Principle**: PhuBoat frequently navigates desktop browser tabs (MyAnimeList, LiveChart.me, X/Twitter, MANGA Plus, YouTube) while simultaneously answering live chat questions or going off on tangential industry rants.
 - **DO NOT** write a timestamp description based solely on what is displayed on screen.
@@ -41,6 +57,8 @@ Use these categories for timestamp labels:
 - `[Chat]` / `[Q&A]` — Reading/responding to live chat
 - `[Donation]` — Responding to superchat/paid messages
 - `[Break]` — Stream breaks, drinking water, AFK
+- `[Work]` — Pipeline/construction/worksite tasks, tool use, hands-on demonstration
+- `[Vlog]` — Daily life vlogging, location transitions, off-stream errands
 
 **Hybrid Rule (Storytelling while Gaming)**:
 If the speaker is delivering a deep, continuous story/lecture while playing a game (e.g., explaining Three Kingdoms lore while playing Wo Long, or suddenly discussing "One Piece" lore such as Celestial Dragons or Imu which is actually a coded discussion about Thai politics), track the flow of the story using `[Talk]`, `[Anime]`, or `[News]` while keeping the One Piece metaphors exactly as the speaker said them. However, you may also use these gaming tags if the game interrupts the story with a major event:
@@ -69,6 +87,10 @@ If the speaker is delivering a deep, continuous story/lecture while playing a ga
 00:15:32 - [Anime] วิเคราะห์โครงสร้างโปรดักชันอนิเมะและบทบาทคณะกรรมการนายทุน
 00:22:15 - [Anime/Industry] คาดการณ์วันฉายโรงในไทยอนิเมะเดอะมูฟวี่ (JAM / Muse)
 00:30:10 - [Chat] ตอบคำถามเรื่องระบบเกม
+00:35:00 - [Work] เริ่มเชื่อมท่อเหล็ก อธิบายเทคนิคงานเชื่อมแนวตั้ง
+00:42:15 - [Talk] เล่าเรื่องเมมเบอร์แกล้งแมวที่บ้าน ขณะทำงานไปด้วย
+00:50:30 - [Work] เช็กระดับน้ำในไลน์ pipeline ก่อนเดินระบบ
+00:55:00 - [Chat] ตอบคำถาม tools ที่ใช้ในงาน pipe fitting
 ```
 
 ## Iron Rules
