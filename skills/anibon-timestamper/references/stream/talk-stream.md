@@ -41,6 +41,23 @@ When Boat streams pipeline/construction/site work as a vlog:
 
 **Environmental Audio Cues**: Note when background noise (machinery, traffic, wind) affects readability or signals context shift (e.g., moving indoors → outdoors).
 
+### 1.2 IRL / Lifestyle Vlog (Mall, Food, Shopping, Travel)
+When Boat streams daily-life vlogs — mall walking, food tasting, shopping, sightseeing:
+
+**Core Strategy**: Track LOCATION transitions + activity changes. IRL vlogs are location-driven. Each new floor/shop/food stop can be a timestamp. Conversation is secondary to physical context.
+
+**IRL Vlog Breakdown Pattern** (for 15-30 min continuous segments):
+1. `[Vlog]` Location Arrival / First Look: Boat arrives at new place, describes first impression.
+2. `[Shopping]` Exploring / Browsing: Walks through stores, looks at merchandise, comments on displays.
+3. `[Talk]` Tangent / Story: While walking, Boat goes into personal story, meme review, or chat Q&A.
+4. `[Chat]` Viewer Interaction: Reads chat suggestions ("ไปโซนไหนต่อ"), answers questions.
+5. `[Food]` Food Stop / Purchase / Review: Orders food, tastes, reviews price and quality.
+6. `[Vlog]` Location Transition: Moves between floors, zones, or shops.
+
+**Dual-Synthesis for IRL Vlogs**: What Boat sees (displays, products, food) + what he says. If he's looking at One Piece card displays while discussing Pokemon PvP meta → capture BOTH: `[Shopping]` browsing cards + `[Talk]` Pokemon analysis.
+
+**Environmental Audio Cues**: Mall background music, crowd noise, food sizzling — note when relevant. Room echo change signals floor transition.
+
 ### 2. Dual-Synthesis Timestamp Analysis (Visual Action + Spoken Audio)
 - **The Dual-Synthesis Principle**: PhuBoat frequently navigates desktop browser tabs (MyAnimeList, LiveChart.me, X/Twitter, MANGA Plus, YouTube) while simultaneously answering live chat questions or going off on tangential industry rants.
 - **DO NOT** write a timestamp description based solely on what is displayed on screen.
@@ -59,6 +76,8 @@ Use these categories for timestamp labels:
 - `[Break]` — Stream breaks, drinking water, AFK
 - `[Work]` — Pipeline/construction/worksite tasks, tool use, hands-on demonstration
 - `[Vlog]` — Daily life vlogging, location transitions, off-stream errands
+- `[Food]` — Food stops, purchases, tasting, price reviews (IRL vlogs)
+- `[Shopping]` — Browsing stores, looking at merchandise, shopping (IRL vlogs)
 
 **Hybrid Rule (Storytelling while Gaming)**:
 If the speaker is delivering a deep, continuous story/lecture while playing a game (e.g., explaining Three Kingdoms lore while playing Wo Long, or suddenly discussing "One Piece" lore such as Celestial Dragons or Imu which is actually a coded discussion about Thai politics), track the flow of the story using `[Talk]`, `[Anime]`, or `[News]` while keeping the One Piece metaphors exactly as the speaker said them. However, you may also use these gaming tags if the game interrupts the story with a major event:
