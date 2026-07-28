@@ -312,11 +312,11 @@ def _make_label(
         for mf in sig.get("matched_files", []):
             fpath = mf.get("file", "")
             cnt = mf.get("count", 0)
-            if "/skills/reference/" in fpath:
+            if "skills/reference/" in fpath:
                 # Game-specific knowledge file
                 game = fpath.replace(".md", "").split("/")[-1]
                 specific_games[game] += cnt
-            elif "/references/stream/" in fpath:
+            elif "references/stream/" in fpath:
                 # Generic stream type
                 gtype = fpath.replace(".md", "").split("/")[-1]
                 generic_types[gtype] += cnt
