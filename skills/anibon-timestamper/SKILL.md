@@ -99,11 +99,11 @@ python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/agent_*.txt \
 
 ### 9. Pack into Sections
 
-Split into byte-limited sections (YouTube comment cap ~3500B). Use `--break-at` for forced topic boundaries from Step 6.
+Split into byte-limited sections (YouTube comment cap ~3500B). Use `--topic-json` with `boundaries.json` from Step 6 for section headings + forced topic splits.
 
 ```bash
 python3 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
-  --break-at 04:35:28,05:15:00 \
+  --topic-json ~/youtube_<id>_workspace/boundaries.json \
   --title "Video Title | ANIBON" \
   -o ~/youtube_<id>_workspace/output.md
 ```
@@ -122,7 +122,8 @@ Cross-references timestamp game names against `signals.json` ground truth. Flags
 
 ```bash
 python3 scripts/validate_part_coherence.py ~/youtube_<id>_workspace/output.md \
-  --signals ~/youtube_<id>_workspace/signals.json
+  --signals ~/youtube_<id>_workspace/signals.json \
+  --chunks ~/youtube_<id>_workspace/chunks/
 ```
 
 ## Output Format

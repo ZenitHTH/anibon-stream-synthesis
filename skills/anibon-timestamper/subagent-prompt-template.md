@@ -41,16 +41,17 @@ correct Whisper's phonetic spelling of game/character names.
 
 ## OUTPUT CONTRACT (read before anything else)
 
-One 5-minute chunk → **1 timestamp by default, 2 MAX. (0 is allowed!)**.
+One 5-minute chunk → **1 timestamp by default, 2 MAX**.
 A new timestamp is only valid when ONE of these occurs:
 - Game switches entirely (different title)
 - Speaker joins or leaves (Discord guest, etc.)
 - Completely different activity begins (e.g., watching video → playing game)
 - A completely NEW topic of conversation begins
+- Activity CHANGE within same game (e.g., walking overworld → boss fight, browsing menu → gacha summon, exploration → dialogue)
 
-**CRITICAL:** If this chunk is simply CONTINUING the exact same topic, story, or game activity from the previous chunk, you should output **0 timestamps**. Do not emit a timestamp just because your chunk started.
+**0-TIMESTAMP RULE:** Output 0 ONLY if chunk is empty or an exact topic continuation (same game, same activity, no event change). In all other cases, output at least 1 timestamp. "Same topic with minor sub-shifts" is NOT a 0 case — merge into 1.
 
-Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description, or emit 0 if it's all one long continuous flow.
+Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description.
 Q&A FORMAT EXCEPTION: Structured Q&A where each question is
 explicitly framed by host/guest is NOT "continuous talk."
 Each distinct question frame = topic boundary → emit 1 stamp.
@@ -79,6 +80,23 @@ For every valid timestamp event:
 - `[Victory]`: Boss cleared / quest completed
 - `[WatchParty]`: Watch-along reaction / episode review
 - `[Reaction]`: General reaction to trailers or videos
+
+### Tag Classification Examples:
+
+| Transcript text | Correct tag | Wrong tag |
+|---|---|---|
+| "สู้บอสตัวนี้ยากมาก" (fighting boss) | `[Boss]` | `[Gameplay]` |
+| "ตายแล้วไอ้นี่" (died) | `[Death]` | `[Gameplay]` |
+| "เคลียร์แล้ว" (cleared boss) | `[Victory]` | `[Gameplay]` |
+| Boat reads chat message: "ในแชทบอกว่า..." | `[Chat]` | `[Talk]` |
+| Boat responds to donation: "ขอบคุณครับ..." | `[Donation]` | `[Talk]` |
+| Boat watches trailer/youtube video | `[Reaction]` | `[Gameplay]` |
+| Boat reads in-game story dialogue | `[Story]` | `[Gameplay]` |
+| Boat pulls gacha: "จิ้มเลย" | `[Gacha]` | `[Gameplay]` |
+| General overworld walking + fighting trash mobs | `[Gameplay]` | `[Boss]` |
+| Boat discusses news/current events | `[News]` | `[Talk]` |
+
+**Rule of thumb:** If the player is FIGHTING a named boss → `[Boss]`. If the player dies → `[Death]`. If the player completes a major objective → `[Victory]`. If the player is farming/running stages → `[Gameplay]`. If Boat looks at external video → `[Reaction]`.
 
 ## Step 3.5: Garbled-English + Contextual Safety Gate (Before Writing)
 
@@ -178,13 +196,12 @@ Also use vision when the streamer discusses technical setups, file formats/codec
 ## Step 9: Density Self-Check (BEFORE submitting)
 Count your timestamps. If you have more than 2 for this chunk, you MUST merge until ≤ 2.
 
-Red flags — merge immediately or output 0 timestamps:
-- The chunk starts in the middle of an ongoing story/topic → Output 0 timestamps (let the previous chunk's timestamp cover it)
+Merge (never output 0 except empty chunk):
+- Chunk starts mid-ongoing-topic → merge into 1 timestamp covering this + previous
 - Two consecutive `[Talk]` timestamps about same conversation → merge
 - Sub-topic shift within same game session → merge
 - "They mentioned a new detail" → add to existing description, no new line
 
-CRITICAL RULES: <Orchestrator: inject 3-4 bullet Iron Rules from matching sub-skills here. Include knowledge file instructions from matched files.>
 TRANSCRIPT JSON:
 <Orchestrator: inject full JSON content of this 5-minute chunk here>
 ```

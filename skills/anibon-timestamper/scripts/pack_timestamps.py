@@ -327,6 +327,8 @@ def cluster_by_topic(timestamps: list[dict], topic_map: list[dict]) -> list[list
                 matched_label = tp["label"]
                 break
 
+        ts["topic_label"] = matched_label
+
         if matched_label is None:
             # Outside any known topic → standalone
             if current_seg:
@@ -413,6 +415,10 @@ def balanced_pack(timestamps: list[dict], byte_limit: int,
         raw_segments = cluster_by_tag(timestamps)
     segments = normalise_segments(raw_segments, body_limit)
 
+    # Topic boundaries are hard breaks — each segment is its own part
+    if topic_map:
+        return [s for s in segments if s]
+
     # Flatten all entries in chronological order
     all_entries: list[dict] = []
     for seg in segments:
@@ -450,11 +456,24 @@ def balanced_pack(timestamps: list[dict], byte_limit: int,
 
 def _group_to_part(group: list[dict]) -> dict:
     """Convert a flat list of timestamp dicts to a part dict.
-    Title is taken from the first entry with the group's dominant tag.
+    Title priority:
+    1. topic_label from --topic-json (if first entry has one)
+    2. first entry with the group's dominant tag (excluding [Story] if possible)
     """
     from collections import Counter
     tag_counter: Counter = Counter(_primary_tag(e["tag"]) for e in group)
     dominant_tag = tag_counter.most_common(1)[0][0]
+    
+    # Check for topic_label on first entry
+    topic_label = group[0].get("topic_label")
+    if topic_label:
+        return {
+            "entries": group,
+            "bytes": _body_bytes_of(group),
+            "title": _clean_title(topic_label),
+            "start": group[0]["time"],
+        }
+    
     title_entry = next(
         (e for e in group if _primary_tag(e["tag"]) == dominant_tag and e["tag"] != "[Story]"),
         next(

@@ -109,40 +109,49 @@ def _chunk_index(name: str) -> int:
 def build_time_to_chunk_map(signals: dict, chunks_dir: Path | None) -> dict[tuple[int, int], str]:
     """Build {(start_sec, end_sec): chunk_name} map from chunk files.
 
-    If chunks_dir not provided, estimate from chunk index * 300 (5-min default).
+    Falls back to estimating start = idx * 540, end = idx * 540 + 600
+    (matches --block 600 --overlap 60 mode; for --block 300 --overlap 30
+    the 60s drift is acceptable since get_chunk_for_timestamp is tolerant).
     """
     chunk_map: dict[tuple[int, int], str] = {}
     chunk_order = signals.get("chunk_order", [])
     chunk_signals = signals.get("chunk_signals", {})
 
+    def _read_chunk(ch_name: str, ch_file: Path) -> tuple[int, int] | None:
+        """Read start_sec / end_sec from chunk file."""
+        if not ch_file.exists():
+            return None
+        raw = ch_file.read_text(encoding="utf-8")
+        if ch_file.suffix == ".json":
+            data = json.loads(raw)
+        else:
+            import xml.etree.ElementTree as ET
+            data = ET.parse(ch_file).getroot()
+        if not isinstance(data, (dict, ET.Element)):
+            return None
+        start = int(data.get("start_sec", 0))
+        end = int(data.get("end_sec", start + 600))
+        return (start, end)
+
     if chunks_dir and chunks_dir.exists():
-        # Load actual chunk start times from files
         for ch_name in chunk_order:
             ch_file = chunks_dir / f"{ch_name}.json"
-            if not ch_file.exists():
+            span = _read_chunk(ch_name, ch_file)
+            if span is None:
                 ch_file = chunks_dir / f"{ch_name}.xml"
-            if ch_file.exists():
-                raw = ch_file.read_text(encoding="utf-8")
-                if ch_file.suffix == ".json":
-                    data = json.loads(raw)
-                else:
-                    import xml.etree.ElementTree as ET
-                    data = ET.parse(ch_file).getroot()
-                start_sec = int(data.get("start_sec", 0)) if isinstance(data, (dict, ET.Element)) else 0
-                # estimate end_sec = start + 300 (5 min default block)
-                end_sec = int(data.get("end_sec", start_sec + 300)) if isinstance(data, (dict, ET.Element)) else start_sec + 300
-                chunk_map[(start_sec, end_sec)] = ch_name
+                span = _read_chunk(ch_name, ch_file)
+            if span:
+                chunk_map[span] = ch_name
                 continue
             # Fallback: estimate from index
             idx = _chunk_index(ch_name)
-            s = idx * 300
-            chunk_map[(s, s + 300)] = ch_name
+            s = idx * 540
+            chunk_map[(s, s + 600)] = ch_name
     else:
-        # Estimate from chunk index
         for ch_name in chunk_order:
             idx = _chunk_index(ch_name)
-            s = idx * 300
-            chunk_map[(s, s + 300)] = ch_name
+            s = idx * 540
+            chunk_map[(s, s + 600)] = ch_name
 
     return chunk_map
 

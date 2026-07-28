@@ -1,6 +1,7 @@
 import re
 import argparse
 import sys
+import difflib
 
 def parse_time(ts_str):
     parts = list(map(int, ts_str.split(":")))
@@ -26,8 +27,23 @@ def merge_logic(file_paths):
             
     merged.sort(key=lambda x: x["sec"])
     # Deduplicate using dict insertion order (Ponytail principle)
-    deduped = list({e["line"]: None for e in merged}.keys())
-    return deduped
+    exact_deduped = list({e["line"]: None for e in merged}.keys())
+    
+    # Fuzzy dedup: merge near-duplicate lines (same HH:MM, similar desc)
+    def _desc_sim(a, b):
+        return difflib.SequenceMatcher(None, a[:40], b[:40]).ratio()
+    
+    fuzzy_deduped = []
+    for line in exact_deduped:
+        if fuzzy_deduped:
+            prev = fuzzy_deduped[-1]
+            prev_prefix = prev[:8]  # HH:MM:SS
+            cur_prefix = line[:8]
+            if prev_prefix == cur_prefix and _desc_sim(prev, line) > 0.85:
+                continue  # skip near-duplicate
+        fuzzy_deduped.append(line)
+    
+    return fuzzy_deduped
 
 def main():
     parser = argparse.ArgumentParser(description="Merge and sort timestamps.")
