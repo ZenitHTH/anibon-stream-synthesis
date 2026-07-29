@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 fix_hallucinations.py — Whisper in-segment phoneme loop detection and
-divide-and-conquer slice recovery.
+divide-and-conquer slice recovery with multi-process worker support.
 
 Usage:
     python3 fix_hallucinations.py <whisper_json> <audio_wav> [--model PATH]
-        [--threshold 0.4] [--min-duration 1.0] [-o output.json]
+        [--threshold 0.4] [--min-duration 1.0] [--workers 2] [-o output.json]
 """
 import sys
 import json
@@ -13,8 +13,12 @@ import argparse
 import subprocess
 import tempfile
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 WHISPER_CLI = str(Path.home() / "whisper.cpp/build/bin/whisper-cli")
+if not Path(WHISPER_CLI).exists() and Path(WHISPER_CLI + ".exe").exists():
+    WHISPER_CLI += ".exe"
+
 MODEL_PATH  = str(Path.home() / "whisper.cpp/models/ggml-large-v3-turbo.bin")
 
 
@@ -71,14 +75,17 @@ def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float) -> lis
             WHISPER_CLI,
             "-m", model,
             "-l", "th",
-            "--temperature", str(temperature),
+            "-tp", str(temperature),
             "-f", str(slice_wav),
-            "-ojf", out_base,
+            "-ojf",
+            "-of", out_base,
         ],
         check=True,
         capture_output=True,
     )
-    json_path = Path(str(slice_wav) + ".json")
+    json_path = slice_wav.with_suffix(".json")
+    if not json_path.exists():
+        json_path = Path(str(slice_wav) + ".json")
     if not json_path.exists():
         return []
     with open(json_path, "r", encoding="utf-8", errors="replace") as f:
@@ -98,76 +105,141 @@ def _fmt_ts(seconds: float) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
-def recover_segment(
-    audio_wav: Path,
-    start_ms: int,
-    end_ms: int,
-    model: str,
-    threshold: float,
-    min_duration_s: float,
-    depth: int = 0,
-    max_depth: int = 4,
-) -> list:
+def _try_whisper_task(task):
     """
-    Divide-and-conquer: recursively halve [start_ms, end_ms] until clean or
-    < min_duration_s or depth > max_depth.
-    Returns list of pipeline items {"text", "start", "duration", "timestamp"}.
-    Offsets returned are absolute (relative to original audio_wav start = 0).
+    Worker function for one BFS task.
+    task = (start_ms, end_ms, audio_wav, model, threshold, min_duration_s)
+    Returns (start_ms, end_ms, segs_or_none)
+    segs_or_none: list of raw whisper seg dicts, or None on ffmpeg/whisper failure.
+    Offsets in segs are relative to slice start (whisper convention).
     """
-    indent = "  " * depth
-    duration_s = (end_ms - start_ms) / 1000.0
-
-    if duration_s < min_duration_s:
-        print(f"[fix]{indent} base-case: slice {start_ms}-{end_ms}ms ({duration_s:.1f}s) < {min_duration_s}s — discard", file=sys.stderr, flush=True)
-        return []
-
-    if depth >= max_depth:
-        print(f"[fix]{indent} max-depth {max_depth} reached at {start_ms}-{end_ms}ms ({duration_s:.1f}s) — discard (non-speech)", file=sys.stderr, flush=True)
-        return []
-
-    print(f"[fix]{indent} depth={depth} cutting slice {start_ms}-{end_ms}ms ({duration_s:.1f}s)...", file=sys.stderr, flush=True)
-    slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
+    start_ms, end_ms, audio_wav, model, threshold, min_duration_s = task
+    slice_wav = None
     try:
-        print(f"[fix]{indent} running whisper-cli on {duration_s:.1f}s slice...", file=sys.stderr, flush=True)
-        raw_segs = run_whisper_on_slice(slice_wav, model, temperature=0.2)
+        slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
+        segs = run_whisper_on_slice(slice_wav, model, temperature=0.2)
+        return start_ms, end_ms, segs
     except subprocess.CalledProcessError as e:
-        print(f"[fix]{indent} whisper-cli FAILED on {start_ms}-{end_ms}ms: {e}", file=sys.stderr, flush=True)
-        return []
+        print(f"  [err] ffmpeg/whisper failed {start_ms}-{end_ms}ms: {e}", file=sys.stderr)
+        return start_ms, end_ms, None
     finally:
-        slice_wav.unlink(missing_ok=True)
+        if slice_wav is not None:
+            slice_wav.unlink(missing_ok=True)
 
-    print(f"[fix]{indent} whisper returned {len(raw_segs)} token-segs from {duration_s:.1f}s slice", file=sys.stderr, flush=True)
 
+def _bfs_recover(
+    ranges: list,
+    audio_wav: Path,
+    model: str = MODEL_PATH,
+    threshold: float = 0.4,
+    min_duration_s: float = 1.0,
+    workers: int = 2,
+) -> tuple:
+    """
+    BFS parallel divide-and-conquer recovery.
+
+    Args:
+        ranges: list of (start_ms, end_ms) corrupt time ranges
+        audio_wav: path to original audio file
+        model: whisper GGML model path
+        threshold: hallucination n-gram ratio threshold
+        min_duration_s: base case — slices shorter than this get [?] if still bad
+        workers: number of concurrent whisper-cli processes
+
+    Returns:
+        (clean_items, uncertain_items)
+        clean_items   — list of {"text", "start", "duration", "timestamp"}
+        uncertain_items — list of {"text": "[?]", "start", "duration", "timestamp", "uncertain": True}
+    """
     clean_items = []
-    for seg in raw_segs:
-        text = seg.get("text", "").strip()
-        if not text:
-            continue
-        offsets = seg.get("offsets", {})
-        # Offsets from whisper are relative to the slice; add start_ms to make absolute
-        abs_from = offsets.get("from", 0) + start_ms
-        abs_to   = offsets.get("to",   0) + start_ms
+    uncertain_items = []
+    pending = list(ranges)  # list of (start_ms, end_ms)
+    level = 0
 
-        if is_hallucinated(text, threshold):
-            print(f"[fix]{indent} still hallucinated: '{text[:40]}' → recurse (depth {depth+1})", file=sys.stderr, flush=True)
-            mid = (abs_from + abs_to) // 2
-            clean_items.extend(
-                recover_segment(audio_wav, abs_from, mid, model, threshold, min_duration_s, depth + 1, max_depth)
-            )
-            clean_items.extend(
-                recover_segment(audio_wav, mid, abs_to, model, threshold, min_duration_s, depth + 1, max_depth)
-            )
-        else:
-            start_s = abs_from / 1000.0
-            print(f"[fix]{indent} clean: '{text[:50]}'", file=sys.stderr, flush=True)
-            clean_items.append({
-                "text": text,
-                "start": start_s,
-                "duration": max(0.0, (abs_to - abs_from) / 1000.0),
-                "timestamp": _fmt_ts(start_s),
-            })
+    bar = "━" * 40
+    print(bar)
 
-    return clean_items
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        while pending:
+            n = len(pending)
+            avg_s = sum(e - s for s, e in pending) / n / 1000.0 if n else 0
+            print(f"\n[Level {level}]  {n} task(s)  (avg {avg_s:.1f}s each)")
+
+            tasks = [(s, e, audio_wav, model, threshold, min_duration_s) for s, e in pending]
+            results = list(executor.map(_try_whisper_task, tasks))
+
+            next_pending = []
+            level_clean = level_uncertain = level_recurse = 0
+
+            for (start_ms, end_ms), (_, _, segs) in zip(pending, results):
+                duration_s = (end_ms - start_ms) / 1000.0
+
+                if segs is None:
+                    # ffmpeg/whisper hard failure — mark uncertain
+                    item = {
+                        "text": "[?]",
+                        "start": start_ms / 1000.0,
+                        "duration": duration_s,
+                        "timestamp": _fmt_ts(start_ms / 1000.0),
+                        "uncertain": True,
+                    }
+                    uncertain_items.append(item)
+                    level_uncertain += 1
+                    print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
+                          f"  {duration_s:.1f}s  whisper failed")
+                    continue
+
+                for seg in segs:
+                    text = seg.get("text", "").strip()
+                    if not text:
+                        continue
+                    offsets = seg.get("offsets", {})
+                    abs_from = offsets.get("from", 0) + start_ms
+                    abs_to   = offsets.get("to",   0) + start_ms
+                    seg_dur_s = (abs_to - abs_from) / 1000.0
+
+                    if not is_hallucinated(text, threshold):
+                        # ✓ clean
+                        item = {
+                            "text": text,
+                            "start": abs_from / 1000.0,
+                            "duration": max(0.0, seg_dur_s),
+                            "timestamp": _fmt_ts(abs_from / 1000.0),
+                        }
+                        clean_items.append(item)
+                        level_clean += 1
+                        print(f"  ✓  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
+                              f"  {seg_dur_s:.1f}s  \"{text[:30]}\"")
+                    elif seg_dur_s < min_duration_s:
+                        # [?] base case — too small to split further
+                        item = {
+                            "text": "[?]",
+                            "start": abs_from / 1000.0,
+                            "duration": max(0.0, seg_dur_s),
+                            "timestamp": _fmt_ts(abs_from / 1000.0),
+                            "uncertain": True,
+                        }
+                        uncertain_items.append(item)
+                        level_uncertain += 1
+                        print(f"  [?]  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
+                              f"  {seg_dur_s:.1f}s  uncertain (base case)")
+                    else:
+                        # ✗ still bad and splittable → add both halves to next level
+                        mid = (abs_from + abs_to) // 2
+                        next_pending.append((abs_from, mid))
+                        next_pending.append((mid, abs_to))
+                        level_recurse += 1
+                        print(f"  ✗  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
+                              f"  {seg_dur_s:.1f}s  → split")
+
+            print(f"  → Level {level}: {level_clean} clean, "
+                  f"{level_recurse} recurse ({len(next_pending)} new tasks), "
+                  f"{level_uncertain} uncertain")
+            pending = next_pending
+            level += 1
+
+    print()
+    return clean_items, uncertain_items
 
 
 def detect_and_recover(
@@ -176,51 +248,107 @@ def detect_and_recover(
     model: str = MODEL_PATH,
     threshold: float = 0.4,
     min_duration_s: float = 1.0,
-    max_depth: int = 4,
+    workers: int = 2,
+    max_consec_repeat: int = 4,
 ) -> list:
     """
-    Scan items for in-segment phoneme loops. For each corrupt item, run D&C
-    recovery on the audio slice and substitute recovered items.
+    Scan items for in-segment phoneme loops and cross-segment repetition loops.
+    Merges contiguous corrupt items into 5-minute audio slice tasks, running D&C
+    recovery across N workers concurrently.
     Returns merged, timestamp-sorted list.
     """
-    result = []
-    corrupt_count = 0
-    total = len(items)
+    is_corrupt = [False] * len(items)
 
-    for idx, item in enumerate(items):
-        text = item.get("text", "")
-        if not is_hallucinated(text, threshold):
-            if idx % 500 == 0:
-                print(f"[fix] progress: {idx+1}/{total} segments scanned, {corrupt_count} corrupt so far", file=sys.stderr, flush=True)
-            result.append(item)
-            continue
+    # 1. In-segment phoneme loop detection
+    for i, item in enumerate(items):
+        if is_hallucinated(item.get("text", ""), threshold):
+            is_corrupt[i] = True
 
-        corrupt_count += 1
-        start_ms = int(item["start"] * 1000)
-        end_ms   = int((item["start"] + item.get("duration", 0)) * 1000)
-        duration_s = (end_ms - start_ms) / 1000.0
-        print(
-            f"\n[fix] [{idx+1}/{total}] Corrupt segment at {item['timestamp']} ({duration_s:.1f}s): "
-            f"recovering [{start_ms}ms–{end_ms}ms]",
-            file=sys.stderr, flush=True,
-        )
-        print(f"[fix]   text preview: '{text[:60]}'", file=sys.stderr, flush=True)
+    # 2. Cross-segment consecutive identical text loop detection
+    i = 0
+    while i < len(items):
+        j = i + 1
+        t = items[i].get("text", "").strip()
+        while j < len(items) and items[j].get("text", "").strip() == t:
+            j += 1
+        count = j - i
+        if count >= max_consec_repeat and len(t) > 1:
+            for k in range(i, j):
+                is_corrupt[k] = True
+        i = j
 
-        if not audio_wav.exists():
-            print(
-                f"[fix] WARNING: audio_wav {audio_wav} not found — dropping segment",
-                file=sys.stderr, flush=True,
-            )
-            continue
+    # Group contiguous corrupt items into merged time ranges [start_ms, end_ms]
+    ranges = []
+    curr_start = None
+    curr_end = None
 
-        recovered = recover_segment(audio_wav, start_ms, end_ms, model, threshold, min_duration_s, depth=0, max_depth=max_depth)
-        print(f"[fix]   → recovered {len(recovered)} clean items from {item['timestamp']}", file=sys.stderr, flush=True)
-        result.extend(recovered)
+    for i, item in enumerate(items):
+        if is_corrupt[i]:
+            start_ms = int(item["start"] * 1000)
+            end_ms = int((item["start"] + item.get("duration", 0)) * 1000)
+            if curr_start is None:
+                curr_start = start_ms
+                curr_end = end_ms
+            else:
+                curr_end = max(curr_end, end_ms)
+        else:
+            if curr_start is not None:
+                ranges.append((curr_start, curr_end))
+                curr_start = None
+                curr_end = None
 
+    if curr_start is not None:
+        ranges.append((curr_start, curr_end))
+
+    clean_items = [item for i, item in enumerate(items) if not is_corrupt[i]]
+    num_corrupt = sum(is_corrupt)
+    print(f"[fix] Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.", file=sys.stderr)
+    
+    if not ranges:
+        return items
+
+    if not audio_wav.exists():
+        print(f"[fix] WARNING: audio_wav {audio_wav} not found — dropping corrupt segments", file=sys.stderr)
+        return clean_items
+
+    # Split large ranges (> 300s) into 300s sub-chunks
+    chunked_ranges = []
+    MAX_CHUNK_MS = 300 * 1000  # 5 minutes
+    for st, en in ranges:
+        curr = st
+        while curr < en:
+            nxt = min(curr + MAX_CHUNK_MS, en)
+            chunked_ranges.append((curr, nxt))
+            curr = nxt
+
+    print(f"[fix] Split into {len(chunked_ranges)} recovery tasks (up to 5m each).", file=sys.stderr)
+    print(f"[fix] Running BFS parallel recovery using {workers} worker(s)...")
+    clean_recovered, uncertain_items = _bfs_recover(
+        chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
+    )
+    recovered_items = clean_recovered + uncertain_items
+
+    result = clean_items + recovered_items
     result.sort(key=lambda x: x["start"])
-    if corrupt_count:
-        print(f"[fix] Replaced {corrupt_count} hallucinated segments.", file=sys.stderr)
-    return result
+
+    # Final post-recovery pass: strip residual consecutive repetitions (>= 3)
+    final_dedup = []
+    i = 0
+    fillers = {"โอเค", "เออ", "อืม", "อื้อ", "เอ่อ", "อ้าว"}
+    while i < len(result):
+        j = i + 1
+        t = result[i].get("text", "").strip()
+        while j < len(result) and result[j].get("text", "").strip() == t:
+            j += 1
+        count = j - i
+        if count >= 3 and len(t) > 2 and t not in fillers:
+            final_dedup.append(result[i])
+        else:
+            final_dedup.extend(result[i:j])
+        i = j
+
+    print(f"[fix] Replaced {num_corrupt} hallucinated segments with {len(recovered_items)} recovered items (final count: {len(final_dedup)}).", file=sys.stderr)
+    return final_dedup
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +357,7 @@ def detect_and_recover(
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Detect and fix Whisper in-segment phoneme loop hallucinations."
+        description="Detect and fix Whisper in-segment phoneme loop hallucinations with multi-worker support."
     )
     ap.add_argument("whisper_json", help="Path to whisper-cli JSON output (audio.wav.json)")
     ap.add_argument("audio_wav",    help="Path to original WAV audio file")
@@ -239,6 +367,8 @@ def main():
                     help="N-gram repetition ratio threshold (default: 0.4)")
     ap.add_argument("--min-duration", type=float, default=1.0,
                     help="Min slice duration in seconds before discarding (default: 1.0)")
+    ap.add_argument("-w", "--workers", type=int, default=2,
+                    help="Number of parallel whisper-cli workers (default: 2)")
     ap.add_argument("-o", "--output", default=None,
                     help="Output JSON path (default: overwrite input)")
     args = ap.parse_args()
@@ -251,7 +381,6 @@ def main():
     with open(json_path, "r", encoding="utf-8", errors="replace") as f:
         data = json.load(f)
 
-    # Parse whisper-cli transcription format → pipeline items
     raw = []
     for seg in data.get("transcription", []):
         offsets  = seg.get("offsets", {})
@@ -267,7 +396,7 @@ def main():
             "timestamp": _fmt_ts(start_s),
         })
 
-    fixed = detect_and_recover(raw, audio_path, args.model, args.threshold, args.min_duration)
+    fixed = detect_and_recover(raw, audio_path, args.model, args.threshold, args.min_duration, workers=args.workers)
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(fixed, f, ensure_ascii=False, indent=2)
