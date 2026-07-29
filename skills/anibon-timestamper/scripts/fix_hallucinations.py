@@ -23,14 +23,14 @@ MODEL_PATH  = str(Path.home() / "whisper.cpp/models/ggml-large-v3-turbo.bin")
 # ---------------------------------------------------------------------------
 
 def is_hallucinated(text: str, threshold: float = 0.4) -> bool:
-    """True if longest repeated n-gram (n=2..4) covers > threshold of text length."""
+    """True if a repeated n-gram (n=2..4, count>=2) covers > threshold of text length."""
     if len(text) < 8:
         return False
     for n in range(2, 5):
         ngrams = [text[i:i+n] for i in range(len(text) - n + 1)]
         for gram in set(ngrams):
             count = text.count(gram)
-            if count * n / len(text) > threshold:
+            if count >= 2 and count * n / len(text) > threshold:
                 return True
     return False
 
