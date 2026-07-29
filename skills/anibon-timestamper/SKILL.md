@@ -18,6 +18,7 @@ Streams or videos by "Boat" from Anibon Official that need timed topic labels.
 Loaded by signal (add to prompt when needed):
 - `anibon-world-identity` — verify game/char names against references before story stamps
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
+- `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
 
 ## Pipeline (Linear, Top-to-Bottom)
 
@@ -40,6 +41,9 @@ python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30
 ```
 
 Downloads transcript, creates `<workspace>/chunks/chunk_*.xml`.
+
+> [!IMPORTANT]
+> **Check Corruption**: If transcript is from local Whisper transcription (or audio ≥2h), verify tail entries for repetition loops. If corruption found (>0.5 match ratio), load `whisper-corruption-recovery` skill to split, re-run corrupted tail segment, and dedup-merge before chunking.
 
 ### 3. Clean Transcript (Optional)
 

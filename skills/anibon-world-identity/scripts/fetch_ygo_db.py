@@ -56,7 +56,7 @@ PAGE_SIZE   = 2000
 
 DEFAULT_DB_PATH = (
     Path(__file__).parent.parent
-    / "skills" / "reference" / "Yu-Gi-Oh DATA" / "ygo_cards.db"
+    / "references" / "Yu-Gi-Oh DATA" / "ygo_cards.db"
 )
 
 # ---------------------------------------------------------------------------

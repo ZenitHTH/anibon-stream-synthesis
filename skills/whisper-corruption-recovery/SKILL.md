@@ -21,7 +21,20 @@ Write-Host "Corruption ratio: $($r/$last.Count)"
 
 >0.5 = corrupted. First repeat entry's `start` = corruption boundary.
 
-## Recovery Sequence
+## Automated Python Recovery Script
+
+Automate detection and divide-and-conquer slice recovery using `scripts/fix_hallucinations.py`:
+
+```bash
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> -o recovered_transcript.json
+```
+
+Options:
+- `--threshold 0.4` — n-gram repetition ratio threshold (default: 0.4)
+- `--min-duration 1.0` — min segment duration to slice
+- `-o output.json` — output recovered transcript JSON
+
+## Recovery Sequence (Manual / Reference)
 
 1. **Split at boundary**: `ffmpeg -ss HH:MM:SS -i full_video.mp4 -acodec pcm_s16le -ar 16000 tail_raw.wav`
 2. **Segment** (900s chunks): `ffmpeg -i tail_raw.wav -f segment -segment_time 900 tail_%02d.wav`

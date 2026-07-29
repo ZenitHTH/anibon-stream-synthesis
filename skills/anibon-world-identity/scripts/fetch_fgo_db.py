@@ -50,7 +50,7 @@ import concurrent.futures
 BASE_URL = "https://api.atlasacademy.io/export/JP"
 INFO_URL = "https://api.atlasacademy.io/info"
 
-DEFAULT_DB_PATH = Path(__file__).parent.parent / "skills" / "reference" / "FGO and DATA" / "atlas_fgo.db"
+DEFAULT_DB_PATH = Path(__file__).parent.parent / "references" / "FGO and DATA" / "atlas_fgo.db"
 
 # Each entry: (endpoint_suffix, table_name, columns_to_extract)
 # columns_to_extract: list of (json_key, sqlite_type)

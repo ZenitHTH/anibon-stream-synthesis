@@ -10,21 +10,32 @@ Use when YouTube has no subtitles or auto-captions for the target video.
 
 ## 1. Audio Extraction
 
-Download audio stream as a mono 16kHz WAV file:
+Download audio stream as mono 16kHz WAV file (required for whisper.cpp miniaudio and to prevent >4GB WAV header overflow on long streams):
 
 ```bash
-yt-dlp -x --audio-format wav --audio-quality 16K "VIDEO_URL" -o "audio.wav"
+yt-dlp -x --audio-format wav --exec "ffmpeg -i {} -ar 16000 -ac 1 -c:a pcm_s16le audio_16k.wav && rm {}" "VIDEO_URL" -o "temp_audio.%(ext)s"
+```
+Or convert existing audio:
+```bash
+ffmpeg -i audio.wav -ar 16000 -ac 1 -c:a pcm_s16le audio_16k.wav
 ```
 
 ## 2. Local Transcription
 
 Run GPU-accelerated whisper.cpp build:
 
-**Windows (Vulkan/AMD):**
-```powershell
-.\whisper-cli.exe -m ggml-large-v3-turbo.bin -l th -f audio.wav -ot 540000 2>&1
+Check for `whisper-cli` in system PATH or local `$HOME/whisper.cpp` build directory:
+- `$HOME/whisper.cpp/build/bin/whisper-cli`
+- `$HOME/whisper.cpp/main`
+- `$HOME/whisper.cpp/whisper-cli`
+
+Model path defaults to `$HOME/whisper.cpp/models/ggml-large-v3-turbo.bin`.
+
+**Execution:**
+```bash
+~/whisper.cpp/build/bin/whisper-cli -m ~/whisper.cpp/models/ggml-large-v3-turbo.bin -l th -f audio.wav --output-json -of whisper_output 2>&1
 ```
-*(`-ot 540000` = 9 min offset to skip silent start screens and avoid repetition loop bugs)*
+*(`-ot 540000` optional offset to skip silent start screens and avoid repetition loop bugs)*
 
 For full build options and platform configurations, see [BUILD_GPU.md](BUILD_GPU.md).
 

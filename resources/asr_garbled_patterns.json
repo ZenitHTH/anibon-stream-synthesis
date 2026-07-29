@@ -1,0 +1,46 @@
+{
+  "description": "ASR garbled patterns for check_sections.py output validation",
+  "note": "Each entry: pattern (regex string) + warning message shown when found in output",
+  "patterns": [
+    {
+      "pattern": "(?i)\\bwing\\s*wave\\b",
+      "message": "\"Wing Wave\" → should be \"Wuthering Waves\"/\"WuWa\""
+    },
+    {
+      "pattern": "บัวใคร",
+      "message": "\"บัวใคร\" → should be \"Blue Archive\" (ASR garbled)"
+    },
+    {
+      "pattern": "(?i)\\bfoage\\b",
+      "message": "\"foage\" → should be \"footage\""
+    },
+    {
+      "pattern": "(?i)\\bone\\s*พ[ั้]?man\\b",
+      "message": "\"one พman\" → should be \"One Punch Man\""
+    },
+    {
+      "pattern": "(?i)\\bJC\\s*Star\\b",
+      "message": "\"JC Star\" → should be \"JC Staff\""
+    },
+    {
+      "pattern": "แมป[ป]?[าa]",
+      "message": "\"แมปa\" → should be \"MAPPA\""
+    },
+    {
+      "pattern": "ฮกสตาร",
+      "message": "\"ฮกสตาร\" → should be \"Honkai Star Rail\""
+    },
+    {
+      "pattern": "(?i)\\bad\\s*[ดดี]apt",
+      "message": "\"adดapt\" → should be \"adapt\""
+    },
+    {
+      "pattern": "อริจินอ",
+      "message": "\"อริจินอ\" → should be \"original\""
+    },
+    {
+      "pattern": "(?i)\\borigal\\b",
+      "message": "\"origal\" → should be \"original\""
+    }
+  ]
+}

@@ -18,13 +18,13 @@ Local references → cached story refs → reference SRT → websearch fallback
 
 ### b. Check cached story refs
 
-`python3 ../anibon-timestamper/scripts/fetch_story_ref.py --list` or browse `../anibon-timestamper/references/stories/` for previously fetched synopses.
+`python3 scripts/fetch_story_ref.py --list` or browse `references/stories/` for previously fetched synopses.
 
 ### c. Reference SRT (if reference video URL exists)
 
 ```bash
 yt-dlp --write-subs --sub-lang en --skip-download <ref_url>
-python3 ../anibon-timestamper/scripts/align_ref_timeline.py <srt> <chunks/> > alignment.json
+python3 scripts/align_ref_timeline.py <srt> <chunks/> > alignment.json
 ```
 
 Parse SRT for character/location names. Use `align_ref_timeline.py` to match ref timestamps against stream chunks automatically.
@@ -42,7 +42,7 @@ For each candidate, match against verified map
 Only if local + cached + SRT all insufficient:
 
 ```bash
-python3 ../anibon-timestamper/scripts/fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"
+python3 scripts/fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"
 ```
 
 ### g. Reject
@@ -54,10 +54,10 @@ Training-data inference, older-version character, unconfirmed phonetic match
 Run these before World Identity lookups for applicable games:
 
 ```bash
-python3 ../anibon-timestamper/scripts/fetch_fgo_db.py --check --db "../anibon-timestamper/skills/reference/FGO and DATA/atlas_fgo.db" || \
-  python3 ../anibon-timestamper/scripts/fetch_fgo_db.py --db "../anibon-timestamper/skills/reference/FGO and DATA/atlas_fgo.db"
-python3 ../anibon-timestamper/scripts/fetch_ygo_db.py --check --db "../anibon-timestamper/skills/reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
-  python3 ../anibon-timestamper/scripts/fetch_ygo_db.py --db "../anibon-timestamper/skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"
+python3 scripts/fetch_fgo_db.py --check --db "references/FGO and DATA/atlas_fgo.db" || \
+  python3 scripts/fetch_fgo_db.py --db "references/FGO and DATA/atlas_fgo.db"
+python3 scripts/fetch_ygo_db.py --check --db "references/Yu-Gi-Oh DATA/ygo_cards.db" || \
+  python3 scripts/fetch_ygo_db.py --db "references/Yu-Gi-Oh DATA/ygo_cards.db"
 ```
 
 ## When to Skip
