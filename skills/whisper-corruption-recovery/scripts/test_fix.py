@@ -84,5 +84,43 @@ class TestBfsRecover(unittest.TestCase):
         self.assertGreaterEqual(len(clean), 1)
         self.assertEqual(len(uncertain), 0)
 
+class TestSecondChance(unittest.TestCase):
+
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_uncertain_run_over_1s_gets_retried(self, mock_whisper, mock_cut):
+        """Consecutive [?] items spanning > 1s must be merged and retried."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav",
+                                          unlink=lambda missing_ok=True: None)
+        mock_whisper.return_value = [{"text": " ดีครับ", "offsets": {"from": 0, "to": 1500}}]
+
+        uncertain = [
+            {"text": "[?]", "start": 10.0, "duration": 0.6, "timestamp": "00:00:10", "uncertain": True},
+            {"text": "[?]", "start": 10.6, "duration": 0.6, "timestamp": "00:00:10", "uncertain": True},
+            {"text": "[?]", "start": 11.2, "duration": 0.6, "timestamp": "00:00:11", "uncertain": True},
+        ]
+        # Combined span = 1.8s > 1s — should retry
+        recovered, still_uncertain = fh._second_chance_pass(
+            uncertain, pathlib.Path("audio.wav"), fh.MODEL_PATH, 0.4, 1.0, workers=1
+        )
+        self.assertGreater(len(recovered), 0)
+        self.assertEqual(len(still_uncertain), 0)
+
+    def test_uncertain_run_under_1s_skipped(self):
+        """Consecutive [?] items spanning <= 1s must NOT be retried."""
+        uncertain = [
+            {"text": "[?]", "start": 10.0, "duration": 0.4, "timestamp": "00:00:10", "uncertain": True},
+            {"text": "[?]", "start": 10.4, "duration": 0.4, "timestamp": "00:00:10", "uncertain": True},
+        ]
+        # Combined span = 0.8s <= 1s — skip
+        with patch("fix_hallucinations.ffmpeg_cut") as mock_cut:
+            recovered, still_uncertain = fh._second_chance_pass(
+                uncertain, pathlib.Path("audio.wav"), fh.MODEL_PATH, 0.4, 1.0, workers=1
+            )
+        mock_cut.assert_not_called()
+        self.assertEqual(len(still_uncertain), 2)
+        self.assertEqual(len(recovered), 0)
+
 if __name__ == "__main__":
     unittest.main()
+

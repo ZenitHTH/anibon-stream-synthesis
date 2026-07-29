@@ -242,6 +242,120 @@ def _bfs_recover(
     return clean_items, uncertain_items
 
 
+def _second_chance_pass(
+    uncertain_items: list,
+    audio_wav: Path,
+    model: str = MODEL_PATH,
+    threshold: float = 0.4,
+    min_duration_s: float = 1.0,
+    workers: int = 2,
+) -> tuple:
+    """
+    Merge consecutive [?] runs spanning > 1s and retry recovery in parallel.
+
+    Returns (recovered_items, still_uncertain_items).
+    """
+    if not uncertain_items:
+        return [], []
+
+    # Group consecutive uncertain items into runs
+    runs = []
+    run = [uncertain_items[0]]
+    for item in uncertain_items[1:]:
+        # consecutive = next item starts where this one ends (within 0.1s gap tolerance)
+        prev_end = run[-1]["start"] + run[-1]["duration"]
+        if item["start"] - prev_end < 0.1:
+            run.append(item)
+        else:
+            runs.append(run)
+            run = [item]
+    runs.append(run)
+
+    # Split into retry-eligible (span > 1s) and keep-as-is (span <= 1s)
+    retry_runs = []
+    keep_runs = []
+    for run in runs:
+        span = sum(i["duration"] for i in run)
+        if span > min_duration_s:
+            retry_runs.append(run)
+        else:
+            keep_runs.append(run)
+
+    still_uncertain = [item for run in keep_runs for item in run]
+    recovered = []
+
+    if not retry_runs:
+        return recovered, still_uncertain
+
+    print(f"\n[Second-chance]  {len(retry_runs)} uncertain region(s) > {min_duration_s}s"
+          f"  |  {workers} workers")
+
+    # Build retry tasks
+    retry_ranges = []
+    for run in retry_runs:
+        start_ms = int(run[0]["start"] * 1000)
+        end_ms   = int((run[-1]["start"] + run[-1]["duration"]) * 1000)
+        retry_ranges.append((start_ms, end_ms))
+
+    tasks = [(s, e, audio_wav, model, threshold, min_duration_s) for s, e in retry_ranges]
+
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        results = list(executor.map(_try_whisper_task, tasks))
+
+    for (start_ms, end_ms), (_, _, segs) in zip(retry_ranges, results):
+        span_s = (end_ms - start_ms) / 1000.0
+        if segs is None:
+            print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
+                  f"  {span_s:.1f}s  → whisper failed, keep uncertain")
+            still_uncertain.extend(
+                next(r for r in retry_runs
+                     if int(r[0]["start"]*1000) == start_ms)
+            )
+            continue
+
+        run_recovered = []
+        run_uncertain = []
+        for seg in segs:
+            text = seg.get("text", "").strip()
+            if not text:
+                continue
+            offsets = seg.get("offsets", {})
+            abs_from = offsets.get("from", 0) + start_ms
+            abs_to   = offsets.get("to",   0) + start_ms
+            seg_dur  = (abs_to - abs_from) / 1000.0
+            if is_hallucinated(text, threshold):
+                run_uncertain.append({
+                    "text": "[?]",
+                    "start": abs_from / 1000.0,
+                    "duration": max(0.0, seg_dur),
+                    "timestamp": _fmt_ts(abs_from / 1000.0),
+                    "uncertain": True,
+                })
+            else:
+                run_recovered.append({
+                    "text": text,
+                    "start": abs_from / 1000.0,
+                    "duration": max(0.0, seg_dur),
+                    "timestamp": _fmt_ts(abs_from / 1000.0),
+                })
+
+        if run_recovered:
+            print(f"  ✓  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
+                  f"  {span_s:.1f}s  → recovered: {len(run_recovered)} item(s)")
+            recovered.extend(run_recovered)
+            still_uncertain.extend(run_uncertain)
+        else:
+            print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
+                  f"  {span_s:.1f}s  → still uncertain")
+            for run in retry_runs:
+                if int(run[0]["start"]*1000) == start_ms:
+                    still_uncertain.extend(run)
+                    break
+
+    return recovered, still_uncertain
+
+
+
 def detect_and_recover(
     items: list,
     audio_wav: Path,
@@ -326,7 +440,10 @@ def detect_and_recover(
     clean_recovered, uncertain_items = _bfs_recover(
         chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
     )
-    recovered_items = clean_recovered + uncertain_items
+    sc_recovered, sc_uncertain = _second_chance_pass(
+        uncertain_items, audio_wav, model, threshold, min_duration_s, workers
+    )
+    recovered_items = clean_recovered + sc_recovered + sc_uncertain
 
     result = clean_items + recovered_items
     result.sort(key=lambda x: x["start"])
