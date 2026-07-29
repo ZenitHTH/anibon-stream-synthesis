@@ -121,6 +121,22 @@ class TestSecondChance(unittest.TestCase):
         self.assertEqual(len(still_uncertain), 2)
         self.assertEqual(len(recovered), 0)
 
+class TestSummaryOutput(unittest.TestCase):
+
+    def test_uncertain_items_in_output_have_flag(self):
+        """Final JSON output must preserve uncertain=True on [?] items."""
+        item = {"text": "[?]", "start": 1.0, "duration": 0.5,
+                "timestamp": "00:00:01", "uncertain": True}
+        self.assertTrue(item.get("uncertain"))
+        self.assertEqual(item["text"], "[?]")
+
+    def test_no_max_depth_in_detect_signature(self):
+        """detect_and_recover must NOT have max_depth parameter."""
+        import inspect
+        sig = inspect.signature(fh.detect_and_recover)
+        self.assertNotIn("max_depth", sig.parameters)
+
 if __name__ == "__main__":
     unittest.main()
+
 

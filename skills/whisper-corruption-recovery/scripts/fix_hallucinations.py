@@ -258,6 +258,8 @@ def _second_chance_pass(
     if not uncertain_items:
         return [], []
 
+    uncertain_items = sorted(uncertain_items, key=lambda x: x["start"])
+
     # Group consecutive uncertain items into runs
     runs = []
     run = [uncertain_items[0]]
@@ -302,15 +304,12 @@ def _second_chance_pass(
     with ThreadPoolExecutor(max_workers=workers) as executor:
         results = list(executor.map(_try_whisper_task, tasks))
 
-    for (start_ms, end_ms), (_, _, segs) in zip(retry_ranges, results):
+    for run, (start_ms, end_ms), (_, _, segs) in zip(retry_runs, retry_ranges, results):
         span_s = (end_ms - start_ms) / 1000.0
         if segs is None:
             print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
                   f"  {span_s:.1f}s  → whisper failed, keep uncertain")
-            still_uncertain.extend(
-                next(r for r in retry_runs
-                     if int(r[0]["start"]*1000) == start_ms)
-            )
+            still_uncertain.extend(run)
             continue
 
         run_recovered = []
@@ -347,10 +346,7 @@ def _second_chance_pass(
         else:
             print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
                   f"  {span_s:.1f}s  → still uncertain")
-            for run in retry_runs:
-                if int(run[0]["start"]*1000) == start_ms:
-                    still_uncertain.extend(run)
-                    break
+            still_uncertain.extend(run)
 
     return recovered, still_uncertain
 
@@ -416,7 +412,7 @@ def detect_and_recover(
 
     clean_items = [item for i, item in enumerate(items) if not is_corrupt[i]]
     num_corrupt = sum(is_corrupt)
-    print(f"[fix] Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.", file=sys.stderr)
+    print(f"[fix] Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.")
     
     if not ranges:
         return items
@@ -435,7 +431,7 @@ def detect_and_recover(
             chunked_ranges.append((curr, nxt))
             curr = nxt
 
-    print(f"[fix] Split into {len(chunked_ranges)} recovery tasks (up to 5m each).", file=sys.stderr)
+    print(f"[fix] Split into {len(chunked_ranges)} recovery tasks (up to 5m each).")
     print(f"[fix] Running BFS parallel recovery using {workers} worker(s)...")
     clean_recovered, uncertain_items = _bfs_recover(
         chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
@@ -464,8 +460,22 @@ def detect_and_recover(
             final_dedup.extend(result[i:j])
         i = j
 
-    print(f"[fix] Replaced {num_corrupt} hallucinated segments with {len(recovered_items)} recovered items (final count: {len(final_dedup)}).", file=sys.stderr)
-    return final_dedup
+    result = final_dedup
+
+    n_uncertain = sum(1 for i in result if i.get("uncertain"))
+    n_clean_orig = len(items) - num_corrupt
+    n_recovered  = len(result) - n_clean_orig - n_uncertain
+    bar = "━" * 40
+    print(f"\n{bar}")
+    print(f" Done")
+    print(f" Total output  : {len(result):,} items")
+    print(f" Recovered     : {n_recovered:,}  (D&C + second-chance)")
+    print(f" Uncertain [?] : {n_uncertain:,}  (preserved, sub-second)")
+    print(f" Original clean: {n_clean_orig:,}")
+    print(bar)
+
+    return result
+
 
 
 # ---------------------------------------------------------------------------
