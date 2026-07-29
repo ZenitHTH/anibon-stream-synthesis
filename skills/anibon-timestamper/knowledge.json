@@ -19,13 +19,29 @@
       "kind": "game",
       "file": "skills/reference/Arknights_Endfield.md"
     },
+    "arona": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "bleach": {
       "kind": "anime",
       "file": null
     },
+    "blue archive": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "bluearchive": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "bracket": {
       "kind": "domain",
       "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "castorice": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
     },
     "chaos zero": {
       "kind": "game",
@@ -34,6 +50,10 @@
     "chaos zero nightmare": {
       "kind": "game",
       "file": "skills/reference/Chaos_Zero_Nightmare.md"
+    },
+    "dinoblade": {
+      "kind": "game",
+      "file": "skills/reference/Dinoblade.md"
     },
     "discuss": {
       "kind": "stream_type",
@@ -111,6 +131,10 @@
       "kind": "game",
       "file": "skills/reference/Honkai_Star_Rail.md"
     },
+    "hoshino": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "hsr": {
       "kind": "game",
       "file": "skills/reference/Honkai_Star_Rail.md"
@@ -159,13 +183,38 @@
       "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
       "_added": "2026-07-27T09:08:06"
     },
+    "momotalk": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "nexon": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "nexton": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "one punch man": {
+      "kind": "anime",
+      "file": null,
+      "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
+    },
     "palworld": {
       "kind": "game",
       "file": null
     },
+    "parrying extinction": {
+      "kind": "game",
+      "file": "skills/reference/Dinoblade.md"
+    },
     "patch": {
       "kind": "stream_type",
       "file": "references/stream/event-stream.md"
+    },
+    "pipeline": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
     },
     "play": {
       "kind": "stream_type",
@@ -183,13 +232,34 @@
       "kind": "game",
       "file": "skills/reference/Pokemon_PvP.md"
     },
+    "pyroxene": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "radical red": {
       "kind": "game",
       "file": "skills/reference/Pokemon_Radical_Red.md"
     },
+    "seele leaks": {
+      "kind": "domain",
+      "file": null,
+      "_note": "Twitter leaker account covering all MiHoYo/HoYoverse games (Genshin, HSR, HI3, ZZZ)"
+    },
     "sekiro": {
       "kind": "game",
-      "file": null
+      "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+    },
+    "เซกิโร": {
+      "kind": "game",
+      "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+    },
+    "shadow die twice": {
+      "kind": "game",
+      "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+    },
+    "shadows die twice": {
+      "kind": "game",
+      "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
     },
     "series": {
       "kind": "anime",
@@ -198,6 +268,10 @@
     "servant": {
       "kind": "game",
       "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+    },
+    "shiroko": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
     },
     "star rail": {
       "kind": "game",
@@ -227,6 +301,10 @@
       "kind": "stream_type",
       "file": "references/stream/tokusatsu-stream.md"
     },
+    "total assault": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "ultraman": {
       "kind": "stream_type",
       "file": "references/stream/tokusatsu-stream.md"
@@ -238,6 +316,18 @@
     "uwufufu": {
       "kind": "domain",
       "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "vlog": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "wing wave": {
+      "kind": "game",
+      "file": "skills/reference/Wuthering_Waves.md"
+    },
+    "work": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
     },
     "world cup": {
       "kind": "domain",
@@ -258,28 +348,6 @@
     "wuwa": {
       "kind": "game",
       "file": "skills/reference/Wuthering_Waves.md"
-    },
-    "wing wave": {
-      "kind": "game",
-      "file": "skills/reference/Wuthering_Waves.md"
-    },
-    "seele leaks": {
-      "kind": "domain",
-      "file": null,
-      "_note": "Twitter leaker account covering all MiHoYo/HoYoverse games (Genshin, HSR, HI3, ZZZ)"
-    },
-    "one punch man": {
-      "kind": "anime",
-      "file": null,
-      "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
-    },
-    "น้องข้าว": {
-      "kind": "game",
-      "file": "skills/reference/Honkai_Star_Rail.md"
-    },
-    "castorice": {
-      "kind": "game",
-      "file": "skills/reference/Honkai_Star_Rail.md"
     },
     "ygo": {
       "kind": "game",
@@ -317,9 +385,33 @@
       "kind": "stream_type",
       "file": "references/stream/talk-stream.md"
     },
+    "งาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
     "ซุปเปอร์แชท": {
       "kind": "domain",
       "file": "references/stream/donation-classifier.md"
+    },
+    "ทำงาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "น้องข้าว": {
+      "kind": "game",
+      "file": "skills/reference/Honkai_Star_Rail.md"
+    },
+    "บลูอาร์ไคฟ์": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "บัวไค": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
+    "บูไค": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
     },
     "มังงะ": {
       "kind": "anime",
@@ -336,6 +428,10 @@
     "ลิมบัส": {
       "kind": "game",
       "file": "skills/reference/Limbus_Company.md"
+    },
+    "วล็อก": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
     },
     "สามเค": {
       "kind": "game",
@@ -381,6 +477,10 @@
       "kind": "domain",
       "file": "references/stream/story-enrichment.md"
     },
+    "เน็กซอน": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
+    },
     "เฟท": {
       "kind": "game",
       "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
@@ -401,29 +501,13 @@
       "kind": "game",
       "file": "skills/reference/Pokemon_PvP.md"
     },
-    "งาน": {
-      "kind": "domain",
-      "file": "references/stream/talk-stream.md"
+    "ไดโนเบลด": {
+      "kind": "game",
+      "file": "skills/reference/Dinoblade.md"
     },
-    "ทำงาน": {
-      "kind": "domain",
-      "file": "references/stream/talk-stream.md"
-    },
-    "pipeline": {
-      "kind": "domain",
-      "file": "references/stream/talk-stream.md"
-    },
-    "vlog": {
-      "kind": "stream_type",
-      "file": "references/stream/talk-stream.md"
-    },
-    "วล็อก": {
-      "kind": "stream_type",
-      "file": "references/stream/talk-stream.md"
-    },
-    "work": {
-      "kind": "domain",
-      "file": "references/stream/talk-stream.md"
+    "ブルーアーカイブ": {
+      "kind": "game",
+      "file": "skills/reference/Blue_Archive.md"
     }
   },
   "_discovered": {
