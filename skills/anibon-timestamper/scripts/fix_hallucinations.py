@@ -105,24 +105,38 @@ def recover_segment(
     model: str,
     threshold: float,
     min_duration_s: float,
+    depth: int = 0,
+    max_depth: int = 4,
 ) -> list:
     """
-    Divide-and-conquer: recursively halve [start_ms, end_ms] until clean or < min_duration_s.
+    Divide-and-conquer: recursively halve [start_ms, end_ms] until clean or
+    < min_duration_s or depth > max_depth.
     Returns list of pipeline items {"text", "start", "duration", "timestamp"}.
     Offsets returned are absolute (relative to original audio_wav start = 0).
     """
+    indent = "  " * depth
     duration_s = (end_ms - start_ms) / 1000.0
-    if duration_s < min_duration_s:
-        return []  # base case: too short for human speech
 
+    if duration_s < min_duration_s:
+        print(f"[fix]{indent} base-case: slice {start_ms}-{end_ms}ms ({duration_s:.1f}s) < {min_duration_s}s — discard", file=sys.stderr, flush=True)
+        return []
+
+    if depth >= max_depth:
+        print(f"[fix]{indent} max-depth {max_depth} reached at {start_ms}-{end_ms}ms ({duration_s:.1f}s) — discard (non-speech)", file=sys.stderr, flush=True)
+        return []
+
+    print(f"[fix]{indent} depth={depth} cutting slice {start_ms}-{end_ms}ms ({duration_s:.1f}s)...", file=sys.stderr, flush=True)
     slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
     try:
+        print(f"[fix]{indent} running whisper-cli on {duration_s:.1f}s slice...", file=sys.stderr, flush=True)
         raw_segs = run_whisper_on_slice(slice_wav, model, temperature=0.2)
     except subprocess.CalledProcessError as e:
-        print(f"[fix]   whisper-cli failed on slice {start_ms}-{end_ms}ms: {e}", file=sys.stderr)
+        print(f"[fix]{indent} whisper-cli FAILED on {start_ms}-{end_ms}ms: {e}", file=sys.stderr, flush=True)
         return []
     finally:
         slice_wav.unlink(missing_ok=True)
+
+    print(f"[fix]{indent} whisper returned {len(raw_segs)} token-segs from {duration_s:.1f}s slice", file=sys.stderr, flush=True)
 
     clean_items = []
     for seg in raw_segs:
@@ -135,16 +149,17 @@ def recover_segment(
         abs_to   = offsets.get("to",   0) + start_ms
 
         if is_hallucinated(text, threshold):
-            # Recurse: split at midpoint of this sub-segment
+            print(f"[fix]{indent} still hallucinated: '{text[:40]}' → recurse (depth {depth+1})", file=sys.stderr, flush=True)
             mid = (abs_from + abs_to) // 2
             clean_items.extend(
-                recover_segment(audio_wav, abs_from, mid, model, threshold, min_duration_s)
+                recover_segment(audio_wav, abs_from, mid, model, threshold, min_duration_s, depth + 1, max_depth)
             )
             clean_items.extend(
-                recover_segment(audio_wav, mid, abs_to, model, threshold, min_duration_s)
+                recover_segment(audio_wav, mid, abs_to, model, threshold, min_duration_s, depth + 1, max_depth)
             )
         else:
             start_s = abs_from / 1000.0
+            print(f"[fix]{indent} clean: '{text[:50]}'", file=sys.stderr, flush=True)
             clean_items.append({
                 "text": text,
                 "start": start_s,
@@ -161,6 +176,7 @@ def detect_and_recover(
     model: str = MODEL_PATH,
     threshold: float = 0.4,
     min_duration_s: float = 1.0,
+    max_depth: int = 4,
 ) -> list:
     """
     Scan items for in-segment phoneme loops. For each corrupt item, run D&C
@@ -169,31 +185,36 @@ def detect_and_recover(
     """
     result = []
     corrupt_count = 0
+    total = len(items)
 
-    for item in items:
+    for idx, item in enumerate(items):
         text = item.get("text", "")
         if not is_hallucinated(text, threshold):
+            if idx % 500 == 0:
+                print(f"[fix] progress: {idx+1}/{total} segments scanned, {corrupt_count} corrupt so far", file=sys.stderr, flush=True)
             result.append(item)
             continue
 
         corrupt_count += 1
         start_ms = int(item["start"] * 1000)
         end_ms   = int((item["start"] + item.get("duration", 0)) * 1000)
+        duration_s = (end_ms - start_ms) / 1000.0
         print(
-            f"[fix] Corrupt segment at {item['timestamp']}: "
+            f"\n[fix] [{idx+1}/{total}] Corrupt segment at {item['timestamp']} ({duration_s:.1f}s): "
             f"recovering [{start_ms}ms–{end_ms}ms]",
-            file=sys.stderr,
+            file=sys.stderr, flush=True,
         )
+        print(f"[fix]   text preview: '{text[:60]}'", file=sys.stderr, flush=True)
 
         if not audio_wav.exists():
             print(
                 f"[fix] WARNING: audio_wav {audio_wav} not found — dropping segment",
-                file=sys.stderr,
+                file=sys.stderr, flush=True,
             )
             continue
 
-        recovered = recover_segment(audio_wav, start_ms, end_ms, model, threshold, min_duration_s)
-        print(f"[fix]   → recovered {len(recovered)} clean items", file=sys.stderr)
+        recovered = recover_segment(audio_wav, start_ms, end_ms, model, threshold, min_duration_s, depth=0, max_depth=max_depth)
+        print(f"[fix]   → recovered {len(recovered)} clean items from {item['timestamp']}", file=sys.stderr, flush=True)
         result.extend(recovered)
 
     result.sort(key=lambda x: x["start"])
