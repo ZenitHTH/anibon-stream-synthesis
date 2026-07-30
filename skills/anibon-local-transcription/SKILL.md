@@ -48,3 +48,12 @@ python3 ../cleaning-auto-transcripts/scripts/clean_transcript.py whisper_output.
 ```
 
 Then proceed with the standard pipeline (chunking, signal detection, subagents).
+
+## 4. Hallucination Detection & Recovery
+
+Detect repetition loops / hallucinations via frequency analysis and auto-trigger recovery:
+
+```bash
+python3 scripts/detect_hallucinations.py whisper_output.json --audio audio_16k.wav -o recovered_transcript.json
+```
+

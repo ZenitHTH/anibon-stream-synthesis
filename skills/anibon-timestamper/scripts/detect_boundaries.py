@@ -146,70 +146,76 @@ def _dominant_game_signal(signal: dict) -> str:
 
 # ── Boundary detection ──────────────────────────────────────────────
 
+def _eval_transition(args_tuple):
+    i, name_a, start_a, text_a, name_b, start_b, text_b, sig_a, sig_b, threshold, time_gap_threshold = args_tuple
+    score_a = _total_signal_score(sig_a)
+    score_b = _total_signal_score(sig_b)
+    sim = jaccard_similarity(text_a, text_b)
+
+    is_boundary = False
+    reason = ""
+
+    if score_a > 0 or score_b > 0:
+        if sim < threshold:
+            is_boundary = True
+            reason = f"sim={sim:.3f} < {threshold} (signal-based)"
+    else:
+        gap = start_b - start_a
+        if gap > time_gap_threshold:
+            is_boundary = True
+            reason = f"gap={gap}s > {time_gap_threshold}s (flat-signal fallback)"
+
+    if is_boundary:
+        return {
+            "index": i + 1,
+            "start_sec": start_b,
+            "reason": reason,
+            "sim": round(sim, 3),
+        }
+    return None
+
 def detect_boundaries(
     chunks: list,
     signals: dict,
     threshold: float = SIM_THRESHOLD,
     time_gap_threshold: int = TIME_GAP_THRESHOLD,
+    workers: int = None,
 ):
-    """Detect topic boundaries between adjacent chunks.
-    
-    Args:
-        chunks: list of (name, start_sec, text)
-        signals: {chunk_name: {signal_score: {...}, matched_files: [...]}}
-        threshold: similarity below this = boundary
-        time_gap_threshold: start_sec gap above this = boundary (fallback)
-    
-    Returns:
-        list of boundary indices (index = AFTER chunk_i, so boundary
-        between chunk_i and chunk_i+1 is stored as i+1)
-    """
-    boundaries = []
-    
+    """Detect topic boundaries between adjacent chunks in parallel."""
+    if len(chunks) < 2:
+        return []
+
+    if workers is None:
+        import os
+        workers = max(1, os.cpu_count() or 4)
+
+
+    tasks = []
     for i in range(len(chunks) - 1):
         name_a, start_a, text_a = chunks[i]
         name_b, start_b, text_b = chunks[i + 1]
-        
         sig_a = signals.get(name_a, {})
         sig_b = signals.get(name_b, {})
-        score_a = _total_signal_score(sig_a)
-        score_b = _total_signal_score(sig_b)
-        
-        sim = jaccard_similarity(text_a, text_b)
-        
-        is_boundary = False
-        reason = ""
-        
-        if score_a > 0 or score_b > 0:
-            # At least one chunk has signal → use n-gram similarity
-            if sim < threshold:
-                is_boundary = True
-                reason = f"sim={sim:.3f} < {threshold} (signal-based)"
-        else:
-            # Both chunks have flat (zero) signals → use time gap
-            gap = start_b - start_a
-            if gap > time_gap_threshold:
-                is_boundary = True
-                reason = f"gap={gap}s > {time_gap_threshold}s (flat-signal fallback)"
-        
-        if is_boundary:
-            boundaries.append({
-                "index": i + 1,
-                "start_sec": start_b,  # boundary at start of next chunk
-                "reason": reason,
-                "sim": round(sim, 3),
-            })
-    
+        tasks.append((i, name_a, start_a, text_a, name_b, start_b, text_b, sig_a, sig_b, threshold, time_gap_threshold))
+
+    if len(tasks) > 20:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            raw_results = list(executor.map(_eval_transition, tasks))
+    else:
+        raw_results = [_eval_transition(t) for t in tasks]
+
+    boundaries = [b for b in raw_results if b is not None]
+
     # Merge boundaries within MERGE_DISTANCE chunks
     merged = []
     for b in boundaries:
         if merged and b["index"] - merged[-1]["index"] <= MERGE_DISTANCE:
-            # Keep the later boundary (more conservative split)
             merged[-1] = b
         else:
             merged.append(b)
-    
+
     return merged
+
 
 
 # ── Section building ────────────────────────────────────────────────
