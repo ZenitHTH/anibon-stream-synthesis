@@ -484,9 +484,9 @@ def detect_and_recover(
         log_event("MAIN", "WARN", f"audio_wav {audio_wav} not found — dropping corrupt segments")
         return clean_items
 
-    # Split large ranges (> 300s) into 300s sub-chunks
+    # Split large ranges (> 30s) into 30s sub-chunks to match Whisper's native 30s context window
     chunked_ranges = []
-    MAX_CHUNK_MS = 300 * 1000  # 5 minutes
+    MAX_CHUNK_MS = 30 * 1000  # 30 seconds (Whisper native context window)
     for st, en in ranges:
         curr = st
         while curr < en:
@@ -494,7 +494,7 @@ def detect_and_recover(
             chunked_ranges.append((curr, nxt))
             curr = nxt
 
-    log_event("MAIN", "CHUNK", f"Split into {len(chunked_ranges)} recovery tasks (max 300s each).")
+    log_event("MAIN", "CHUNK", f"Split into {len(chunked_ranges)} recovery tasks (max 30s each).")
     clean_recovered, uncertain_items = _bfs_recover(
         chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
     )
