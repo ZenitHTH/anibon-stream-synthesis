@@ -1,65 +1,63 @@
 ---
 name: whisper-corruption-recovery
-description: Use when Whisper transcription contains repetition loops, repeated identical phrases, or the last N entries of a long-audio transcript are nearly identical.
+description: Use when Whisper transcription contains repetition loops, repeated identical phrases, or long-audio transcripts contain corrupt segments.
 ---
 
 # Whisper Corruption Recovery
 
 ## Overview
-Whisper on audio ≥2h can enter repetition loops — same phrase repeating indefinitely from a corruption boundary onward. Recovery requires split → segment → re-run → dedup-merge. Never re-run Whisper on the full file.
+Whisper on audio ≥2h can enter repetition loops — in-segment phoneme repeats or cross-segment multi-line loops (e.g. A-B-A-B). The `whisper-corruption-recovery` skill provides a **BFS Parallel Divide-and-Conquer (D&C)** engine with sub-1-second mathematical base-case guarantees, `[?]` text prepending, and visual frame context extraction.
 
-## Detection (REQUIRED before any analysis)
+---
 
-Corruption signature: last 20 entries match entries 100 lines back at >0.5 ratio.
+## Automated Recovery Scripts
 
-```powershell
-$j = (Get-Content -Encoding UTF8 'raw_transcript.json' -Raw | ConvertFrom-Json)
-$last = $j[-20..-1]; $win = $j[-100..-81]
-$r = 0; 0..($last.Count-1) | % { if ($last[$_].text -eq $win[$_].text -and $last[$_].text.Length -gt 5) { $r++ } }
-Write-Host "Corruption ratio: $($r/$last.Count)"
-```
+### 1. BFS Parallel Audio Recovery (`scripts/fix_hallucinations.py`)
 
->0.5 = corrupted. First repeat entry's `start` = corruption boundary.
-
-## Automated Python Recovery Script
-
-Automate detection and divide-and-conquer slice recovery using `scripts/fix_hallucinations.py`:
+Scans transcripts for in-segment phoneme loops and cross-segment multi-sentence loops ($A-A-A-A$, $A-B-A-B$, $A-B-C-A-B-C$), chunks corrupt ranges into 30s tasks matching Whisper's native context window, and executes parallel BFS D&C recovery down to sub-1-second slices.
 
 ```bash
-python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> -o recovered_transcript.json
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> -w 2 -o recovered_transcript.json
 ```
 
-Options:
-- `--threshold 0.4` — n-gram repetition ratio threshold (default: 0.4)
-- `--min-duration 1.0` — min segment duration to slice
-- `-o output.json` — output recovered transcript JSON
+**Options**:
+- `-w 2` / `--workers 2` — Number of concurrent `whisper-cli` worker threads (default: 2).
+- `--threshold 0.4` — Repetition n-gram ratio threshold (default: 0.4).
+- `--min-duration 1.0` — Minimum duration in seconds before hitting the base case (default: 1.0s).
+- `-o output.json` — Path for final recovered transcript JSON.
 
-## Recovery Sequence (Manual / Reference)
+**Key Guarantees**:
+- **Task Deduplication**: Each audio slice splits at most once per task, preventing task explosion.
+- **Sub-1-Second Guarantee**: Task bounds halving $(start + end) // 2$ strictly reduces slice duration down to $< 1.0\text{s}$ (max 9 levels).
+- **Data Preservation (`[?]`)**: Low-confidence/uncertain items are **never deleted**. The original text attempt is prepended with `"[?] "` (e.g., `"[?] มา มา มา มา"`) so human/vision reviewers can verify by listening or inspecting video frames.
 
-1. **Split at boundary**: `ffmpeg -ss HH:MM:SS -i full_video.mp4 -acodec pcm_s16le -ar 16000 tail_raw.wav`
-2. **Segment** (900s chunks): `ffmpeg -i tail_raw.wav -f segment -segment_time 900 tail_%02d.wav`
-3. **Re-run per segment**: `whisper tail_01.wav --model large-v3-turbo --language th`
-   If segment still corrupts: `--temperature 0.2 --compression_ratio_threshold 2.0`
-4. **Dedup-merge by timestamp** (never by text):
-   ```powershell
-   gci tail_*.json | Sort Name | % {
-     $d = (gc $_ -Raw -Encoding UTF8 | ConvertFrom-Json)
-     $d | ? { $_.start -gt $lastTs } | % { $_; $lastTs = $_.start }
-   }
-   ```
-5. **Re-chunk** merged transcript with original block/overlap.
+---
 
-## Common Mistakes
+### 2. Visual Context Frame Extractor (`scripts/enrich_uncertain_with_vision.py`)
 
-| Mistake | Fix |
-|---------|-----|
-| Re-running Whisper on full file | Full re-run hits same corruption. Split first. |
-| Dedup by text | Gameplay legitimately repeats phrases. Dedup by timestamp only. |
-| Not checking for corruption | Required detection step before any downstream work on ≥2h audio. |
-| Skipping segment verify | `ffprobe tail_01.wav` before re-run. Segment durations can drift. |
+Scans `recovered_transcript.json` for all `[?]` uncertain items, extracts video frames at their exact timestamps using `ffmpeg`, and creates a visual inspection report for vision-model review.
 
-## Prohibitions
+```bash
+python3 scripts/enrich_uncertain_with_vision.py recovered_transcript.json stream_video.mp4 -o frames_uncertain
+```
 
-- Never re-run Whisper on the full audio file. Not "just to be safe", not "with different settings". Split first.
-- "I'll run it on the full file with temperature changes" → Same corruption, different timing. Split is the only path.
-- "The corruption is small, I'll just trim that section" → Trimming without clean re-run leaves gaps.
+**Workflow with Vision Proxy (`antigravity-vision-proxy`)**:
+```powershell
+# Extract frames and generate README.md report
+python3 scripts/enrich_uncertain_with_vision.py recovered_transcript.json video_360p.mp4 -o frames_uncertain
+
+# Run Gemini Vision analysis to fulfill [?] text context
+agy --model "Gemini 3.6 Flash (Medium)" --dangerously-skip-permissions `
+  --print "Identify per frame: 1) Game/Screen State 2) On-screen text/dialogue 3) Fulfill [?] speech context" `
+  --add-dir frames_uncertain
+```
+
+---
+
+## Key Rules & Prohibitions
+
+1. **Never re-run Whisper on the full audio file**. Full re-runs repeat the same corruption boundaries. Always split into 30s chunks first.
+2. **D&C Scoping**:
+   - **Cross-segment sentence loops** ($A-A-A-A$, $A-B-A-B$) $\to$ Trigger D&C audio recovery.
+   - **In-segment word repeats** $\to$ Mark with `"[?] "` for review (DO NOT trigger audio splitting).
+3. **Data Integrity**: Never silently discard sub-second or uncertain items; preserve text attempts prepended with `"[?] "`.
