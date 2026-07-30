@@ -42,6 +42,13 @@ Generate timestamped Markdown meeting minutes from any YouTube video:
 /youtube-minutes-synthesis https://www.youtube.com/watch?v=VIDEO_ID
 ```
 
+### 4. Recover Corrupted Transcripts & Extract Vision Context
+Fix Whisper repetition loops and extract frames for `[?]` uncertain dialogue:
+```bash
+python skills/whisper-corruption-recovery/scripts/fix_hallucinations.py whisper_output.json -o recovered_transcript.json --audio stream.wav
+python skills/whisper-corruption-recovery/scripts/enrich_uncertain_with_vision.py recovered_transcript.json --video stream.mp4
+```
+
 ---
 
 ## Installation
@@ -70,6 +77,7 @@ npx skills add zenithth/anibon-stream-synthesis --all -g
 |---|---|---|
 | `anibon-timestamper` | Master orchestrator for Anibon live streams timestamping | `/anibon-timestamper <URL>` |
 | `anibon-timestamper-local` | Sequential timestamp orchestrator for local LLMs (Ollama/Gemma) | Local model fallback |
+| `whisper-corruption-recovery` | Parallel BFS divide-and-conquer recovery for Whisper repetition loops & vision frame extraction | `/whisper-corruption-recovery` |
 | `creating-highlight-video` | Highlight video cutter (Planner → Cutter → Verifier) | `/creating-highlight-video <URL>` |
 | `livestream-scene-selection` | Filter and mark timeline scenes for summary reels | Interactive timeline selection |
 | `youtube-minutes-synthesis` | Extract YouTube transcripts into structured meeting minutes | `/youtube-minutes-synthesis <URL>` |

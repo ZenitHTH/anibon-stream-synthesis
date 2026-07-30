@@ -138,20 +138,19 @@ See [`YGO_DB_Reference.md`](../skills/anibon-timestamper/skills/reference/Yu-Gi-
 
 > Always run `--check` before querying. Exit code 1 → run build script first.
 
-### `whisper-corruption-recovery` — Detection & Recovery
+### `whisper-corruption-recovery` — Automated D&C Recovery & Vision Frame Extraction
 
-For long audio where Whisper enters repetition loops. Detects corruption by comparing last 20 entries against a window 100 lines back. Recovery: split audio at corruption boundary → segment → re-run per segment → dedup-merge.
+For long audio where Whisper enters repetition loops. Uses a level-by-level parallel `ThreadPoolExecutor` BFS engine to bisect corrupted audio chunks until sub-1-second resolution, prepends `[?]` prefix on in-segment word loops (`uncertain = True`), and extracts high-res frames for vision inspection.
 
 ```bash
-# Detection (run before any downstream processing on ≥2h audio)
-python3 -c "
-import json
-with open('raw_transcript.json') as f: j = json.load(f)
-last = [e['text'] for e in j[-20:]]
-win = [e['text'] for e in j[-100:-81]]
-r = sum(1 for a,b in zip(last,win) if a==b and len(a)>5)
-print(f'Corruption ratio: {r/len(last)}')
-"
+# 1. Parallel BFS Divide & Conquer Recovery
+python3 skills/whisper-corruption-recovery/scripts/fix_hallucinations.py whisper_output.json -o recovered_transcript.json --audio stream.wav
+
+# 2. Vision Frame Extractor for [?] Uncertain Items
+python3 skills/whisper-corruption-recovery/scripts/enrich_uncertain_with_vision.py recovered_transcript.json --video stream.mp4
+
+# 3. Unit Test Suite
+python3 skills/whisper-corruption-recovery/scripts/test_fix.py
 ```
 
 ### `antigravity-vision-proxy` — Vision Proxy via agy
