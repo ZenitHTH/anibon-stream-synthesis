@@ -147,6 +147,29 @@ class TestProgressTracker(unittest.TestCase):
         self.assertTrue(isinstance(elapsed_str, str))
         self.assertTrue(isinstance(rem_str, str))
 
+class TestPatternLoopScanner(unittest.TestCase):
+
+    def test_ab_pattern_loop_detected(self):
+        """Alternating 2-line pattern loops (A-B-A-B-A-B) must be detected as corrupt."""
+        items = [
+            {"text": "เจ้าไหร่", "start": 10.0, "duration": 2.0, "timestamp": "00:00:10"},
+            {"text": "ดูดีขึ้น ว้า!", "start": 12.0, "duration": 2.0, "timestamp": "00:00:12"},
+            {"text": "เจ้าไหร่", "start": 14.0, "duration": 2.0, "timestamp": "00:00:14"},
+            {"text": "ดูดีขึ้น ว้า!", "start": 16.0, "duration": 2.0, "timestamp": "00:00:16"},
+            {"text": "เจ้าไหร่", "start": 18.0, "duration": 2.0, "timestamp": "00:00:18"},
+            {"text": "ดูดีขึ้น ว้า!", "start": 20.0, "duration": 2.0, "timestamp": "00:00:20"},
+        ]
+        # Under mock whisper returning clean line
+        with patch("fix_hallucinations.ffmpeg_cut") as mock_cut, \
+             patch("fix_hallucinations.run_whisper_on_slice") as mock_whisper, \
+             patch("pathlib.Path.exists", return_value=True):
+            mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav",
+                                              unlink=lambda missing_ok=True: None)
+            mock_whisper.return_value = [{"text": "อุ้ย เหี้ย ผมคิดเร็วไป", "offsets": {"from": 0, "to": 10000}}]
+            res = fh.detect_and_recover(items, pathlib.Path("audio.wav"), fh.MODEL_PATH, workers=1)
+        
+        self.assertTrue(any("ผมคิดเร็วไป" in x["text"] for x in res))
+
 if __name__ == "__main__":
     unittest.main()
 

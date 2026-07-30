@@ -424,18 +424,31 @@ def detect_and_recover(
             item["text"] = f"[?] {text}"
             item["uncertain"] = True
 
-    # 2. Cross-segment consecutive identical sentence loop detection — trigger D&C audio recovery
-    i = 0
-    while i < len(items):
-        j = i + 1
-        t = items[i].get("text", "").replace("[?] ", "").strip()
-        while j < len(items) and items[j].get("text", "").replace("[?] ", "").strip() == t:
-            j += 1
-        count = j - i
-        if count >= max_consec_repeat and len(t) > 1:
-            for k in range(i, j):
-                is_corrupt[k] = True
-        i = j
+    # 2. Cross-segment pattern loop detection (A-A-A-A, A-B-A-B, A-B-C-A-B-C) — trigger D&C audio recovery
+    n = len(items)
+    texts = [items[k].get("text", "").replace("[?] ", "").strip() for k in range(n)]
+
+    for pattern_len in range(1, 4):  # Check 1-sentence, 2-sentence (A-B), and 3-sentence (A-B-C) pattern loops
+        i = 0
+        min_repeats = 4 if pattern_len == 1 else 3  # A-A-A-A (4x) or A-B-A-B-A-B (3x pattern = 6 items)
+        while i <= n - (pattern_len * min_repeats):
+            pattern = texts[i : i + pattern_len]
+            if not any(len(t) > 1 for t in pattern):
+                i += 1
+                continue
+
+            matches = 0
+            curr = i
+            while curr + pattern_len <= n and texts[curr : curr + pattern_len] == pattern:
+                matches += 1
+                curr += pattern_len
+
+            if matches >= min_repeats:
+                for k in range(i, curr):
+                    is_corrupt[k] = True
+                i = curr
+            else:
+                i += 1
 
     # Group contiguous corrupt items into merged time ranges [start_ms, end_ms]
     ranges = []
