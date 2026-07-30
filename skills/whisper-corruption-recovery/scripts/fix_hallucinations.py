@@ -207,18 +207,14 @@ def _try_whisper_task(task):
         log_event(worker_id, "EVAL", f"Range {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)} [?] UNCERTAIN (empty text)", tracker, advance=True)
         return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
 
+    has_hallucination = False
     for seg in segs:
         text = seg.get("text", "").strip()
         if not text:
             continue
         offsets = seg.get("offsets", {})
         abs_from = offsets.get("from", 0) + start_ms
-        # ponytail: clamp abs_to to end_ms — Whisper phantom offsets can report
-        # timestamps far beyond the actual slice, which makes seg_dur_s huge and
-        # prevents the base case from ever firing → infinite split loop.
         abs_to   = min(offsets.get("to", 0) + start_ms, end_ms)
-        # Use the task's actual slice duration for the base-case check, NOT
-        # Whisper's reported duration (which can be a phantom large number).
         seg_dur_s = duration_s
 
         if not is_hallucinated(text, threshold):
@@ -231,9 +227,6 @@ def _try_whisper_task(task):
             clean_sub.append(item)
             log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✓ CLEAN] \"{text[:30]}\"", tracker, advance=False)
         elif seg_dur_s < min_duration_s:
-            # Base case: slice is too small to split further → mark uncertain,
-            # but keep Whisper's best-guess text with [?] prefix so humans can
-            # verify by listening rather than losing the transcript entirely.
             item = {
                 "text": f"[?] {text}",
                 "start": abs_from / 1000.0,
@@ -244,11 +237,15 @@ def _try_whisper_task(task):
             uncertain_sub.append(item)
             log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [?] UNCERTAIN (slice {seg_dur_s:.1f}s < {min_duration_s:.1f}s) \"{text[:30]}\"", tracker, advance=False)
         else:
-            mid = (abs_from + abs_to) // 2
-            next_sub.append((abs_from, mid))
-            next_sub.append((mid, abs_to))
+            has_hallucination = True
             log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✗ HALLUCINATED] Loop detected: \"{text[:30]}\"", tracker, advance=False)
-            log_event(worker_id, "SPLIT", f"Queueing 2 sub-tasks: {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(mid/1000.0)} & {_fmt_ts(mid/1000.0)} -> {_fmt_ts(abs_to/1000.0)}", tracker, advance=False)
+
+    # ponytail: split the slice at most ONCE per task, avoiding duplicate task explosion when Whisper returns multiple hallucinated segments in one slice
+    if has_hallucination:
+        mid = (start_ms + end_ms) // 2
+        next_sub.append((start_ms, mid))
+        next_sub.append((mid, end_ms))
+        log_event(worker_id, "SPLIT", f"Queueing 2 sub-tasks: {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(mid/1000.0)} & {_fmt_ts(mid/1000.0)} -> {_fmt_ts(end_ms/1000.0)}", tracker, advance=False)
 
     log_event(worker_id, "DONE", f"Task complete: {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}", tracker, advance=True)
     return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
@@ -420,17 +417,19 @@ def detect_and_recover(
     """
     is_corrupt = [False] * len(items)
 
-    # 1. In-segment phoneme loop detection
+    # 1. In-segment phoneme/word loop detection — mark for human review ([?] prefix), do NOT trigger D&C audio split
     for i, item in enumerate(items):
-        if is_hallucinated(item.get("text", ""), threshold):
-            is_corrupt[i] = True
+        text = item.get("text", "")
+        if is_hallucinated(text, threshold) and not text.startswith("[?]"):
+            item["text"] = f"[?] {text}"
+            item["uncertain"] = True
 
-    # 2. Cross-segment consecutive identical text loop detection
+    # 2. Cross-segment consecutive identical sentence loop detection — trigger D&C audio recovery
     i = 0
     while i < len(items):
         j = i + 1
-        t = items[i].get("text", "").strip()
-        while j < len(items) and items[j].get("text", "").strip() == t:
+        t = items[i].get("text", "").replace("[?] ", "").strip()
+        while j < len(items) and items[j].get("text", "").replace("[?] ", "").strip() == t:
             j += 1
         count = j - i
         if count >= max_consec_repeat and len(t) > 1:
