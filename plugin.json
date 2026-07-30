@@ -1,3 +1,16 @@
 {
-  "name": "anibon-stream-synthesis"
+  "name": "anibon-stream-synthesis",
+  "version": "1.1.0",
+  "description": "Subagent pipeline enforcer. Prevents orchestrator from bypassing subagent-prompt-template.md.",
+  "root_cause": "subagent-prompt-template.md exists but orchestrator writes ad-hoc prompts — no OUTPUT CONTRACT, no density self-check, no inline JSON. Subagents produce vague output. Orchestrator falls back to manual stamps → lost domain depth.",
+  "fix": [
+    "scripts/subagent-prompt-builder.py — canonical prompt from template, 1 chunk per agent, strict contract",
+    "scripts/preflight-gate.py — analyzer + detect_topics before any spawn",
+    "scripts/assembly-gate.py — dedup, caveman headers, gap audit"
+  ],
+  "enforcement": {
+    "rule": "subagent-prompt-template.md MUST be loaded and populated before any subagent spawn.",
+    "contract_per_chunk": "1 stamp default, 2 MAX, 0 allowed",
+    "contract_per_stream": "≤30 raw stamps (macro-density), ≤20 packed parts"
+  }
 }
