@@ -1,0 +1,34 @@
+{
+  "own_channel": {
+    "channel_id": "anibon_official",
+    "channel_name": "Anibon Official",
+    "channel_handle": "@anibonofficial",
+    "primary_speaker": "Boat",
+    "speaker_nicknames": [
+      "Pu Boat",
+      "PhuBoat",
+      "ปู่โบ๊ต",
+      "โบ๊ต",
+      "ปู่",
+      "Boat",
+      "Anibon"
+    ],
+    "brand_tag": "ANIBON"
+  },
+  "channels": [
+    {
+      "channel_id": "anibon_official",
+      "channel_name": "Anibon Official",
+      "channel_handle": "@anibonofficial",
+      "nicknames": [
+        "Anibon",
+        "ANIBON",
+        "Pu Boat",
+        "PhuBoat",
+        "ปู่โบ๊ต",
+        "โบ๊ต"
+      ],
+      "is_own_channel": true
+    }
+  ]
+}

@@ -31,7 +31,12 @@ Store working files in `youtube_<video_id>_workspace/`.
 
 ### 1. Initialize
 
-Ask output language. Verify channel is ANIBON (Boat/PhuBoat). Check upload date.
+Ask output language. Verify channel and speaker nicknames against `resources/channels.json`:
+- **Own Channel**: `Anibon Official` (`@anibonofficial`)
+- **Primary Speaker**: `Boat` / `Pu Boat` (`ปู่โบ๊ต` / `PhuBoat` / `โบ๊ต`)
+
+Ensure transcript speaker attribution maps to `own_channel` nicknames before continuing.
+
 
 ### 2. Prepare Video
 
