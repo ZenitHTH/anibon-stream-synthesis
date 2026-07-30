@@ -29,6 +29,18 @@
         "โบ๊ต"
       ],
       "is_own_channel": true
+    },
+    {
+      "channel_id": "monthon_kri",
+      "channel_name": "Monthon Kri",
+      "channel_handle": "@MonthonKri",
+      "channel_url": "https://www.youtube.com/@MonthonKri",
+      "nicknames": [
+        "Monthon Kri",
+        "MonthonKri",
+        "Monthon"
+      ],
+      "is_own_channel": false
     }
   ]
 }
