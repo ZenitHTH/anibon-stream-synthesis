@@ -38,9 +38,20 @@
       "nicknames": [
         "Monthon Kri",
         "MonthonKri",
-        "Monthon"
+        "Monthon",
+        "พี่โต๊ะ",
+        "โต๊ะ",
+        "พี่มณฑล"
       ],
-      "is_own_channel": false
+      "is_own_channel": false,
+      "collab_history": [
+        {
+          "video_id": "9QiYVKtogos",
+          "url": "https://www.youtube.com/live/9QiYVKtogos",
+          "collab_with": "@anibonofficial",
+          "speaker_address": "พี่โต๊ะ"
+        }
+      ]
     }
   ]
 }
