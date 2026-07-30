@@ -9,17 +9,78 @@ Usage:
 """
 import sys
 import json
+import time
+import threading
 import argparse
 import subprocess
 import tempfile
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Force stdout UTF-8 encoding if available
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 WHISPER_CLI = str(Path.home() / "whisper.cpp/build/bin/whisper-cli")
 if not Path(WHISPER_CLI).exists() and Path(WHISPER_CLI + ".exe").exists():
     WHISPER_CLI += ".exe"
 
 MODEL_PATH  = str(Path.home() / "whisper.cpp/models/ggml-large-v3-turbo.bin")
+
+
+class ProgressTracker:
+    def __init__(self, level_name: str, total_tasks: int):
+        self.level_name = level_name
+        self.total_tasks = total_tasks
+        self.completed_tasks = 0
+        self.start_time = time.time()
+        self.lock = threading.Lock()
+
+    def _fmt_time(self, seconds: float) -> str:
+        m = int(seconds // 60)
+        s = int(seconds % 60)
+        return f"{m:02d}:{s:02d}"
+
+    def advance(self) -> tuple:
+        with self.lock:
+            self.completed_tasks += 1
+            elapsed = time.time() - self.start_time
+            pct = (self.completed_tasks / self.total_tasks) * 100.0 if self.total_tasks > 0 else 100.0
+            
+            if self.completed_tasks > 0 and self.completed_tasks < self.total_tasks:
+                avg_per_task = elapsed / self.completed_tasks
+                remaining_tasks = self.total_tasks - self.completed_tasks
+                est_rem = avg_per_task * remaining_tasks
+            else:
+                est_rem = 0.0
+                
+            return self.completed_tasks, pct, self._fmt_time(elapsed), self._fmt_time(est_rem)
+
+    def get_status_prefix(self) -> str:
+        with self.lock:
+            elapsed = time.time() - self.start_time
+            pct = (self.completed_tasks / self.total_tasks) * 100.0 if self.total_tasks > 0 else 100.0
+            if self.completed_tasks > 0 and self.completed_tasks < self.total_tasks:
+                avg_per_task = elapsed / self.completed_tasks
+                remaining_tasks = self.total_tasks - self.completed_tasks
+                est_rem = avg_per_task * remaining_tasks
+            else:
+                est_rem = 0.0
+            return f"[{self.level_name}] [Task {self.completed_tasks}/{self.total_tasks}] [{pct:5.1f}%] [{self._fmt_time(elapsed)}/{self._fmt_time(est_rem)}]"
+
+
+def log_event(worker_id: str, stage: str, msg: str, tracker: ProgressTracker = None, advance: bool = False):
+    ts = time.strftime("%H:%M:%S")
+    if tracker:
+        if advance:
+            completed, pct, elapsed_str, rem_str = tracker.advance()
+            prefix = f"[{ts}] [{worker_id}] [{tracker.level_name}] [Task {completed}/{tracker.total_tasks}] [{pct:5.1f}%] [{elapsed_str}/{rem_str}] [{stage}]"
+        else:
+            prefix = f"[{ts}] [{worker_id}] {tracker.get_status_prefix()} [{stage}]"
+    else:
+        prefix = f"[{ts}] [{worker_id}] [{stage}]"
+    
+    print(f"{prefix} {msg}", flush=True)
 
 
 # ---------------------------------------------------------------------------
@@ -107,24 +168,90 @@ def _fmt_ts(seconds: float) -> str:
 
 def _try_whisper_task(task):
     """
-    Worker function for one BFS task.
-    task = (start_ms, end_ms, audio_wav, model, threshold, min_duration_s)
-    Returns (start_ms, end_ms, segs_or_none)
-    segs_or_none: list of raw whisper seg dicts, or None on ffmpeg/whisper failure.
-    Offsets in segs are relative to slice start (whisper convention).
+    Worker function for one BFS task. Evaluates text and logs instantly.
+    task = (worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker)
     """
-    start_ms, end_ms, audio_wav, model, threshold, min_duration_s = task
+    worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker = task
+    worker_id = f"W{worker_num}"
+    duration_s = (end_ms - start_ms) / 1000.0
     slice_wav = None
+    
+    log_event(worker_id, "FFMPEG", f"Cutting audio {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)} ({duration_s:.1f}s)", tracker, advance=False)
+    
+    t0 = time.time()
     try:
         slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
         segs = run_whisper_on_slice(slice_wav, model, temperature=0.2)
-        return start_ms, end_ms, segs
+        w_dur = time.time() - t0
+        log_event(worker_id, "WHISPER", f"Processed slice in {w_dur:.1f}s -> {len(segs)} segments returned", tracker, advance=False)
     except subprocess.CalledProcessError as e:
-        print(f"  [err] ffmpeg/whisper failed {start_ms}-{end_ms}ms: {e}", file=sys.stderr)
-        return start_ms, end_ms, None
+        log_event(worker_id, "ERR", f"ffmpeg/whisper failed {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}: {e}", tracker, advance=True)
+        return worker_num, start_ms, end_ms, None, [], [(start_ms, end_ms)]
     finally:
         if slice_wav is not None:
             slice_wav.unlink(missing_ok=True)
+
+    clean_sub = []
+    uncertain_sub = []
+    next_sub = []
+
+    if not segs:
+        item = {
+            "text": "[?]",
+            "start": start_ms / 1000.0,
+            "duration": duration_s,
+            "timestamp": _fmt_ts(start_ms / 1000.0),
+            "uncertain": True,
+        }
+        uncertain_sub.append(item)
+        log_event(worker_id, "EVAL", f"Range {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)} [?] UNCERTAIN (empty text)", tracker, advance=True)
+        return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
+
+    for seg in segs:
+        text = seg.get("text", "").strip()
+        if not text:
+            continue
+        offsets = seg.get("offsets", {})
+        abs_from = offsets.get("from", 0) + start_ms
+        # ponytail: clamp abs_to to end_ms — Whisper phantom offsets can report
+        # timestamps far beyond the actual slice, which makes seg_dur_s huge and
+        # prevents the base case from ever firing → infinite split loop.
+        abs_to   = min(offsets.get("to", 0) + start_ms, end_ms)
+        # Use the task's actual slice duration for the base-case check, NOT
+        # Whisper's reported duration (which can be a phantom large number).
+        seg_dur_s = duration_s
+
+        if not is_hallucinated(text, threshold):
+            item = {
+                "text": text,
+                "start": abs_from / 1000.0,
+                "duration": max(0.0, (abs_to - abs_from) / 1000.0),
+                "timestamp": _fmt_ts(abs_from / 1000.0),
+            }
+            clean_sub.append(item)
+            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✓ CLEAN] \"{text[:30]}\"", tracker, advance=False)
+        elif seg_dur_s < min_duration_s:
+            # Base case: slice is too small to split further → mark uncertain,
+            # but keep Whisper's best-guess text with [?] prefix so humans can
+            # verify by listening rather than losing the transcript entirely.
+            item = {
+                "text": f"[?] {text}",
+                "start": abs_from / 1000.0,
+                "duration": max(0.0, (abs_to - abs_from) / 1000.0),
+                "timestamp": _fmt_ts(abs_from / 1000.0),
+                "uncertain": True,
+            }
+            uncertain_sub.append(item)
+            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [?] UNCERTAIN (slice {seg_dur_s:.1f}s < {min_duration_s:.1f}s) \"{text[:30]}\"", tracker, advance=False)
+        else:
+            mid = (abs_from + abs_to) // 2
+            next_sub.append((abs_from, mid))
+            next_sub.append((mid, abs_to))
+            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✗ HALLUCINATED] Loop detected: \"{text[:30]}\"", tracker, advance=False)
+            log_event(worker_id, "SPLIT", f"Queueing 2 sub-tasks: {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(mid/1000.0)} & {_fmt_ts(mid/1000.0)} -> {_fmt_ts(abs_to/1000.0)}", tracker, advance=False)
+
+    log_event(worker_id, "DONE", f"Task complete: {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}", tracker, advance=True)
+    return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
 
 
 def _bfs_recover(
@@ -137,108 +264,63 @@ def _bfs_recover(
 ) -> tuple:
     """
     BFS parallel divide-and-conquer recovery.
-
-    Args:
-        ranges: list of (start_ms, end_ms) corrupt time ranges
-        audio_wav: path to original audio file
-        model: whisper GGML model path
-        threshold: hallucination n-gram ratio threshold
-        min_duration_s: base case — slices shorter than this get [?] if still bad
-        workers: number of concurrent whisper-cli processes
-
-    Returns:
-        (clean_items, uncertain_items)
-        clean_items   — list of {"text", "start", "duration", "timestamp"}
-        uncertain_items — list of {"text": "[?]", "start", "duration", "timestamp", "uncertain": True}
     """
     clean_items = []
     uncertain_items = []
     pending = list(ranges)  # list of (start_ms, end_ms)
     level = 0
-
-    bar = "━" * 40
-    print(bar)
+    MAX_LEVEL = 20  # ponytail: hard cap — anything still bad at depth 20 is marked [?]; prevents infinite splitting on regions Whisper can never clean
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         while pending:
             n = len(pending)
             avg_s = sum(e - s for s, e in pending) / n / 1000.0 if n else 0
-            print(f"\n[Level {level}]  {n} task(s)  (avg {avg_s:.1f}s each)")
+            level_name = f"Level {level}"
+            tracker = ProgressTracker(level_name, n)
 
-            tasks = [(s, e, audio_wav, model, threshold, min_duration_s) for s, e in pending]
-            results = list(executor.map(_try_whisper_task, tasks))
+            # Hard cap: force-mark all remaining ranges as uncertain
+            if level >= MAX_LEVEL:
+                log_event("MAIN", "WARN", f"[{level_name}] MAX_LEVEL={MAX_LEVEL} reached — marking {n} remaining task(s) as [?] UNCERTAIN (stuck loop)")
+                for s, e in pending:
+                    uncertain_items.append({
+                        "text": "[?] (stuck loop)",
+                        "start": s / 1000.0,
+                        "duration": (e - s) / 1000.0,
+                        "timestamp": _fmt_ts(s / 1000.0),
+                        "uncertain": True,
+                    })
+                break
+
+            log_event("MAIN", "START", f"[{level_name}] Launching {n} task(s) on {workers} worker(s)... (avg {avg_s:.1f}s each)")
+
+            future_to_task = {
+                executor.submit(
+                    _try_whisper_task,
+                    (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker)
+                ): (s, e)
+                for i, (s, e) in enumerate(pending)
+            }
 
             next_pending = []
             level_clean = level_uncertain = level_recurse = 0
 
-            for (start_ms, end_ms), (_, _, segs) in zip(pending, results):
-                duration_s = (end_ms - start_ms) / 1000.0
+            for future in as_completed(future_to_task):
+                try:
+                    w_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub = future.result()
+                    clean_items.extend(clean_sub)
+                    uncertain_items.extend(uncertain_sub)
+                    next_pending.extend(next_sub)
 
-                if segs is None:
-                    # ffmpeg/whisper hard failure — mark uncertain
-                    item = {
-                        "text": "[?]",
-                        "start": start_ms / 1000.0,
-                        "duration": duration_s,
-                        "timestamp": _fmt_ts(start_ms / 1000.0),
-                        "uncertain": True,
-                    }
-                    uncertain_items.append(item)
-                    level_uncertain += 1
-                    print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
-                          f"  {duration_s:.1f}s  whisper failed")
-                    continue
+                    level_clean += len(clean_sub)
+                    level_uncertain += len(uncertain_sub)
+                    level_recurse += len(next_sub) // 2
+                except Exception as e:
+                    log_event("MAIN", "ERR", f"Error in worker task: {e}")
 
-                for seg in segs:
-                    text = seg.get("text", "").strip()
-                    if not text:
-                        continue
-                    offsets = seg.get("offsets", {})
-                    abs_from = offsets.get("from", 0) + start_ms
-                    abs_to   = offsets.get("to",   0) + start_ms
-                    seg_dur_s = (abs_to - abs_from) / 1000.0
-
-                    if not is_hallucinated(text, threshold):
-                        # ✓ clean
-                        item = {
-                            "text": text,
-                            "start": abs_from / 1000.0,
-                            "duration": max(0.0, seg_dur_s),
-                            "timestamp": _fmt_ts(abs_from / 1000.0),
-                        }
-                        clean_items.append(item)
-                        level_clean += 1
-                        print(f"  ✓  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
-                              f"  {seg_dur_s:.1f}s  \"{text[:30]}\"")
-                    elif seg_dur_s < min_duration_s:
-                        # [?] base case — too small to split further
-                        item = {
-                            "text": "[?]",
-                            "start": abs_from / 1000.0,
-                            "duration": max(0.0, seg_dur_s),
-                            "timestamp": _fmt_ts(abs_from / 1000.0),
-                            "uncertain": True,
-                        }
-                        uncertain_items.append(item)
-                        level_uncertain += 1
-                        print(f"  [?]  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
-                              f"  {seg_dur_s:.1f}s  uncertain (base case)")
-                    else:
-                        # ✗ still bad and splittable → add both halves to next level
-                        mid = (abs_from + abs_to) // 2
-                        next_pending.append((abs_from, mid))
-                        next_pending.append((mid, abs_to))
-                        level_recurse += 1
-                        print(f"  ✗  {_fmt_ts(abs_from/1000.0)}→{_fmt_ts(abs_to/1000.0)}"
-                              f"  {seg_dur_s:.1f}s  → split")
-
-            print(f"  → Level {level}: {level_clean} clean, "
-                  f"{level_recurse} recurse ({len(next_pending)} new tasks), "
-                  f"{level_uncertain} uncertain")
+            log_event("MAIN", "SUMMARY", f"[{level_name} Complete] Tasks: {n}/{n} [100.0%] | Clean: {level_clean} | Split: {level_recurse} ({len(next_pending)} new tasks) | Uncertain: {level_uncertain}")
             pending = next_pending
             level += 1
 
-    print()
     return clean_items, uncertain_items
 
 
@@ -289,8 +371,10 @@ def _second_chance_pass(
     if not retry_runs:
         return recovered, still_uncertain
 
-    print(f"\n[Second-chance]  {len(retry_runs)} uncertain region(s) > {min_duration_s}s"
-          f"  |  {workers} workers")
+    level_name = "Second-Chance"
+    n_retry = len(retry_runs)
+    tracker = ProgressTracker(level_name, n_retry)
+    log_event("MAIN", "START", f"[{level_name}] Launching retry for {n_retry} uncertain region(s) > {min_duration_s:.1f}s on {workers} worker(s)...")
 
     # Build retry tasks
     retry_ranges = []
@@ -299,55 +383,22 @@ def _second_chance_pass(
         end_ms   = int((run[-1]["start"] + run[-1]["duration"]) * 1000)
         retry_ranges.append((start_ms, end_ms))
 
-    tasks = [(s, e, audio_wav, model, threshold, min_duration_s) for s, e in retry_ranges]
+    tasks = [
+        (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker)
+        for i, (s, e) in enumerate(retry_ranges)
+    ]
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         results = list(executor.map(_try_whisper_task, tasks))
 
-    for run, (start_ms, end_ms), (_, _, segs) in zip(retry_runs, retry_ranges, results):
-        span_s = (end_ms - start_ms) / 1000.0
-        if segs is None:
-            print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
-                  f"  {span_s:.1f}s  → whisper failed, keep uncertain")
-            still_uncertain.extend(run)
-            continue
-
-        run_recovered = []
-        run_uncertain = []
-        for seg in segs:
-            text = seg.get("text", "").strip()
-            if not text:
-                continue
-            offsets = seg.get("offsets", {})
-            abs_from = offsets.get("from", 0) + start_ms
-            abs_to   = offsets.get("to",   0) + start_ms
-            seg_dur  = (abs_to - abs_from) / 1000.0
-            if is_hallucinated(text, threshold):
-                run_uncertain.append({
-                    "text": "[?]",
-                    "start": abs_from / 1000.0,
-                    "duration": max(0.0, seg_dur),
-                    "timestamp": _fmt_ts(abs_from / 1000.0),
-                    "uncertain": True,
-                })
-            else:
-                run_recovered.append({
-                    "text": text,
-                    "start": abs_from / 1000.0,
-                    "duration": max(0.0, seg_dur),
-                    "timestamp": _fmt_ts(abs_from / 1000.0),
-                })
-
-        if run_recovered:
-            print(f"  ✓  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
-                  f"  {span_s:.1f}s  → recovered: {len(run_recovered)} item(s)")
-            recovered.extend(run_recovered)
-            still_uncertain.extend(run_uncertain)
+    for run, (w_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub) in zip(retry_runs, results):
+        if clean_sub:
+            recovered.extend(clean_sub)
+            still_uncertain.extend(uncertain_sub)
         else:
-            print(f"  [?]  {_fmt_ts(start_ms/1000.0)}→{_fmt_ts(end_ms/1000.0)}"
-                  f"  {span_s:.1f}s  → still uncertain")
             still_uncertain.extend(run)
 
+    log_event("MAIN", "SUMMARY", f"[{level_name} Complete] Regions: {n_retry}/{n_retry} [100.0%] | Recovered: {len(recovered)} | Still Uncertain: {len(still_uncertain)}")
     return recovered, still_uncertain
 
 
@@ -412,13 +463,13 @@ def detect_and_recover(
 
     clean_items = [item for i, item in enumerate(items) if not is_corrupt[i]]
     num_corrupt = sum(is_corrupt)
-    print(f"[fix] Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.")
+    log_event("MAIN", "SCAN", f"Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.")
     
     if not ranges:
         return items
 
     if not audio_wav.exists():
-        print(f"[fix] WARNING: audio_wav {audio_wav} not found — dropping corrupt segments", file=sys.stderr)
+        log_event("MAIN", "WARN", f"audio_wav {audio_wav} not found — dropping corrupt segments")
         return clean_items
 
     # Split large ranges (> 300s) into 300s sub-chunks
@@ -431,8 +482,7 @@ def detect_and_recover(
             chunked_ranges.append((curr, nxt))
             curr = nxt
 
-    print(f"[fix] Split into {len(chunked_ranges)} recovery tasks (up to 5m each).")
-    print(f"[fix] Running BFS parallel recovery using {workers} worker(s)...")
+    log_event("MAIN", "CHUNK", f"Split into {len(chunked_ranges)} recovery tasks (max 300s each).")
     clean_recovered, uncertain_items = _bfs_recover(
         chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
     )
@@ -465,14 +515,7 @@ def detect_and_recover(
     n_uncertain = sum(1 for i in result if i.get("uncertain"))
     n_clean_orig = len(items) - num_corrupt
     n_recovered  = len(result) - n_clean_orig - n_uncertain
-    bar = "━" * 40
-    print(f"\n{bar}")
-    print(f" Done")
-    print(f" Total output  : {len(result):,} items")
-    print(f" Recovered     : {n_recovered:,}  (D&C + second-chance)")
-    print(f" Uncertain [?] : {n_uncertain:,}  (preserved, sub-second)")
-    print(f" Original clean: {n_clean_orig:,}")
-    print(bar)
+    log_event("MAIN", "SUMMARY", f"Completed recovery. Total: {len(result):,} | Recovered: {n_recovered:,} | Preserved Uncertain [?]: {n_uncertain:,} | Original Clean: {n_clean_orig:,}")
 
     return result
 
@@ -504,7 +547,7 @@ def main():
     audio_path = Path(args.audio_wav)
     out_path   = Path(args.output) if args.output else json_path
 
-    print(f"[fix] Loading {json_path} ...", file=sys.stderr)
+    log_event("MAIN", "INIT", f"Loading {json_path} ...")
     with open(json_path, "r", encoding="utf-8", errors="replace") as f:
         data = json.load(f)
 
@@ -528,7 +571,7 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(fixed, f, ensure_ascii=False, indent=2)
 
-    print(f"[fix] Done. Wrote {len(fixed)} items to {out_path}", file=sys.stderr)
+    log_event("MAIN", "DONE", f"Wrote {len(fixed):,} items to {out_path}")
 
 
 if __name__ == "__main__":

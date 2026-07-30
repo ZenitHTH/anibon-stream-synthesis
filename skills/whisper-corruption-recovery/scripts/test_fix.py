@@ -54,7 +54,7 @@ class TestBfsRecover(unittest.TestCase):
             fh.MODEL_PATH, 0.4, 1.0, workers=1
         )
         self.assertEqual(len(uncertain), 1)
-        self.assertEqual(uncertain[0]["text"], "[?]")
+        self.assertTrue(uncertain[0]["text"].startswith("[?]"))
         self.assertTrue(uncertain[0]["uncertain"])
         self.assertEqual(len(clean), 0)
 
@@ -124,17 +124,28 @@ class TestSecondChance(unittest.TestCase):
 class TestSummaryOutput(unittest.TestCase):
 
     def test_uncertain_items_in_output_have_flag(self):
-        """Final JSON output must preserve uncertain=True on [?] items."""
-        item = {"text": "[?]", "start": 1.0, "duration": 0.5,
+        """Final JSON output must have uncertain=True and [?] prefix on uncertain items."""
+        item = {"text": "[?] เสียงไม่ชัด", "start": 1.0, "duration": 0.5,
                 "timestamp": "00:00:01", "uncertain": True}
         self.assertTrue(item.get("uncertain"))
-        self.assertEqual(item["text"], "[?]")
+        self.assertTrue(item["text"].startswith("[?]"))
 
     def test_no_max_depth_in_detect_signature(self):
         """detect_and_recover must NOT have max_depth parameter."""
         import inspect
         sig = inspect.signature(fh.detect_and_recover)
         self.assertNotIn("max_depth", sig.parameters)
+
+class TestProgressTracker(unittest.TestCase):
+
+    def test_progress_tracker_metrics(self):
+        """Test task advancing, percentage, and formatting in ProgressTracker."""
+        tracker = fh.ProgressTracker("Level 0", total_tasks=10)
+        task_num, pct, elapsed_str, rem_str = tracker.advance()
+        self.assertEqual(task_num, 1)
+        self.assertEqual(pct, 10.0)
+        self.assertTrue(isinstance(elapsed_str, str))
+        self.assertTrue(isinstance(rem_str, str))
 
 if __name__ == "__main__":
     unittest.main()
