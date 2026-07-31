@@ -48,7 +48,7 @@ ASR_GARBLED_PATTERNS = load_asr_garbled_patterns()
 LIMIT = 4500   # bytes — YouTube Thai comment hard cap (empirical)
 WARN  = 3500   # bytes — warn early to leave safe margin
 
-BLOCK_RE = re.compile(r'(═+\n\s*ส่วนที่[^\n]+\n═+\n*)(.*?)(?=═+\n\s*ส่วนที่|\Z)', re.DOTALL)
+BLOCK_RE = re.compile(r'(═+\n(?:(?!═+)[\s\S])*?ส่วนที่(?:(?!═+)[\s\S])*?\n═+\n*)(.*?)(?=═+\n(?:(?!═+)[\s\S])*?ส่วนที่|\Z)', re.DOTALL)
 
 
 def _full_blocks(text: str) -> list[dict]:

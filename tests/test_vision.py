@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 # Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "skills" / "antigravity-vision-proxy" / "scripts"))
 import _vision
 
 def test_keywords_filter():
