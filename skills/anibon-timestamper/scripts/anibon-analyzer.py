@@ -2,9 +2,6 @@
 import sys, argparse
 from pathlib import Path
 
-# Point to shared lib/
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "lib"))
-
 from anibon.chunk_io import load_chunks_list
 from anibon.analyzer import classify_chunk, detect_timeline_gaps, calculate_youtube_blocks
 

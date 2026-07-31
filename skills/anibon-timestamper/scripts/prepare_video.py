@@ -2,9 +2,6 @@
 import sys, argparse
 from pathlib import Path
 
-# Point to shared lib/  (4 levels up: scripts/ -> skill/ -> skills/ -> plugin root -> lib/)
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "lib"))
-
 from anibon import ytdlp, cleaner
 from anibon.resources import load_default_mappings
 from anibon.chunk_io import write_chunk_json, write_chunk_xml, write_chunk_txt

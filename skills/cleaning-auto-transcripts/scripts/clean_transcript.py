@@ -5,9 +5,6 @@ import re
 import argparse
 from pathlib import Path
 
-# Point to shared lib/
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "lib"))
-
 from anibon.ytdlp import flatten_json3
 from anibon.cleaner import correct_transcript
 

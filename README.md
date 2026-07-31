@@ -54,10 +54,16 @@ python skills/whisper-corruption-recovery/scripts/enrich_uncertain_with_vision.p
 ## Installation
 
 ### Recommended (Universal for any Agent CLI)
-Install globally across Claude Code, Antigravity, OpenCode, Codex, and other agents:
+Install all skills globally across Claude Code, Antigravity, OpenCode, Codex, and other agents:
 
 ```bash
 npx skills add zenithth/anibon-stream-synthesis --all -g
+```
+
+Or install any single skill individually (each skill is self-contained with zero external dependencies):
+
+```bash
+npx skills add zenithth/anibon-stream-synthesis/skills/anibon-timestamper -g
 ```
 
 ### Alternative Platform Commands

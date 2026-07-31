@@ -12,11 +12,6 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-# Add shared plugin lib to sys.path
-lib_path = str(Path(__file__).resolve().parent.parent.parent.parent / "lib")
-if lib_path not in sys.path:
-    sys.path.insert(0, lib_path)
-
 try:
     from anibon.corruption import detect_segment_hallucination, is_hallucinated, analyze_transcript
 except ImportError:

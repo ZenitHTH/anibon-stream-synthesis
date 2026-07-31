@@ -22,7 +22,7 @@ Loaded by signal (add to prompt when needed):
 
 ## Pipeline (Linear, Top-to-Bottom)
 
-All paths relative to `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/`.
+All paths relative to the skill root directory (`skills/anibon-timestamper/`).
 
 ### 0. Environment
 
