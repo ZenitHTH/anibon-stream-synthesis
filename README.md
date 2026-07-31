@@ -1,7 +1,7 @@
 # Anibon Stream Synthesis Plugin
 
-![Version](https://img.shields.io/badge/version-1.1.3-blue)
-[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.1.3)
+![Version](https://img.shields.io/badge/version-1.1.4-blue)
+[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.1.4)
 
 A suite of AI agent skills for deep research, live-stream transcript processing, automated timestamping, and highlight video cutting. Works across **Antigravity CLI**, **Claude Code**, **OpenCode**, and **Pi Coding Agent**.
 
