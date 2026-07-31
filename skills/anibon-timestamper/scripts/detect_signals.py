@@ -6,11 +6,33 @@
 
 import argparse
 import json
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+
+def _process_single_chunk(item: tuple, entries: dict, threshold: int = 1) -> tuple[str, dict, bool]:
+    """Process a single chunk tuple (chunk_name, start_sec, chunk_text)."""
+    chunk_name, start_sec, chunk_text = item
+    matched, kinds = match_chunk(chunk_text, entries, threshold)
+    matched_files = [
+        {"keyword": kw, "file": data["file"], "count": data["count"]}
+        for kw, data in matched.items() if data.get("file")
+    ]
+    signal_scores = Counter([data["kind"] for data in matched.values()])
+
+    res = {
+        "start_sec": start_sec,
+        "matched_keywords": matched,
+        "kinds": kinds,
+        "signal_score": dict(signal_scores),
+        "matched_files": matched_files
+    }
+    return chunk_name, res, bool(matched)
 
 
 def load_knowledge(path: Path) -> dict:
@@ -104,23 +126,14 @@ def main():
     total_matched = 0
     chunks_list = list(load_chunks(chunks_path))
 
-    for chunk_name, start_sec, chunk_text in chunks_list:
-        matched, kinds = match_chunk(chunk_text, entries, args.threshold)
-        matched_files = [
-            {"keyword": kw, "file": data["file"], "count": data["count"]}
-            for kw, data in matched.items() if data.get("file")
-        ]
-        signal_scores = Counter([data["kind"] for data in matched.values()])
-
-        results[chunk_name] = {
-            "start_sec": start_sec,
-            "matched_keywords": matched,
-            "kinds": kinds,
-            "signal_score": dict(signal_scores),
-            "matched_files": matched_files
-        }
-        if matched:
-            total_matched += 1
+    workers = min(32, (os.cpu_count() or 1) + 4)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = [executor.submit(_process_single_chunk, item, entries, args.threshold) for item in chunks_list]
+        for f in futures:
+            chunk_name, res, matched = f.result()
+            results[chunk_name] = res
+            if matched:
+                total_matched += 1
 
     output = {
         "chunks_processed": len(chunks_list),
