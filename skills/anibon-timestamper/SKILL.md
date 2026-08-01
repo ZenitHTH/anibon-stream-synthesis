@@ -113,8 +113,11 @@ python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/agent_*.txt \
 
 Split into byte-limited sections (YouTube comment cap ~3500B). Use `--topic-json` with `boundaries.json` from Step 6 for section headings + forced topic splits.
 
+> [!IMPORTANT]
+> **Topic Group Section Headers**: Section header titles synthesized by `pack_timestamps.py` represent the overall topic group across all entries in that section (e.g., `Topic A | Topic B | Topic C`), never just the first line.
+
 ```bash
-python3 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
+python3 -X utf8 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
   --topic-json ~/youtube_<id>_workspace/boundaries.json \
   --title "Video Title | ANIBON" \
   -o ~/youtube_<id>_workspace/output.md

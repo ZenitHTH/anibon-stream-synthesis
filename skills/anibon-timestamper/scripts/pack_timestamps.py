@@ -454,37 +454,57 @@ def balanced_pack(timestamps: list[dict], byte_limit: int,
 # Formatting
 # ─────────────────────────────────────────────────────────────
 
-def _group_to_part(group: list[dict]) -> dict:
-    """Convert a flat list of timestamp dicts to a part dict.
-    Title priority:
-    1. topic_label from --topic-json (if first entry has one)
-    2. first entry with the group's dominant tag (excluding [Story] if possible)
-    """
-    from collections import Counter
-    tag_counter: Counter = Counter(_primary_tag(e["tag"]) for e in group)
-    dominant_tag = tag_counter.most_common(1)[0][0]
+def _generate_group_title(group: list[dict]) -> str:
+    """Synthesize a section title that captures the overall topic group of entries in the part."""
+    if not group:
+        return "ANIBON Stream"
     
-    # Check for topic_label on first entry
     topic_label = group[0].get("topic_label")
     if topic_label:
-        return {
-            "entries": group,
-            "bytes": _body_bytes_of(group),
-            "title": _clean_title(topic_label),
-            "start": group[0]["time"],
-        }
-    
-    title_entry = next(
-        (e for e in group if _primary_tag(e["tag"]) == dominant_tag and e["tag"] != "[Story]"),
-        next(
-            (e for e in group if _primary_tag(e["tag"]) == dominant_tag),
-            group[0],
-        ),
-    )
+        return _clean_title(topic_label)
+
+    # Collect distinct title phrases across the group
+    phrases = []
+    seen = set()
+
+    for e in group:
+        desc = e.get("desc", "").strip()
+        # Clean out generic speaker prefixes
+        clean = re.sub(r"^(ปู่โบ๊ต|พูดถึง|วิเคราะห์|คุยเรื่อง|ดู|รับชม|เปิดดู|เล่าข่าว|แสดงความคิดเห็นเกี่ยวกับ|ตอบแชตเรื่อง|ถกประเด็น)\s*", "", desc)
+        if not clean:
+            clean = desc
+        
+        # Truncate clean phrase if too long
+        if len(clean) > 35:
+            clean = clean[:35].rsplit(" ", 1)[0]
+
+        key = clean.lower()
+        if key not in seen:
+            seen.add(key)
+            phrases.append(clean)
+
+    if not phrases:
+        return _clean_title(group[0]["desc"])
+
+    # Pick up to 3 distinct phrases representing start, middle, end of section
+    selected = [phrases[0]]
+    if len(phrases) >= 3:
+        mid = len(phrases) // 2
+        if phrases[mid] not in selected:
+            selected.append(phrases[mid])
+    if len(phrases) >= 2 and phrases[-1] not in selected:
+        selected.append(phrases[-1])
+
+    combined = " | ".join(selected[:3])
+    return _clean_title(combined, max_len=95)
+
+
+def _group_to_part(group: list[dict]) -> dict:
+    """Convert a flat list of timestamp dicts to a part dict."""
     return {
         "entries": group,
         "bytes": _body_bytes_of(group),
-        "title": _clean_title(title_entry["desc"]),
+        "title": _generate_group_title(group),
         "start": group[0]["time"],
     }
 
