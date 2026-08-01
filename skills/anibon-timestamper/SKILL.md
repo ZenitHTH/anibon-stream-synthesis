@@ -41,7 +41,7 @@ Ensure transcript speaker attribution maps to `own_channel` nicknames before con
 ### 2. Prepare Video
 
 ```bash
-python3 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30
+python3 -X utf8 scripts/prepare_video.py "URL" --format xml --block 300 --overlap 30
 # Talk-heavy → --block 600 --overlap 60
 ```
 
@@ -55,15 +55,15 @@ Downloads transcript, creates `<workspace>/chunks/chunk_*.xml`.
 Normalizes Thai-Whisper garbled English before signal detection.
 
 ```bash
-python3 scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
+python3 -X utf8 scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
 ```
 
 ### 4. Analyze (Pre-flight)
 
-Quick summary of chunk categories, gaps, byte sizes.
+Quick summary of chunk categories, gaps, byte sizes. Note: On Windows, use `-X utf8` to avoid console `UnicodeEncodeError`.
 
 ```bash
-python3 scripts/anibon-analyzer.py ~/youtube_<id>_workspace/
+python3 -X utf8 scripts/anibon-analyzer.py ~/youtube_<id>_workspace/
 ```
 
 ### 5. Detect Signals → Match Knowledge Files
@@ -71,7 +71,7 @@ python3 scripts/anibon-analyzer.py ~/youtube_<id>_workspace/
 TF-IDF across all chunks. Matches keywords to knowledge files per chunk.
 
 ```bash
-python3 scripts/detect_signals.py \
+python3 -X utf8 scripts/detect_signals.py \
   --chunks ~/youtube_<id>_workspace/chunks/ \
   --knowledge ./knowledge.json \
   --output ~/youtube_<id>_workspace/signals.json
@@ -86,6 +86,9 @@ For long streams with clear topic shifts. If `detect_boundaries.py` is not avail
 ### 7. Spawn Subagents (Parallel)
 
 Divide chunks into groups of 4-5 (40-50 min each). One Task agent per group.
+
+> [!IMPORTANT]
+> **Pre-Grant Workspace Permissions**: Before spawning subagents, call `ask_permission` for `read_file` on `<workspace>` so background subagents do not time out waiting for permission prompts when accessing transcript XML files or `signals.json`.
 
 **Each subagent prompt MUST contain:**
 - Chunk file paths (agent reads XML directly — do NOT read chunks yourself)
@@ -159,6 +162,7 @@ HH:MM:SS - [Tag] Description
 | Script | Purpose |
 |--------|---------|
 | `prepare_video.py` | Download + clean + chunk |
+| `dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
 | `clean_garbled_english.py` | Normalize Thai-Whisper garbled English |
 | `anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
 | `detect_signals.py` | TF-IDF signal + knowledge file matching |

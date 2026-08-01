@@ -28,7 +28,7 @@ def download_transcript(url: str, workspace: Path) -> None:
     print("[*] Downloading transcript via yt-dlp...", file=sys.stderr)
     subprocess.run(
         [
-            "yt-dlp", "-P", str(workspace),
+            sys.executable, "-m", "yt_dlp", "-P", str(workspace),
             "--write-auto-subs", "--sub-lang", "th-orig,th",
             "--sub-format", "json3", "--skip-download",
             "--ignore-no-formats-error", "-o", "raw_transcript", url,
@@ -60,7 +60,7 @@ def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<
     print(f"[*] Downloading video via yt-dlp...", file=sys.stderr)
     try:
         subprocess.run(
-            ["yt-dlp", "-f", format_spec, "-o", str(output), url],
+            [sys.executable, "-m", "yt_dlp", "-f", format_spec, "-o", str(output), url],
             capture_output=False,
             check=True,
         )

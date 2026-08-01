@@ -62,6 +62,10 @@ If unsure → merge. Never split.
 ## Step 1: Verify Signal Against Transcript
 The [DETECTION SIGNAL] block above suggests the primary topic(s). Confirm by reading the transcript text. If signal says FGO but transcript shows WuWa → trust transcript. Match card/game terms against FGO/YGO database records if provided.
 
+> [!TIP]
+> **Reading Chunks**: To inspect transcript dialogue without XML truncation or encoding errors on Windows, run:
+> `python -X utf8 scripts/dump_chunk_text.py <path_to_chunk_xmls>`
+
 ## Step 2: Time Alignment
 For every valid timestamp event:
 - Use the pre-calculated `timestamp` field from the JSON item directly.

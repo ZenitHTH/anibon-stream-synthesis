@@ -23,7 +23,7 @@ Run all checks in a single shell call before doing anything else:
 
 ```bash
 echo "=== Tool Check ===" && \
-yt-dlp --version && \
+(yt-dlp --version 2>/dev/null || python3 -m yt_dlp --version || python -m yt_dlp --version) && \
 ffmpeg -version 2>&1 | head -1 && \
 python3 --version && \
 sqlite3 --version && \
