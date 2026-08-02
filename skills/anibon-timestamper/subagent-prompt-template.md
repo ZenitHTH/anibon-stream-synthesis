@@ -171,6 +171,12 @@ If chunk is primarily talking/chatting:
 - Chat/donation cues: "ในแชทบอกว่า", "คุณ... บอกว่า" → tag as `[Chat]` or `[Donation]`.
 - Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
 
+> [!IMPORTANT]
+> **Macro vs Micro Topic (Negative Example):**
+> - ❌ **WRONG (Micro/Specific):** `[Talk] พูดถึงงานแข่ง Wuthering Waves eSports` (WuWa was only a minor example mentioned in passing).
+> - ✅ **CORRECT (Macro Topic):** `[Talk] เม้าท์มอยดราม่างานเกมในไทยจัดวันชนกันยับ (HoYoFest / สาวม้า / LoL / WuWa)` (The core macro topic is the massive event date clash in Thailand).
+> Always identify the overarching drama/issue being discussed, not just the first specific game mentioned.
+
 ## Step 6: Write Description
 - Load `anibon-timestamp-description`.
 - If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.

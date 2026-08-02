@@ -37,7 +37,7 @@ Model path defaults to `$HOME/whisper.cpp/models/ggml-large-v3-turbo.bin`.
 ```
 *(`-ot 540000` optional offset to skip silent start screens and avoid repetition loop bugs)*
 
-For full build options and platform configurations, see [BUILD_GPU.md](BUILD_GPU.md).
+For full build options and platform configurations, see [BUILD_WHISPERCPP_GUILD.md](BUILD_WHISPERCPP_GUILD.md).
 
 ## 3. Format Conversion
 
