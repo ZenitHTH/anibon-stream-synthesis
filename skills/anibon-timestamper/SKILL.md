@@ -52,10 +52,10 @@ Downloads transcript, creates `<workspace>/chunks/chunk_*.xml`.
 
 ### 3. Clean Transcript (Optional)
 
-Normalizes Thai-Whisper garbled English before signal detection.
+Normalizes Thai-Whisper garbled English before signal detection. The script lives in the `cleaning-auto-transcripts` skill — resolve from the timestamper skill root.
 
 ```bash
-python3 -X utf8 scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
+python3 -X utf8 ../cleaning-auto-transcripts/scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
 ```
 
 ### 4. Analyze (Pre-flight)
@@ -77,11 +77,22 @@ python3 -X utf8 scripts/detect_signals.py \
   --output ~/youtube_<id>_workspace/signals.json
 ```
 
-Output: `signals.json` — per-chunk matched knowledge files + signal scores.
+Output: `signals.json` — per-chunk weighted signal: `matched_files` (with `df`/`weight`), `weighted_matched_files` (ranked), `best_file`, `primary_topic`, `confidence`.
+
+> **Rarity = main idea**: `detect_signals.py` weights each matched keyword by inverse
+> document frequency (`log(N/df)`). High-frequency (df high) words are daily-use filler
+> and score 0 — ignored. Low-frequency (rare) words are the distinctive main idea.
+> Hand `best_file` to a subagent only when `confidence` is clear; otherwise omit the knowledge file.
 
 ### 6. Detect Topic Boundaries (Optional)
 
-For long streams with clear topic shifts. If `detect_boundaries.py` is not available (not yet implemented), identify topic shifts manually from `signals.json`: look for chunks where `matched_files` changes (e.g., gaming→Genshin→FGO). Note timestamps for `--break-at` in Step 9.
+For long streams with clear topic shifts. Run:
+
+```bash
+python3 -X utf8 scripts/detect_boundaries.py --chunks ~/youtube_<id>_workspace/chunks/ --signals ~/youtube_<id>_workspace/signals.json --output ~/youtube_<id>_workspace/boundaries.json
+```
+
+If boundaries look noisy, fall back to manual identification from `signals.json`: look for chunks where `matched_files` changes (e.g., gaming→Genshin→FGO). Note timestamps for `--break-at` in Step 9.
 
 ### 7. Spawn Subagents (Parallel)
 
@@ -92,11 +103,11 @@ Divide chunks into groups of 4-5 (40-50 min each). One Task agent per group.
 
 **Each subagent prompt MUST contain:**
 - Chunk file paths (agent reads XML directly — do NOT read chunks yourself)
-- Per-chunk detection signals from `signals.json` (inject `matched_files` + `signal_score`)
+- Per-chunk detection signals from `signals.json` (inject `best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`; keep `matched_files`/`signal_score` for back-compat)
 - The `references/subagent-prompt-template.md` output contract (0-2 stamps per chunk, merge same topic → 0)
-- Knowledge file content for matched references (e.g., gaming-stream.md, phuboat-anime-talking-style.md, game reference files)
+- Knowledge file content for the **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files as context when `confidence` is ambiguous
 
-**CRITICAL:** Do NOT write topic descriptions yourself. Let the agent read the XML + signals. Inject signals.json data, not your analysis.
+**CRITICAL:** Do NOT write topic descriptions yourself. Let the agent read the XML + signals. Inject signals.json data, not your analysis. Do NOT force-feed every matched file — the subagent must confirm the dominant topic before naming it.
 
 Each agent returns timestamps as plain text lines.
 
@@ -170,19 +181,21 @@ HH:MM:SS - [Tag] Description
 
 | Script | Purpose |
 |--------|---------|
-| `prepare_video.py` | Download + clean + chunk |
-| `dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
-| `clean_garbled_english.py` | Normalize Thai-Whisper garbled English |
-| `anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
-| `detect_signals.py` | TF-IDF signal + knowledge file matching |
-| `merge_timestamps.py` | Combine + sort subagent outputs |
-| `pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
-| `check_sections.py` | Validate byte cap + ASR garbles |
-| `validate_part_coherence.py` | Cross-reference game names vs signals |
-| `clean_transcript.py` | Raw json3 cleaner (called by prepare_video) |
-| `fetch_story_ref.py` | Fetch/cache story synopses (user consent for websearch) |
-| `align_ref_timeline.py` | Align reference SRT timestamps with chunks |
-| `fetch_fgo_db.py`, `fetch_ygo_db.py` | Build card databases (World Identity) |
+| `scripts/prepare_video.py` | Download + clean + chunk |
+| `scripts/dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
+| `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
+| `scripts/detect_signals.py` | TF-IDF signal + knowledge file matching |
+| `scripts/detect_boundaries.py` | Detect topic boundaries (feeds `--topic-json` in Step 9) |
+| `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
+| `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
+| `scripts/check_sections.py` | Validate byte cap + ASR garbles |
+| `scripts/validate_part_coherence.py` | Cross-reference game names vs signals |
+| `scripts/validate_tags.py` | Validate timestamp tag vocabulary |
+| `../cleaning-auto-transcripts/scripts/clean_garbled_english.py` | Normalize Thai-Whisper garbled English (Step 3) |
+| `../cleaning-auto-transcripts/scripts/clean_transcript.py` | Raw json3 cleaner (called by prepare_video) |
+| `../anibon-world-identity/scripts/fetch_story_ref.py` | Fetch/cache story synopses (user consent for websearch) |
+| `../anibon-world-identity/scripts/align_ref_timeline.py` | Align reference SRT timestamps with chunks |
+| `../anibon-world-identity/scripts/fetch_fgo_db.py`, `fetch_ygo_db.py` | Build card databases (World Identity) |
 
 ## Iron Rules
 

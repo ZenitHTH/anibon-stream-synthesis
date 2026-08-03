@@ -29,15 +29,27 @@ EXCEPTION: Q&A/interview format — each explicit question frame
 as topic switch regardless of same domain.
 
 DETECTION SIGNALS:
-<Orchestrator: inject detect_signals.py --output block for this chunk here>
+<Orchestrator: inject detect_signals.py output block for this chunk (signal: matched_files, weighted_matched_files, best_file, primary_topic, confidence)>
 
-KNOWLEDGE FILES:
-<Orchestrator: inject matched references file paths here>
+KNOWLEDGE FILES (RANKED):
+<Orchestrator: inject reference file paths, best_file first>
 
-The detection signals above are machine-computed TF-IDF terms (frequency × rarity).
-Use them to identify the PRIMARY topic of this chunk, but ALWAYS verify against
-the transcript text. The knowledge files contain canonical names — use them to
-correct Whisper's phonetic spelling of game/character names.
+The DETECTION SIGNALS + KNOWLEDGE FILES above are machine-computed and RARITY-WEIGHTED
+(term frequency × inverse document frequency). Read the ranked list top-to-bottom, then
+VERIFY against the transcript text BEFORE using any file.
+
+FREQUENCY PRIORITY RULE (READ FIRST):
+- LOW-frequency (rare) terms = the MAIN IDEA of this chunk. That is what the talker is
+  actually "about". Analyze those, not the common words.
+- HIGH-frequency (daily-use words that appear in every chunk) = filler. Ignore them; they
+  are ambient noise, never the topic.
+- Do NOT glue a knowledge file to a bare substring hit. Only use `best_file` if it is the
+  chunk's dominant topic AND the transcript confirms it. If `confidence` implies no clear
+  winner (no strong best_file) or best_file is null, do NOT inject game/anime names —
+  describe the event only.
+- The knowledge files contain canonical names — use them only to correct Whisper's
+  phonetic spelling of a name you ALREADY confirmed from the transcript. Never name a
+  game merely because its keyword appears once elsewhere.
 
 ## OUTPUT CONTRACT (read before anything else)
 

@@ -21,12 +21,23 @@ A shared pre-flight checklist for all anibon-stream-synthesis skills. **Always r
 
 Run all checks in a single shell call before doing anything else:
 
+**Bash (Mac/Linux):**
 ```bash
 echo "=== Tool Check ===" && \
 (yt-dlp --version 2>/dev/null || python3 -m yt_dlp --version || python -m yt_dlp --version) && \
 ffmpeg -version 2>&1 | head -1 && \
 python3 --version && \
 sqlite3 --version && \
+echo "=== All tools OK ==="
+```
+
+**PowerShell (Windows):**
+```powershell
+echo "=== Tool Check ==="
+(yt-dlp --version 2>$null) -or (python -m yt_dlp --version) -or (py -m yt_dlp --version)
+(ffmpeg -version | Select-Object -First 1)
+(python --version)
+(sqlite3 --version)
 echo "=== All tools OK ==="
 ```
 

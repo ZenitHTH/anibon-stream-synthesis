@@ -20,7 +20,7 @@ Local references → cached story refs → reference SRT → websearch fallback
 
 ### b. Check cached story refs
 
-`python3 scripts/fetch_story_ref.py --list` or browse `references/stories/` for previously fetched synopses.
+`python3 scripts/fetch_story_ref.py --list` or browse `references/stories/` for previously fetched synopses (dir is auto-created on first fetch).
 
 ### c. Reference SRT (if reference video URL exists)
 
