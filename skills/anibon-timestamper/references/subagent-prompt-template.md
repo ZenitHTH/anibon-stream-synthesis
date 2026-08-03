@@ -14,8 +14,20 @@ Fill in the `<placeholders>` before sending.
 You are processing Chunk <N>.
 CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 
+## Step 0: READ EVERYTHING FIRST (MANDATORY, do this before anything else)
+
+1. Read the ENTIRE transcript chunk — every line, not a skim. If it is a file,
+   read the whole file top-to-bottom (prefer `python -X utf8 scripts/dump_chunk_text.py <chunk_xml>` for clean text).
+2. Read the ENTIRE LiveChat log for this chunk (LIVE-CHAT LOG block below), if present.
+3. Do NOT write a single timestamp until you have read both fully.
+4. If you cannot read the full chunk, output NOTHING and say "incomplete read" — never stamp from a skim.
+5. Your whole-chunk understanding is the ONLY basis for stamps. `primary_topic`, signals, and knowledge files are HINTS to verify against the text you read, never substitutes for reading.
+
 PREVIOUS CHUNK PRIMARY TOPIC: <Orchestrator: inject topic of previous chunk>
 CURRENT CHUNK PRIMARY TOPIC: <Orchestrator: inject topic from detect_signals.py>
+
+LIVE-CHAT LOG (watchers, this chunk):
+<Orchestrator: inject livechat/livechat_chunk_NN.txt content, or "no livechat available">
 
 TOPIC CONTINUITY RULE (READ FIRST):
 If CURRENT_CHUNK_PRIMARY_TOPIC matches PREVIOUS_CHUNK_PRIMARY_TOPIC,
@@ -197,6 +209,23 @@ If chunk is primarily talking/chatting:
 > - ✅ **CORRECT (Macro Topic):** `[Talk] เม้าท์มอยดราม่างานเกมในไทยจัดวันชนกันยับ (HoYoFest / สาวม้า / LoL / WuWa)` (The core macro topic is the massive event date clash in Thailand).
 > Always identify the overarching drama/issue being discussed, not just the first specific game mentioned.
 
+## Step 5.5: Infer Situation + Emotion of the Live (Thai-aware)
+
+Read the transcript AND the LiveChat log together to infer, for this chunk:
+- **Situation**: what is ACTUALLY happening (single dominant activity/event — e.g., boss fight, gacha spark, drama talk, quiet grind).
+- **Emotion / tone**: the mood of THIS moment — e.g. hype, tense, emotional, relaxed, chaotic/memey, quiet-calm, celebratory (gacha win), frustrated-but-joking.
+
+Detect tone from BOTH sides:
+- Talker side: Thai word choice + sentence particles (`วะ/เว้ย/จัง/ไป`, exclamations `โอ้ย/เฮ้ย/อ้าว`), shouting, repetition, laughter.
+- Chat side: message density spikes, emotes, 555 spam, SUPERCHAT/donation surges — these mark real peaks the talker may not name.
+
+**Thai words carry emotion — write the tone, don't label it.**
+- Mirror the mood through the words you CHOOSE in the description (register + particles), not by appending a literal mood word/emoji.
+- Do NOT overstate: if the live is calm about a gacha fail, do NOT write words that sound genuinely devastated — Step 3.6 reverse psychology (playful envy = celebration) and coping comedy apply. "กด dislike" banter is happiness, not anger.
+- Do NOT flatten: preserve the real tone, but never exaggerate it.
+
+**Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
+
 ## Step 6: Write Description
 - Load `anibon-timestamp-description`.
 - If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.
@@ -231,6 +260,12 @@ Merge (never output 0 except empty chunk):
 - Two consecutive `[Talk]` timestamps about same conversation → merge
 - Sub-topic shift within same game session → merge
 - "They mentioned a new detail" → add to existing description, no new line
+
+**WHOLE-CHUNK UNDERSTANDING CHECK (before submitting):**
+- Every stamp must trace to a specific event you actually read in the transcript AND (when present) the LiveChat log. Delete any stamp you cannot source.
+- If chat shows a donation/hype spike you skipped, re-read and re-stamp.
+- If you cannot confirm a single dominant topic from full reading → output NOTHING and say so. Do not fabricate.
+- You are graded on the whole 5-minute chunk, not the first lines.
 
 TRANSCRIPT JSON:
 <Orchestrator: inject full JSON content of this 5-minute chunk here>

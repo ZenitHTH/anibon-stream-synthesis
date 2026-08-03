@@ -4,10 +4,10 @@ import sys
 import os
 import argparse
 
-def parse_live_chat(json_path, output_dir, chunk_minutes=90):
+def parse_live_chat(json_path, output_dir, chunk_minutes=90, raw_events=None):
     os.makedirs(output_dir, exist_ok=True)
     
-    events = []
+    events = []  # (sec, time_str, text)
     with open(json_path, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
@@ -35,22 +35,30 @@ def parse_live_chat(json_path, output_dir, chunk_minutes=90):
                     runs = text_msg.get('message', {}).get('runs', [])
                     msg_text = "".join([r.get('text', '') for r in runs]).strip()
                     if msg_text:
-                        events.append((sec, f"[{time_str}] {author}: {msg_text}"))
+                        events.append((sec, time_str, f"[{time_str}] {author}: {msg_text}"))
                 elif paid_msg:
                     author = paid_msg.get('authorName', {}).get('simpleText', 'Unknown')
                     amount = paid_msg.get('purchaseAmountText', {}).get('simpleText', '')
                     runs = paid_msg.get('message', {}).get('runs', [])
                     msg_text = "".join([r.get('text', '') for r in runs]).strip()
-                    events.append((sec, f"[{time_str}] 💰 SUPERCHAT ({amount}) from {author}: {msg_text}"))
+                    events.append((sec, time_str, f"[{time_str}] 💰 SUPERCHAT ({amount}) from {author}: {msg_text}"))
                 elif sticker_msg:
                     author = sticker_msg.get('authorName', {}).get('simpleText', 'Unknown')
                     amount = sticker_msg.get('purchaseAmountText', {}).get('simpleText', '')
-                    events.append((sec, f"[{time_str}] 🎨 STICKER ({amount}) from {author}"))
+                    events.append((sec, time_str, f"[{time_str}] 🎨 STICKER ({amount}) from {author}"))
             except Exception:
                 continue
 
     events.sort(key=lambda x: x[0])
-    
+
+    # Raw one-line-per-event feed (seconds-prefixed) so align_live_chat.py can
+    # slice events to any transcript chunk window. Format: <sec>\t<[HH:MM:SS]> msg
+    if raw_events:
+        with open(raw_events, 'w', encoding='utf-8') as f:
+            for sec, ts, line in events:
+                f.write(f"{sec}\t{line}\n")
+        print(f"[*] Wrote raw event feed: {raw_events} ({len(events)} events)")
+
     if not events:
         print("[!] No live chat events found.")
         return
@@ -62,7 +70,7 @@ def parse_live_chat(json_path, output_dir, chunk_minutes=90):
     for i in range(num_chunks):
         start_t = i * chunk_sec
         end_t = (i + 1) * chunk_sec
-        chunk_lines = [line for sec, line in events if start_t <= sec < end_t]
+        chunk_lines = [line for sec, ts, line in events if start_t <= sec < end_t]
         
         chunk_file = os.path.join(output_dir, f"livechat_chunk_{i+1}.txt")
         with open(chunk_file, 'w', encoding='utf-8') as f:
@@ -75,6 +83,7 @@ if __name__ == "__main__":
     parser.add_argument("json_path", help="Path to .live_chat.json file")
     parser.add_argument("-o", "--output-dir", default="livechat_chunks", help="Output directory for text chunks")
     parser.add_argument("--chunk-minutes", type=int, default=90, help="Minutes per chunk (default: 90)")
+    parser.add_argument("--raw-events", default=None, help="Optional: also write a seconds-prefixed event feed for chunk alignment")
     args = parser.parse_args()
     
-    parse_live_chat(args.json_path, args.output_dir, args.chunk_minutes)
+    parse_live_chat(args.json_path, args.output_dir, args.chunk_minutes, args.raw_events)

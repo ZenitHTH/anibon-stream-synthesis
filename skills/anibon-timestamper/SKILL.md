@@ -19,6 +19,7 @@ Loaded by signal (add to prompt when needed):
 - `anibon-world-identity` — verify game/char names against references before story stamps
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 - `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
+- `anibon-livechat-analysis` — parse LiveChat replay so subagents can read the live from both sides (talker + chat)
 
 ## Pipeline (Linear, Top-to-Bottom)
 
@@ -57,6 +58,21 @@ Normalizes Thai-Whisper garbled English before signal detection. The script live
 ```bash
 python3 -X utf8 ../cleaning-auto-transcripts/scripts/clean_garbled_english.py --chunks ~/youtube_<id>_workspace/chunks/
 ```
+
+### 3.5 Download & Align LiveChat (Optional but preferred)
+
+Gives each subagent the watchers' chat for its own chunk, so situation + emotion are read from BOTH talks and chat. Requires network; if a VOD has no `live_chat` subtitle, skip this step and rely on transcript-only emotion.
+
+```bash
+# 1. Download LiveChat replay (network required)
+yt-dlp --sub-langs live_chat --write-sub --skip-download "https://www.youtube.com/watch?v=<VIDEO_ID>" -o "<workspace>/%(id)s.%(ext)s"
+# 2. Parse to coarse chunks + a seconds-prefixed raw event feed
+python3 -X utf8 ../anibon-livechat-analysis/scripts/parse_live_chat.py <workspace>/<id>.live_chat.json --chunk-minutes 90 --raw-events <workspace>/livechat_events.txt -o <workspace>/livechat_90/
+# 3. Align raw feed to transcript chunk windows
+python3 -X utf8 scripts/align_live_chat.py --events <workspace>/livechat_events.txt --chunks <workspace>/chunks/ -o <workspace>/livechat/
+```
+
+Output: `livechat/livechat_chunk_NN.txt` (per transcript chunk) + `livechat/livechat_index.json`. If `yt-dlp` reports no `live_chat` subtitles, continue — the subagent falls back to transcript-only.
 
 ### 4. Analyze (Pre-flight)
 
@@ -104,6 +120,7 @@ Divide chunks into groups of 4-5 (40-50 min each). One Task agent per group.
 **Each subagent prompt MUST contain:**
 - Chunk file paths (agent reads XML directly — do NOT read chunks yourself)
 - Per-chunk detection signals from `signals.json` (inject `best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`; keep `matched_files`/`signal_score` for back-compat)
+- Per-chunk **LiveChat log** content (`livechat/livechat_chunk_NN.txt`) — inject when available, else "no livechat available"
 - The `references/subagent-prompt-template.md` output contract (0-2 stamps per chunk, merge same topic → 0)
 - Knowledge file content for the **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files as context when `confidence` is ambiguous
 
@@ -186,6 +203,8 @@ HH:MM:SS - [Tag] Description
 | `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
 | `scripts/detect_signals.py` | TF-IDF signal + knowledge file matching |
 | `scripts/detect_boundaries.py` | Detect topic boundaries (feeds `--topic-json` in Step 9) |
+| `scripts/align_live_chat.py` | Slice LiveChat event feed to per-transcript-chunk logs (Step 3.5) |
+| `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
 | `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
 | `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
 | `scripts/check_sections.py` | Validate byte cap + ASR garbles |
@@ -205,3 +224,4 @@ HH:MM:SS - [Tag] Description
 - **NO GAPS** — max 10 min between timestamps unless verified silent.
 - **INTRO BREAKDOWN** — intro >10 min → break into 3-5 min sub-topic milestones.
 - **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `merge_timestamps.py` → `pack_timestamps.py`.
+- **READ BOTH SIDES** — subagents must read the ENTIRE transcript chunk AND its LiveChat log (when present) before writing any timestamp. Situation + emotion come from both talks and chat, never from `primary_topic` alone.

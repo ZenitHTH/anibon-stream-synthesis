@@ -26,7 +26,7 @@ yt-dlp --sub-langs live_chat --write-sub --skip-download "https://www.youtube.co
 
 Run the Python parser script to convert JSON lines into timestamped text chunks (livechat_chunk_1.txt to N.txt):
 
-`ash
+`ash
 python3 scripts/parse_live_chat.py <VIDEO_ID>.live_chat.json --chunk-minutes 90 -o workspace/livechat_chunks
 `
 
@@ -36,6 +36,12 @@ The script extracts:
 - Message text
 - SuperChat / Donation amounts (e.g. THB 40.00)
 - Emotes & Stickers
+
+> [!TIP]
+> **Timestamper integration**: pass `--raw-events workspace/livechat_events.txt` to also emit a
+> seconds-prefixed event feed. The `anibon-timestamper` orchestrator (Step 3.5) then slices that feed
+> to its 5-minute transcript chunks via `scripts/align_live_chat.py`, so each timestamp subagent can read
+> the watchers' chat for its own chunk and infer situation + emotion from both sides.
 
 ### 3. Subagent Parallel Analysis
 
