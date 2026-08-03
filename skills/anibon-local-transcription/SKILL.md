@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Anibon Local Audio Transcription
 
+## Overview & Triggers
+
 Use when YouTube has no subtitles or auto-captions for the target video.
 
 ## 1. Audio Extraction

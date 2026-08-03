@@ -112,3 +112,13 @@ For videos with access restrictions (age-restricted, private, or captions disabl
 - **Preserve timestamp accuracy**: Timestamp markers in the report must match the actual video time.
 - **No Hallucinated Links**: YouTube reference links must be real, working links.
 - **Write concisely yet comprehensively**: Summarize precisely without dropping the speaker's key substance.
+
+
+## Subagent Dispatch Contract
+
+For videos > 40 minutes:
+1. **Pre-Grant Workspace Permissions**: Call sk_permission for 
+ead_file on working directory before spawning.
+2. **Canonical Prompt Building**: Use scripts/subagent-prompt-builder.py with subagent-prompt-template.md.
+3. **Parallel Dispatch**: Spawn chunk subagents using invoke_subagent per 40-50 minute group.
+4. **Assembly**: Collect agent reports and assemble via summarizer-subagent-guide.md.

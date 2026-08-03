@@ -1,50 +1,36 @@
-# Skills
+# Anibon Stream Synthesis — Skills Index & Sitemap
 
-## Skill Inventory
+This document lists all 18 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
 
-| Skill | Purpose | Key Integrations |
-| :--- | :--- | :--- |
-| [`synthesizing-knowledge`](../skills/synthesizing-knowledge/SKILL.md) | Deep research & report synthesis | Delegates long videos to `youtube-minutes-synthesis` |
-| [`youtube-minutes-synthesis`](../skills/youtube-minutes-synthesis/SKILL.md) | Meeting-minutes from YouTube videos | Calls `cleaning-auto-transcripts` first |
-| [`anibon-timestamper`](../skills/anibon-timestamper/SKILL.md) | Stream orchestrator — auto-detects type & routes to sub-skills | Orchestrates all `anibon-*` sub-skills via parallel signal detection |
-| [`anibon-timestamper-local`](../skills/anibon-timestamper-local/SKILL.md) | Local stream orchestrator — sequential loop & goldfish brain rules | For local AIs (Ollama) with restricted context |
-| [`anibon-timestamper-handoff`](../skills/anibon-timestamper-handoff/SKILL.md) | Session state saving & loading for local timestamper | Resolves context exhaustion on long runs |
-| [`cleaning-auto-transcripts`](../skills/cleaning-auto-transcripts/SKILL.md) | Transcription noise correction | Powers `anibon-timestamper` and `youtube-minutes-synthesis` |
-| [`masking-royal-news`](../skills/masking-royal-news/SKILL.md) | Sensitive political/royal content masking | Single source of truth for public safety compliance |
-| [`building-reusable-cli-tools`](../skills/building-reusable-cli-tools/SKILL.md) | CLI tool design guidance | Referenced when writing new processing scripts |
-| [`writing-plugin-readme`](../skills/writing-plugin-readme/SKILL.md) | README writing guidelines | Guidance for formatting this plugin's README files |
-| [`whisper-corruption-recovery`](../skills/whisper-corruption-recovery/SKILL.md) | Whisper repetition-loop detection & recovery | Load before `anibon-timestamper` for streams ≥4h or with suspiciously short transcripts |
-| [`antigravity-vision-proxy`](../skills/antigravity-vision-proxy/SKILL.md) | Proxy image analysis via agy + Gemini | Frame extraction + vision model invocation for game/hero identification |
+## 1. Orchestrator Skills
 
-## anibon-timestamper Sub-Skills
+Master skills that direct overall execution, chunking, and parallel subagent dispatch:
 
-Nested under [`../skills/anibon-timestamper/references/`](../skills/anibon-timestamper/references/). The orchestrator **auto-detects** which sub-skill(s) to load by scanning transcript signals.
+- anibon-timestamper — Master orchestrator for generating YouTube timestamps for Pu Boat live streams.
+- anibon-timestamper-local — Sequential local LLM edition for running timestamps without cloud context.
+- youtube-minutes-synthesis — Generates meeting-minutes style summaries and timestamp overviews.
+- creating-highlight-video — Master orchestrator for creating highlight reels from streams.
 
-| Sub-Skill | Detection Signal | Tags |
-| :--- | :--- | :--- |
-| [`anibon-talk-stream`](../skills/anibon-timestamper/references/talk-stream.md) | Long monologues, reading chat, news, lore/story tangents, coded political talk | `[Talk]` `[News]` `[Chat]` `[Q&A]` `[Donation]` |
-| [`anibon-gaming-stream`](../skills/anibon-timestamper/references/gaming-stream.md) | Game-specific jargon dominates, sparse verbal reactions | `[Boss]` `[Death]` `[Victory]` `[Stage]` |
-| [`anibon-marathon-stream`](../skills/anibon-timestamper/references/marathon-stream.md) | Multiple distinct game titles in sequence | `[GameSwitch]` `[Session]` |
-| [`anibon-event-stream`](../skills/anibon-timestamper/references/event-stream.md) | Patch note reading, new event content, theorycrafting | `[Event]` `[PatchNote]` `[Theory]` |
-| [`anibon-tokusatsu-stream`](../skills/anibon-timestamper/references/tokusatsu-stream.md) | Tokusatsu franchise names, watch party, multi-speaker panel | `[WatchParty]` `[Reaction]` `[Discussion]` `[Lore]` `[Tierlist]` `[Review]` |
-| [`story-enrichment`](../skills/anibon-timestamper/references/stream/story-enrichment.md) | `[Story]` tag + identifiable source game/scene | Enriches description with game/chapter synopsis |
+## 2. Sub-Skills & Handlers (Loaded Dynamically)
 
-## Knowledge Base References
+Specialized handlers loaded by signal triggers or fallback logic:
 
-Nested under [`../skills/anibon-timestamper/skills/reference/`](../skills/anibon-timestamper/skills/reference/). Structured lore and chronology for live service games discussed in streams.
+- preparing-tools — Verifies system CLI dependencies (yt-dlp, ffmpeg, python3).
+- anibon-world-identity — Verifies game lore, character names, and card names against FGO/YGO DBs.
+- anibon-local-transcription — Renders local audio via whisper.cpp when YouTube captions are missing.
+- whisper-corruption-recovery — Detects repetition loops in Whisper output and re-renders corrupt audio tails.
+- masking-royal-news — Applies strict political metaphor masking for Thai news & royal references.
+- cleaning-auto-transcripts — Normalizes Thai-Whisper garbled English loanwords.
+- anibon-livechat-analysis — Parses YouTube LiveChat replays for SuperChats, meme peaks, and Q&As.
+- livestream-scene-selection — Selects timeline boundaries for highlight editing.
+- antigravity-vision-proxy — Inspects video frames via ffmpeg + view_file when vision ground truth is needed.
+- edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, and audio sync fixing.
+- anibon-stream-synthesis-ffmpeg — Advanced FFmpeg editing skill for seamless narrative flows.
 
-- [miHoYo Connected Lore](../skills/anibon-timestamper/skills/reference/miHoYo_Connected_Lore.md) — HI3 / Honkai Star Rail / Genshin connected universe
-- [Honkai Impact 3rd](../skills/anibon-timestamper/skills/reference/Honkai_Impact_3.md) — Part 1/1.5 chronology, battlesuits, mechanics
-- [Honkai Impact 3rd Part 2](../skills/anibon-timestamper/skills/reference/Honkai_Impact_3_Part2.md) — Mars chronology, characters
-- [Honkai: Star Rail](../skills/anibon-timestamper/skills/reference/Honkai_Star_Rail.md) — Patches, banners, meta teams
-- [Genshin Impact](../skills/anibon-timestamper/skills/reference/Genshin_Impact.md) — Cities, Archons, Fatui, Descenders
-- [Wuthering Waves](../skills/anibon-timestamper/skills/reference/Wuthering_Waves.md) — Character and version roadmap
-- [Zenless Zone Zero](../skills/anibon-timestamper/skills/reference/Zenless_Zone_Zero.md) — Versions, agent factions
-- [Arknights](../skills/anibon-timestamper/skills/reference/Arknights.md) — Version chronology
-- [Arknights: Endfield](../skills/anibon-timestamper/skills/reference/Arknights_Endfield.md) — Setup, dates, gameplay mechanics
-- [Limbus Company](../skills/anibon-timestamper/skills/reference/Limbus_Company.md) — Key updates, gameplay styles
-- [Pokémon Radical Red](../skills/anibon-timestamper/skills/reference/Pokemon_Radical_Red.md) — Difficulty modes, bosses, Version 4.1
+## 3. Utility & Synthesis Skills
 
-## Story Enrichment Cache
+Document creation, CLI tool building, and research utilities:
 
-Nested under [`../skills/anibon-timestamper/references/stories/`](../skills/anibon-timestamper/references/stories/). Cached synopsis `.md` files for enriched `[Story]` timestamps, keyed by game+scene slug. Reused across streams — no redundant websearch.
+- synthesizing-knowledge — Synthesizes multi-source markdown research documents with citation links.
+- building-reusable-cli-tools — Guidance for writing modular, testable Python processing utilities.
+- writing-plugin-readme — Guidelines for writing professional README documentation.

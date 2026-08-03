@@ -50,3 +50,11 @@ Once the `.mp4` is rendered, we must QA check it.
 
 ## Zero-Friction Execution
 The goal of this orchestrator is **Zero-Friction**. Do not stop and ask the user for permission between Phase 2, 3, and 4. Once Phase 1 is complete and the timestamps are approved, you should execute the Planner, Cutter, and Verifier in one continuous flow, only reporting back to the user when the final QA-checked MP4 is ready!
+
+
+## Subagent Dispatch Contract
+
+1. **Pre-Grant Workspace Permissions**: Call sk_permission for 
+ead_file on working workspace directory.
+2. **Parallel Highlight Scene Selection**: Spawn parallel subagents using invoke_subagent across transcript/video chunks to identify peak meme/hype highlights.
+3. **Assembly**: Pass highlight timeline timestamps to dit-cut-video-ffmpeg for cutting and stitching.

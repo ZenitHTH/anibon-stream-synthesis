@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Anibon World Identity Verification
 
+## Overview & Triggers
+
 > LLMs hallucinate game names from post-cutoff patches. Thai Whisper output is phonetic — model wrong on both sources. Must verify against local references.
 
 ## Priority Chain

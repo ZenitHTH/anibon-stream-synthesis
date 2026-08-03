@@ -5,6 +5,8 @@ description: Use when generating timestamps for Anibon Official streams on a loc
 
 # Anibon Timestamper (Local LLM Edition)
 
+## Overview & Triggers
+
 Optimized for local LLMs with limited context windows (Gemma 4, Qwen 2.5, etc.).
 Sequential chunk loop — no parallel subagents, no cloud.
 
