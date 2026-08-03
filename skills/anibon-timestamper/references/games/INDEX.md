@@ -1,4 +1,5 @@
 # Live Service Games Knowledge Base References
+- [Heartopia Reference](Heartopia.md)
 - [Honkai: Star Rail Reference](Honkai_Star_Rail.md)
 - [Wuthering Waves Reference](Wuthering_Waves.md)
 - [Zenless Zone Zero Reference](Zenless_Zone_Zero.md)

@@ -115,6 +115,12 @@ Split into byte-limited sections (YouTube comment cap ~3500B). Use `--topic-json
 
 > [!IMPORTANT]
 > **Topic Group Section Headers**: Section header titles synthesized by `pack_timestamps.py` represent the overall topic group across all entries in that section (e.g., `Topic A | Topic B | Topic C`), never just the first line.
+>
+> **Verify & Refine Section Header Titles**: Never leave generic placeholder section titles (such as `fgo knowledge base` or `gaming-stream`) in `output.md`. If `pack_timestamps.py` outputs generic titles, inspect the timestamps within each section and replace the header title with a concise summary of the primary topics in that part (e.g., `ส่วนที่ N: Topic A & Topic B (⏱ เริ่ม: HH:MM:SS)`).
+>
+> **Granular High-Meme & Streamer-Chat Synergy**: When analyzing peak trolling, meme sequences, or clutch gameplay (e.g., 15 HP survivals, low-star unit runs, streamer x livechat donation banter), increase timestamp density from standard 5-minute sampling to **1-2 minute micro-timestamps** to capture precise dialogue quotes and live chat reactions.
+>
+> **Section Time-Range Balancing**: Aim for broad, evenly distributed section time ranges (e.g., 1h to 1h30m per part on multi-hour streams). Avoid creating narrow section fragments (<40 minutes). If forced topic boundaries create narrow parts, re-pack timestamps without rigid boundary json to achieve smooth byte-and-time balancing.
 
 ```bash
 python3 -X utf8 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \

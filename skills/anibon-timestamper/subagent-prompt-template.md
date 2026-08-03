@@ -144,6 +144,14 @@ them → output `[Talk]` tag with event description only. Never invent a game ti
 
 **Never guess. If unsure → describe the event, not the title.**
 
+## Step 3.6: Thai LiveChat Subculture & Psychology Interpretation Rule
+When analyzing Thai live chat or viewer comments:
+- **Do NOT interpret literally.** Apply Thai internet subculture psychology.
+- **Reverse Meaning / Playful Envy:** Fake anger/boredom ("เบื่อว่ะ", "กด dislike ละ") when streamer gets rare gacha = playful envy & celebration, not real anger.
+- **Ironic Cults / Overhype:** Hype for 1-star/trash units ("Eric คือ META", "ทพจร.") = intentional meme banter, not genuine meta strategy.
+- **Parasocial Memes:** Community claims ("ผัวคุณซากิ", "เมียผม") = friend support meme jokes.
+- **Coping Comedy:** Screaming at gacha failure ("โดนน้ำมนต์/โดนไล่ผี") = slapstick entertainment.
+
 ## Step 4: Story Enrichment (For [Story] Entries Only)
 
 If tag = `[Story]` AND source game/scene is identifiable:
