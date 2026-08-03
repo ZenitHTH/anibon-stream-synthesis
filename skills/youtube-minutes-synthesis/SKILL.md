@@ -119,6 +119,6 @@ For videos with access restrictions (age-restricted, private, or captions disabl
 For videos > 40 minutes:
 1. **Pre-Grant Workspace Permissions**: Call sk_permission for 
 ead_file on working directory before spawning.
-2. **Canonical Prompt Building**: Use scripts/subagent-prompt-builder.py with subagent-prompt-template.md.
+2. **Canonical Prompt Building**: Use ../scripts/subagent-prompt-builder.py with ../anibon-timestamper/references/subagent-prompt-template.md.
 3. **Parallel Dispatch**: Spawn chunk subagents using invoke_subagent per 40-50 minute group.
-4. **Assembly**: Collect agent reports and assemble via summarizer-subagent-guide.md.
+4. **Assembly**: Collect agent reports and assemble via ../anibon-timestamper/references/summarizer-subagent-guide.md.

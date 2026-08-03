@@ -16,7 +16,7 @@ Local references → cached story refs → reference SRT → websearch fallback
 
 ### a. Check local game references
 
-`references/games/INDEX.md` lists available game knowledge files. Each covers patch chronologies, character names, faction lists for major gacha games. This is the fastest and most reliable source.
+`references/INDEX.md` lists available game knowledge files. Each covers patch chronologies, character names, faction lists for major gacha games. This is the fastest and most reliable source.
 
 ### b. Check cached story refs
 
@@ -56,10 +56,10 @@ Training-data inference, older-version character, unconfirmed phonetic match
 Run these before World Identity lookups for applicable games:
 
 ```bash
-python3 scripts/fetch_fgo_db.py --check --db "references/FGO and DATA/atlas_fgo.db" || \
-  python3 scripts/fetch_fgo_db.py --db "references/FGO and DATA/atlas_fgo.db"
-python3 scripts/fetch_ygo_db.py --check --db "references/Yu-Gi-Oh DATA/ygo_cards.db" || \
-  python3 scripts/fetch_ygo_db.py --db "references/Yu-Gi-Oh DATA/ygo_cards.db"
+python3 scripts/fetch_fgo_db.py --check --db "../reference/FGO and DATA/atlas_fgo.db" || \
+  python3 scripts/fetch_fgo_db.py --db "../reference/FGO and DATA/atlas_fgo.db"
+python3 scripts/fetch_ygo_db.py --check --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
+  python3 scripts/fetch_ygo_db.py --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
 ```
 
 ## When to Skip

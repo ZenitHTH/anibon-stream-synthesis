@@ -25,7 +25,7 @@ Auto-matched by signal terms. See `detect_signals.py --match-knowledge` for the 
 
 ## Game References
 
-`references/games/INDEX.md` — game-specific files matched by game name
+`../anibon-world-identity/references/INDEX.md` — game-specific files matched by game name (canonical game reference files live in `anibon-world-identity/references/`)
 
 ## Cached Story Synopses
 

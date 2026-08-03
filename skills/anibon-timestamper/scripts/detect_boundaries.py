@@ -310,7 +310,7 @@ def _make_label(
     if not generate_labels or not section_chunks:
         return "(auto)"
     
-    # Collect specific game references (skills/reference/) vs generic stream types
+    # Collect specific game references (anibon-world-identity/references/) vs generic stream types
     specific_games = Counter()
     generic_types = Counter()
     
@@ -319,14 +319,15 @@ def _make_label(
         for mf in sig.get("matched_files", []):
             fpath = mf.get("file", "")
             cnt = mf.get("count", 0)
-            if "skills/reference/" in fpath:
-                # Game-specific knowledge file
-                game = fpath.replace(".md", "").split("/")[-1]
-                specific_games[game] += cnt
-            elif "references/stream/" in fpath:
+            if "references/stream/" in fpath:
                 # Generic stream type
                 gtype = fpath.replace(".md", "").split("/")[-1]
                 generic_types[gtype] += cnt
+            elif ("anibon-world-identity/references/" in fpath
+                    or "/reference/" in fpath.replace(".md", "")):
+                # Game-specific knowledge file (game .md refs or DBs under skills/reference/)
+                game = fpath.replace(".md", "").split("/")[-1]
+                specific_games[game] += cnt
     
     # Build label
     parts = []

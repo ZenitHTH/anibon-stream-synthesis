@@ -13,15 +13,15 @@
   },
   "arknights": {
    "kind": "game",
-   "file": "skills/reference/Arknights.md"
+   "file": "../anibon-world-identity/references/Arknights.md"
   },
   "arknights endfield": {
    "kind": "game",
-   "file": "skills/reference/Arknights_Endfield.md"
+   "file": "../anibon-world-identity/references/Arknights_Endfield.md"
   },
   "arona": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "bleach": {
    "kind": "anime",
@@ -29,11 +29,11 @@
   },
   "blue archive": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "bluearchive": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "bracket": {
    "kind": "domain",
@@ -41,19 +41,19 @@
   },
   "castorice": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "chaos zero": {
    "kind": "game",
-   "file": "skills/reference/Chaos_Zero_Nightmare.md"
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   },
   "chaos zero nightmare": {
    "kind": "game",
-   "file": "skills/reference/Chaos_Zero_Nightmare.md"
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   },
   "dinoblade": {
    "kind": "game",
-   "file": "skills/reference/Dinoblade.md"
+   "file": "../anibon-world-identity/references/Dinoblade.md"
   },
   "discuss": {
    "kind": "stream_type",
@@ -73,7 +73,7 @@
   },
   "endfield": {
    "kind": "game",
-   "file": "skills/reference/Arknights_Endfield.md"
+   "file": "../anibon-world-identity/references/Arknights_Endfield.md"
   },
   "event": {
    "kind": "stream_type",
@@ -81,15 +81,15 @@
   },
   "fate": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "fate grand order": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "fgo": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "game": {
    "kind": "stream_type",
@@ -105,39 +105,39 @@
   },
   "genshin": {
    "kind": "game",
-   "file": "skills/reference/Genshin_Impact.md"
+   "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
   "genshin impact": {
    "kind": "game",
-   "file": "skills/reference/Genshin_Impact.md"
+   "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
   "grand order": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "honkai": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Impact_3.md"
+   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
   },
   "honkai impact": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Impact_3.md"
+   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
   },
   "honkai impact 3rd": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Impact_3.md"
+   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
   },
   "honkai star rail": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "hoshino": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "hsr": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "hunter": {
    "kind": "anime",
@@ -157,11 +157,11 @@
   },
   "limbus": {
    "kind": "game",
-   "file": "skills/reference/Limbus_Company.md"
+   "file": "../anibon-world-identity/references/Limbus_Company.md"
   },
   "limbus company": {
    "kind": "game",
-   "file": "skills/reference/Limbus_Company.md"
+   "file": "../anibon-world-identity/references/Limbus_Company.md"
   },
   "lore": {
    "kind": "domain",
@@ -185,15 +185,15 @@
   },
   "momotalk": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "nexon": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "nexton": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "one punch man": {
    "kind": "anime",
@@ -206,7 +206,7 @@
   },
   "parrying extinction": {
    "kind": "game",
-   "file": "skills/reference/Dinoblade.md"
+   "file": "../anibon-world-identity/references/Dinoblade.md"
   },
   "patch": {
    "kind": "stream_type",
@@ -226,19 +226,19 @@
   },
   "pokemon": {
    "kind": "game",
-   "file": "skills/reference/Pokemon_PvP.md"
+   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
   },
   "pokémon": {
    "kind": "game",
-   "file": "skills/reference/Pokemon_PvP.md"
+   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
   },
   "pyroxene": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "radical red": {
    "kind": "game",
-   "file": "skills/reference/Pokemon_Radical_Red.md"
+   "file": "../anibon-world-identity/references/Pokemon_Radical_Red.md"
   },
   "seele leaks": {
    "kind": "domain",
@@ -247,19 +247,19 @@
   },
   "sekiro": {
    "kind": "game",
-   "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
   },
   "เซกิโร": {
    "kind": "game",
-   "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
   },
   "shadow die twice": {
    "kind": "game",
-   "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
   },
   "shadows die twice": {
    "kind": "game",
-   "file": "skills/reference/Sekiro_Shadows_Die_Twice.md"
+   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
   },
   "series": {
    "kind": "anime",
@@ -267,15 +267,15 @@
   },
   "servant": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "shiroko": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "star rail": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "story": {
    "kind": "domain",
@@ -303,7 +303,7 @@
   },
   "total assault": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "ultraman": {
    "kind": "stream_type",
@@ -323,7 +323,7 @@
   },
   "wing wave": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "work": {
    "kind": "domain",
@@ -335,43 +335,43 @@
   },
   "wuthering": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "wuthering wave": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "wuthering waves": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "wuwa": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "ygo": {
    "kind": "game",
-   "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "yu-gi-oh": {
    "kind": "game",
-   "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "yugioh": {
    "kind": "game",
-   "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "zenless": {
    "kind": "game",
-   "file": "skills/reference/Zenless_Zone_Zero.md"
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "zenless zone zero": {
    "kind": "game",
-   "file": "skills/reference/Zenless_Zone_Zero.md"
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "zzz": {
    "kind": "game",
-   "file": "skills/reference/Zenless_Zone_Zero.md"
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "การ์ตูน": {
    "kind": "anime",
@@ -379,7 +379,7 @@
   },
   "คลื่นเวฟ": {
    "kind": "game",
-   "file": "skills/reference/Wuthering_Waves.md"
+   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
   "คุย": {
    "kind": "stream_type",
@@ -399,19 +399,19 @@
   },
   "น้องข้าว": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "บลูอาร์ไคฟ์": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "บัวไค": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "บูไค": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "มังงะ": {
    "kind": "anime",
@@ -419,15 +419,15 @@
   },
   "ยูกิ": {
    "kind": "game",
-   "file": "skills/reference/Yu-Gi-Oh DATA/YGO_DB_Reference.md"
+   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "รางดาว": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Star_Rail.md"
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "ลิมบัส": {
    "kind": "game",
-   "file": "skills/reference/Limbus_Company.md"
+   "file": "../anibon-world-identity/references/Limbus_Company.md"
   },
   "วล็อก": {
    "kind": "stream_type",
@@ -435,7 +435,7 @@
   },
   "สามเค": {
    "kind": "game",
-   "file": "skills/reference/Honkai_Impact_3.md"
+   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
   },
   "อนิเมะ": {
    "kind": "anime",
@@ -443,11 +443,11 @@
   },
   "อาร์กนก": {
    "kind": "game",
-   "file": "skills/reference/Arknights.md"
+   "file": "../anibon-world-identity/references/Arknights.md"
   },
   "อาร์กไนท์": {
    "kind": "game",
-   "file": "skills/reference/Arknights.md"
+   "file": "../anibon-world-identity/references/Arknights.md"
   },
   "อีเวนท์": {
    "kind": "stream_type",
@@ -455,7 +455,7 @@
   },
   "เกนชิน": {
    "kind": "game",
-   "file": "skills/reference/Genshin_Impact.md"
+   "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
   "เกม": {
    "kind": "stream_type",
@@ -463,15 +463,15 @@
   },
   "เคออสซีโร่": {
    "kind": "game",
-   "file": "skills/reference/Chaos_Zero_Nightmare.md"
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   },
   "เซนเลส": {
    "kind": "game",
-   "file": "skills/reference/Zenless_Zone_Zero.md"
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "เซอร์แวนท์": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "เนื้อเรื่อง": {
    "kind": "domain",
@@ -479,11 +479,11 @@
   },
   "เน็กซอน": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "เฟท": {
    "kind": "game",
-   "file": "skills/reference/FGO and DATA/fgo_knowledge_base.md"
+   "file": "references/stream/fgo-knowledge.md"
   },
   "เม้าท์": {
    "kind": "stream_type",
@@ -499,31 +499,31 @@
   },
   "โปเกม่อน": {
    "kind": "game",
-   "file": "skills/reference/Pokemon_PvP.md"
+   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
   },
   "ไดโนเบลด": {
    "kind": "game",
-   "file": "skills/reference/Dinoblade.md"
+   "file": "../anibon-world-identity/references/Dinoblade.md"
   },
   "ブルーアーカイブ": {
    "kind": "game",
-   "file": "skills/reference/Blue_Archive.md"
+   "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
   "heartopia": {
    "kind": "game",
-   "file": "skills/reference/Heartopia.md"
+   "file": "../anibon-world-identity/references/Heartopia.md"
   },
   "ฮาร์โทเปีย": {
    "kind": "game",
-   "file": "skills/reference/Heartopia.md"
+   "file": "../anibon-world-identity/references/Heartopia.md"
   },
   "ฮาโทเปีย": {
    "kind": "game",
-   "file": "skills/reference/Heartopia.md"
+   "file": "../anibon-world-identity/references/Heartopia.md"
   },
   "心动小镇": {
    "kind": "game",
-   "file": "skills/reference/Heartopia.md"
+   "file": "../anibon-world-identity/references/Heartopia.md"
   }
  },
  "_discovered": {

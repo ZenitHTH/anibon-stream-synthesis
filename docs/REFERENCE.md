@@ -18,11 +18,11 @@ skills/                           Agent skills
     references/                   Cross-stream references
       stream/                     Talk, Gaming, Marathon, Event, Tokusatsu, Donation, Macros
         story-enrichment.md       Protocol: source ID → ask user → enrich timestamp
+        BUILD_WHISPERCPP_GUILD.md / subagent-prompt-template.md / summarizer-subagent-guide.md
       stories/                    Cache dir for fetched story synopses (.md files)
-    skills/                       Sub-skills (Talk, Gaming, Marathon, Event, Tokusatsu)
-      reference/                  Game lore files + SQLite DB schemas
-    skills/reference/FGO and DATA/   FGO: atlas_fgo.db (~1.9 MB)
-    skills/reference/Yu-Gi-Oh DATA/  Yu-Gi-Oh: ygo_cards.db (~13.4 MB)
+    resources/                    Data (channels.json, knowledge.json, signal_config.json, ...)
+  anibon-world-identity/references/  Game lore .md files (+ INDEX.md)
+  anibon-timestamper-local/       Local-LLM timestamper variant
   synthesizing-knowledge/
   youtube-minutes-synthesis/
   cleaning-auto-transcripts/
@@ -31,6 +31,11 @@ skills/                           Agent skills
   writing-plugin-readme/
   whisper-corruption-recovery/
   antigravity-vision-proxy/
+  reference/                       Shared game SQLite DBs
+    FGO and DATA/atlas_fgo.db      FGO: ~1.9 MB
+    Yu-Gi-Oh DATA/ygo_cards.db     Yu-Gi-Oh: ~13.4 MB
+  FGO and DATA/atlas_fgo.db            FGO: ~1.9 MB
+  Yu-Gi-Oh DATA/ygo_cards.db           Yu-Gi-Oh: ~13.4 MB
 tests/                            Unit and integration tests
 plugin.json / package.json / hooks.json / gemini-extension.json   Plugin configs
 ```
@@ -115,7 +120,7 @@ python3 scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db
 python3 scripts/fetch_fgo_db.py --force --db "skills/reference/FGO and DATA/atlas_fgo.db"
 ```
 
-See [`FGO_DB_Reference.md`](../skills/anibon-timestamper/skills/reference/FGO%20and%20DATA/FGO_DB_Reference.md) for SQL query patterns.
+See [`fgo-knowledge.md`](../skills/anibon-timestamper/references/stream/fgo-knowledge.md) for SQL query patterns.
 
 ### `fetch_ygo_db.py` — Yu-Gi-Oh! Database Bootstrap
 
@@ -127,7 +132,7 @@ python3 scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.d
 python3 scripts/fetch_ygo_db.py --force --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"
 ```
 
-See [`YGO_DB_Reference.md`](../skills/anibon-timestamper/skills/reference/Yu-Gi-Oh%20DATA/YGO_DB_Reference.md) for card schema and queries.
+See [`ygo_cards.db`](skills/reference/Yu-Gi-Oh%20DATA/ygo_cards.db) for card schema and queries.
 
 ## On-Demand Databases
 

@@ -73,7 +73,7 @@ TF-IDF across all chunks. Matches keywords to knowledge files per chunk.
 ```bash
 python3 -X utf8 scripts/detect_signals.py \
   --chunks ~/youtube_<id>_workspace/chunks/ \
-  --knowledge ./knowledge.json \
+  --knowledge ./resources/knowledge.json \
   --output ~/youtube_<id>_workspace/signals.json
 ```
 
@@ -93,7 +93,7 @@ Divide chunks into groups of 4-5 (40-50 min each). One Task agent per group.
 **Each subagent prompt MUST contain:**
 - Chunk file paths (agent reads XML directly — do NOT read chunks yourself)
 - Per-chunk detection signals from `signals.json` (inject `matched_files` + `signal_score`)
-- The `subagent-prompt-template.md` output contract (0-2 stamps per chunk, merge same topic → 0)
+- The `references/subagent-prompt-template.md` output contract (0-2 stamps per chunk, merge same topic → 0)
 - Knowledge file content for matched references (e.g., gaming-stream.md, phuboat-anime-talking-style.md, game reference files)
 
 **CRITICAL:** Do NOT write topic descriptions yourself. Let the agent read the XML + signals. Inject signals.json data, not your analysis.
