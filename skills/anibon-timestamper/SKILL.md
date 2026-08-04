@@ -137,6 +137,23 @@ python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/agent_*.txt \
   -o ~/youtube_<id>_workspace/all_timestamps.txt
 ```
 
+### 8.5 Wrap Same-Topic Timestamps (Fixes duplicate stamps)
+
+`merge_timestamps.py` only collapses byte-identical or same-second+near-identical lines. Real runs still ship **30-40 same-topic duplicates** (same event/same subject stamped twice 0-120s apart, e.g. `00:11:40` + `00:11:41` both "gacha revenue"). Fix with a semantic wrap pass before packing:
+
+1. Read `all_timestamps.txt` fully.
+2. Wrap consecutive timestamps that describe the **SAME single topic** (same event, same discussion thread, same subject) and occur **close in time** (typically ≤~2 min) into ONE line.
+3. KEEP the **earliest** timestamp's time. Prefer the most specific tag/description; merge descriptions into one concise line. When the later line is more informative, carry its wording — don't blindly keep the first verbatim.
+
+Rules for what counts as SAME topic (merge): same gacha-revenue news stamped twice; a `[Reaction]`+`[Reaction]` on the same ad; `[WatchParty]`+`[Reaction]` on the same PV just watched; `[Gameplay]`+`[Talk]` on the same skill review; `[Chat]`+`[Donation]` answering the same viewer question.
+
+**DO NOT merge** (different topics even if same-second/nearby): a `[Gameplay]` analysis and a `[Gacha]` banner analysis at the same second; two different games; a boss fight vs. a donation read; distinct questions in a Q&A. Same timestamp ≠ same topic.
+
+Expected: this collapses ~20-25% of lines on a typical run without losing distinct events.
+
+> [!TIP]
+> Reuse the target contract in `references/subagent-prompt-template.md` ("## Wrap Same-Topic Timestamps"). Run once per whole `all_timestamps.txt` (not per chunk — cross-chunk dupes are the point).
+
 ### 9. Pack into Sections
 
 Split into byte-limited sections (YouTube comment cap ~3500B). Use `--topic-json` with `boundaries.json` from Step 6 for section headings + forced topic splits.

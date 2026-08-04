@@ -76,6 +76,25 @@ A new timestamp is only valid when ONE of these occurs:
 **0-TIMESTAMP RULE:** Output 0 ONLY if chunk is empty or an exact topic continuation (same game, same activity, no event change). In all other cases, output at least 1 timestamp. "Same topic with minor sub-shifts" is NOT a 0 case — merge into 1.
 
 Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description.
+
+## Wrap Same-Topic Timestamps (post-merge, whole-list pass)
+
+Before finalizing, re-read the FULL merged timestamp list. Wrap consecutive
+timestamps that describe the SAME single topic (same event/thread/subject)
+within ~≤2 minutes into ONE line:
+- KEEP the earliest timestamp's time.
+- Prefer the most specific tag; merge descriptions into one concise line.
+- If the later line is more informative, carry its wording — don't keep the
+  first verbatim.
+
+SAME topic → wrap: same gacha-revenue news stamped twice; `[Reaction]`+`[Reaction]`
+on the same ad; `[WatchParty]`+`[Reaction]` on the same PV; `[Gameplay]`+`[Talk]`
+on the same skill review; `[Chat]`+`[Donation]` answering the same question.
+
+DO NOT wrap (different topics even if same-second/nearby): `[Gameplay]` analysis
+vs `[Gacha]` banner analysis at the same second; two different games; a boss
+fight vs a donation read; distinct Q&A questions. Same timestamp ≠ same topic.
+
 Q&A FORMAT EXCEPTION: Structured Q&A where each question is
 explicitly framed by host/guest is NOT "continuous talk."
 Each distinct question frame = topic boundary → emit 1 stamp.
@@ -211,18 +230,42 @@ If chunk is primarily talking/chatting:
 
 ## Step 5.5: Infer Situation + Emotion of the Live (Thai-aware)
 
-Read the transcript AND the LiveChat log together to infer, for this chunk:
-- **Situation**: what is ACTUALLY happening (single dominant activity/event — e.g., boss fight, gacha spark, drama talk, quiet grind).
-- **Emotion / tone**: the mood of THIS moment — e.g. hype, tense, emotional, relaxed, chaotic/memey, quiet-calm, celebratory (gacha win), frustrated-but-joking.
+**REQUIRED — before writing any description, form a verdict for the chunk:**
+`SITUATION: <what is actually happening> | TONE: <funny / hype / shock / tense / sad / calm / meme>`
+
+The verdict is not output — it drives the wording in Step 6. If you cannot name a tone, the chunk is calm: write the neutral description.
 
 Detect tone from BOTH sides:
 - Talker side: Thai word choice + sentence particles (`วะ/เว้ย/จัง/ไป`, exclamations `โอ้ย/เฮ้ย/อ้าว`), shouting, repetition, laughter.
 - Chat side: message density spikes, emotes, 555 spam, SUPERCHAT/donation surges — these mark real peaks the talker may not name.
 
-**Thai words carry emotion — write the tone, don't label it.**
-- Mirror the mood through the words you CHOOSE in the description (register + particles), not by appending a literal mood word/emoji.
-- Do NOT overstate: if the live is calm about a gacha fail, do NOT write words that sound genuinely devastated — Step 3.6 reverse psychology (playful envy = celebration) and coping comedy apply. "กด dislike" banter is happiness, not anger.
-- Do NOT flatten: preserve the real tone, but never exaggerate it.
+**The description's FIRST VERB encodes the tone. Pick it from the recipe:**
+
+| TONE (verdict) | description starts with |
+|----------------|--------------------------|
+| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ |
+| hype | โหด, อลังการ, จัดเต็ม, โคตร |
+| shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ |
+| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ |
+| frustration | เซ็ง, เฮ้อ, กาก, แพ้ |
+| sad | อกหัก, เศร้า, คิดถึง |
+| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ |
+
+Only a calm/serious chunk uses the neutral verbs (พูดคุย, วิเคราะห์, แนะนำ,
+อธิบาย, ดู). Funny/hype/shock descriptions may end with a register particle
+(วะ, อ่ะ, เย้, ไปเลย) or echo the streamer's actual exclamation (โอ้ย, เฮ้ย).
+
+**Do NOT flatten — contrast:**
+- ❌ `[Death] ประสบปัญหาในการต่อสู้เมื่อศัตรูไม่ติดสถานะสตั้น`
+- ✅ `[Death] อึ้ง! ศัตรูสตั้นไม่ติด ตีสวนกลับตายยกชุด`
+- ❌ `[Talk] พูดคุยเรื่องระบบ Stat Fou 3000 และการอัปเดตเกม`
+- ✅ `[News] ประกาศ Stat Fou 3000 เปิดทางเลเวล 120`
+- ❌ `[Talk] พูดคุยและแนะนำการเลือกทำ Grand Servant`
+- ✅ `[Chat] แซวตู้ว่ายน้ำรออีกนาน แฟนอกหักรายได้ตก`
+
+Do NOT overstate: if the live is calm about a gacha fail, do NOT write words
+that sound genuinely devastated — Step 3.6 reverse psychology (playful envy =
+celebration) and coping comedy apply. "กด dislike" banter is happiness, not anger.
 
 **Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
 
