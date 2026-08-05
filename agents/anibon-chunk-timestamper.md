@@ -24,9 +24,19 @@ Read and process chunks **one by one in order**. For each chunk:
 3. Do NOT write any timestamp until you have read the chunk fully.
 4. If you cannot read the full chunk, output NOTHING for it and say "incomplete read".
 5. Your whole-chunk understanding is the ONLY basis for stamps. `primary_topic`, signals, and knowledge files are HINTS to verify — never substitutes for reading.
-6. After reading the chunk, compare it to the PREVIOUS CHUNK's topic (tracked by you as you go).
-7. Apply the TOPIC CONTINUITY RULE.
-8. Move to the next chunk. Repeat.
+6. **FULL LIST REVEAL RULE (Read Further across Adjacent Chunks):**
+   When the streamer reveals a list or announcement (e.g. animation updates, new banners, character lists), do NOT stop reading at the first 3-5 items in your current chunk. Read into the NEXT adjacent chunk(s) in your group to verify if the reveal continues before concluding total counts or listing character names. Never truncate a 7-item list to 5 items just because the reveal spans across chunk boundaries.
+   
+   - ❌ **WRONG (Truncated list from Chunk 21 only):**
+     `[Reaction] อึ้ง! FGO ประกาศปรับอนิเมชัน 5 เซอร์แวนต์ชาย (Leonidas, Phantom, Gilles, Mephisto, Romulus)`
+     *(Reason for failure: Chunk 21 ends after Romulus, but Chunk 22 immediately reveals Eric Bloodaxe and Cu Berserker!)*
+   
+   - ✅ **CORRECT (Full 7-item list verified by reading Chunks 21 & 22 together):**
+     `[Reaction] อึ้ง! FGO ประกาศปรับอนิเมชัน 7 เซอร์แวนต์ชาย (Leonidas, Phantom, Gilles, Mephisto, Romulus, Eric, Cu)`
+     *(Walkthrough: Chunk 21 introduces 5 male servants $\rightarrow$ subagent reads Chunk 22 $\rightarrow$ Boat shouts "Eric & Cu Berserker got animation updates too!" $\rightarrow$ subagent updates count to 7).*
+7. After reading the chunk, compare it to the PREVIOUS CHUNK's topic (tracked by you as you go).
+8. Apply the TOPIC CONTINUITY RULE.
+9. Move to the next chunk. Repeat.
 
 After processing all chunks in the group, output only the timestamps that survived.
 

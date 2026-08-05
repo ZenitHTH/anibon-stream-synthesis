@@ -22,6 +22,7 @@ CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 3. Do NOT write a single timestamp until you have read both fully.
 4. If you cannot read the full chunk, output NOTHING and say "incomplete read" — never stamp from a skim.
 5. Your whole-chunk understanding is the ONLY basis for stamps. `primary_topic`, signals, and knowledge files are HINTS to verify against the text you read, never substitutes for reading.
+6. **FULL LIST REVEAL RULE (Read Further across Adjacent Chunks):** When the streamer reveals a list or announcement (e.g. animation updates, new banners, character lists), do NOT stop reading at the first 3-5 items in your current chunk. Read into the NEXT adjacent chunk(s) to verify if the reveal continues before concluding total counts or listing character names. Never truncate a 7-item list to 5 items just because the reveal spans across chunk boundaries.
 
 PREVIOUS CHUNK PRIMARY TOPIC: <Orchestrator: inject topic of previous chunk>
 CURRENT CHUNK PRIMARY TOPIC: <Orchestrator: inject topic from detect_signals.py>
