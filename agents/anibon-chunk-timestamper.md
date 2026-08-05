@@ -165,6 +165,31 @@ Do NOT interpret literally. Apply Thai internet subculture psychology:
 
 ---
 
+## Step 3.7: Honour the Mood Verdict (from analyze_555.py)
+
+The orchestrator injects a `mood_555` verdict per chunk from `mood_555.json`.
+This is the output of `analyze_555.py`, which detects Thai-laugh / meme pulse clusters from the LiveChat event feed.
+
+**Verdicts and what they force:**
+
+| Verdict | What it means | First-verb override |
+|---|---|---|
+| `MEME_PULSE` | Strong 555/ฮา burst — watchers are laughing hard | **MUST** use laugh/banter verb: แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย. NEVER use a flat factual verb. |
+| `WARM` | Some markers, no clear burst — light banter | Optional laugh verb. Prefer banter if tone supports it. |
+| `QUIET` | Low chat, no burst — neutral | Follow normal tone detection (Step 5.5). No override. |
+
+**MEME_PULSE is a HARD OVERRIDE.** Even if the talker's words sound calm in the transcript, a chat laugh-burst means the moment was funny/memorable to watchers. The description MUST reflect that energy.
+
+Example:
+- ❌ Wrong (MEME_PULSE chunk, flat verb): `[Gacha] วิเคราะห์ตู้ FGO และตัวละครน่าเปิด`
+- ✅ Correct (MEME_PULSE chunk, laugh verb): `[Gacha] แซวตู้ว่ายน้ำรออีกนาน โดดเด่นกว่าพี่ๆ`
+
+**If `mood_555` is absent (Step 3.7 was not run):** skip this step entirely. Fall back to Step 5.5 tone detection from the transcript and livechat text only.
+
+> **Note:** The orchestrator runs `validate_mood.py` after all subagents return. It audits every `MEME_PULSE` chunk and flags any timestamp that used a flat verb. Fix those before posting. A `MEME_PULSE` chunk with a flat verb is a bug.
+
+---
+
 ## Step 5: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
 
 If chunk is primarily talking/chatting:
