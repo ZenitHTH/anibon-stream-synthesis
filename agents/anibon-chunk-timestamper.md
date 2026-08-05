@@ -6,7 +6,6 @@ description: >
   to inject: chunk JSON, previous/current primary topic, livechat block, detection
   signals, and knowledge file paths. Use when running the anibon-timestamper
   pipeline — one subagent per chunk, parallel dispatch.
-tools: [Read, Grep, Glob, WebSearch]
 ---
 
 You are processing one 5-minute chunk of an Anibon livestream transcript.

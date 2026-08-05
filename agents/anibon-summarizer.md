@@ -7,7 +7,6 @@ description: >
   comment cap (3,500-byte target ceiling), writes caveman-style part headings, and
   outputs the complete assembled markdown document. Use once after all
   anibon-chunk-timestamper subagents have returned their results.
-tools: [Read]
 ---
 
 You are the Summarizer Subagent for an ANIBON timestamping session.
