@@ -9,9 +9,11 @@
 For streams > 2 hours:
 
 1. **Split** into overlapping chunks (default 5-min, `--block 300 --overlap 30`)
-2. **Parallel subagents** process each chunk with specialized sub-skills
-3. **Reduce** — combine results, deduplicate, pack into byte-limited parts
-4. **Verify** — run `check_sections.py` to validate YouTube comment sizes
+2. **LiveChat & Mood Alignment** — extract livechat logs and run `analyze_555.py` to identify `MEME_PULSE` (555 laughter bursts)
+3. **Parallel subagents** process each chunk/group with specialized sub-skills (`anibon-chunk-timestamper`)
+4. **Full List Reveal Protocol** — subagents verify multi-item announcements across adjacent chunks before concluding total counts or character names
+5. **Reduce** — combine results, deduplicate, pack into 5 byte-limited parts via `anibon-summarizer`
+6. **Verify** — run `check_sections.py` to validate YouTube comment sizes (target ≤ 3,500 bytes per section)
 
 ### Local LLM Guardrails (Goldfish Brain Protocol)
 
@@ -31,9 +33,16 @@ Subagents classify Boat's activity:
 - **Reference videos (JP VA no-commentary)** = pure story ground truth. Use aligned audio comparison to determine if commentary stream = Story or Talk.
 - **Story Enrichment**: When `[Story]` source game/scene is identifiable, subagent asks user for permission to websearch synopsis → enriches timestamp with `(ref: game script)`.
 
+### Thai Internet Subculture & Humor Rules
+
+Subagents apply subculture psychology to avoid flattening streamer and chat banter:
+- **Reverse Meaning / Playful Envy**: Fake anger ("กด dislike ละ") when streamer gets rare gacha = celebration & playful envy.
+- **Ironic Cults / Overhype**: Hyping 1-star/2-star units ("Eric คือ META", "15 HP Clutch") = intentional meme banter $\rightarrow$ Verbs: `ฮาแซว`, `ปั่น`, `อวยมีม`.
+- **Keyboard Typos & Slang**: Ingests `ถถถถ` (555 typos) and slang (`ทำถึง`, `จะ Crazy`, `อ่อม`, `ตึง`, `ตุย`, `สภาพ`).
+
 ### Final Assembly
 
-`pack_timestamps.py` now uses **greedy fill** (not DP partition). Produces minimum part count at byte_limit while preserving tag continuity within each part. Adjacent `[Story]` entries automatically merge.
+`pack_timestamps.py` uses **greedy fill** (not DP partition). Produces minimum part count at byte_limit while preserving tag continuity within each part. Adjacent `[Story]` entries automatically merge.
 
 ### Final Assembly (Windows)
 
@@ -72,5 +81,5 @@ Not applied by default. Only triggers on actual legal-risk signals:
 10. **Transcript required** — if unavailable, reject task; never guess timestamps.
 11. **No hardcoded assembly** — always use `pack_timestamps.py` with flat timestamp list input.
 12. **Story enrichment requires user consent** — never websearch for synopsis without asking.
-13. **No-commentary JP VA = reference, not target** — exists solely to classify Story vs Talk in commentary streams.
+13. **Full List Reveal Requirement** — never finalize list announcements (servants, banners) without reading across adjacent chunk boundaries.
 14. **Greedy pack preserves tag continuity** — `pack_timestamps.py` fills to byte_limit, keeps same-tag clusters together.
