@@ -108,12 +108,24 @@ Calm/serious chunk only → neutral verbs (พูดคุย, วิเคร�
 - Familiar characters → use Thai nicknames only, no parentheses.
 - If unsure of a name → omit it, describe the event.
 
+**RAW TRANSCRIPT BAN (CRITICAL):**
+NEVER paste raw transcript text into the description.
+Banned patterns — if your description contains any of these, rewrite it:
+- `พูดคุยประเด็น [raw quote]`
+- `เม้าท์มอยประเด็น [raw quote]`
+- `แซวฮาประเด็น [raw quote]`
+- Any Thai phrase that ends mid-sentence or has garbled letters (e.g. `OLM แล้`, `อมชขอ`, `[เสียงหัวเราะ]`)
+
+The description describes the **event/topic**, not the words spoken.
+❌ Wrong: `พูดคุยประเด็น นี้แม่งแม่งจัดเต็มจัดนะครับ OLM แล้`
+✅ Correct: `เม้าท์มอยเปรียบรายได้ FGO vs One Punch Man กาชา`
+
 ## Step 6: Visual Reference (if image field present)
 
-If a transcript item has an `"image"` field:
-1. Call `view_file` on that image BEFORE writing the description.
-2. Use what you SEE (game UI, boss name, HUD) as ground truth.
-3. NEVER name a game from transcript text alone when an image is available.
+If a transcript item has an `"image"` field path:
+1. Note the image path — the orchestrator may have pre-described the frame.
+2. If the image content was described in the prompt, use that description as ground truth.
+3. NEVER name a game from transcript text alone when image context is provided.
 
 ## Step 7: Wrap Same-Topic Consecutive Timestamps
 
