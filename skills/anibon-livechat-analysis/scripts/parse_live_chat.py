@@ -4,6 +4,31 @@ import sys
 import os
 import argparse
 
+def _run_plaintext(run):
+    """Render a live chat run as plaintext.
+
+    A run is either plain text (key 'text') or an emoji/emote object (key
+    'emoji'). Emotes MUST surface as their plaintext shortcut (e.g. ':_WOW:',
+    ':hand-pink-waving:') so downstream pulse detectors and subagents can read
+    them — silently dropping them (the old r.get('text','')) hid every meme
+    signal from mood analysis. Prefer the channel-scoped ':_X:' shortcut over
+    the generic ':X:' when both exist.
+    """
+    text = run.get('text')
+    if text is not None:
+        return text
+    emoji = run.get('emoji')
+    if isinstance(emoji, dict):
+        shortcuts = emoji.get('shortcuts') or []
+        if shortcuts:
+            chan = [s for s in shortcuts if s.startswith(':_')]
+            return (chan or shortcuts)[0]
+        search_terms = emoji.get('searchTerms') or []
+        if search_terms:
+            return ":" + search_terms[0].strip(":") + ":"
+    return ""
+
+
 def parse_live_chat(json_path, output_dir, chunk_minutes=90, raw_events=None):
     os.makedirs(output_dir, exist_ok=True)
     
@@ -33,14 +58,14 @@ def parse_live_chat(json_path, output_dir, chunk_minutes=90, raw_events=None):
                 if text_msg:
                     author = text_msg.get('authorName', {}).get('simpleText', 'Unknown')
                     runs = text_msg.get('message', {}).get('runs', [])
-                    msg_text = "".join([r.get('text', '') for r in runs]).strip()
+                    msg_text = "".join([_run_plaintext(r) for r in runs]).strip()
                     if msg_text:
                         events.append((sec, time_str, f"[{time_str}] {author}: {msg_text}"))
                 elif paid_msg:
                     author = paid_msg.get('authorName', {}).get('simpleText', 'Unknown')
                     amount = paid_msg.get('purchaseAmountText', {}).get('simpleText', '')
                     runs = paid_msg.get('message', {}).get('runs', [])
-                    msg_text = "".join([r.get('text', '') for r in runs]).strip()
+                    msg_text = "".join([_run_plaintext(r) for r in runs]).strip()
                     events.append((sec, time_str, f"[{time_str}] 💰 SUPERCHAT ({amount}) from {author}: {msg_text}"))
                 elif sticker_msg:
                     author = sticker_msg.get('authorName', {}).get('simpleText', 'Unknown')

@@ -38,6 +38,17 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 LAUGH_RE = re.compile(r"(5{3,}|[xX][dD]{1,}|haha+|ฮา+|ขำ+|\blol\b|\bhaha\b)", re.IGNORECASE)
+# Stage 2.5-2.7: Unicode laugh emojis, Anibon custom emotes (:_Name:)_ and
+# YouTube global emotes (:word-word:) count as peer laugh markers even when a
+# message has no 5 5 5 text. 💀/☠/🤡 are "ตายแป๊บ"/"ลั่น" (dead laughing) in Thai
+# subculture, not sadness; 😭 here means "ขำจนร้องไห้", not crying.
+EMOJI_CODEPOINTS = (
+    "\U0001F602" "\U0001F923" "\U0001F480" "\U0001F921" "\U0001F62D"
+    "\U0001F525" "\U0001F5A4" "\U0001F451" "\U0001F44D"
+)
+EMOJI_MARKER_RE = re.compile(
+    rf"([{re.escape(EMOJI_CODEPOINTS)}\u2620]|:[A-Za-z_][A-Za-z0-9_]*:|\+1)"
+)
 TS_RE = re.compile(r"\[(\d{2}):(\d{2}):(\d{2})\]")
 
 
@@ -81,7 +92,7 @@ def parse_chat(path: Path) -> ChatStats:
             if not m:
                 continue
             all_secs.append(to_sec(*m.groups()))
-            if LAUGH_RE.search(line):
+            if LAUGH_RE.search(line) or EMOJI_MARKER_RE.search(line):
                 marker_secs.append(to_sec(*m.groups()))
     return ChatStats(n_markers=len(marker_secs), n_messages=len(all_secs),
                      peak_windows=_find_peaks(marker_secs))

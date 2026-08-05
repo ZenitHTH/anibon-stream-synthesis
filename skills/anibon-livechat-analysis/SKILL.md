@@ -42,6 +42,7 @@ The script extracts:
 > seconds-prefixed event feed. The `anibon-timestamper` orchestrator (Step 3.5) then slices that feed
 > to its 5-minute transcript chunks via `scripts/align_live_chat.py`, so each timestamp subagent can read
 > the watchers' chat for its own chunk and infer situation + emotion from both sides.
+> Refer to [`../anibon-timestamper/references/anibon_emoji_dictionary.md`](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/references/anibon_emoji_dictionary.md) for custom Anibon channel emotes and YouTube global emote weights.
 
 ### 3. Subagent Parallel Analysis
 

@@ -17,6 +17,7 @@ Auto-matched by signal terms. See `detect_signals.py --match-knowledge` for the 
 | File | Matched By | Always Loaded |
 |------|-----------|:---:|
 | `stream/timestamp-description.md` | — | ✅ defines 4-pillar framework |
+| `anibon_emoji_dictionary.md` | livechat, emoji, emote, 555 | ✅ defines emote subculture weights |
 | `stream/donation-classifier.md` | donate, superchat | |
 | `stream/fgo-knowledge.md` | FGO, fate, grand, order, servant | |
 | `stream/uwufufu-knowledge.md` | uwufufu, bracket, world cup | |
