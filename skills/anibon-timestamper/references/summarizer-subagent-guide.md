@@ -30,21 +30,34 @@ You MUST deduplicate them:
 
 ## PART SPLIT & CONSOLIDATION RULES
 
-- **TOPIC COHERENCE PRIORITY (CRITICAL)**: The primary goal is grouping timestamps by the SAME topic/activity within each part. Byte packing is secondary. Each part MUST contain stamps from ONE coherent topic only. If adjacent stamps cover DIFFERENT topics → SPLIT the part even if this means some parts are below 3,500 bytes. Topic-boundary test: Same game = same topic ✓. Game A → Game B = different topic → MUST split. Talk about game A → Talk about game B = different topic → MUST split. Boss fight + story = same game → same topic ✓.
-- Split a section into Part A / Part B only when:
-  - Talk section > 15 minutes of continuous content
-  - Gameplay section > 60 minutes
-  - Any section exceeds 3,500 bytes (Thai chars = 3 bytes each)
+**GROUP BY ACTIVITY PERIOD (CRITICAL)**: The primary grouping unit is a continuous `activity period` in the stream — NOT a per-stamp sub-topic and NOT the [Tag] label.
 
-When splitting: divide evenly by timestamp count. Each sub-part gets its own separator block.
+A period = a stretch of consecutive timestamps that all belong to one ongoing activity (one watchparty screening, one sustained talk/discussion block, one game segment, one gacha/news segment, one closing). Consecutive stamps inside the same period STAY together as ONE part, even when their [Tag] labels or passing sub-topics differ.
+
+Activity-period boundary test — SPLIT only at a hard break:
+- Stream opening → first watchparty/talk = hard break → split
+- Watchparty (screening) → post-screening talk **about that same show** = SAME period → keep
+- Sustained discussion of one show → discussion of a DIFFERENT game/show = hard break → split
+- Game segment → news/donation segment = hard break → split
+- Talk block → gacha block = hard break → split
+- Last content → signing-off/closing = hard break → split
+
+Do NOT split on:
+- ❌ [Tag] changes [WatchParty]→[Talk] inside one discussion period
+- ❌ Micro sub-topic turns (design → interviews → power scaling) inside one talk period
+- ❌ Time-between-stamps alone (a 40-min continuous discussion still = one period)
+- ❌ A LONE tag change in the middle of a sustained topic: e.g. one [Gacha] or [News] stamp surrounded by [Talk] stamps about the SAME game/topic stays IN the period. The activity (discussing gacha games) is unchanged; a single point tagged differently is a flicker, not a boundary. Only a CONFIRMED run of ≥2 same-tag stamps different from the surrounding activity signals a real new period.
+
+**Split a period into Part A / Part B ONLY when** the block then exceeds ~3,500 bytes (Thai chars = 3 bytes each). Split at the largest sub-topic change near the byte midpoint; each sub-part gets its own separator block.
+
+**Target part size**: aim for parts as LARGE as the byte cap allows. A 6–12 stamp discussion period = one part, not several. 3–5 well-chosen parts for a full stream is normal; do not inflate to 10+ tiny parts.
 
 **Consolidation / Wrapping Constraint (CRITICAL)**:
 - Do NOT create parts containing only 1–3 timestamps unless:
   1. The entire video has only 1–3 timestamps, OR
-  2. The topic is genuinely unique and cannot be merged with adjacent parts without breaking topic coherence (e.g., a single donation read between two game sessions).
-- Never merge different topics just to fill byte space. Topic purity > byte utilization.
-- If adjacent parts share the same topic AND fit under 3,500 bytes combined → merge them.
-- **FLOODING OVERFLOW EXCEPTION**: If a single topic is so long that combining it with another topic causes a part to exceed the 3,500-byte ceiling, do NOT pack them together. Instead, split them cleanly at the topic boundary. The long topic should occupy its own dedicated part, and the overflowed topic can sit in its own part, even if it has only 1–3 timestamps.
+  2. It is the last part / a genuinely standalone spot that cannot merge without breaking the activity-period boundary (e.g., a lone donation break).
+- If two parts belong to the SAME activity period AND fit under 3,500 bytes combined → merge them into one part. Re-read the boundary test; a label or micro-topic change is NOT a boundary.
+- **FLOODING OVERFLOW EXCEPTION**: If one activity period alone exceeds 3,500 bytes, split it cleanly at its largest internal sub-topic change — do NOT pack a different period's stamps into it to fill space.
 
 ## BYTE LIMITS
 
@@ -61,6 +74,10 @@ Write the heading summary like a caveman:
 - Keep technical terms, game names, acronyms exact.
 - Do NOT copy the timestamp description verbatim.
 
+**CAPTION LENGTH (CRITICAL)**: A part caption lists 2–3 key ideas MAX. Concise marker, not an inventory. If you catch yourself listing the 4th–5th idea, you are over-listing — trim to the 2–3 most representative concepts and let the timestamps carry the rest.
+
+❌ Over-listed (4+ ideas): "ถก Gotchard. 50 ตอนไม่จำเป็น เปรียบ Revice. ทีมงานกลัวโควิดทำตอนขาด. พลังกาบุเท่า Infinity Stone"
+✅ Concise (2–3 ideas): "ถก Gotchard 50 ตอนไม่จำเป็น เหลือ 4 ตอนสุดท้ายเปิดตัวอย่าง 47-49"
 ❌ Bad: "ส่วนนี้เป็นช่วงที่โบ๊ทพูดคุยเกี่ยวกับการวิเคราะห์เกม Arknights: Endfield"
 ✅ Good: "Boat ถก Endfield. ติงระบบฐานไม่ต่อกับ combat เพราะทำให้ gameplay แยกส่วน."
 
@@ -79,6 +96,16 @@ Write the heading summary like a caveman:
 - ONE document. All parts in one file. No separate files per topic.
 - Title at top: `# วิดีโอสตรีม ANIBON - ทริปส์และข่าวสารเกมกาชา`
 - Output only the final markdown. No intro, no explanation text.
+- Do NOT wrap the document or its parts in code fences (```). The ═══ separator blocks are plain text lines, not fenced code. No markdown code blocks anywhere in the output.
+
+## TIMESTAMP PRESERVATION (CRITICAL)
+
+The body lines of each part are the ORIGINAL timestamp lines — copy them VERBATIM.
+- Keep the full `HH:MM:SS - [Tag] description` prefix on every line. Do NOT strip the timecode, drop the [Tag], or replace the ` - ` separator.
+- Reordering stamps WITHIN a part is allowed only to fix chronology; otherwise keep the original line text unchanged. Never reword, shorten, or summarize a body line — the caveman-summary rules apply to the part HEADING only.
+
+❌ Stripped: "- ฮา! หักมุมบากูโดนใส่ร้ายคนร้าย เนมุถูกลักพาตัวเรียกค่าไถ่"
+✅ Preserved: "00:42:29 - [WatchParty] ฮา! หักมุมบากูโดนใส่ร้ายคนร้าย เนมุถูกลักพาตัวเรียกค่าไถ่"
 
 TIMESTAMPS:
 <Orchestrator: inject full merged chronological timestamp list here>

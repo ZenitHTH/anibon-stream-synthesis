@@ -255,17 +255,29 @@ Only a calm/serious chunk uses the neutral verbs (พูดคุย, วิเ�
 อธิบาย, ดู). Funny/hype/shock descriptions may end with a register particle
 (วะ, อ่ะ, เย้, ไปเลย) or echo the streamer's actual exclamation (โอ้ย, เฮ้ย).
 
-**Do NOT flatten — contrast:**
-- ❌ `[Death] ประสบปัญหาในการต่อสู้เมื่อศัตรูไม่ติดสถานะสตั้น`
-- ✅ `[Death] อึ้ง! ศัตรูสตั้นไม่ติด ตีสวนกลับตายยกชุด`
-- ❌ `[Talk] พูดคุยเรื่องระบบ Stat Fou 3000 และการอัปเดตเกม`
-- ✅ `[News] ประกาศ Stat Fou 3000 เปิดทางเลเวล 120`
-- ❌ `[Talk] พูดคุยและแนะนำการเลือกทำ Grand Servant`
-- ✅ `[Chat] แซวตู้ว่ายน้ำรออีกนาน แฟนอกหักรายได้ตก`
+**Do NOT flatten — contrast (Real Case Examples):**
 
-Do NOT overstate: if the live is calm about a gacha fail, do NOT write words
-that sound genuinely devastated — Step 3.6 reverse psychology (playful envy =
-celebration) and coping comedy apply. "กด dislike" banter is happiness, not anger.
+1. **Trash-Unit Hyping / Meme Archetype (e.g. Eric Bloodaxe / 1-star / 2-star):**
+   - ❌ **FLAT:** `[Talk] วิเคราะห์และทดสอบการใช้ตัวละคร 2 ดาว Eric Bloodaxe ในด่านท้าทาย`
+   - ✅ **FUNNY / THAI HUMOR:** `[Talk] ฮาแซวความกาก Eric Bloodaxe พร้อมเถียงแชทเดือดเรื่องอัดจอก 2 ดาว`
+
+2. **Gacha Failure & Salt / Coping Comedy:**
+   - ❌ **FLAT:** `[Gacha] ประสบความล้มเหลวในการสุ่มได้ตัวละครที่ต้องการจากตู้กาชา`
+   - ✅ **FUNNY / THAI HUMOR:** `[Gacha] ฮาแชททักโดนน้ำมนต์! สุ่มเกลือยับตู้การันตีพร้อมเสียงโอดครวญ`
+
+3. **15 HP / Clutch Victory:**
+   - ❌ **FLAT:** `[Victory] เคลียร์ด่านท้าทายสำเร็จโดยมีตัวละครรอดชีวิตบางส่วน`
+   - ✅ **FUNNY / THAI HUMOR:** `[Victory] ปาฏิหาริย์! Eric Bloodaxe เลือดเหลือ 15 ปั๊มชนะด่านท้าทายเฉียบขาด`
+
+4. **Fluked Luck / Reverse Psychology ("กด dislike ละ"):**
+   - ❌ **FLAT:** `[Donation] ผู้ชมแสดงความไม่พอใจเมื่อสุ่มได้ตัวละคร 5 ดาว`
+   - ✅ **FUNNY / THAI HUMOR:** `[Donation] ฮาแชทอิจฉาแซว! กดสุ่มได้ SSR จนโดนขู่กด Dislike`
+
+5. **Serious vs Meme Contrast:**
+   - ❌ `[Death] ประสบปัญหาในการต่อสู้เมื่อศัตรูไม่ติดสถานะสตั้น`
+   - ✅ `[Death] อึ้ง! ศัตรูสตั้นไม่ติด ตีสวนกลับตายยกชุด`
+
+Do NOT overstate: if the live is calm about a gacha fail, do NOT write words that sound genuinely devastated — Step 3.6 reverse psychology (playful envy = celebration) and coping comedy apply. "กด dislike" banter is happiness, not anger.
 
 **Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
 

@@ -49,6 +49,44 @@ def test_global_header_emote_welcomes_not_pulse():
     assert classify(stats, Config()).verdict == "QUIET"
 
 
+def test_flat_emote_is_not_a_laugh_marker():
+    """_Meh (deadpan/flat) must NOT count as a laugh marker."""
+    stats = parse_chat(_chunk(["[00:00:01] :_Meh: มุขแป๊ก กริบ"]))
+    assert stats.n_markers == 0, "flat emote is not laughter"
+
+
+def test_afk_emote_is_not_a_laugh_marker():
+    """_noname (AFK/BRB) must NOT count as a laugh marker."""
+    stats = parse_chat(_chunk(["[00:00:01] :_noname: ไปห้องน้ำก่อน"]))
+    assert stats.n_markers == 0, "AFK emote is not laughter"
+
+
+def test_confusion_emote_is_not_a_laugh_marker():
+    """_What (confusion) must NOT count as a laugh marker."""
+    stats = parse_chat(_chunk(["[00:00:01] :_What: ห๊ะ? อะไรวะเนี่ย"]))
+    assert stats.n_markers == 0, "confusion emote is not laughter"
+
+
+def test_nerd_explain_emote_is_not_a_laugh_marker():
+    """_Nerd (ackchyually over-explain) must NOT count as a laugh marker."""
+    stats = parse_chat(_chunk(["[00:00:01] :_Nerd: จริงๆแล้วระบบนี้..."]))
+    assert stats.n_markers == 0, "nerd explain emote is not laughter"
+
+
+def test_flat_emote_flood_is_quiet_not_pulse():
+    """A flood of flat/reaction emotes must NOT register as MEME_PULSE."""
+    lines = [f"[00:{i:02d}:03] :_Meh: :_Meh: มุขแป๊ก" for i in range(20)]
+    stats = parse_chat(_chunk(lines))
+    v = classify(stats, Config(pulse_threshold=12, bucket=90))
+    assert v.verdict != "MEME_PULSE", "flat emote flood must not be a meme pulse"
+
+
+def test_political_emote_is_not_a_laugh_marker():
+    """Political emotes (Slim/BoatSOM/Tahaan) must NOT count as laugh markers."""
+    stats = parse_chat(_chunk(["[00:00:01] :_Slim: คิงเอริค META จริง"]))
+    assert stats.n_markers == 0, "political emote is not laughter"
+
+
 def test_death_skull_is_marker():
     assert EMOJI_MARKER_RE.search("lol ตาย 💀💀")
     assert EMOJI_MARKER_RE.search("ช็อตฟีล ☠️")

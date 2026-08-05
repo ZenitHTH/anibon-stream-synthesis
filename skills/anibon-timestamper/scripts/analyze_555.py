@@ -35,7 +35,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 LAUGH_RE = re.compile(r"(5{3,}|[xX][dD]{1,}|haha+|ฮา+|ขำ+|\blol\b|\bhaha\b)", re.IGNORECASE)
 # Stage 2.5-2.7: Unicode laugh emojis, Anibon custom emotes (:_Name:)_ and
@@ -50,6 +50,33 @@ EMOJI_MARKER_RE = re.compile(
     rf"([{re.escape(EMOJI_CODEPOINTS)}\u2620]|:[A-Za-z_][A-Za-z0-9_]*:|\+1)"
 )
 TS_RE = re.compile(r"\[(\d{2}):(\d{2}):(\d{2})\]")
+
+
+def _load_emoji_dictionary(path: Optional[Path] = None) -> Dict[str, bool]:
+    """Load emote->laugh-intent map from resources/emoji_dictionary.json.
+
+    Returns {emote_code: is_laugh_marker}. Missing/absent file degrades to an
+    empty map (no named emote counts as a laugh marker).
+    """
+    res = path or (Path(__file__).resolve().parent.parent / "resources" / "emoji_dictionary.json")
+    try:
+        data = json.load(open(res, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {code: info.get("laugh", False)
+            for code, info in data.get("emotes", {}).items()}
+
+
+# emote_code -> is_laugh (case-sensitive as authored in the dictionary)
+LAUGH_EMOTES: Dict[str, bool] = _load_emoji_dictionary()
+
+
+def _is_laugh_emote(message: str) -> bool:
+    """True if the message contains any dictionary-confirmed laugh emote."""
+    for code, laugh in LAUGH_EMOTES.items():
+        if laugh and code in message:
+            return True
+    return False
 
 
 @dataclass(frozen=True)
@@ -92,10 +119,25 @@ def parse_chat(path: Path) -> ChatStats:
             if not m:
                 continue
             all_secs.append(to_sec(*m.groups()))
-            if LAUGH_RE.search(line) or EMOJI_MARKER_RE.search(line):
+            if _is_laugh(line):
                 marker_secs.append(to_sec(*m.groups()))
     return ChatStats(n_markers=len(marker_secs), n_messages=len(all_secs),
                      peak_windows=_find_peaks(marker_secs))
+
+
+def _is_laugh(line: str) -> bool:
+    """True if a chat line is a laugh marker: 555/words, unicode laugh emojis,
+    or a dictionary-confirmed laugh emote. Flat/AFK/confusion/political emotes
+    are NOT markers."""
+    if LAUGH_RE.search(line):
+        return True
+    # unicode laugh codepoints / ☠ / +1 always count
+    for ch in EMOJI_CODEPOINTS + "\u2620":
+        if ch in line:
+            return True
+    if "+1" in line:
+        return True
+    return _is_laugh_emote(line)
 
 
 def _find_peaks(marker_secs: List[int], bucket: int = 90, max_peaks: int = 4

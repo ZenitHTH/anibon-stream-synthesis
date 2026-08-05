@@ -1,0 +1,41 @@
+{
+  "laugh_moods": [
+    "CUTE_CUNNY_PULSE",
+    "CHAOTIC_MEME_PULSE",
+    "DANCE_HYPE_PULSE",
+    "DOWNBAD_MEME_PULSE",
+    "HORNY_REACTION_PULSE",
+    "BLISS_EUPHORIA_PULSE",
+    "SPICY_BANTER_PULSE",
+    "MEME_PULSE"
+  ],
+  "emotes": {
+    ":_CunnyBoat:": { "mood": "CUTE_CUNNY_PULSE", "weight": 2.0, "laugh": true },
+    ":face-purple-crying:": { "mood": "CUTE_CUNNY_PULSE", "weight": 1.5, "laugh": true },
+    ":_MonkeyBoat:": { "mood": "CHAOTIC_MEME_PULSE", "weight": 2.2, "laugh": true },
+    ":_shutup:": { "mood": "DANCE_HYPE_PULSE", "weight": 2.0, "laugh": true },
+    ":Grind:": { "mood": "DOWNBAD_MEME_PULSE", "weight": 2.0, "laugh": true },
+    ":_Ripfish:": { "mood": "HORNY_REACTION_PULSE", "weight": 2.0, "laugh": true },
+    ":_Ahh:": { "mood": "BLISS_EUPHORIA_PULSE", "weight": 1.5, "laugh": true },
+    ":_Yed:": { "mood": "SPICY_BANTER_PULSE", "weight": 2.0, "laugh": true },
+    ":face-blue-smiling:": { "mood": "MEME_PULSE", "weight": 1.5, "laugh": true },
+    ":_Nerd:": { "mood": "NERD_EXPLAIN_PULSE", "weight": 1.8, "laugh": false },
+    ":_noname:": { "mood": "AFK_BRB_PULSE", "weight": 1.5, "laugh": false },
+    ":_What:": { "mood": "CONFUSION_PULSE", "weight": 1.8, "laugh": false },
+    ":_WOW:": { "mood": "SHOCK_HYPE_PULSE", "weight": 1.8, "laugh": false },
+    ":face-blue-wide-eyes:": { "mood": "SHOCK_PULSE", "weight": 1.5, "laugh": false },
+    ":face-purple-wide-eyes:": { "mood": "SHOCK_PULSE", "weight": 1.5, "laugh": false },
+    ":_Meh:": { "mood": "FLAT_REACTION_PULSE", "weight": 1.2, "laugh": false },
+    ":_MoneyBoat:": { "mood": "DONATION_PULSE", "weight": 2.5, "laugh": false },
+    ":_Tahaan:": { "mood": "SENSITIVE_POLITICAL", "weight": 2.0, "laugh": false },
+    ":_KonDee:": { "mood": "SENSITIVE_POLITICAL", "weight": 1.8, "laugh": false },
+    ":_NeoSlim:": { "mood": "SENSITIVE_POLITICAL", "weight": 2.0, "laugh": false },
+    ":_Slim:": { "mood": "POLITICAL_ROLEPLAY_MEME", "weight": 2.0, "laugh": false },
+    ":_BoatSOM:": { "mood": "POLITICAL_BANTER_PULSE", "weight": 2.0, "laugh": false },
+    ":_Tea:": { "mood": "DRAMA_NEWS_PULSE", "weight": 1.8, "laugh": false },
+    ":hand-pink_waving:": { "mood": "GREETING_WELCOME_PULSE", "weight": 1.0, "laugh": false },
+    ":face-red-droppy-eyes:": { "mood": "ANGRY_OUTRAGE_PULSE", "weight": 1.8, "laugh": false },
+    ":cat-orange-whistling:": { "mood": "INNOCENT_WHISTLE_PULSE", "weight": 1.2, "laugh": false },
+    ":face-red-heart-shape:": { "mood": "WHOLESOME_LOVE_PULSE", "weight": 1.5, "laugh": false }
+  }
+}
