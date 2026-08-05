@@ -8,68 +8,103 @@ description: >
   — one subagent per group, all groups in parallel.
 ---
 
-You are processing a GROUP of 4–5 consecutive 5-minute transcript chunks from an Anibon livestream.
-Read them ONE BY ONE in order. Track what topic is running across the group.
-Output timestamps only when topic ACTUALLY changes. Skip continuation chunks.
+You are processing a sequential GROUP of 4–5 consecutive transcript chunks from an Anibon livestream.
 
-## Step 0: READ THE WHOLE GROUP FIRST (MANDATORY)
+CONTEXT: The orchestrator will inject stream date, previous group's last topic, and each chunk's content + signals + livechat below.
 
-Read every chunk in the group sequentially before writing anything.
-For each chunk in order:
+---
+
+## HOW TO PROCESS THE GROUP
+
+Read and process chunks **one by one in order**. For each chunk:
+
 1. Read the ENTIRE chunk transcript — every line, not a skim.
-2. Read the LiveChat log for that chunk (injected with each chunk), if present.
-3. Note what topic/activity is happening.
-4. Compare to the previous chunk's topic.
+   Prefer `python -X utf8 scripts/dump_chunk_text.py <chunk_xml>` for clean text if file path given.
+2. Read the ENTIRE LiveChat log for this chunk (injected per chunk), if present.
+3. Do NOT write any timestamp until you have read the chunk fully.
+4. If you cannot read the full chunk, output NOTHING for it and say "incomplete read".
+5. Your whole-chunk understanding is the ONLY basis for stamps. `primary_topic`, signals, and knowledge files are HINTS to verify — never substitutes for reading.
+6. After reading the chunk, compare it to the PREVIOUS CHUNK's topic (tracked by you as you go).
+7. Apply the TOPIC CONTINUITY RULE.
+8. Move to the next chunk. Repeat.
 
-Do NOT write a single timestamp until you have read all chunks in the group.
+After processing all chunks in the group, output only the timestamps that survived.
 
-## TOPIC CONTINUITY RULE (CORE — read before anything else)
+---
 
-You are tracking topic state across chunks. Each chunk either:
-- **Continues** the same topic → output 0 timestamps for it
-- **Changes** the topic → output 1 timestamp marking the new topic start
+## TOPIC CONTINUITY RULE (READ FIRST — applies between every consecutive chunk pair)
 
-A topic change requires ONE of:
-- Game switches entirely (different title)
-- Speaker joins or leaves (Discord guest, etc.)
-- Completely different activity begins (watching video → playing game)
-- A brand-new conversation topic begins that is NOT a sub-detail of the ongoing one
-- Activity CHANGE within same game: overworld → boss fight, browsing menu → gacha summon
+PREVIOUS_CHUNK_PRIMARY_TOPIC is the topic of the chunk you just processed.
+CURRENT_CHUNK_PRIMARY_TOPIC is the topic you detected from the chunk you are about to process.
 
-**Same topic examples (0 timestamps — do NOT stamp):**
-- Chunk 3 is FGO gacha analysis → Chunk 4 is still FGO gacha analysis → 0 for chunk 4
-- Chunk 7 is news discussion → Chunk 8 adds more details to same news → 0 for chunk 8
-- Chunk 12 is boss fight → Chunk 13 continues same boss → 0 for chunk 13
-
-**Topic change examples (stamp the new chunk start):**
-- Chunk 3 is FGO news → Chunk 4 switches to WuWa gameplay → 1 stamp at chunk 4 start
-- Chunk 9 is talk/chat → Chunk 10 starts gacha summon → 1 stamp at chunk 10 start
+If CURRENT matches PREVIOUS → output **0 timestamps** for this chunk UNLESS there is a clear EVENT change (Boss/Death/Victory/Cutscene/Donation).
 
 A "slightly different subtopic" is NOT a topic change.
-Q&A EXCEPTION: explicit question frames (เดี๋ยวตอบคำถามนี้, คำถามสุดท้าย) reset topic → stamp each.
+Only when the GAME or MAJOR ACTIVITY changes.
 
-## OUTPUT CONTRACT
+EXCEPTION: Q&A/interview format — each explicit question frame ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "สุดท้ายคำถาม") counts as a topic switch regardless of same domain.
 
-Whole group → typically **2–4 timestamps total** for a 20–25 min group.
-If the group is one continuous topic, output just **1 timestamp**.
-Max 2 timestamps per individual 5-min chunk within the group — but prioritize the group-level view.
+---
+
+## OUTPUT CONTRACT (per chunk within the group)
+
+One 5-minute chunk → **1 timestamp by default, 2 MAX**.
+A new timestamp is only valid when ONE of these occurs:
+- Game switches entirely (different title)
+- Speaker joins or leaves (Discord guest, etc.)
+- Completely different activity begins (e.g., watching video → playing game)
+- A completely NEW topic of conversation begins
+- Activity CHANGE within same game (walking overworld → boss fight, browsing menu → gacha summon, exploration → dialogue)
+
+**0-TIMESTAMP RULE:** Output 0 if chunk is empty OR exact topic continuation (same game, same activity, no event change). "Same topic with minor sub-shifts" is NOT a 0 case — merge into 1.
+
+Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description.
+
+---
+
+## Wrap Same-Topic Timestamps (post-merge, whole-group pass)
+
+After processing all chunks, re-read the FULL output list. Wrap consecutive timestamps describing the SAME single topic (same event/thread/subject) within ~≤2 minutes into ONE line:
+- KEEP the earliest timestamp's time.
+- Prefer the most specific tag; merge descriptions into one concise line.
+- If the later line is more informative, carry its wording — don't keep the first verbatim.
+
+SAME topic → wrap: same gacha-revenue news stamped twice; `[Reaction]`+`[Reaction]` on the same ad; `[WatchParty]`+`[Reaction]` on the same PV; `[Gameplay]`+`[Talk]` on the same skill review; `[Chat]`+`[Donation]` answering the same question.
+
+DO NOT wrap (different topics even if same-second/nearby): `[Gameplay]` analysis vs `[Gacha]` banner analysis at the same second; two different games; a boss fight vs a donation read; distinct Q&A questions. Same timestamp ≠ same topic.
+
+Q&A FORMAT EXCEPTION: Structured Q&A where each question is explicitly framed by host/guest is NOT "continuous talk." Each distinct question frame = topic boundary → emit 1 stamp. Detect phrases like "เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย". If unsure → merge. Never split.
+
+---
 
 ## Step 1: Verify Signal Against Transcript
 
-The orchestrator injects `primary_topic` + `signals` per chunk. These are machine hints.
-Confirm by reading the actual transcript text. Signal says FGO but transcript shows WuWa → trust transcript.
+The orchestrator injects `DETECTION SIGNALS` per chunk: `matched_files`, `weighted_matched_files`, `best_file`, `primary_topic`, `confidence`.
+
+These are machine-computed and RARITY-WEIGHTED (term frequency × inverse document frequency).
+- LOW-frequency (rare) terms = the MAIN IDEA of this chunk. Analyze those.
+- HIGH-frequency (daily-use words in every chunk) = filler. Ignore.
+- Do NOT glue a knowledge file to a bare substring hit. Only use `best_file` if it is the chunk's dominant topic AND the transcript confirms it.
+- If `confidence` is unclear or `best_file` is null → do NOT inject game/anime names — describe the event only.
+- Knowledge files contain canonical names — use only to correct Whisper's phonetic spelling of a name you ALREADY confirmed from the transcript.
+
+If signal says FGO but transcript shows WuWa → trust transcript.
+
+---
 
 ## Step 2: Time Alignment
 
-Use the pre-calculated `timestamp` field from each JSON item directly.
-When stamping a chunk, use the FIRST item's timestamp in that chunk as the stamp time.
-Do NOT calculate time yourself.
+For every valid timestamp event:
+- Use the pre-calculated `timestamp` field from the JSON item directly.
+- Do NOT calculate time yourself.
+
+---
 
 ## Step 3: Select the Correct Tag
 
 - `[Greeting]`: Stream intro / saying hi
 - `[Talk]`: Chatting, chat interaction, story tangents, general discussion
-- `[News]`: Reading news or commenting on real-world events (apply safety metaphors)
+- `[News]`: Reading news or commenting on real-world events (apply safety metaphors!)
 - `[Chat]`: Speaker reads/responds to live chat message directly
 - `[Donation]`: Speaker responds to paid superchat/donation
 - `[Gameplay]`: Playing a game / fighting stages
@@ -81,56 +116,121 @@ Do NOT calculate time yourself.
 - `[Reaction]`: General reaction to trailers or videos
 - `[Story]`: Reading in-game story dialogue
 
-Rule of thumb: FIGHTING a named boss → `[Boss]`. Player dies → `[Death]`. Major objective cleared → `[Victory]`.
-Farming/stages → `[Gameplay]`. External video → `[Reaction]`.
+### Tag Classification Examples:
 
-## Step 3.5: Hallucination Gate (Before Writing)
+| Transcript text | Correct tag | Wrong tag |
+|---|---|---|
+| "สู้บอสตัวนี้ยากมาก" (fighting boss) | `[Boss]` | `[Gameplay]` |
+| "ตายแล้วไอ้นี่" (died) | `[Death]` | `[Gameplay]` |
+| "เคลียร์แล้ว" (cleared boss) | `[Victory]` | `[Gameplay]` |
+| Boat reads chat message: "ในแชทบอกว่า..." | `[Chat]` | `[Talk]` |
+| Boat responds to donation: "ขอบคุณครับ..." | `[Donation]` | `[Talk]` |
+| Boat watches trailer/youtube video | `[Reaction]` | `[Gameplay]` |
+| Boat reads in-game story dialogue | `[Story]` | `[Gameplay]` |
+| Boat pulls gacha: "จิ้มเลย" | `[Gacha]` | `[Gameplay]` |
+| General overworld walking + fighting trash mobs | `[Gameplay]` | `[Boss]` |
+| Boat discusses news/current events | `[News]` | `[Talk]` |
 
-Every game/anime name MUST appear in (or be unambiguously implied by) the transcript text.
+**Rule of thumb:** FIGHTING a named boss → `[Boss]`. Player dies → `[Death]`. Major objective cleared → `[Victory]`. Farming/stages → `[Gameplay]`. External video → `[Reaction]`.
 
-- **Single-mention trap**: Game name once in garbled form, rest is different topic → describe the event, NOT the game.
-- **Dominant topic wins**: Multiple games → count lines. Most-discussed = the subject.
-- **ASR ghost names**: `บัวใคร` = Blue Archive. `Wing Wave` = Wuthering Waves / WuWa.
-- **All garbled, unresolvable** → `[Talk]` with event description. Never invent a title.
+---
 
-## Step 3.6: Thai LiveChat Subculture Psychology
+## Step 3.5: Garbled-English + Contextual Safety Gate (Before Writing)
 
-Do NOT interpret Thai live chat literally:
-- Fake anger/boredom (เบื่อว่ะ, กด dislike ละ) at rare gacha = playful envy & celebration.
-- Hype for trash units (Eric คือ META) = meme banter, not genuine strategy.
-- Screaming at gacha failure = slapstick entertainment.
+### A. Garbled-English Check
+If you see partially garbled English (half-Thai-half-English words, unrecognisable studio names, game titles that look wrong):
+1. Search web to verify the correct name before writing.
+2. Common garbles: `Kagurabachi` (may be real or hallucinated), studio names with Thai suffixes, Romanised Japanese titles with mixed Thai characters.
 
-## Step 4: Infer Situation & Emotion (Thai-aware)
+### B. Contextual Plausibility Check (Prevents Game-Hallucination)
+Every game/anime name you write MUST appear in (or be unambiguously implied by) the transcript text.
 
-For each topic-change event, form a silent verdict:
-`SITUATION: <what is actually happening> | TONE: <funny/hype/shock/tense/sad/calm/meme>`
+1. **Cross-reference**: Transcript discusses Blue Archive gacha → do NOT write "WuWa" or "Genshin" even if they appear in the same chunk. PRIMARY topic by volume determines the game.
+2. **Single-mention trap**: Game name once in garbled form, 59+ remaining lines about different topic → do NOT name that game. Describe the event.
+3. **Dominant topic wins**: Multiple games → count lines. Most-discussed = the subject. Others go in description only, never as primary title.
+4. **ASR ghost names**: `บัวใคร` = Blue Archive. `Wing Wave` = Wuthering Waves / WuWa.
 
-Tone → first verb in description:
+### C. Hallucination Rule
+All game names garbled AND cannot confidently resolve → output `[Talk]` tag with event description only. Never invent a game title. **Never guess. If unsure → describe the event, not the title.**
 
-| TONE | description starts with |
-|---|---|
-| funny/meme/tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย |
+---
+
+## Step 3.6: Thai LiveChat Subculture & Psychology Interpretation Rule
+
+Do NOT interpret literally. Apply Thai internet subculture psychology:
+- **Reverse Meaning / Playful Envy:** Fake anger/boredom ("เบื่อว่ะ", "กด dislike ละ") when streamer gets rare gacha = playful envy & celebration, not real anger.
+- **Ironic Cults / Overhype:** Hype for 1-star/trash units ("Eric คือ META", "ทพจร.") = intentional meme banter, not genuine meta strategy.
+- **Parasocial Memes:** Community claims ("ผัวคุณซากิ", "เมียผม") = friend support meme jokes.
+- **Coping Comedy:** Screaming at gacha failure ("โดนน้ำมนต์/โดนไล่ผี") = slapstick entertainment.
+
+---
+
+## Step 5: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
+
+If chunk is primarily talking/chatting:
+- Track MACRO topic only. Multiple paragraph shifts = same timestamp if same conversation thread.
+- Q&A/interview format: explicit question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...") reset topic. Do NOT merge across question boundaries.
+- Chat/donation cues: "ในแชทบอกว่า", "คุณ... บอกว่า" → tag as `[Chat]` or `[Donation]`.
+- Storytelling during gameplay (including One Piece political metaphors) → use `[Talk]`/`[News]`, not gaming tags, unless major game event interrupts (Boss/Death/Victory).
+
+> **Macro vs Micro Topic (Negative Example):**
+> - ❌ WRONG (Micro/Specific): `[Talk] พูดถึงงานแข่ง Wuthering Waves eSports` (WuWa was only a minor example)
+> - ✅ CORRECT (Macro Topic): `[Talk] เม้าท์มอยดราม่างานเกมในไทยจัดวันชนกันยับ (HoYoFest / สาวม้า / LoL / WuWa)`
+> Always identify the overarching drama/issue, not just the first specific game mentioned.
+
+---
+
+## Step 5.5: Infer Situation + Emotion of the Live (Thai-aware)
+
+**REQUIRED — before writing any description, form a verdict:**
+`SITUATION: <what is actually happening> | TONE: <funny / hype / shock / tense / sad / calm / meme>`
+
+The verdict is not output — it drives the wording. If you cannot name a tone, the chunk is calm: write the neutral description.
+
+Detect tone from BOTH sides:
+- Talker side: Thai word choice + sentence particles (`วะ/เว้ย/จัง/ไป`, exclamations `โอ้ย/เฮ้ย/อ้าว`), shouting, repetition, laughter.
+- Chat side: message density spikes, emotes, 555 spam, SUPERCHAT/donation surges — these mark real peaks the talker may not name.
+
+**The description's FIRST VERB encodes the tone:**
+
+| TONE (verdict) | description starts with |
+|----------------|--------------------------|
+| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ |
 | hype | โหด, อลังการ, จัดเต็ม, โคตร |
 | shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ |
-| tense/clutch | ลุ้น, กระชั้น, หวิด, หืดจับ |
+| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ |
 | frustration | เซ็ง, เฮ้อ, กาก, แพ้ |
 | sad | อกหัก, เศร้า, คิดถึง |
-| news/serious | วิเคราะห์, เตือน, สรุป, ประกาศ |
+| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ |
 
-Calm/serious → neutral verbs (พูดคุย, วิเคราะห์, แนะนำ, อธิบาย, ดู).
+Only calm/serious chunks use neutral verbs (พูดคุย, วิเคราะห์, แนะนำ, อธิบาย, ดู).
+Funny/hype/shock descriptions may end with a register particle (วะ, อ่ะ, เย้, ไปเลย) or echo the streamer's actual exclamation (โอ้ย, เฮ้ย).
 
-## Step 5: Write Description
+**Do NOT flatten — contrast:**
+- ❌ `[Death] ประสบปัญหาในการต่อสู้เมื่อศัตรูไม่ติดสถานะสตั้น`
+- ✅ `[Death] อึ้ง! ศัตรูสตั้นไม่ติด ตีสวนกลับตายยกชุด`
+- ❌ `[Talk] พูดคุยเรื่องระบบ Stat Fou 3000 และการอัปเดตเกม`
+- ✅ `[News] ประกาศ Stat Fou 3000 เปิดทางเลเวล 120`
 
-- Max 10–12 words (~100 chars). Ultra-concise, punchy single phrase.
-- Macro summary only. No multi-clause sentences, no filler.
-- Use exact game names / character names. No invented names.
-- New character reveals → append canonical English/JP name in parentheses.
-- Familiar characters → Thai nicknames only, no parentheses.
-- If unsure of a name → omit it, describe the event.
+Do NOT overstate: if the live is calm about a gacha fail, do NOT write words that sound genuinely devastated — "กด dislike" banter is happiness, not anger.
+
+**Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
+
+---
+
+## Step 6: Write Description
+
+- If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.
+- **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
+- Macro summary only.
+- Use exact technical terms, game names, character names. No invented names.
+- **Multilingual Naming Rule:**
+  - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
+  - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames only (e.g. `มาชู`, `ก๊อดดอฟ`) without parentheses.
+- If unsure of a name → omit it, describe the event instead.
 
 **RAW TRANSCRIPT BAN (CRITICAL):**
-NEVER paste raw transcript text into the description.
-Banned patterns — if your description contains any of these, rewrite it:
+NEVER paste raw transcript text into the description. Banned patterns:
 - `พูดคุยประเด็น [raw quote]`
 - `เม้าท์มอยประเด็น [raw quote]`
 - `แซวฮาประเด็น [raw quote]`
@@ -140,16 +240,36 @@ The description describes the **event/topic**, not the words spoken.
 ❌ Wrong: `พูดคุยประเด็น นี้แม่งแม่งจัดเต็มจัดนะครับ OLM แล้`
 ✅ Correct: `เม้าท์มอยเปรียบรายได้ FGO vs One Punch Man กาชา`
 
-## Step 6: Density Self-Check (BEFORE submitting)
+---
 
-Re-read the full list. If you have consecutive timestamps for the same topic → merge to 1.
-Every stamp must trace to a specific topic-change event you actually read.
-If you cannot point to where the topic changed → delete the stamp.
-
-## Output Format
+## Step 7: Format Output
 
 ```
 HH:MM:SS - [Tag] Description
 ```
 
 One line per timestamp. No headers, no intro, no chunk labels, no explanation text.
+
+---
+
+## Step 8: Visual Reference Resolution
+
+If a transcript item contains an `"image"` field:
+1. Note the image path — use any pre-described frame content injected by the orchestrator.
+2. Use what you SEE (game UI, boss name, HUD) to confirm the game title and activity.
+3. **NEVER name a game from transcript text alone if image context is available.**
+
+---
+
+## Step 9: Density Self-Check (BEFORE submitting — whole group)
+
+Count total timestamps. Merge until the list is clean:
+- Group starts mid-ongoing-topic (from previous group) → 0 for first chunk if same topic continues
+- Two consecutive `[Talk]` timestamps about same conversation → merge
+- Sub-topic shift within same game session → merge
+- "They mentioned a new detail" → add to existing description, no new line
+
+**WHOLE-GROUP UNDERSTANDING CHECK (before submitting):**
+- Every stamp must trace to a specific event you actually read in the transcript AND (when present) the LiveChat log. Delete any stamp you cannot source.
+- If chat shows a donation/hype spike you skipped, re-read and re-stamp.
+- If you cannot confirm a single dominant topic from full reading → output NOTHING and say so. Do not fabricate.
