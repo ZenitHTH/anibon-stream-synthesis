@@ -133,30 +133,32 @@ If boundaries look noisy, fall back to manual identification from `signals.json`
 
 ### 7. Spawn Subagents (Parallel)
 
-One **`anibon-chunk-timestamper`** subagent per chunk. All chunks in parallel.
+Divide chunks into **groups of 4–5** (~20–25 min each). One **`anibon-chunk-timestamper`** per group, all groups in parallel.
 
 > [!IMPORTANT]
 > **Pre-Grant Workspace Permissions**: Before spawning subagents, call `ask_permission` for `read_file` on `<workspace>` so background subagents do not time out waiting for permission prompts when accessing transcript XML files or `signals.json`.
 
-**Invoke pattern (repeat for every chunk_N):**
+**Invoke pattern (one per group):**
 
 ```python
 invoke_subagent(
     "anibon-chunk-timestamper",
-    prompt=build_chunk_prompt(chunk_N)  # from references/subagent-prompt-template.md
+    prompt=build_group_prompt(chunks[i:i+5])  # from references/subagent-prompt-template.md
 )
 ```
 
-Build each prompt from `references/subagent-prompt-template.md`. Fill in:
-- Chunk file path (agent reads XML directly — do NOT read chunks yourself)
+Build each prompt from `references/subagent-prompt-template.md`. For each chunk in the group, inject:
+- Chunk JSON content (agent reads sequentially — do NOT summarize chunks yourself)
 - Per-chunk detection signals from `signals.json` (`best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`)
 - Per-chunk **LiveChat log** content (`livechat/livechat_chunk_NN.txt`) — inject when available, else `"no livechat available"`
 - Per-chunk **mood verdict** from `mood_555.json` (if Step 3.7 ran) — `MEME_PULSE` chunk MUST use Thai laugh/banter first-verb. If no mood file, omit.
 - Knowledge file content for **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files when `confidence` is ambiguous
+- **PREVIOUS GROUP'S LAST TOPIC** — inject the final topic of the previous group so the agent applies continuity across group boundaries
 
-**CRITICAL:** Do NOT write topic descriptions yourself. Inject `signals.json` data only — not your analysis. Do NOT force-feed every matched file.
+**CRITICAL:** The agent reads chunks sequentially within its group and skips continuation chunks.
+Do NOT inject your own topic summaries — inject signals data only.
 
-Each `anibon-chunk-timestamper` returns plain-text timestamp lines.
+Each `anibon-chunk-timestamper` returns plain-text timestamp lines (typically 2–4 per group).
 
 ### 8. Merge Timestamps
 
