@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Clean garbled English loanwords in chunk JSON transcripts.
+"""Clean garbled English loanwords in chunk transcripts (JSON or XML).
 
 Thai Whisper auto-transcription commonly garbles English words.
 This normaliser runs BETWEEN prepare_video.py and detect_signals.py
@@ -19,17 +19,15 @@ Pipeline:
   prepare_video.py  →  clean_garbled_english.py  →  detect_signals.py
 """
 
-import sys, json, re
+import sys, json, re, xml.etree.ElementTree as ET
 from pathlib import Path
 
-# ── Resources path ──────────────────────────────────────────────────────
-_SCRIPT_DIR = Path(__file__).resolve().parent
-_RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
+from anibon.resources import resource_path
 
 
 def load_replacements() -> list[tuple[re.Pattern, str]]:
     """Load garbled→correct replacements from JSON config."""
-    path = _RESOURCES_DIR / "garbled_replacements.json"
+    path = resource_path("garbled_replacements.json")
     data = json.loads(path.read_text(encoding="utf-8"))
     compiled = []
     for entry in data.get("replacements", []):
@@ -48,7 +46,7 @@ def clean_text(text: str) -> str:
     return text
 
 
-def clean_chunk(data: dict) -> dict:
+def clean_chunk(data: dict) -> list[tuple[str, str]]:
     """Clean all item['text'] fields in a chunk JSON structure."""
     changes = []
     for item in data.get("items", []):
@@ -60,18 +58,42 @@ def clean_chunk(data: dict) -> dict:
     return changes
 
 
-def process_file(path: Path, dry_run: bool = False) -> int:
-    """Process a single JSON chunk file. Returns change count."""
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+def _escape_xml(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    changes = clean_chunk(data)
+
+def _clean_xml_chunk(path: Path, dry_run: bool = False) -> list[tuple[str, str]]:
+    """Clean <item> text in an XML chunk. Returns (orig, cleaned) pairs."""
+    tree = ET.parse(path)
+    root = tree.getroot()
+    changed = False
+    changes = []
+    for item in root.iter("item"):
+        orig = item.text or ""
+        cleaned = clean_text(orig.strip())
+        if cleaned != orig.strip():
+            changes.append((orig.strip(), cleaned))
+            item.text = _escape_xml(cleaned)
+            changed = True
+    if not dry_run and changed:
+        tree.write(path, encoding="utf-8", xml_declaration=False)
+    return changes
+
+
+def process_file(path: Path, dry_run: bool = False) -> int:
+    """Process a single chunk file (JSON or XML). Returns change count."""
+    if path.suffix == ".xml":
+        changes = _clean_xml_chunk(path, dry_run=dry_run)
+    else:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        changes = clean_chunk(data)
+        if not dry_run:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+
     if not changes:
         return 0
-
-    if not dry_run:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
 
     # Print changes for review
     name = path.stem
@@ -82,9 +104,10 @@ def process_file(path: Path, dry_run: bool = False) -> int:
 
 
 def process_dir(path: Path, dry_run: bool = False) -> int:
-    """Process all JSON chunk files in a directory. Returns total changes."""
+    """Process all chunk files in a directory. Returns total changes."""
+    files = sorted(set(path.glob("chunk_*.json")) | set(path.glob("chunk_*.xml")))
     total = 0
-    for f in sorted(path.glob("chunk_*.json")):
+    for f in files:
         total += process_file(f, dry_run=dry_run)
     return total
 

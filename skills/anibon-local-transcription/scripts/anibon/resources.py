@@ -1,31 +1,42 @@
 """Resource path resolution for anibon-stream-synthesis.
 
-Consumers (before extraction):
-  clean_garbled_english.py:27  — _RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
-  check_sections.py:6          — _RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
-  _chunker.py:50-51            — plugin_root / "resources" / "default_mappings.json"
-  detect_signals.py:43         — _RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
+Resolves resource files by walking up from this package until it finds the
+``resources/`` directory that actually contains the requested resource. This
+works from the repo root (``resources/``), from vendored per-skill copies
+(``skills/<skill>/scripts/anibon/``), and after standalone skill extraction.
+
+Consumers use ``resource_path(name)``:
+  - clean_garbled_english.py
+  - check_sections.py
+  - _chunker.py — default_mappings.json
+  - detect_signals.py
 """
 from pathlib import Path
 
-_PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent  # lib/anibon/ → plugin root
+_FILE = Path(__file__).resolve()
 
 
 def resource_path(name: str) -> Path:
-    """Return absolute path to a resource file under ``resources/``.
+    """Return an absolute path to resource ``name``.
 
-    Example: resource_path("garbled_replacements.json")
-             → .../anibon-stream-synthesis/resources/garbled_replacements.json
+    Walks up from this module until finding a ``resources/<name>`` that exists,
+    falling back to the last candidate if none is found.
     """
-    return _PLUGIN_ROOT / "resources" / name
+    candidates = [p / "resources" / name for p in _FILE.parents]
+    first = next((p for p in candidates if p.is_file()), None)
+    return first or candidates[0]
 
 
 def plugin_root() -> Path:
     """Return absolute path to the anibon-stream-synthesis plugin root."""
-    return _PLUGIN_ROOT
+    marker = _FILE.parent / "resources"
+    for p in _FILE.parents:
+        if (p / "resources").is_dir():
+            return p
+    return _FILE.parent
 
 
 def load_default_mappings() -> dict:
     """Load default transcript correction mappings from resources."""
     import json
-    return json.loads((_PLUGIN_ROOT / "resources" / "default_mappings.json").read_text(encoding="utf-8"))
+    return json.loads(resource_path("default_mappings.json").read_text(encoding="utf-8"))
