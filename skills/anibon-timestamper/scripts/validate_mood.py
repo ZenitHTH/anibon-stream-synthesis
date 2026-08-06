@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""Verify mood-bearing timestamps match the live-chat 555 pulse.
+"""Label timestamps with their chunk's mood + tone guidance (report-only).
 
 Companion to analyze_555.py (Stage 4 of the "Dual-Side Thai Stream & Chat Mood
-Detection" design doc). analyze_555.py emits mood_555.json verdicts; this script
-checks the generated timestamps actually honour those verdicts.
+Detection" design doc). analyze_555.py emits mood_555.json verdicts per chunk;
+this script annotates each generated timestamp with the chunk's mood + the Thai
+tone-hint verbs the AI MAY draw from.
 
-Catches the original bug: a chunk flagged MEME_PULSE (chat flooding 555) but the
-timestamp written for it starts with a flat, factual verb — the streamer was
-joking/bantering and the transcription flatlined it.
-
-Thai laugh/banter/meme first-verbs (the verbs Step 5.5 maps to mood=fib);
-a description is considered mood-correct if it opens with one of these.
+Deliberately guidance-only: it never rejects a verb. The AI timestamp-writer
+picks its own verbs from the situation + the mood's suggested verbs. The tool
+only reminds the human which pulse spans carried which mood, so the AI's verb
+creativity is never constrained by a programmed whitelist.
 
 Input:   --timestamps  timestamp list file (HH:MM:SS - [Tag] ...)
          --mood        mood_555.json from analyze_555.py
@@ -18,8 +17,7 @@ Input:   --timestamps  timestamp list file (HH:MM:SS - [Tag] ...)
                        (used to resolve which chunk a timestamp falls in when the
                        mood file alone is ambiguous)
          --index       optional livechat_index.json (preferred chunk boundaries)
-Output:  prints flat/mismatched stamps for human review. Exit 0 always
-         (report-only, does not auto-fix).
+Output:  prints each pulse-span timestamp with its mood + tone hint verbs.
 
 Usage:
   validate_mood.py --timestamps out_stamps.txt --mood mood_555.json \
@@ -34,26 +32,27 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 TS_RE = re.compile(r"^(\d{2}):(\d{2}):(\d{2})")
-# verbs that open a timestamp: presence of any ==> mood-correct in a PULSE chunk
-LAUGH_VERBS = [
-    "แซว", "ล้อ", "แหย่", "โยก", "ขำ", "หัวเราะ", "ฮา", "เม้าท์", "เอ็นเตอร์เทน",
-    "แซะ", "แดกดัน", "เสียดสี", "คอมเมนต์", "ติง", "ประชด", "หยอก",
-]
-# verbs that are factual -> flag when in a PULSE chunk
-FLAT_VERBS = ["วิเคราะห์", "อธิบาย", "สรุป", "เล่า", "พูดถึง", "เปรียบเทียบ",
-              "ทดลอง", "อ่าน", "สำรวจ", "เดิน", "เริ่ม", "แนะนำ", "บอก", "ดู", "เห็น"]
+
+_FALLBACK_TONE = {"tone": "เขียนตามอารมณ์ของเหตุการณ์", "verbs": ["แซว", "วิเคราะห์", "สรุป"]}
+
+# core mood "tone" field already present in mood_555.json per chunk (from
+# analyze_555.TONE_HINTS). validate_mood consumes it directly; this inline table
+# is a final fallback for old mood files that predate the tone field.
+_OLD_FALLBACK = {
+    "MEME_PULSE": {"tone": "ตลกปั่น ๆ แซวขำ ๆ", "verbs": ["แซว", "ล้อ", "ขำ", "ปั่น"]},
+    "WARM": {"tone": "บรรยากาศเป็นกันเอง คุยเพลิน ๆ", "verbs": ["แซว", "เม้าท์", "เล่า"]},
+    "HOT": {"tone": "บรรยากาศคึกคัก", "verbs": ["กระตุ้น", "ปั่น"]},
+    "QUIET": {"tone": "คุยสบาย ๆ เลือกคำอิสระ", "verbs": ["พูดคุย", "วิเคราะห์"]},
+}
 
 
 @dataclass(frozen=True)
 class Config:
-    """Tunable validation behaviour."""
-    # verdicts that force a laugh/banter opening verb. Any verdict ending in
-    # 'PULSE' also counts (emote moods: MEME_PULSE, CUTE_CUNNY_PULSE, ...).
-    pulse_verdicts: Tuple[str, ...] = ("MEME_PULSE",)
+    """No tunable rejection — validation is guidance-only."""
 
 
-def is_pulse_verdict(verdict: str) -> bool:
-    return verdict.endswith("PULSE")
+def to_abs_sec(hh: str, mm: str, ss: str) -> int:
+    return int(hh) * 3600 + int(mm) * 60 + int(ss)
 
 
 @dataclass
@@ -62,10 +61,6 @@ class Timestamp:
     abs_sec: int
     desc: str
     raw: str
-
-
-def to_abs_sec(hh: str, mm: str, ss: str) -> int:
-    return int(hh) * 3600 + int(mm) * 60 + int(ss)
 
 
 def load_chunk_windows(livechat_dir: str, index_path: str = "") -> Dict[str, Tuple[int, int]]:
@@ -111,16 +106,8 @@ def parse_timestamps(path: Path) -> List[Timestamp]:
     return stamps
 
 
-def verb_head(desc: str) -> Optional[str]:
-    """First laugh verb found in the description, else None."""
-    for v in LAUGH_VERBS:
-        if re.search(re.escape(v), desc):
-            return v
-    return None
-
-
 class Validator:
-    """Resolves timestamps to chunks and checks them against mood verdicts."""
+    """Resolves timestamps to chunks and annotates them with mood + tone."""
 
     def __init__(self, mood: dict, windows: Dict[str, Tuple[int, int]],
                  cfg: Optional[Config] = None):
@@ -151,43 +138,58 @@ class Validator:
                 return s["mood"] != "natural"
         return False
 
-    def check(self, stamp: Timestamp) -> Optional[str]:
-        """Return the chunk id if this stamp is mood-mismatched, else None."""
+    def annotate(self, stamp: Timestamp) -> Optional[dict]:
+        """Return {chunk, verdict, tone, verbs, in_pulse} for a stamp, else None
+        when the timestamp can't be resolved to a known chunk."""
         chunk = self.chunk_for(stamp.abs_sec)
-        verdict = self.mood.get(chunk, {}).get("verdict", "") if chunk else ""
-        if not (verdict in self.cfg.pulse_verdicts or is_pulse_verdict(verdict)):
+        if not chunk or chunk not in self.mood:
             return None
-        if not self.in_mood_segment(chunk, stamp.abs_sec):
-            return None
-        if verb_head(stamp.desc):
-            return None
-        return chunk
+        rec = self.mood[chunk]
+        verdict = rec.get("verdict", "")
+        return {
+            "chunk": chunk,
+            "verdict": verdict,
+            "tone": self._tone_for(chunk, verdict),
+            "in_pulse": self.in_mood_segment(chunk, stamp.abs_sec),
+        }
+
+    def _tone_for(self, chunk: str, verdict: str) -> dict:
+        """Tone guidance for a chunk: prefer the per-chunk tone field, fall back
+        to a verdict-keyed hint for old mood files, else generic."""
+        rec = self.mood.get(chunk, {})
+        tone = rec.get("tone")
+        if isinstance(tone, dict) and tone.get("tone"):
+            return {"tone": tone["tone"], "verbs": tone.get("verbs", [])}
+        hint = _OLD_FALLBACK.get(verdict)
+        if hint:
+            return {"tone": hint["tone"], "verbs": hint["verbs"]}
+        return {"tone": _FALLBACK_TONE["tone"], "verbs": _FALLBACK_TONE["verbs"]}
 
 
-def report(timestamps: List[Timestamp], validator: Validator) -> Tuple[int, List[Tuple[str, str]]]:
-    """Run the check and collect (chunk, raw_line) for every mismatch."""
-    total_pulse = 0
-    flagged: List[Tuple[str, str]] = []
+def report(timestamps: List[Timestamp], validator: Validator) -> List[dict]:
+    """Annotate every timestamp; pulse-span ones get a mood + tone hint."""
+    rows = []
     for st in timestamps:
-        chunk = validator.chunk_for(st.abs_sec)
-        verdict = validator.mood.get(chunk, {}).get("verdict", "") if chunk else ""
-        if not (verdict in validator.cfg.pulse_verdicts or is_pulse_verdict(verdict)):
+        info = validator.annotate(st)
+        if not info:
             continue
-        total_pulse += 1
-        bad = validator.check(st)
-        if bad:
-            flagged.append((bad, st.raw))
-    return total_pulse, flagged
+        rows.append({"stamp": st, "info": info})
+    return rows
 
 
-def print_report(total_pulse: int, flagged: List[Tuple[str, str]]) -> None:
-    print(f"PULSE spans reviewed: {total_pulse}")
-    if not flagged:
-        print("OK: every timestamp in a pulse segment opens with a laugh/banter verb.")
+def print_report(rows: List[dict]) -> None:
+    pulse_rows = [r for r in rows if r["info"]["in_pulse"]]
+    print(f"Timestamps resolved to chunks: {len(rows)} | in pulse spans: {len(pulse_rows)}")
+    if not pulse_rows:
+        print("No timestamps fall inside a pulse segment — nothing to annotate.")
         return
-    print(f"FLAT in pulse ({len(flagged)}):")
-    for chunk, line in flagged:
-        print(f"  [chunk {chunk}] {line}")
+    print("MOOD / TONE GUIDANCE (pulse spans):")
+    for r in pulse_rows:
+        info = r["info"]
+        verbs = " / ".join(info["tone"]["verbs"]) or "(free choice)"
+        print(f"  [chunk {info['chunk']}] {info['verdict']}: {info['tone']['tone']} "
+              f"— verbs: {verbs}")
+        print(f"    {r['stamp'].raw}")
 
 
 def main(argv=None) -> int:
@@ -204,8 +206,8 @@ def main(argv=None) -> int:
 
     validator = Validator(mood, windows)
     stamps = parse_timestamps(Path(a.timestamps))
-    total_pulse, flagged = report(stamps, validator)
-    print_report(total_pulse, flagged)
+    rows = report(stamps, validator)
+    print_report(rows)
     return 0
 
 

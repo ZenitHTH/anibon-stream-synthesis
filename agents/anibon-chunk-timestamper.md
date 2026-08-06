@@ -175,28 +175,32 @@ Do NOT interpret literally. Apply Thai internet subculture psychology:
 
 ---
 
-## Step 3.7: Honour the Mood Verdict (from analyze_555.py)
+## Step 3.7: Honour the Mood Verdict (from analyze_555.py) — Guidance, not a rule
 
-The orchestrator injects a `mood_555` verdict per chunk from `mood_555.json`.
-This is the output of `analyze_555.py`, which detects Thai-laugh / meme pulse clusters from the LiveChat event feed.
+The orchestrator injects a `mood_555` verdict + **tone hint** per chunk from `mood_555.json`.
+This is the output of `analyze_555.py`, which detects Thai-laugh / meme pulse clusters from the LiveChat event feed and maps them to a mood family with suggested Thai verbs.
 
-**Verdicts and what they force:**
+**Verdicts:**
 
-| Verdict | What it means | First-verb override |
+| Verdict family | What it means | Guidance |
 |---|---|---|
-| `MEME_PULSE` | Strong 555/ฮา burst — watchers are laughing hard | **MUST** use laugh/banter verb: แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย. NEVER use a flat factual verb. |
-| `WARM` | Some markers, no clear burst — light banter | Optional laugh verb. Prefer banter if tone supports it. |
-| `QUIET` | Low chat, no burst — neutral | Follow normal tone detection (Step 5.5). No override. |
+| `MEME_PULSE` | Strong 555/ฮา burst — watchers laughing hard | Funny/banter vibe — pick a lively verb (แซว, ล้อ, ขำ, ปั่น...). Do NOT flatline into a calm factual verb. |
+| `SHOCK_HYPE_PULSE` / `SHOCK_PULSE` | Watchers hype/surprised | Hype/shock vibe — ตะโกน, เฮลั่น, อึ้ง, ช็อก... |
+| `DRAMA_NEWS_PULSE` | Hot-news/drama discussion | News vibe — สรุป, สาวไส้, เจาะลึก, ชำแหละ... |
+| `ANGRY_OUTRAGE_PULSE` | Watchers raging | Rant vibe — บ่น, หัวร้อน, สบถ, จวก... |
+| other `*_PULSE` | Cute / wholesome / spicy / donation etc. | Use the chunk's injected `tone` hint verb list as a vibe reminder |
+| `WARM` | Some markers, no burst — light banter | Optional liveliness; prefer banter if tone supports it. |
+| `QUIET` | Low chat, no burst — neutral | Follow normal tone detection (Step 5.5). Free verb choice. |
 
-**MEME_PULSE is a HARD OVERRIDE.** Even if the talker's words sound calm in the transcript, a chat laugh-burst means the moment was funny/memorable to watchers. The description MUST reflect that energy.
+**The mood is a REMINDER, not a hard override.** You choose the first verb from your reading of the situation — the `tone`/`verbs` hint is a reminder of the energy the chat carried. Even if the talker's words sound calm, a chat laugh/hype burst means the moment registered with watchers; describe it with matching energy. But never distort: if you read the transcript and the actual event was calm, don't manufacture drama — pick the verb that best fits what happened.
 
 Example:
-- ❌ Wrong (MEME_PULSE chunk, flat verb): `[Gacha] วิเคราะห์ตู้ FGO และตัวละครน่าเปิด`
-- ✅ Correct (MEME_PULSE chunk, laugh verb): `[Gacha] แซวตู้ว่ายน้ำรออีกนาน โดดเด่นกว่าพี่ๆ`
+- ❌ Flatlined (MEME_PULSE chunk, calm verb): `[Gacha] วิเคราะห์ตู้ FGO และตัวละครน่าเปิด`
+- ✅ Matching energy (MEME_PULSE chunk): `[Gacha] แซวตู้ว่ายน้ำรออีกนาน โดดเด่นกว่าพี่ๆ`
 
 **If `mood_555` is absent (Step 3.7 was not run):** skip this step entirely. Fall back to Step 5.5 tone detection from the transcript and livechat text only.
 
-> **Note:** The orchestrator runs `validate_mood.py` after all subagents return. It audits every `MEME_PULSE` chunk and flags any timestamp that used a flat verb. Fix those before posting. A `MEME_PULSE` chunk with a flat verb is a bug.
+> **Note:** The orchestrator runs `validate_mood.py` after all subagents return. It labels every PULSE-span timestamp with its chunk's mood + tone hint for a human review pass — it never auto-rejects your verb choice.
 
 ---
 
@@ -230,13 +234,14 @@ Detect tone from BOTH sides:
 
 | TONE (verdict) | description starts with |
 |----------------|--------------------------|
-| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ |
-| hype | โหด, อลังการ, จัดเต็ม, โคตร |
-| shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ |
-| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ |
-| frustration | เซ็ง, เฮ้อ, กาก, แพ้ |
+| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ, ปั่น, ตบมุก, ขยี้, หยอก, ช็อต, กวน, แซะ |
+| hype | โหด, อลังการ, จัดเต็ม, โคตร, ตะโกน, เฮลั่น, ช็อกหนัก, กระโดดดีใจ |
+| shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ, เหวอ, ช็อก, งงตาแตก, ช็อกตาค้าง |
+| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ, สิ้นหวัง, โอดครวญ |
+| frustration / rant | เซ็ง, เฮ้อ, กาก, แพ้, บ่น, จวก, สับ, ฉอด, โวยวาย, สบถ |
 | sad | อกหัก, เศร้า, คิดถึง |
-| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ |
+| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ, แฉ, สาวไส้, กางหลักฐาน, เจาะลึก, ชำแหละ |
+
 
 Only calm/serious chunks use neutral verbs (พูดคุย, วิเคราะห์, แนะนำ, อธิบาย, ดู).
 Funny/hype/shock descriptions may end with a register particle (วะ, อ่ะ, เย้, ไปเลย) or echo the streamer's actual exclamation (โอ้ย, เฮ้ย).

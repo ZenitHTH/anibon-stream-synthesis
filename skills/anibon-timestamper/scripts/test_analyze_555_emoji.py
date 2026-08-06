@@ -12,7 +12,8 @@ After: the emoji/emote weighted score feeds the same peak/burst logic.
 import tempfile
 from pathlib import Path
 
-from analyze_555 import (Config, ChatStats, classify, parse_chat, serialize)
+from analyze_555 import (Config, ChatStats, EMOTE_INFO, TONE_HINTS,
+                         classify, parse_chat, serialize, tone_hint)
 
 
 def _chunk(lines):
@@ -111,6 +112,30 @@ def test_no_peak_yields_all_natural():
     assert out["segments"] == [
         {"start": "00:00:00", "end": "00:01:40", "mood": "natural"},
     ]
+
+
+def test_every_dictionary_mood_has_tone_hint():
+    """tone_hints.json must cover every mood family in the emoji dictionary, so a
+    new emote never silently falls back to the generic hint."""
+    dict_moods = {info["mood"] for info in EMOTE_INFO.values()}
+    missing = dict_moods - set(TONE_HINTS.keys())
+    assert not missing, f"tone_hints missing moods: {missing}"
+
+
+def test_tone_hint_field_emitted_per_chunk():
+    """serialize() must emit a per-chunk 'tone' guidance dict (tone + verbs)."""
+    stats = ChatStats(n_markers=18, n_messages=120, n_secs=200,
+                      peak_windows=[(45, 135, 18.0, "MEME_PULSE")])
+    out = serialize(stats, classify(stats, Config()), Config())
+    assert "tone" in out
+    assert out["tone"]["tone"]
+    assert out["tone"]["verbs"]
+
+
+def test_tone_hint_falls_back_for_unknown_verdict():
+    """An unmapped verdict returns the generic hint, never crashes."""
+    h = tone_hint("SOME_BRAND_NEW_MOOD_PULSE")
+    assert h["tone"] and isinstance(h["verbs"], list)
 
 
 if __name__ == "__main__":

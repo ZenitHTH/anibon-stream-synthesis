@@ -18,7 +18,7 @@ Input:   --livechat  dir of per-chunk chat logs (livechat/livechat_chunk_*.txt)
          --index     livechat_index.json  (chunk name -> file), optional
          --out       output json path
 Output:  JSON dict chunk -> {density, n_markers, n_messages, peak_windows,
-                             mood, verdict}
+                             mood, verdict, tone}
 
 Heuristic verdicts:
   - QUIET        low chat, no burst            -> neutral mood, normal sampling
@@ -64,6 +64,26 @@ def _load_emoji_dictionary(path: Optional[Path] = None) -> Dict[str, dict]:
 
 # emote_code -> {mood, weight, laugh} (case-sensitive as authored in the dictionary)
 EMOTE_INFO: Dict[str, dict] = _load_emoji_dictionary()
+
+
+def _load_tone_hints(path: Optional[Path] = None) -> Dict[str, dict]:
+    """Load mood->{tone, verbs} guidance map from resources/tone_hints.json."""
+    res = path or (Path(__file__).resolve().parent.parent / "resources" / "tone_hints.json")
+    try:
+        data = json.load(open(res, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data.get("hints", {})
+
+
+# mood family -> {tone, verbs} — Thai guidance for the timestamp writer. The AI
+# draws from the verbs freely; this is a reminder of the mood, not a rule.
+TONE_HINTS: Dict[str, dict] = _load_tone_hints()
+
+FALLBACK_TONE = {
+    "tone": "เขียนตามอารมณ์ของเหตุการณ์",
+    "verbs": ["แซว", "วิเคราะห์", "สรุป"],
+}
 
 
 @dataclass(frozen=True)
@@ -190,6 +210,18 @@ def classify(stats: ChatStats, cfg: Config) -> Verdict:
     return Verdict("QUIET", "neutral", False)
 
 
+def tone_hint(verdict: str) -> dict:
+    """Return the Thai tone guidance {tone, verbs} for a verdict (fallback safe).
+
+    Looks up by exact verdict name; falls back to the generic hint when the mood
+    family is unmapped so a new emote never crashes serialization."""
+    hit = TONE_HINTS.get(verdict)
+    if hit:
+        return {"tone": hit.get("tone", FALLBACK_TONE["tone"]),
+                "verbs": hit.get("verbs", FALLBACK_TONE["verbs"])}
+    return {"tone": FALLBACK_TONE["tone"], "verbs": FALLBACK_TONE["verbs"]}
+
+
 def fmt_ts(sec: int) -> str:
     h, rem = divmod(sec, 3600)
     m, s = divmod(rem, 60)
@@ -229,6 +261,7 @@ def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
         "pulse": verdict.pulse,
         "verdict": verdict.verdict,
         "mood": verdict.mood,
+        "tone": tone_hint(verdict.verdict),
         "peak_windows": peak_windows,
         "segments": build_segments(stats, cfg),
     }

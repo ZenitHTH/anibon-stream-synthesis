@@ -30,6 +30,11 @@ CURRENT CHUNK PRIMARY TOPIC: <Orchestrator: inject topic from detect_signals.py>
 LIVE-CHAT LOG (watchers, this chunk):
 <Orchestrator: inject livechat/livechat_chunk_NN.txt content, or "no livechat available">
 
+MOOD + TONE GUIDANCE (from analyze_555.py mood_555.json, optional):
+<Orchestrator: inject this chunk's {verdict, tone, verbs} from mood_555.json, or "no mood_555". 
+The tone/verbs hint is a REMINDER of the vibe the chat carried — you still choose your own
+first verb from the situation. Do not flatline a chat laugh/hype peak into a calm verb.>
+
 TOPIC CONTINUITY RULE (READ FIRST):
 If CURRENT_CHUNK_PRIMARY_TOPIC matches PREVIOUS_CHUNK_PRIMARY_TOPIC,
 output 0 timestamps UNLESS there is a clear EVENT change
@@ -244,13 +249,14 @@ Detect tone from BOTH sides:
 
 | TONE (verdict) | description starts with |
 |----------------|--------------------------|
-| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ |
-| hype | โหด, อลังการ, จัดเต็ม, โคตร |
-| shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ |
-| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ |
-| frustration | เซ็ง, เฮ้อ, กาก, แพ้ |
+| funny / meme / tease | แซว, ฮา, ขำ, เม้าท์มอย, โยกเย้ย, แหย่, ล้อ, ปั่น, ตบมุก, ขยี้, หยอก, ช็อต, กวน, แซะ |
+| hype | โหด, อลังการ, จัดเต็ม, โคตร, ตะโกน, เฮลั่น, ช็อกหนัก, กระโดดดีใจ |
+| shock | อึ้ง, ตกใจ, โอ้ย, ไม่เชื่อ, เหวอ, ช็อก, งงตาแตก, ช็อกตาค้าง |
+| tense / clutch | ลุ้น, กระชั้น, หวิด, หืดจับ, สิ้นหวัง, โอดครวญ |
+| frustration / rant | เซ็ง, เฮ้อ, กาก, แพ้, บ่น, จวก, สับ, ฉอด, โวยวาย, สบถ |
 | sad | อกหัก, เศร้า, คิดถึง |
-| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ |
+| news / serious | วิเคราะห์, เตือน, สรุป, ประกาศ, แฉ, สาวไส้, กางหลักฐาน, เจาะลึก, ชำแหละ |
+
 
 Only a calm/serious chunk uses the neutral verbs (พูดคุย, วิเคราะห์, แนะนำ,
 อธิบาย, ดู). Funny/hype/shock descriptions may end with a register particle

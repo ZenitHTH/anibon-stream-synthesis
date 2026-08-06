@@ -76,7 +76,7 @@ Output: `livechat/livechat_chunk_NN.txt` (per transcript chunk) + `livechat/live
 
 ### 3.7 Detect Thai-Laugh / Meme Pulses (Optional but preferred)
 
-Downstream of `align_live_chat.py`. Thai watchers mark laughter with `555...` / `xD` / `ฮา` / `ขำ`. A clustered burst in a short window = a meme/laugh peak. This is the only reliable laugh proxy when the autotranscript can't hear the streamer actually laughing. Emits per-chunk mood verdicts that subagent prompts MUST weight when writing mood-bearing descriptions.
+Downstream of `align_live_chat.py`. Thai watchers mark laughter with `555...` / `xD` / `ฮา` / `ขำ`. A clustered burst in a short window = a meme/laugh peak. This is the only reliable laugh proxy when the autotranscript can't hear the streamer actually laughing. Emits per-chunk **mood verdicts + Thai tone guidance** that subagent prompts MUST weight when writing mood-bearing descriptions.
 
 ```bash
 python3 -X utf8 scripts/analyze_555.py \
@@ -85,15 +85,17 @@ python3 -X utf8 scripts/analyze_555.py \
   --out ~/youtube_<id>_workspace/mood_555.json
 ```
 
-Output: `mood_555.json` — dict chunk → `{density, n_markers, n_messages, peak_windows, mood, verdict}`. Verdicts:
-- `QUIET` — low chat, no burst → neutral mood, normal sampling
-- `MEME_PULSE` — strong burst (count ≥ pulse) → funny/meme mood: laugh first-verb
-- `WARM` — some markers, no burst → light banter, optional laugh verb
+Output: `mood_555.json` — dict chunk → `{density, n_markers, n_messages, peak_windows, pulse, mood, verdict, tone}`. The `tone` field carries Thai guidance (`tone` + suggested `verbs`) matched to the chunk's mood family. Verdicts:
+- `*_PULSE` — burst passed the weighted score → mood-driven guidance. `MEME_PULSE` (funny), `CUTE_CUNNY_PULSE` (cute), `SHOCK_HYPE_PULSE` (hype), `DRAMA_NEWS_PULSE` (news/drama), `ANGRY_OUTRAGE_PULSE` (rant), etc.
+- `HOT` / `WARM` — some markers, no burst → light banter / lively guidance
+- `QUIET` — low chat, no burst → neutral, free verb choice
 
 > [!NOTE]
+> **Mood is guidance, not a rule.** The `tone`/`verbs` hint tells the subagent *which vibe the chat carried*; the AI still picks its own first verb from the situation. Only when a PULSE chunk gets timestamped as if the moment were flat does `validate_mood.py` (Step 11.5) remind the human.
+>
 > **Emoji Dictionary Reference**: Refer to [`references/anibon_emoji_dictionary.md`](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper/references/anibon_emoji_dictionary.md) for complete channel-exclusive emote mapping (`:_CunnyBoat:`, `:_MonkeyBoat:`, `:_Nerd:`, `:_shutup:`, `:Grind:`, `:_Ripfish:`, `:_noname:`, `:_What:`, `:_WOW:`, `:_Ahh:`, `:_Meh:`, `:_MoneyBoat:`, `:_Tahaan:`, `:_KonDee:`, `:_NeoSlim:`, `:_Slim:`, `:_BoatSOM:`) and YouTube global emotes to mood pulse weights and safety masking triggers.
 
-If a chunk is flagged `MEME_PULSE` but the subagent writes a flat, factual first-verb for it, that's the bug `validate_mood.py` (Step 11.5) catches.
+If a chunk is flagged `MEME_PULSE` but the subagent writes a flat, factual first-verb for it, that's the tone mismatch `validate_mood.py` (Step 11.5) surfaces for review.
 
 ### 4. Analyze (Pre-flight)
 
@@ -151,7 +153,7 @@ Build each prompt from `references/subagent-prompt-template.md`. For each chunk 
 - Chunk JSON content (agent reads sequentially — do NOT summarize chunks yourself)
 - Per-chunk detection signals from `signals.json` (`best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`)
 - Per-chunk **LiveChat log** content (`livechat/livechat_chunk_NN.txt`) — inject when available, else `"no livechat available"`
-- Per-chunk **mood verdict** from `mood_555.json` (if Step 3.7 ran) — `MEME_PULSE` chunk MUST use Thai laugh/banter first-verb. If no mood file, omit.
+- Per-chunk **mood verdict + tone guidance** from `mood_555.json` (if Step 3.7 ran) — inject the chunk's `tone`/`verbs` hint; the subagent keeps its own first-verb choice. If no mood file, omit.
 - Knowledge file content for **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files when `confidence` is ambiguous
 - **PREVIOUS GROUP'S LAST TOPIC** — inject the final topic of the previous group so the agent applies continuity across group boundaries
 
@@ -208,7 +210,7 @@ python3 scripts/validate_part_coherence.py ~/youtube_<id>_workspace/output.md \
 
 ### 11.5 Validate Mood vs Chat Pulse (Optional)
 
-Companion to `analyze_555.py`. Checks the generated timestamps actually honour the `mood_555.json` verdicts — i.e. no `MEME_PULSE` chunk got timestamped with a flat, factual first-verb (the streamer was joking, the transcript flatlined it). Report-only; exit 0. Fix any flat/mismatched stamps by hand before posting.
+Companion to `analyze_555.py`. Labels each timestamp with its chunk's **mood + Thai tone guidance** (the verbs the AI may draw from). Guidance-only — it never rejects a verb; the AI's verb creativity stays free. Report-only; exit 0. Use it to review whether a PULSE-span stamp actually carried the chunk's energy.
 
 ```bash
 python3 scripts/validate_mood.py \
@@ -271,4 +273,4 @@ HH:MM:SS - [Tag] Description
 - **INTRO BREAKDOWN** — intro >10 min → break into 3-5 min sub-topic milestones.
 - **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `merge_timestamps.py` → `anibon-summarizer`.
 - **READ BOTH SIDES** — subagents must read the ENTIRE transcript chunk AND its LiveChat log (when present) before writing any timestamp. Situation + emotion come from both talks and chat, never from `primary_topic` alone.
-- **HONOUR THE MOOD VERDICT** — when `mood_555.json` exists, a `MEME_PULSE` chunk must open with a Thai laugh/banter first-verb (แซว/ฮา/ขำ). Never flatline a chat-laugh peak into a factual verb.
+- **HONOUR THE MOOD VERDICT** — when `mood_555.json` exists, inject each chunk's `tone` guidance (mood + suggested verbs) into the subagent prompt. The AI keeps its own first-verb choice, but must not flatline a chat-laugh/hype peak into a calm factual verb.
