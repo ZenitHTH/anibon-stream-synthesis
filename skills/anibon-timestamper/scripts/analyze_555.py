@@ -101,6 +101,7 @@ class ChatStats:
     """Parsed signals from a single chunk's chat log."""
     n_markers: int = 0
     n_messages: int = 0
+    n_secs: int = 0
     # (window_start_sec, window_end_sec, marker_count) desc by marker count
     peak_windows: List[Tuple[int, int, int]] = field(default_factory=list)
 
@@ -122,6 +123,7 @@ def parse_chat(path: Path) -> ChatStats:
             if _is_laugh(line):
                 marker_secs.append(to_sec(*m.groups()))
     return ChatStats(n_markers=len(marker_secs), n_messages=len(all_secs),
+                     n_secs=max(all_secs) if all_secs else 0,
                      peak_windows=_find_peaks(marker_secs))
 
 
@@ -186,6 +188,25 @@ def fmt_ts(sec: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+def build_segments(stats: ChatStats, cfg: Config) -> List[dict]:
+    """Per-chunk mood segments: funny burst windows + the natural gaps around.
+
+    Only peaks at/above pulse_threshold are 'funny'; each bracketed by natural
+    gaps. Adjacent quiet gaps collapse into one span. Empty at no peaks.
+    """
+    peaks = sorted([p for p in stats.peak_windows if p[2] >= cfg.pulse_threshold])
+    segs: List[dict] = []
+    cursor = 0
+    for start, end, _ in peaks:
+        if start > cursor:
+            segs.append({"start": fmt_ts(cursor), "end": fmt_ts(start), "mood": "natural"})
+        segs.append({"start": fmt_ts(start), "end": fmt_ts(end), "mood": "funny"})
+        cursor = end
+    if cursor < stats.n_secs:
+        segs.append({"start": fmt_ts(cursor), "end": fmt_ts(stats.n_secs), "mood": "natural"})
+    return segs
+
+
 def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
     """Build the on-disk JSON record for one chunk (schema for validate_mood.py)."""
     density = stats.n_markers / stats.n_messages if stats.n_messages else 0.0
@@ -202,6 +223,7 @@ def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
         "verdict": verdict.verdict,
         "mood": verdict.mood,
         "peak_windows": peak_windows,
+        "segments": build_segments(stats, cfg),
     }
 
 

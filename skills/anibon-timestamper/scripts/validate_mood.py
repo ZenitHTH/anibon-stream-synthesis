@@ -129,11 +129,30 @@ class Validator:
                 return c
         return None
 
+    def _seg_secs(self, seg_time: str) -> int:
+        h, m, s = seg_time.split(":")
+        return int(h) * 3600 + int(m) * 60 + int(s)
+
+    def in_funny_segment(self, chunk: str, abs_sec: int) -> bool:
+        """True if the timestamp lands in a 'funny' segment of the chunk.
+
+        Falls back to True (whole chunk counts) when segments are absent so old
+        mood files keep the current behavior."""
+        segs = self.mood.get(chunk, {}).get("segments")
+        if not segs:
+            return True
+        for s in segs:
+            if self._seg_secs(s["start"]) <= abs_sec < self._seg_secs(s["end"]):
+                return s["mood"] == "funny"
+        return False
+
     def check(self, stamp: Timestamp) -> Optional[str]:
         """Return the chunk id if this stamp is mood-mismatched, else None."""
         chunk = self.chunk_for(stamp.abs_sec)
         verdict = self.mood.get(chunk, {}).get("verdict", "") if chunk else ""
         if verdict not in self.cfg.pulse_verdicts:
+            return None
+        if not self.in_funny_segment(chunk, stamp.abs_sec):
             return None
         if verb_head(stamp.desc):
             return None

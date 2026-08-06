@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 from analyze_555 import (EMOJI_MARKER_RE, Config, ChatStats, classify,
-                         parse_chat)
+                         parse_chat, serialize)
 
 
 def _chunk(lines):
@@ -90,6 +90,28 @@ def test_political_emote_is_not_a_laugh_marker():
 def test_death_skull_is_marker():
     assert EMOJI_MARKER_RE.search("lol ตาย 💀💀")
     assert EMOJI_MARKER_RE.search("ช็อตฟีล ☠️")
+
+
+def test_mixed_chunk_splits_mood_segments():
+    """A MEME_PULSE chunk with a mid burst must split into natural/funny spans,
+    leaving the quiet head/tail as natural (approach A, marker-density only)."""
+    stats = ChatStats(n_markers=18, n_messages=120, n_secs=200,
+                      peak_windows=[(45, 135, 18)])
+    out = serialize(stats, classify(stats, Config()), Config())
+    assert out["verdict"] == "MEME_PULSE"
+    assert out["segments"] == [
+        {"start": "00:00:00", "end": "00:00:45", "mood": "natural"},
+        {"start": "00:00:45", "end": "00:02:15", "mood": "funny"},
+        {"start": "00:02:15", "end": "00:03:20", "mood": "natural"},
+    ]
+
+
+def test_no_peak_yields_all_natural():
+    stats = ChatStats(n_markers=0, n_messages=50, n_secs=100)
+    out = serialize(stats, classify(stats, Config()), Config())
+    assert out["segments"] == [
+        {"start": "00:00:00", "end": "00:01:40", "mood": "natural"},
+    ]
 
 
 if __name__ == "__main__":
