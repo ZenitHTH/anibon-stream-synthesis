@@ -13,14 +13,31 @@ chunk to open with a laugh verb — mislabeling the natural parts.
 
 A) Marker-density only: segment mood derives solely from chat 555/burst windows.
 
+### Revision 2026-08-06 (after the "looks weird" fix)
+
+The first cut had two burst definitions fighting (bucket-count vs low-msg density),
+so verdict said MEME_PULSE while segments stayed all-natural, and a single 555 in a
+3-msg chunk over-triggered. Aligned to the Dual-Side design doc instead:
+
+- **Weighted scoring** replaces binary marker-count: text 555 = 1.0, unicode laugh
+  emoji = 1.0, and laugh-flagged custom emotes use their dictionary weight (per
+  emoji_dictionary.json). Non-laugh emotes (flat/AFK/political/confusion) carry a
+  mood but never drive a pulse.
+- **Real verdicts** — a pulse bucket's dominant mood is the verdict (MEME_PULSE,
+  CHAOTIC_MEME_PULSE, CUTE_CUNNY_PULSE, ...). Density low-msg shortcut removed.
+- **Segments always agree with verdict** because both come from the same weighted
+  peak buckets.
+
 ## Changes
 
 ### analyze_555.py
 - Add `chunk_end` (max message timestamp) to `ChatStats`.
-- `serialize()` adds `segments`: a time-ordered list built from `peak_windows`
-  (only peaks with `count >= pulse_threshold` = `funny`) plus the quiet gaps
-  around them (`natural`). Adjacent quiet gaps merge. Keep flat `verdict`/`mood`
-  for back-compat.
+- `parse_chat`/`_line_signals` produce weighted (mood, score) signals instead of
+  boolean markers.
+- `_find_peaks` buckets weighted scores, tracks dominant mood per bucket.
+- `classify` takes the top qualifying bucket's mood as verdict (no density path).
+- `serialize()` adds `segments`: time-ordered `natural`/`<mood>` spans from the
+  qualifying peaks + quiet gaps. Keep flat `verdict`/`mood` for back-compat.
 
 Schema:
 ```json
