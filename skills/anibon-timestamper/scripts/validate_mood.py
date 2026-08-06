@@ -47,8 +47,13 @@ FLAT_VERBS = ["วิเคราะห์", "อธิบาย", "สรุป
 @dataclass(frozen=True)
 class Config:
     """Tunable validation behaviour."""
-    # only treat these verdicts as laughter spans that must open with a laugh verb
+    # verdicts that force a laugh/banter opening verb. Any verdict ending in
+    # 'PULSE' also counts (emote moods: MEME_PULSE, CUTE_CUNNY_PULSE, ...).
     pulse_verdicts: Tuple[str, ...] = ("MEME_PULSE",)
+
+
+def is_pulse_verdict(verdict: str) -> bool:
+    return verdict.endswith("PULSE")
 
 
 @dataclass
@@ -133,8 +138,8 @@ class Validator:
         h, m, s = seg_time.split(":")
         return int(h) * 3600 + int(m) * 60 + int(s)
 
-    def in_funny_segment(self, chunk: str, abs_sec: int) -> bool:
-        """True if the timestamp lands in a 'funny' segment of the chunk.
+    def in_mood_segment(self, chunk: str, abs_sec: int) -> bool:
+        """True if the timestamp lands in a non-natural (pulse) segment of chunk.
 
         Falls back to True (whole chunk counts) when segments are absent so old
         mood files keep the current behavior."""
@@ -143,16 +148,16 @@ class Validator:
             return True
         for s in segs:
             if self._seg_secs(s["start"]) <= abs_sec < self._seg_secs(s["end"]):
-                return s["mood"] == "funny"
+                return s["mood"] != "natural"
         return False
 
     def check(self, stamp: Timestamp) -> Optional[str]:
         """Return the chunk id if this stamp is mood-mismatched, else None."""
         chunk = self.chunk_for(stamp.abs_sec)
         verdict = self.mood.get(chunk, {}).get("verdict", "") if chunk else ""
-        if verdict not in self.cfg.pulse_verdicts:
+        if not (verdict in self.cfg.pulse_verdicts or is_pulse_verdict(verdict)):
             return None
-        if not self.in_funny_segment(chunk, stamp.abs_sec):
+        if not self.in_mood_segment(chunk, stamp.abs_sec):
             return None
         if verb_head(stamp.desc):
             return None
@@ -166,7 +171,7 @@ def report(timestamps: List[Timestamp], validator: Validator) -> Tuple[int, List
     for st in timestamps:
         chunk = validator.chunk_for(st.abs_sec)
         verdict = validator.mood.get(chunk, {}).get("verdict", "") if chunk else ""
-        if verdict not in validator.cfg.pulse_verdicts:
+        if not (verdict in validator.cfg.pulse_verdicts or is_pulse_verdict(verdict)):
             continue
         total_pulse += 1
         bad = validator.check(st)
@@ -176,9 +181,9 @@ def report(timestamps: List[Timestamp], validator: Validator) -> Tuple[int, List
 
 
 def print_report(total_pulse: int, flagged: List[Tuple[str, str]]) -> None:
-    print(f"MEME_PULSE spans reviewed: {total_pulse}")
+    print(f"PULSE spans reviewed: {total_pulse}")
     if not flagged:
-        print("OK: every timestamp in a MEME_PULSE chunk opens with a laugh/banter verb.")
+        print("OK: every timestamp in a pulse segment opens with a laugh/banter verb.")
         return
     print(f"FLAT in pulse ({len(flagged)}):")
     for chunk, line in flagged:

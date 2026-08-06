@@ -52,48 +52,27 @@ EMOJI_MARKER_RE = re.compile(
 TS_RE = re.compile(r"\[(\d{2}):(\d{2}):(\d{2})\]")
 
 
-def _load_emoji_dictionary(path: Optional[Path] = None) -> Dict[str, bool]:
-    """Load emote->laugh-intent map from resources/emoji_dictionary.json.
-
-    Returns {emote_code: is_laugh_marker}. Missing/absent file degrades to an
-    empty map (no named emote counts as a laugh marker).
-    """
+def _load_emoji_dictionary(path: Optional[Path] = None) -> Dict[str, dict]:
+    """Load emote->{mood, weight} map from resources/emoji_dictionary.json."""
     res = path or (Path(__file__).resolve().parent.parent / "resources" / "emoji_dictionary.json")
     try:
         data = json.load(open(res, encoding="utf-8"))
     except (OSError, ValueError):
         return {}
-    return {code: info.get("laugh", False)
-            for code, info in data.get("emotes", {}).items()}
+    return {code: info for code, info in data.get("emotes", {}).items()}
 
 
-# emote_code -> is_laugh (case-sensitive as authored in the dictionary)
-LAUGH_EMOTES: Dict[str, bool] = _load_emoji_dictionary()
-
-
-def _is_laugh_emote(message: str) -> bool:
-    """True if the message contains any dictionary-confirmed laugh emote."""
-    for code, laugh in LAUGH_EMOTES.items():
-        if laugh and code in message:
-            return True
-    return False
+# emote_code -> {mood, weight, laugh} (case-sensitive as authored in the dictionary)
+EMOTE_INFO: Dict[str, dict] = _load_emoji_dictionary()
 
 
 @dataclass(frozen=True)
 class Config:
     """Tunable detection thresholds (Stage 2 hyperparameters)."""
-    # markers needed in one bucket to call a MEME_PULSE
-    pulse_threshold: int = 12
-    # per-chunk minimum markers for the "hot" flag regardless of bucket
-    hot_min: int = 14
-    # for low-message chunks (< low_msg) absolute counts understate bursts:
-    # use marker density >= low_msg_density as the pulse signal instead
-    low_msg: int = 100
-    low_msg_density: float = 0.20
-    # bucket width for peak-window detection (seconds)
-    bucket: int = 90
-    # how many high buckets can be reported
-    max_peaks: int = 4
+    pulse_score: float = 10.0   # weighted score needed in one bucket for a pulse
+    hot_min: float = 12.0       # chunk-wide weighted score for the hot flag
+    bucket: int = 90            # bucket width for peak-window detection (seconds)
+    max_peaks: int = 4          # how many high buckets can be reported
 
 
 @dataclass
@@ -102,57 +81,84 @@ class ChatStats:
     n_markers: int = 0
     n_messages: int = 0
     n_secs: int = 0
-    # (window_start_sec, window_end_sec, marker_count) desc by marker count
-    peak_windows: List[Tuple[int, int, int]] = field(default_factory=list)
+    # (window_start_sec, window_end_sec, score, dominant_mood)
+    peak_windows: List[Tuple[int, int, float, str]] = field(default_factory=list)
 
 
 def to_sec(hh: str, mm: str, ss: str) -> int:
     return int(hh) * 3600 + int(mm) * 60 + int(ss)
 
 
+def _emote_moods(line: str) -> List[Tuple[str, float]]:
+    """Laugh-mood->weight for every laugh-flagged emote present in the line.
+
+    Non-laugh emotes (flat/AFK/political/confusion) carry a mood but do NOT
+    drive a pulse — they belong to other pipelines (masking-royal-news etc).
+    """
+    out = []
+    for code, info in EMOTE_INFO.items():
+        if info.get("laugh") and code in line:
+            out.append((info["mood"], info["weight"]))
+    return out
+
+
 def parse_chat(path: Path) -> ChatStats:
-    """Stage 2a: time-window the log and count 555/laugh markers + all msgs."""
-    marker_secs: List[int] = []
+    """Stage 2a: time-window the log, weight 555/laugh markers + all msgs.
+
+    Weighting follows the design doc Stage 2.5/2.6: unicode laugh emojis and
+    custom emotes carry a weight (1.5/1.2/1.0 or the dictionary weight); plain
+    555/text laughs count 1.0. A line is not a simple binary marker — it
+    contributes its weighted score and mood to the bucket it falls in.
+    """
     all_secs: List[int] = []
+    score_secs: List[Tuple[int, float, str]] = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             m = TS_RE.search(line)
             if not m:
                 continue
-            all_secs.append(to_sec(*m.groups()))
-            if _is_laugh(line):
-                marker_secs.append(to_sec(*m.groups()))
-    return ChatStats(n_markers=len(marker_secs), n_messages=len(all_secs),
+            s = to_sec(*m.groups())
+            all_secs.append(s)
+            for mood, w in _line_signals(line):
+                score_secs.append((s, w, mood))
+    return ChatStats(n_markers=len(score_secs), n_messages=len(all_secs),
                      n_secs=max(all_secs) if all_secs else 0,
-                     peak_windows=_find_peaks(marker_secs))
+                     peak_windows=_find_peaks(score_secs))
 
 
-def _is_laugh(line: str) -> bool:
-    """True if a chat line is a laugh marker: 555/words, unicode laugh emojis,
-    or a dictionary-confirmed laugh emote. Flat/AFK/confusion/political emotes
-    are NOT markers."""
+def _line_signals(line: str) -> List[Tuple[str, float]]:
+    """Weighted (mood, score) contributions for a chat line (Stage 2.5/2.7).
+
+    Prioritises specific emote moods over the generic 555 lump. Flat / AFK /
+    confusion / political emotes still contribute their mood but do not drive a
+    chunk to MEME_PULSE unless the emote itself is a laugh verity."""
+    moods = _emote_moods(line)
     if LAUGH_RE.search(line):
-        return True
-    # unicode laugh codepoints / ☠ / +1 always count
+        moods.append(("MEME_PULSE", 1.0))
     for ch in EMOJI_CODEPOINTS + "\u2620":
         if ch in line:
-            return True
+            moods.append(("MEME_PULSE", 1.0))
     if "+1" in line:
-        return True
-    return _is_laugh_emote(line)
+        moods.append(("MEME_PULSE", 1.0))
+    return moods
 
 
-def _find_peaks(marker_secs: List[int], bucket: int = 90, max_peaks: int = 4
-                ) -> List[Tuple[int, int, int]]:
-    """Stage 2b: bucket markers and rank the liveliest windows (desc count)."""
-    if not marker_secs:
+def _find_peaks(score_secs: List[Tuple[int, float, str]], bucket: int = 90,
+                max_peaks: int = 4) -> List[Tuple[int, int, float, str]]:
+    """Stage 2b: bucket weighted scores and rank the liveliest windows."""
+    if not score_secs:
         return []
-    buckets: "defaultdict[int, List[int]]" = defaultdict(list)
-    for s in marker_secs:
-        buckets[s // bucket].append(s)
+    buckets: "defaultdict[int, List[Tuple[float, str]]]" = defaultdict(list)
+    for s, w, mood in score_secs:
+        buckets[s // bucket].append((w, mood))
     rows = []
-    for k, times in buckets.items():
-        rows.append((k * bucket, k * bucket + bucket, len(times)))
+    for k, items in buckets.items():
+        score = round(sum(w for w, _ in items), 3)
+        moods: "defaultdict[str, float]" = defaultdict(float)
+        for w, mood in items:
+            moods[mood] += w
+        dominant = max(moods, key=moods.get)
+        rows.append((k * bucket, k * bucket + bucket, score, dominant))
     rows.sort(key=lambda r: r[2], reverse=True)
     return rows[:max_peaks]
 
@@ -166,18 +172,20 @@ class Verdict:
 
 
 def classify(stats: ChatStats, cfg: Config) -> Verdict:
-    """Stage 2c: turn parsed chat signals into a mood verdict."""
-    n_msgs = stats.n_messages
-    n_markers = stats.n_markers
-    density = n_markers / n_msgs if n_msgs else 0.0
-    peak_thresh = stats.peak_windows[0][2] if stats.peak_windows else 0
-    low_msg_pulse = n_msgs < cfg.low_msg and density >= cfg.low_msg_density
-    has_peak_burst = peak_thresh >= cfg.pulse_threshold or low_msg_pulse
-    if has_peak_burst:
-        return Verdict("MEME_PULSE", "funny", True)
-    if n_markers >= cfg.hot_min:
+    """Stage 2c: turn parsed chat signals into a mood verdict.
+
+    A pulse = a 90s bucket whose weighted score clears cfg.pulse_score. The
+    verdict takes the dominant emote/555 mood of the top bucket (e.g. MEME_PULSE
+    for a 555 flood, CUTE_CUNNY_PULSE for a :_CunnyBoat: flood). No density
+    shortcut — the weighted score is the single source of truth, so verdict and
+    segments always agree."""
+    pulse_buckets = [p for p in stats.peak_windows if p[2] >= cfg.pulse_score]
+    if pulse_buckets:
+        _, _, _, mood = max(pulse_buckets, key=lambda p: p[2])
+        return Verdict(mood, mood.lower(), True)
+    if stats.n_markers >= cfg.hot_min:
         return Verdict("HOT", "warm", False)
-    if n_markers >= 1:
+    if stats.n_markers >= 1:
         return Verdict("WARM", "warm", False)
     return Verdict("QUIET", "neutral", False)
 
@@ -189,18 +197,17 @@ def fmt_ts(sec: int) -> str:
 
 
 def build_segments(stats: ChatStats, cfg: Config) -> List[dict]:
-    """Per-chunk mood segments: funny burst windows + the natural gaps around.
+    """Per-chunk mood segments: pulse windows + the natural gaps around.
 
-    Only peaks at/above pulse_threshold are 'funny'; each bracketed by natural
-    gaps. Adjacent quiet gaps collapse into one span. Empty at no peaks.
-    """
-    peaks = sorted([p for p in stats.peak_windows if p[2] >= cfg.pulse_threshold])
+    Pulse windows carry their dominant mood; the gaps collapse into natural
+    spans. Filters peaks at/above pulse_score. Empty at no qualifying peak."""
+    peaks = sorted([p for p in stats.peak_windows if p[2] >= cfg.pulse_score])
     segs: List[dict] = []
     cursor = 0
-    for start, end, _ in peaks:
+    for start, end, _, mood in peaks:
         if start > cursor:
             segs.append({"start": fmt_ts(cursor), "end": fmt_ts(start), "mood": "natural"})
-        segs.append({"start": fmt_ts(start), "end": fmt_ts(end), "mood": "funny"})
+        segs.append({"start": fmt_ts(start), "end": fmt_ts(end), "mood": mood.lower()})
         cursor = end
     if cursor < stats.n_secs:
         segs.append({"start": fmt_ts(cursor), "end": fmt_ts(stats.n_secs), "mood": "natural"})
@@ -211,9 +218,9 @@ def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
     """Build the on-disk JSON record for one chunk (schema for validate_mood.py)."""
     density = stats.n_markers / stats.n_messages if stats.n_messages else 0.0
     peak_windows = [
-        {"start": fmt_ts(a), "end": fmt_ts(b), "count": c}
-        for a, b, c in stats.peak_windows
-        if c >= cfg.pulse_threshold
+        {"start": fmt_ts(a), "end": fmt_ts(b), "score": c, "mood": m}
+        for a, b, c, m in stats.peak_windows
+        if c >= cfg.pulse_score
     ]
     return {
         "density": round(density, 3),

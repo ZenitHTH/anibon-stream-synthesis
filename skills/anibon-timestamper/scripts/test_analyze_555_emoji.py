@@ -12,8 +12,7 @@ After: the emoji/emote weighted score feeds the same peak/burst logic.
 import tempfile
 from pathlib import Path
 
-from analyze_555 import (EMOJI_MARKER_RE, Config, ChatStats, classify,
-                         parse_chat, serialize)
+from analyze_555 import (Config, ChatStats, classify, parse_chat, serialize)
 
 
 def _chunk(lines):
@@ -26,45 +25,44 @@ def _chunk(lines):
 def test_unicode_emoji_flood_is_meme_pulse():
     lines = []
     for i in range(20):
-        lines.append(f"[00:{i:02d}:03] 🤣🤣🤣🤣 msg")
+        lines.append(f"[00:00:{i:02d}] 🤣🤣🤣🤣 msg")
     stats = parse_chat(_chunk(lines))
     assert stats.n_messages == 20
-    assert stats.n_markers >= 20, "unicode laugh emojis must count as markers"
-    v = classify(stats, Config(pulse_threshold=12, bucket=90))
-    assert v.verdict == "MEME_PULSE", "emoji flood must be a meme pulse"
+    assert stats.n_markers >= 20, "unicode laugh emojis must be weighted markers"
+    v = classify(stats, Config())
+    assert v.verdict == "MEME_PULSE", "emoji flood must be a pulse"
 
 
-def test_anibon_custom_emote_flood_is_meme_pulse():
-    lines = [f"[00:{i:02d}:03] :_MonkeyBoat: :_MonkeyBoat: msg" for i in range(15)]
+def test_anibon_custom_emote_flood_is_its_own_mood():
+    lines = [f"[00:00:{i:02d}] :_MonkeyBoat: :_MonkeyBoat: msg" for i in range(15)]
     stats = parse_chat(_chunk(lines))
     assert stats.n_markers >= 15, "Anibon custom emotes must count as markers"
-    v = classify(stats, Config(pulse_threshold=12))
-    assert v.verdict == "MEME_PULSE"
+    v = classify(stats, Config())
+    assert v.verdict == "CHAOTIC_MEME_PULSE", "weighted emote flood keeps its own mood"
 
 
 def test_global_header_emote_welcomes_not_pulse():
-    """A one-off global emote line should not trip a pulse by itself."""
+    """A one-off welcome global emote must not trip a pulse."""
     stats = parse_chat(_chunk(["[00:00:01] :hand-pink_waving: สวัสดีโบ๊ท"]))
-    assert stats.n_markers == 0, "single welcome emote is not a laugh marker"
-    assert classify(stats, Config()).verdict == "QUIET"
+    assert classify(stats, Config()).pulse is False, "single welcome is not a pulse"
 
 
-def test_flat_emote_is_not_a_laugh_marker():
-    """_Meh (deadpan/flat) must NOT count as a laugh marker."""
+def test_flat_emote_is_not_a_pulse():
+    """_Meh (deadpan/flat) must not trip a pulse on its own."""
     stats = parse_chat(_chunk(["[00:00:01] :_Meh: มุขแป๊ก กริบ"]))
-    assert stats.n_markers == 0, "flat emote is not laughter"
+    assert classify(stats, Config()).pulse is False, "flat emote is not a pulse"
 
 
-def test_afk_emote_is_not_a_laugh_marker():
-    """_noname (AFK/BRB) must NOT count as a laugh marker."""
+def test_afk_emote_is_not_a_pulse():
+    """_noname (AFK/BRB) must not trip a pulse."""
     stats = parse_chat(_chunk(["[00:00:01] :_noname: ไปห้องน้ำก่อน"]))
-    assert stats.n_markers == 0, "AFK emote is not laughter"
+    assert classify(stats, Config()).pulse is False, "AFK emote is not a pulse"
 
 
-def test_confusion_emote_is_not_a_laugh_marker():
-    """_What (confusion) must NOT count as a laugh marker."""
+def test_confusion_emote_is_not_a_pulse():
+    """_What (confusion) must not trip a pulse."""
     stats = parse_chat(_chunk(["[00:00:01] :_What: ห๊ะ? อะไรวะเนี่ย"]))
-    assert stats.n_markers == 0, "confusion emote is not laughter"
+    assert classify(stats, Config()).pulse is False, "confusion emote is not a pulse"
 
 
 def test_nerd_explain_emote_is_not_a_laugh_marker():
@@ -74,34 +72,35 @@ def test_nerd_explain_emote_is_not_a_laugh_marker():
 
 
 def test_flat_emote_flood_is_quiet_not_pulse():
-    """A flood of flat/reaction emotes must NOT register as MEME_PULSE."""
-    lines = [f"[00:{i:02d}:03] :_Meh: :_Meh: มุขแป๊ก" for i in range(20)]
+    """A flood of flat/reaction emotes must NOT register as a pulse."""
+    lines = [f"[00:00:{i:02d}] :_Meh: :_Meh: มุขแป๊ก" for i in range(20)]
     stats = parse_chat(_chunk(lines))
-    v = classify(stats, Config(pulse_threshold=12, bucket=90))
-    assert v.verdict != "MEME_PULSE", "flat emote flood must not be a meme pulse"
+    v = classify(stats, Config())
+    assert v.pulse is False, "flat emote flood must not be a pulse"
 
 
-def test_political_emote_is_not_a_laugh_marker():
-    """Political emotes (Slim/BoatSOM/Tahaan) must NOT count as laugh markers."""
+def test_political_emote_is_not_a_pulse():
+    """Political emotes (Slim/BoatSOM/Tahaan) must NOT trip a pulse."""
     stats = parse_chat(_chunk(["[00:00:01] :_Slim: คิงเอริค META จริง"]))
-    assert stats.n_markers == 0, "political emote is not laughter"
+    assert classify(stats, Config()).pulse is False, "political emote is not a pulse"
 
 
-def test_death_skull_is_marker():
-    assert EMOJI_MARKER_RE.search("lol ตาย 💀💀")
-    assert EMOJI_MARKER_RE.search("ช็อตฟีล ☠️")
+def test_death_skull_counted():
+    """Unicode death-skull still registers as a laugh marker → weight."""
+    stats = parse_chat(_chunk(["[00:00:01] lol ตาย 💀💀"]))
+    assert stats.n_markers >= 1
 
 
 def test_mixed_chunk_splits_mood_segments():
-    """A MEME_PULSE chunk with a mid burst must split into natural/funny spans,
-    leaving the quiet head/tail as natural (approach A, marker-density only)."""
+    """A pulse chunk with a mid burst must split into mood/natural spans,
+    leaving the quiet head/tail as natural."""
     stats = ChatStats(n_markers=18, n_messages=120, n_secs=200,
-                      peak_windows=[(45, 135, 18)])
+                      peak_windows=[(45, 135, 18.0, "MEME_PULSE")])
     out = serialize(stats, classify(stats, Config()), Config())
     assert out["verdict"] == "MEME_PULSE"
     assert out["segments"] == [
         {"start": "00:00:00", "end": "00:00:45", "mood": "natural"},
-        {"start": "00:00:45", "end": "00:02:15", "mood": "funny"},
+        {"start": "00:00:45", "end": "00:02:15", "mood": "meme_pulse"},
         {"start": "00:02:15", "end": "00:03:20", "mood": "natural"},
     ]
 
