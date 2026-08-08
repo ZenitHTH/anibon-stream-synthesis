@@ -100,6 +100,7 @@ class ChatStats:
     """Parsed signals from a single chunk's chat log."""
     n_markers: int = 0
     n_messages: int = 0
+    n_start: int = 0
     n_secs: int = 0
     # (window_start_sec, window_end_sec, score, dominant_mood)
     peak_windows: List[Tuple[int, int, float, str]] = field(default_factory=list)
@@ -142,6 +143,7 @@ def parse_chat(path: Path) -> ChatStats:
             for mood, w in _line_signals(line):
                 score_secs.append((s, w, mood))
     return ChatStats(n_markers=len(score_secs), n_messages=len(all_secs),
+                     n_start=min(all_secs) if all_secs else 0,
                      n_secs=max(all_secs) if all_secs else 0,
                      peak_windows=_find_peaks(score_secs))
 
@@ -235,7 +237,7 @@ def build_segments(stats: ChatStats, cfg: Config) -> List[dict]:
     spans. Filters peaks at/above pulse_score. Empty at no qualifying peak."""
     peaks = sorted([p for p in stats.peak_windows if p[2] >= cfg.pulse_score])
     segs: List[dict] = []
-    cursor = 0
+    cursor = stats.n_start
     for start, end, _, mood in peaks:
         if start > cursor:
             segs.append({"start": fmt_ts(cursor), "end": fmt_ts(start), "mood": "natural"})

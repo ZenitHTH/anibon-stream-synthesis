@@ -106,6 +106,36 @@ def test_mixed_chunk_splits_mood_segments():
     ]
 
 
+def _ts(sec: int) -> str:
+    h, rem = divmod(sec, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def test_segments_start_at_chunk_first_timestamp():
+    """Segments must begin at the chunk's first chat ts, not 00:00:00.
+    Real chunks cover a mid-video slice (e.g. 00:58:31..01:03:29)."""
+    base = 58 * 60 + 31
+    lines = [f"[{_ts(base+i)}] 555555 msg" for i in range(30)]
+    stats = parse_chat(_chunk(lines))
+    out = serialize(stats, classify(stats, Config()), Config())
+    assert out["segments"][0]["start"] != "00:00:00", out["segments"]
+    assert out["segments"][0]["start"] >= "00:58:00", out["segments"]
+
+
+def test_quiet_chunk_natural_start_equals_first_ts():
+    """No-peak chunk: NATURAL segment must span the chunk's actual window,
+    not a bogus 00:00:00 head."""
+    base = 28 * 60 + 0
+    lines = [f"[{_ts(base + i)}] ดูเกมอยู่" for i in range(5)]
+    stats = parse_chat(_chunk(lines))
+    out = serialize(stats, classify(stats, Config()), Config())
+    segs = out["segments"]
+    assert segs, out
+    assert segs[0]["start"] != "00:00:00", segs
+    assert segs[0]["mood"] == "natural"
+
+
 def test_no_peak_yields_all_natural():
     stats = ChatStats(n_markers=0, n_messages=50, n_secs=100)
     out = serialize(stats, classify(stats, Config()), Config())
