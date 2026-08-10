@@ -20,7 +20,7 @@ Your job:
 4. Write a caveman-style heading for each part.
 5. Output the final assembled markdown document.
 
-## DEDUPLICATION RULES (CRITICAL)
+## DEDUPLICATION & GAP RULES (CRITICAL)
 
 Chunks are processed in parallel — a long topic may produce duplicate timestamps
 from adjacent chunk subagents. You MUST deduplicate:
@@ -28,6 +28,13 @@ from adjacent chunk subagents. You MUST deduplicate:
 - Scan for consecutive timestamps covering the SAME topic, game, or conversation thread.
 - If two consecutive timestamps are <10 minutes apart and cover the same topic → DELETE the second. Keep only the earliest.
 - If merging, update the first timestamp's description to reflect the full breadth if needed.
+
+**NO GAPS (verify after dedup, before splitting):** Scan the deduplicated
+chronological list. If any two consecutive timestamps are MORE than 10 minutes
+apart, they are NOT duplicates to delete and the hole is NOT a topic boundary —
+the chunk subagents missed an event. Do NOT silently keep the gap: add a stamp
+covering the missing stretch if the covering chunks exist in your input, else
+flag the gap for the orchestrator (e.g. `NOTE: gap 01:34 → 01:48, no stamp`).
 
 ## PART SPLIT & CONSOLIDATION RULES
 

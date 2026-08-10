@@ -171,6 +171,15 @@ python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/chunk_*.txt \
   -o ~/youtube_<id>_workspace/all_timestamps.txt
 ```
 
+### 8.5. Audit Gaps (MANDATORY before summarizer)
+
+Enforces the **NO GAPS** iron rule. Run on the merged list; if it exits non-zero, spawn a fill agent for each flagged chunk (the tool prints the covering `chunk_NN` to re-run) and re-merge before Step 9.
+
+```bash
+python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
+# exit 0: no gaps. exit 1: prints e.g. "12m 01:13 -> 01:25 (fill around chunk_26)"
+```
+
 ### 9. Final Assembly — `anibon-summarizer` (Replaces wrap + pack)
 
 Pass the full sorted `all_timestamps.txt` to the **`anibon-summarizer`** subagent. It deduplicates cross-chunk overlaps, groups by topic coherence, enforces the 3,500-byte YouTube cap, writes caveman part headings, and produces the final markdown.
@@ -253,6 +262,7 @@ HH:MM:SS - [Tag] Description
 | `scripts/validate_mood.py` | Verify mood-bearing timestamps honour mood_555 verdicts (Step 11.5) |
 | `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
 | `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
+| `scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
 | `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
 | `scripts/check_sections.py` | Validate byte cap + ASR garbles |
 | `scripts/validate_part_coherence.py` | Cross-reference game names vs signals |

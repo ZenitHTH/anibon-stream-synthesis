@@ -70,6 +70,8 @@ A new timestamp is only valid when ONE of these occurs:
 
 Multiple sub-topics within one continuous talk → MERGE into 1 timestamp with broader description.
 
+**GROUP GAP RULE (NO GAPS):** Across the whole group, no two consecutive surviving timestamps may be more than 10 minutes apart. The group subagents cover a 20-25 min window, so if you output 0 stamps for a stretch and the remaining stamps are >10 min apart, you MUST add a stamp covering the gap's real event (1-2 min micro-stamp is allowed). Strictly chronological within the group.
+
 ---
 
 ## Wrap Same-Topic Timestamps (post-merge, whole-group pass)
