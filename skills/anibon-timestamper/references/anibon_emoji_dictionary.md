@@ -44,6 +44,7 @@ This reference file lists all exclusive Anibon channel emotes, standard YouTube 
 | `:face-blue-smiling:`                               | **MEME_PULSE**             | Standard laughter flood alongside `555` (`ขำ / ฮา`)                                       | `1.5`  |
 | `:face-purple-crying:`                              | **CUTE_CUNNY_PULSE**       | Non-member substitute for `:_cunnyboat:` (`😭` cute & funny reaction)                     | `1.5`  |
 | `:face-red-droppy-eye:` / `:face-red-droppy-eyes:`  | **ANGRY_OUTRAGE_PULSE**    | Chat angry/outraged when Boat reports infuriating news (`เดือด / โกรธ / หัวร้อน`)         | `1.8`  |
+| `🥵` / `:face-hot:` / `:face-red-flushed-tongue:`   | **DOWNBAD_MEME_PULSE**     | Exclusive Anibon Chat meaning: Downbad / Horny / แพ้ความน่ารัก-เซ็กซี่ / ปลาตื่น 100% เท่านั้น  | `2.0`  |
 | `:face-blue-wide-eyes:` / `:face-purple-wide-eyes:` | **SHOCK_PULSE**            | Wide-eyed shock or surprise reaction (`ตกใจ / อึ้ง`)                                      | `1.5`  |
 | `:cat-orange-whistling:`                            | **INNOCENT_WHISTLE_PULSE** | Whistling cat / Acting innocent after trolling or mistake (`ผิวปาก / ทำเป็นไม่รู้ไม่ชี้`) | `1.2`  |
 | `:face-red-heart-shape:`                            | **WHOLESOME_LOVE_PULSE**   | Heart shape / Love, wholesome, and chat appreciation (`ใจฟู / เลิฟ`)                      | `1.5`  |
