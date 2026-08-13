@@ -100,6 +100,21 @@ python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json --chunk -
   `powershell -c "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; (Get-Content -Encoding UTF8 'C:\Users\peter\youtube_VIDEO_ID_workspace\cleaned_transcript.json' -Raw | ConvertFrom-Json) | ? { $_.start -ge 1000 -and $_.start -le 1200 }"`
 ---
 
+## Thai-Latin Hybrid Cleaning (garbled loanwords)
+
+Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an English phoneme is rendered as ASCII: `อีเวent` (event), `ยูทูer` (YouTuber), `ทarเก็ต` (target), `เซerกอร` (Berserker), `อิบukิ` (Ibuki). These survive `default_mappings.json` (which only handles game titles) and are the main source of garble in ANIBON streams.
+
+**Resource**: rules live in the shared `resources/garbled_replacements.json` (plugin root). `clean_garbled_english.py` auto-loads it via `resource_path()`, so all skill copies share one dict. Rules are regex, `re.IGNORECASE`, first-match wins; order longer/specific patterns first.
+
+### Workflow when a stream still shows hybrids
+1. **Detect**: scan transcript for `[\u0e00-\u0e7f]+[A-Za-z]{2,}` (Thai run glued to a Latin tail). Count tokens/unique.
+2. **Decode in context**: print 60 chars either side of each candidate. The correct form is the full Thai word the Latin tail is a fragment of (`อีเวent` → `อีเวนต์`).
+3. **Add only high-confidence rules** to `resources/garbled_replacements.json`. Add fuzzy suffixes as `Thai+Latin` pairs (`เบอร์ซer` → `เบอร์เซอร์`), whole words first, then fragments. Use `(?=[\\s,.]|$)` lookahead on short fragments (`เซer`, `ซer`) so you don't mangle longer words.
+4. **Never guess proper nouns**: ambiguous single-occurrence names (`ดองซam`, `โinaa`, `โอเดet`) → ask the user for the correct form instead of blind-regexing (see Iron Rules).
+5. **Verify**: re-run the scan; confirm remaining hybrids are only intentional English loanwords (`FGO`, `NP`, `YouTube`) or unconfirmed proper nouns.
+
+---
+
 ## Integration with Other Skills
 
 When activating a summarization or timestamping skill, follow these steps:

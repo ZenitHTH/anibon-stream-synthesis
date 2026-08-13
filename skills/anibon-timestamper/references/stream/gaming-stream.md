@@ -1,6 +1,6 @@
 ---
 name: anibon-gaming-stream
-description: Use when processing a chunk where the speaker is actively playing a game — exploring, fighting bosses, grinding, or reacting to gameplay. Do NOT use for talk-over-game chunks where Boat monologues dominate; load anibon-talk-stream alongside this skill.
+description: Use when processing a chunk where the speaker is actively playing a game — exploring, fighting bosses, grinding, or reacting to gameplay. Do NOT use for talk-over-game chunks where Boat monologues dominate; load `references/stream/talk-stream.md` alongside this reference.
 ---
 
 # Anibon Gaming Stream

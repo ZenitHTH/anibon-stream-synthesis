@@ -15,7 +15,7 @@ During UWUFUFU streams, Boat engages in bracket-style 1-on-1 elimination voting 
 
 ## When to Use
 
-- Directed here by `anibon-timestamper` orchestrator or `anibon-talk-stream` / `anibon-gaming-stream`.
+- Directed here by `anibon-timestamper` orchestrator or `references/stream/talk-stream.md` / `references/stream/gaming-stream.md`.
 - Chunk contains keyword signals: `UWUFUFU`, `uwufufu`, `World Cup`, `Ideal Cup`, `ศึกชิง`, `โหวต`, `รอบ 64`, `รอบ 32`, `รอบ 16`, `รอบ 8`, `รอบรอง`, `รอบชิง`, `แชมป์`, `คู่นี้`, `ตกรอบ`, `เลือก`.
 - The speaker is actively comparing 2 choices on screen, discussing bracket progression, or revealing global stats on `uwufufu.com`.
 

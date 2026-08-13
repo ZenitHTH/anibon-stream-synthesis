@@ -125,7 +125,7 @@ For every valid timestamp event:
 - `[Talk]`: Chatting, chat interaction, story tangents, general discussion
 - `[News]`: Reading news or commenting on real-world events (apply safety metaphors!)
 - `[Chat]`: Speaker reads/responds to live chat message directly
-- `[Donation]`: Speaker responds to paid superchat/donation (Must load `anibon-donation-classifier` to classify description)
+- `[Donation]`: Speaker responds to paid superchat/donation (Must load `references/stream/donation-classifier.md` to classify description)
 - `[Gameplay]`: Playing a game / fighting stages
 - `[Gacha]`: Drawing cards / summoning (NEVER reveal pull results)
 - `[Boss]`: Boss fight / challenging enemy
@@ -165,6 +165,20 @@ unrecognisable studio names, game titles that look wrong):
    - `Kagurabachi` — may be real (business newspaper leak) or hallucinated
    - Studio names with Thai suffixes
    - Romanised Japanese titles with mixed Thai characters
+3. **Emit a GARBLED_NOTE for any garbled word you had to decode.** After your timestamp
+   lines, output a `GARBLED_NOTES:` block — one line per garbled word you resolved (or
+   could not resolve) while reading the chunk:
+   ```
+   GARBLED_NOTES:
+   "ดองซam" -> <correct Thai form or UNKNOWN> @ <timestamp> (chunk_<NN>)
+   ```
+   Rules:
+   - Only real garbles (Thai-Latin hybrids that survived cleaning), NOT correct loanwords
+     like `FGO` / `NP` / `YouTube`.
+   - `UNKNOWN` if you cannot confidently resolve — never guess a rule.
+   - If no garbles found, omit the block entirely.
+   - A downstream subagent (anibon-garbled-notes) consolidates these into
+     `garbled_notes.json` and appends confirmed ones to `garbled_replacements.json`.
 
 ### B. Contextual Plausibility Check (Prevents Game-Hallucination)
 **Every game/anime name you write MUST appear in (or be unambiguously implied by)
@@ -218,7 +232,7 @@ If tag = `[Story]` AND source game/scene is identifiable:
 Format: `[Story] [Game] [Chapter/Scene] — [Synopsis] (ref: game script)`
 Keep total ≤ 12 words.
 
-Load `anibon-story-enrichment` for full protocol.
+Load `references/stream/story-enrichment.md` for full protocol.
 
 ## Step 5: Analyze Talk & Conversation Flow (Talk-Heavy Chunks)
 If chunk is primarily talking/chatting:
@@ -289,7 +303,7 @@ Do NOT overstate: if the live is calm about a gacha fail, do NOT write words tha
 **Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
 
 ## Step 6: Write Description
-- Load `anibon-timestamp-description`.
+- Load `references/stream/timestamp-description.md`.
 - If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.
 - **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
 - Macro summary only. Language: <User's Requested Language>.
@@ -298,7 +312,7 @@ Do NOT overstate: if the live is calm about a gacha fail, do NOT write words tha
   - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: `[Local Name] (English / 日本語)` e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
   - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames/names only (e.g. `มาชู`, `ก๊อดดอฟ`) without parentheses.
 - If unsure of a name → omit it, describe the event instead.
-- For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `anibon-donation-classifier`.
+- For `[Donation]`, classify into Serious, Joke, Q&A, or Weird, and match description style specified in `references/stream/donation-classifier.md`.
 
 ## Step 7: Format Output
 `HH:MM:SS - [Tag] Description`

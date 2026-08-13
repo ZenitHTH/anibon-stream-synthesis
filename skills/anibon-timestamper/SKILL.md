@@ -119,10 +119,27 @@ python3 -X utf8 scripts/detect_signals.py \
 
 Output: `signals.json` — per-chunk weighted signal: `matched_files` (with `df`/`weight`), `weighted_matched_files` (ranked), `best_file`, `primary_topic`, `confidence`.
 
+> **Path convention:** every `best_file`/`matched_files` path in `knowledge.json` is **relative to the timestamper skill root**. `references/stream/*.md` = local to timestamper; `../anibon-world-identity/references/*.md` = world-identity skill; `../reference/*` = top-level data dir. Resolve all of them from the timestamper root, never from the current cwd.
+
 > **Rarity = main idea**: `detect_signals.py` weights each matched keyword by inverse
 > document frequency (`log(N/df)`). High-frequency (df high) words are daily-use filler
 > and score 0 — ignored. Low-frequency (rare) words are the distinctive main idea.
 > Hand `best_file` to a subagent only when `confidence` is clear; otherwise omit the knowledge file.
+
+### 5.5 Load World-Identity (if signals match a game reference)
+
+**Trigger:** `signals.json` `best_file`/`weighted_matched_files` resolves to a file under `../anibon-world-identity/references/` (i.e. post-cutoff game/char names). These names are the ones subagents hallucinate.
+
+**Action:** Load the **`anibon-world-identity`** skill. It runs `references/INDEX.md` → cached story refs → reference SRT → websearch fallback to build a verified Thai-phoneme → EN name map. Bootstrap its game DBs first:
+
+```bash
+python3 ../anibon-world-identity/scripts/fetch_fgo_db.py --check --db "../reference/FGO and DATA/atlas_fgo.db" || \
+  python3 ../anibon-world-identity/scripts/fetch_fgo_db.py --db "../reference/FGO and DATA/atlas_fgo.db"
+python3 ../anibon-world-identity/scripts/fetch_ygo_db.py --check --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
+  python3 ../anibon-world-identity/scripts/fetch_ygo_db.py --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+```
+
+**Inject** the resolved name map into the Step 7 subagent prompts (any chunk whose signal matches one of these files) so `[Story]` stamps use canonical names, not phonetic guesses. Skip when stream covers well-known pre-cutoff content.
 
 ### 6. Detect Topic Boundaries (Optional)
 
@@ -183,6 +200,37 @@ Enforces the **NO GAPS** iron rule. Run on the merged list; if it exits non-zero
 python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 # exit 0: no gaps. exit 1: prints e.g. "12m 01:13 -> 01:25 (fill around chunk_26)"
 ```
+
+### 8.6 Collect Garbled Notes → Grow Dictionary (NEW)
+
+Each chunk subagent emitted a `GARBLED_NOTES:` block (Step 3.5) for Thai-Latin hybrid words that survived cleaning. Collect + consolidate them into a structured file, then append confirmed corrections to the shared cleaning dictionary.
+
+```bash
+# 1. Extract GARBLED_NOTES blocks from each subagent's output file into a raw notes dir
+#    (orchestrator: after writing chunk_<group>.txt, copy each GARBLED_NOTES block to
+#     ~/youtube_<id>_workspace/garbled_notes_raw/<group>.txt — empty files allowed)
+```
+
+Then spawn **`anibon-garbled-notes`** (one run, after all groups have returned and merged):
+
+```python
+invoke_subagent(
+    "anibon-garbled-notes",
+    prompt=(
+        f"WORKSPACE: ~/youtube_<id>_workspace\n"
+        f"PLUGIN_ROOT: <anibon-stream-synthesis plugin root>\n"
+        f"Read garbled_notes_raw/*.txt, consolidate against raw_transcript.json + chunks/,\n"
+        f"write garbled_notes.json, append confirmed rules to resources/garbled_replacements.json."
+    )
+)
+```
+
+Outputs:
+- `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `correct` or `null`, `chunk`, `ts`, `context`)
+- `resources/garbled_replacements.json` — appended with only HIGH-confidence rules (valid JSON preserved)
+
+The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
+auto-loads the new rules. Unresolved proper nouns are left `correct: null` for human confirmation.
 
 ### 9. Final Assembly — `anibon-summarizer` (Replaces wrap + pack)
 
@@ -279,7 +327,7 @@ HH:MM:SS - [Tag] Description
 
 ## Iron Rules
 
-- **Use named agents** — Step 7 MUST use `invoke_subagent("anibon-chunk-timestamper")` per chunk. Step 9 MUST use `invoke_subagent("anibon-summarizer")`. Never substitute a generic Task/self agent.
+- **Use named agents** — Step 7 MUST use `invoke_subagent("anibon-chunk-timestamper")` per chunk. Step 8.6 MUST use `invoke_subagent("anibon-garbled-notes")`. Step 9 MUST use `invoke_subagent("anibon-summarizer")`. Never substitute a generic Task/self agent.
 - **STRICT SUBAGENT BATCHING (MAX 6)** — Never launch more than 6 subagents simultaneously. Process in batches of 6, wait for completion, then proceed to the next batch.
 - **FLASH MODEL TIER FOR CHUNKS** — Use `Model: "flash"` for chunk timestamper subagents to ensure fast execution and avoid API rate limits.
 - **NO HEURISTIC / REGEX FALLBACKS** — Never fall back to heuristic text-generation scripts if subagents hit errors or rate limits. All timestamps MUST be generated by authentic `anibon-chunk-timestamper` subagent runs reading real transcript XML and LiveChat logs.

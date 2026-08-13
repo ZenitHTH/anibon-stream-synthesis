@@ -153,6 +153,20 @@ For every valid timestamp event:
 If you see partially garbled English (half-Thai-half-English words, unrecognisable studio names, game titles that look wrong):
 1. Search web to verify the correct name before writing.
 2. Common garbles: `Kagurabachi` (may be real or hallucinated), studio names with Thai suffixes, Romanised Japanese titles with mixed Thai characters.
+3. **Emit a GARBLED_NOTE for any garbled word you had to decode.** After your timestamp
+   lines, output a `GARBLED_NOTES:` block — one line per garbled word you resolved (or
+   could not resolve) while reading the chunk:
+   ```
+   GARBLED_NOTES:
+   "ดองซam" -> <correct Thai form or UNKNOWN> @ <timestamp> (chunk_<NN>)
+   ```
+   Rules:
+   - Only real garbles (Thai-Latin hybrids that survived cleaning), NOT correct loanwords
+     like `FGO` / `NP` / `YouTube`.
+   - `UNKNOWN` if you cannot confidently resolve — never guess a rule.
+   - If no garbles found, omit the block entirely.
+   - A downstream subagent (anibon-garbled-notes) consolidates these into
+     `garbled_notes.json` and appends confirmed ones to `garbled_replacements.json`.
 
 ### B. Contextual Plausibility Check (Prevents Game-Hallucination)
 Every game/anime name you write MUST appear in (or be unambiguously implied by) the transcript text.

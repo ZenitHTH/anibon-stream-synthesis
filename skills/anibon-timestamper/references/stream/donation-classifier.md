@@ -11,7 +11,7 @@ A cross-stream subskill loaded by any anibon-timestamper subagent whenever a [Do
 
 ## When to Use
 
-Load this skill alongside the primary stream skill (`anibon-talk-stream`, `anibon-gaming-stream`, etc.) whenever the transcript shows the speaker reading or reacting to a paid message (superchat / โดเนท).
+Load this reference alongside the primary stream reference (`references/stream/talk-stream.md`, `references/stream/gaming-stream.md`, etc.) whenever the transcript shows the speaker reading or reacting to a paid message (superchat / โดเนท).
 
 Detection cues in transcript:
 - `ขอบคุณ... โดเนท` / `ขอบคุณ... ซุปเปอร์แชท`

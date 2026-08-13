@@ -266,4 +266,4 @@ Never force all 4. A good timestamp includes **2-3 strong pillars**. The 4th is 
   - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: `[Local Name] (English / 日本語)` e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
   - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames/names only (e.g., `มาชู`, `ก๊อดดอฟ`) without parentheses.
 - **Caveman OK.** Drop articles, filler, pleasantries. Fragments allowed. Technical terms exact.
-- **Not for [Donation].** Use `anibon-donation-classifier` for donation timestamps instead.
+- **Not for [Donation].** Use `references/stream/donation-classifier.md` for donation timestamps instead.

@@ -351,15 +351,15 @@
   },
   "ygo": {
    "kind": "game",
-   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "yu-gi-oh": {
    "kind": "game",
-   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "yugioh": {
    "kind": "game",
-   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "zenless": {
    "kind": "game",
@@ -419,7 +419,7 @@
   },
   "ยูกิ": {
    "kind": "game",
-   "file": "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
   },
   "รางดาว": {
    "kind": "game",
