@@ -1,7 +1,7 @@
 # Anibon Stream Synthesis Plugin
 
-![Version](https://img.shields.io/badge/version-1.1.5-blue)
-[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.1.5)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
+[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.2.0)
 
 A suite of AI agent skills for deep research, live-stream transcript processing, automated timestamping, LiveChat subculture mood analysis, and highlight video cutting. Works across **Antigravity CLI**, **Claude Code**, **OpenCode**, and **Pi Coding Agent**.
 
@@ -30,7 +30,9 @@ Extract key topics, gaming moments, story readings, meme bursts, and donations i
 ```
 
 - **Full List Reveal Rule**: Automatically parses across adjacent chunk boundaries so multi-item reveals (e.g., 7 animation updates) are never truncated to single-chunk limits.
-- **LiveChat & Mood 555 Integration**: Ingests livechat replays to detect `MEME_PULSE` (555 laughter bursts) and enforce Thai internet humor verbs (`ฮาแซว`, `ปั่น`, `อวยมีม`, `ลุ้น 15 HP`).
+- **Mood & LiveChat 555 Integration**: Ingests livechat replays to detect `MEME_PULSE` (555 laughter bursts) and enforce Thai internet humor verbs (`ฮาแซว`, `ปั่น`, `อวยมีม`, `ลุ้น 15 HP`). Mood verdicts per chunk are injected as tone guidance into subagent prompts.
+- **Garbled-Word Feedback Loop**: Chunk subagents emit `GARBLED_NOTES` for Thai-Latin hybrids that survive cleaning; the `anibon-garbled-notes` subagent consolidates them, writes `garbled_notes.json`, and grows the shared cleaning dictionary so every future stream auto-corrects them.
+- **NO GAPS Enforcement**: `audit_gaps.py` + agent guardrails enforce the max-10-minute timestamp gap rule with gap→chunk mapping.
 - **Quota Packing**: Groups timestamps into 5 high-density parts optimized for YouTube's 4,500-byte comment cap.
 
 ### 2. Cut Highlight Videos
@@ -63,6 +65,10 @@ python skills/whisper-corruption-recovery/scripts/enrich_uncertain_with_vision.p
   - Ensures subagents read across adjacent chunks for list announcements (character update lists, gacha line-ups) so full counts (e.g. 7 male servants) are accurately captured.
 - 📊 **555 Pulse & LiveChat Alignment**:
   - `analyze_555.py` aligns livechat messages per 5-minute chunk, identifying 555 laughter spikes and overriding flat tone verbs with authentic streamer/chat humor verbs.
+  - `validate_mood.py` verifies mood-bearing timestamps honour the per-chunk mood verdict.
+- 🧹 **Garbled-Word Auto-Correction**:
+  - `clean_garbled_english.py` normalises Thai-Whisper garbled English (Thai syllable + Latin tail, e.g. `อีเวent` → `อีเวนต์`).
+  - `garbled_replacements.json` is shared via `resource_path()` across all skill copies and auto-grows each stream via the `anibon-garbled-notes` feedback loop (94 rules and counting).
 - 📦 **YouTube Comment Quota Optimization**:
   - Merges sparse entries into high-density topic-coherent sections (~2,500–3,300 bytes per section) with 0 validation errors via `check_sections.py`.
 
@@ -107,6 +113,7 @@ npx skills add zenithth/anibon-stream-synthesis/skills/anibon-timestamper -g
 | `youtube-minutes-synthesis` | Extract YouTube transcripts into structured meeting minutes | `/youtube-minutes-synthesis <URL>` |
 | `preparing-tools` | Pre-flight system tool verifier (`yt-dlp`, `ffmpeg`, `sqlite3`) | Auto-called by orchestrators |
 | `antigravity-vision-proxy` | Frame extraction & visual inspection proxy for game/UI context | Visual verification fallback |
+| `batching-subagents-concurrency` | Rate-limit-safe parallel subagent batching (MAX 6 concurrent) | Auto-loaded by orchestrators |
 
 ---
 

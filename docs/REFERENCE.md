@@ -98,6 +98,40 @@ python3 scripts/check_sections.py anibon_timestamps.md
 # Output: ✅ OK / ⚠️ WARN (>4,500) / ❌ OVER (>5,000) per section
 ```
 
+### `analyze_555.py` — LiveChat 555-Pulse Mood Detector
+
+Aligns livechat messages per transcript chunk, detects `MEME_PULSE` (555 laughter bursts) with weighted emote scoring, and emits per-chunk mood segments (`mood_555.json`).
+
+```bash
+python3 scripts/analyze_555.py <livechat_events.txt> <chunks_dir> --output mood_555.json
+```
+
+### `validate_mood.py` — Mood Verdict Validator
+
+Verifies mood-bearing timestamps honour each chunk's mood verdict from `mood_555.json`. Injected into subagent prompts as tone guidance (AI keeps verb creativity).
+
+```bash
+python3 scripts/validate_mood.py mood_555.json all_timestamps.txt
+```
+
+### `audit_gaps.py` — NO GAPS Audit
+
+Enforces the max-10-minute gap rule. Flags silent/unverified gaps and maps each gap to the chunk that should cover it. **MANDATORY before the summarizer.**
+
+```bash
+python3 scripts/audit_gaps.py all_timestamps.txt --chunks-dir chunks
+```
+
+### `clean_garbled_english.py` — Thai-Latin Hybrid Normalizer
+
+Normalises Whisper-garbled English loanwords (Thai syllable + Latin tail, e.g. `อีเวent` → `อีเวนต์`, `ทarเก็ต` → `ทาร์เก็ต`). Reads rules from the shared `garbled_replacements.json` (resolved via `resource_path()` up to plugin root — single source across all skill copies).
+
+```bash
+python3 scripts/clean_garbled_english.py --chunks /path/to/chunks --dry-run
+```
+
+The dictionary auto-grows each stream via the `anibon-garbled-notes` feedback loop (Step 8.6).
+
 ### `fetch_story_ref.py` — Story Synopsis Fetcher & Cache
 
 Websearches for official game story synopsis when subagent detects `[Story]` and identifies source game/scene. Requires user confirmation before searching.

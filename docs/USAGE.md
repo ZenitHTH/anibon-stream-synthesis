@@ -9,11 +9,13 @@
 For streams > 2 hours:
 
 1. **Split** into overlapping chunks (default 5-min, `--block 300 --overlap 30`)
-2. **LiveChat & Mood Alignment** — extract livechat logs and run `analyze_555.py` to identify `MEME_PULSE` (555 laughter bursts)
-3. **Parallel subagents** process each chunk/group with specialized sub-skills (`anibon-chunk-timestamper`)
+2. **LiveChat & Mood Alignment** — extract livechat logs and run `analyze_555.py` to identify `MEME_PULSE` (555 laughter bursts) and emit per-chunk mood segments (`mood_555.json`)
+3. **Parallel subagents** process each chunk/group (4–5 chunks each) with specialized sub-skills (`anibon-chunk-timestamper`), batched MAX 6 concurrent
 4. **Full List Reveal Protocol** — subagents verify multi-item announcements across adjacent chunks before concluding total counts or character names
-5. **Reduce** — combine results, deduplicate, pack into 5 byte-limited parts via `anibon-summarizer`
-6. **Verify** — run `check_sections.py` to validate YouTube comment sizes (target ≤ 3,500 bytes per section)
+5. **Mood-Verified Descriptions** — `validate_mood.py` confirms mood-bearing timestamps honour each chunk's mood verdict
+6. **Reduce** — combine results, deduplicate, audit gaps via `audit_gaps.py` (NO GAPS rule, max 10 min), pack into 5 byte-limited parts via `anibon-summarizer`
+7. **Garbled-Word Feedback** — `anibon-garbled-notes` subagent consolidates `GARBLED_NOTES` blocks, writes `garbled_notes.json`, and appends confirmed rules to the shared `garbled_replacements.json` dictionary
+8. **Verify** — run `check_sections.py` to validate YouTube comment sizes (target ≤ 3,500 bytes per section)
 
 ### Local LLM Guardrails (Goldfish Brain Protocol)
 
@@ -42,7 +44,17 @@ Subagents apply subculture psychology to avoid flattening streamer and chat bant
 
 ### Final Assembly
 
-`pack_timestamps.py` uses **greedy fill** (not DP partition). Produces minimum part count at byte_limit while preserving tag continuity within each part. Adjacent `[Story]` entries automatically merge.
+`anibon-summarizer` subagent deduplicates cross-chunk overlaps, groups by activity period, and packs into byte-limited parts. `pack_timestamps.py` uses **greedy fill** (not DP partition) as the scripted fallback — produces minimum part count at byte_limit while preserving tag continuity within each part. Adjacent `[Story]` entries automatically merge.
+
+### Garbled-Word Feedback Loop
+
+Chunk subagents flag Thai-Latin hybrids that survived cleaning (`GARBLED_NOTES:` blocks, e.g. `"พีender" -> <correct|UNKNOWN> @ HH:MM:SS (chunk_NN)`). After merge, `anibon-garbled-notes`:
+1. Consolidates + dedupes candidates across all chunk groups
+2. Verifies each against the raw transcript context
+3. Writes `garbled_notes.json` (`correct` or `null` for unresolved proper nouns)
+4. Appends only HIGH-confidence rules to the shared `garbled_replacements.json`
+
+The dictionary resolves via `resource_path()` up to plugin root, so every future stream auto-loads new rules. Ambiguous proper nouns stay `correct: null` for human confirmation — never guessed.
 
 ### Final Assembly (Windows)
 
@@ -83,3 +95,7 @@ Not applied by default. Only triggers on actual legal-risk signals:
 12. **Story enrichment requires user consent** — never websearch for synopsis without asking.
 13. **Full List Reveal Requirement** — never finalize list announcements (servants, banners) without reading across adjacent chunk boundaries.
 14. **Greedy pack preserves tag continuity** — `pack_timestamps.py` fills to byte_limit, keeps same-tag clusters together.
+15. **NO GAPS** — max 10 min between timestamps unless verified silent; run `audit_gaps.py` before summarizer.
+16. **Use named agents** — chunk groups MUST use `anibon-chunk-timestamper`, garbled collection MUST use `anibon-garbled-notes`, assembly MUST use `anibon-summarizer`. Never substitute a generic Task/self agent.
+17. **Subagent batching MAX 6** — never launch more than 6 concurrent subagents; process in batches.
+18. **Don't guess garbled words** — unresolved proper nouns go to `garbled_notes.json` as `correct: null`, never appended as blind regex rules.

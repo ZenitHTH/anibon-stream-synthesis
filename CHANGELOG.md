@@ -3,6 +3,64 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] — 2026-08-13
+
+### Added
+- **Garbled-Word Feedback Loop** — chunk subagents emit `GARBLED_NOTES:` blocks for Thai-Latin hybrids that survive cleaning; new `anibon-garbled-notes` subagent consolidates them, writes `garbled_notes.json` (Step 8.6), and appends confirmed rules to the shared `garbled_replacements.json`. Dictionary auto-grows each stream via `resource_path()` (now 94 rules).
+- **Mood-Driven Tone Pipeline** — `analyze_555.py` emits per-chunk mood segments from emote-weighted LiveChat scoring; `validate_mood.py` verifies mood-bearing timestamps honour verdicts; Thai mood hints injected into subagent prompts (AI keeps verb creativity).
+- **Named Subagents** — `anibon-chunk-timestamper`, `anibon-garbled-notes`, `anibon-summarizer` as first-class agents wired into the pipeline; never generic Task/self agents.
+- **NO GAPS Enforcement** — `audit_gaps.py` + agent guardrails enforce the max-10-min gap rule with gap→chunk mapping.
+- **Subagent Batching** — MAX 6 concurrent subagents via `batching-subagents-concurrency` skill.
+- **Group-of-Chunks Model** — subagents process 4–5 chunks per group for topic continuity; prompt template fully adapted.
+- **LiveChat Psychology & Mood Rules** — emote-intent laugh detection, granular high-meme rules, full-list reveal across adjacent chunks.
+
+### Changed
+- `garbled_replacements.json` resolved via `resource_path()` up to plugin root — fixes stale-shadow bug where per-skill copies hid the full dictionary.
+- `detect_signals.py` / `clean_garbled_english.py` support XML chunk format.
+- Mood segment start uses chunk first chat ts (not 00:00:00).
+- Emoji surfaced as plaintext for chat parsing + emote-aware mood.
+- Windows compatibility + chunk-reader helper in timestamper.
+- Skills restructured per official plugin anatomy; structure tests added.
+
+### Fixed
+- Removed invalid `tools` field from agent frontmatter; banned raw-transcript pasting in chunk-timestamper; synced OpenCode/Antigravity agent copies.
+- Weighted emote scoring with real verdicts and self-consistent segments.
+
+---
+
+## [1.1.4] — 2026-07-31
+
+### Added
+- **Standalone `npx skills` support** — bundled `anibon` Python package into each skill's `scripts/anibon/` (zero-setup single-skill install).
+- **Whisper Corruption Recovery** — BFS parallel divide-and-conquer (`fix_hallucinations.py`) with 30s base case and multi-sentence loop scanner.
+- **Vision Proxy Frame Extraction** — `enrich_uncertain_with_vision.py` extracts frames at `[?]` uncertain timestamps.
+- **Multithreaded `detect_signals.py`** — hardware-adaptive keyword matching.
+- **Channel & Nickname Knowledge** — `@MonthonKri` (พี่โต๊ะ) mapping + collab history in `resources/channels.json`.
+- **Knowledge Base Expansion** — Blue Archive, Dinoblade, Sekiro, IRL Vlog `[Food]`/`[Shopping]` lore keywords.
+
+### Fixed
+- Strict word-boundary matching in topic classifier; XML chunk support in `detect_signals.py`.
+- Garbled-English post-processing in `pack_timestamps.py`.
+- Relative (not absolute) paths in SKILL.md.
+
+---
+
+## [1.1.3] — 2026-07-25
+
+### Added
+- **Context-first balanced partition** in `pack_timestamps.py` — replaces greedy with context-aware packing.
+- **`TAG_MACRO_MAP`** — groups `[Talk]`/`[Reaction]`/`[Chat]` into single story clusters.
+- **Story merge & enrichment** — adjacent `[Story]` entries collapse; optional synopsis enrichment with user consent.
+- **Narrative chapter indexing** — restarts per comment block (1, 2, 3); omits sub-chapter header for single-chapter blocks.
+- **Reference restructure** — split into `stream/`/`games/`/`tokusatsu/` subfolders; added uwufufu + FGO + anime-talk references.
+- **Intro segment breakdown** — long openings split into 3–5-min sub-topic milestones.
+
+### Changed
+- Title cleaning — increased max_len, strips leading Thai vowels to prevent truncated titles.
+- README restructured with clear quickstart + `npx skills` as recommended universal installer.
+
+---
+
 ## [1.1.2] — 2026-07-23
 
 ### Changed

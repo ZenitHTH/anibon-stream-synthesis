@@ -1,6 +1,6 @@
 # Anibon Stream Synthesis — Skills Index & Sitemap
 
-This document lists all 18 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
+This document lists all 19 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
 
 ## 1. Orchestrator Skills
 
@@ -26,6 +26,7 @@ Specialized handlers loaded by signal triggers or fallback logic:
 - antigravity-vision-proxy — Inspects video frames via ffmpeg + view_file when vision ground truth is needed.
 - edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, and audio sync fixing.
 - anibon-stream-synthesis-ffmpeg — Advanced FFmpeg editing skill for seamless narrative flows.
+- batching-subagents-concurrency — Rate-limit-safe parallel subagent dispatch (MAX 6 concurrent batches).
 
 ## 3. Utility & Synthesis Skills
 
@@ -34,3 +35,11 @@ Document creation, CLI tool building, and research utilities:
 - synthesizing-knowledge — Synthesizes multi-source markdown research documents with citation links.
 - building-reusable-cli-tools — Guidance for writing modular, testable Python processing utilities.
 - writing-plugin-readme — Guidelines for writing professional README documentation.
+
+## 4. Named Subagents (Wired into the timestamper pipeline)
+
+First-class subagents that the orchestrator invokes by name — never generic Task/self agents:
+
+- `anibon-chunk-timestamper` — One per chunk-group (4–5 chunks). Reads transcript XML + LiveChat log, writes timestamps, emits `GARBLED_NOTES:` blocks for surviving Thai-Latin hybrids.
+- `anibon-garbled-notes` — One per stream, after merge. Consolidates `GARBLED_NOTES` blocks, writes `garbled_notes.json`, appends confirmed rules to `garbled_replacements.json`.
+- `anibon-summarizer` — One per stream. Deduplicates cross-chunk overlaps, groups by activity period, packs into byte-limited parts, writes the final markdown.
