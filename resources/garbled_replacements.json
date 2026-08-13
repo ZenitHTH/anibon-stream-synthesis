@@ -2,79 +2,381 @@
   "description": "Garbled English → correct mapping for clean_garbled_english.py",
   "note": "First-match wins. Order matters: put longer/more specific patterns first.",
   "replacements": [
-    {"pattern": "one\\s+พ[ั้]?man", "replacement": "One Punch Man"},
-    {"pattern": "one\\s+punch\\s*man", "replacement": "One Punch Man"},
-    {"pattern": "แมป[ป]?[าa]", "replacement": "MAPPA"},
-    {"pattern": "JC\\s*Star", "replacement": "JC Staff"},
-    {"pattern": "J\\.C\\.\\s*Star", "replacement": "JC Staff"},
-    {"pattern": "เจซี\\s*สตาฟ[ฟ]?", "replacement": "JC Staff"},
-    {"pattern": "foage", "replacement": "footage"},
-    {"pattern": "ฟ[ุู]ตเท[จก]", "replacement": "footage"},
-    {"pattern": "ad\\s*[ดดี]apt(?!ation)", "replacement": "adapt"},
-    {"pattern": "ad\\s*[ดดี]aptation", "replacement": "adaptation"},
-    {"pattern": "adapt\\s*ation", "replacement": "adaptation"},
-    {"pattern": "\\borigal\\b", "replacement": "original"},
-    {"pattern": "อริจินอ", "replacement": "original"},
-    {"pattern": "[fฟ]อ[ื]?ม(?=[\\s,.]|$)", "replacement": "form"},
-    {"pattern": "time\\s*m[รฤ]fr", "replacement": "timeline"},
-    {"pattern": "time\\s*[fฟ]ร[ั]?ม", "replacement": "timeline"},
-    {"pattern": "ฮกสตาร", "replacement": "Honkai Star Rail"},
-    {"pattern": "wing\\s*wave", "replacement": "Wuthering Waves"},
-    {"pattern": "Wing\\s*Wave", "replacement": "Wuthering Waves"},
-    {"pattern": "Wuthering\\s*Wave\\b", "replacement": "Wuthering Waves"},
-    {"pattern": "seele\\s*leaks?", "replacement": "Seele Leaks"},
-    {"pattern": "adดaptเตation", "replacement": "แอดัปเตชัน"},
-    {"pattern": "adดapt", "replacement": "แอดัปต์"},
-    {"pattern": "ดaptation", "replacement": "แอดัปเตชัน"},
-    {"pattern": "เบอร์ซerกอร", "replacement": "เบอร์เซอร์เกอร์"},
-    {"pattern": "เบอร์เซer", "replacement": "เบอร์เซอร์"},
-    {"pattern": "เซerกอร", "replacement": "เซอร์เกอร์"},
-    {"pattern": "ยูทูบer", "replacement": "ยูทูเบอร์"},
-    {"pattern": "ยูทูปer", "replacement": "ยูทูเบอร์"},
-    {"pattern": "ยูทูer", "replacement": "ยูทูเบอร์"},
-    {"pattern": "ยูทer", "replacement": "ยูทูเบอร์"},
-    {"pattern": "แอทack", "replacement": "แอตแท็ก"},
-    {"pattern": "แทack", "replacement": "แอตแท็ก"},
-    {"pattern": "แคปture", "replacement": "แคปเจอร์"},
-    {"pattern": "แคture", "replacement": "แคปเจอร์"},
-    {"pattern": "คทent", "replacement": "คอนเทนต์"},
-    {"pattern": "อีเวent", "replacement": "อีเวนต์"},
-    {"pattern": "ทarเก็ต", "replacement": "ทาร์เก็ต"},
-    {"pattern": "โate", "replacement": "โดเนต"},
-    {"pattern": "โดate", "replacement": "โดเนต"},
-    {"pattern": "คent", "replacement": "คอนเทนต์"},
-    {"pattern": "แack", "replacement": "แอ็ก"},
-    {"pattern": "สวิตch", "replacement": "สวิตช์"},
-    {"pattern": "อิบukิ", "replacement": "อิบุกิ"},
-    {"pattern": "บาanceซ", "replacement": "แบลงซ์"},
-    {"pattern": "บาance", "replacement": "แบลงซ์"},
-    {"pattern": "คอแลap", "replacement": "คอลแลปส์"},
-    {"pattern": "ฟield", "replacement": "ฟีลด์"},
-    {"pattern": "ฟiel", "replacement": "ฟีลด์"},
-    {"pattern": "สปริit", "replacement": "สปิริต"},
-    {"pattern": "โรบินฮost", "replacement": "โรบินฮูด"},
-    {"pattern": "ครtical", "replacement": "คริติคอล"},
-    {"pattern": "crครtical", "replacement": "คริติคอล"},
-    {"pattern": "เซerกอ", "replacement": "เซอร์เกอร์"},
-    {"pattern": "Crิtical", "replacement": "คริติคอล"},
-    {"pattern": "คริal", "replacement": "คริติคอล"},
-    {"pattern": "ิtical", "replacement": "ิติคอล"},
-    {"pattern": "ชารกate", "replacement": "ชาร์จ"},
-    {"pattern": "อoriginal", "replacement": "ออริจินัล"},
-    {"pattern": "อtimiz", "replacement": "ออพติไมซ์"},
-    {"pattern": "สรีมing", "replacement": "สตรีมมิ่ง"},
-    {"pattern": "โดนate", "replacement": "โดเนต"},
-    {"pattern": "เice", "replacement": "ไนซ์"},
-    {"pattern": "ชุดพีce", "replacement": "ชุดพีซ"},
-    {"pattern": "คอเplay", "replacement": "คอสเพลย์"},
-    {"pattern": "อริจินal", "replacement": "ออริจินัล"},
-    {"pattern": "เพฟect", "replacement": "เพอร์เฟกต์"},
-    {"pattern": "เอฟเฟect", "replacement": "เอฟเฟกต์"},
-    {"pattern": "เบอร์ซer", "replacement": "เบอร์เซอร์"},
-    {"pattern": "เบอรซer", "replacement": "เบอร์เซอร์"},
-    {"pattern": "บซer", "replacement": "เบอร์เซอร์"},
-    {"pattern": "เซer(?=[\\s,.]|$)", "replacement": "เซอร์"},
-    {"pattern": "ซer(?=[\\s,.]|$)", "replacement": "เซอร์"},
-    {"pattern": "ทer\\s+Movie", "replacement": "เดอะ มูฟวี่"}
+    {
+      "pattern": "one\\s+พ[ั้]?man",
+      "replacement": "One Punch Man"
+    },
+    {
+      "pattern": "one\\s+punch\\s*man",
+      "replacement": "One Punch Man"
+    },
+    {
+      "pattern": "แมป[ป]?[าa]",
+      "replacement": "MAPPA"
+    },
+    {
+      "pattern": "JC\\s*Star",
+      "replacement": "JC Staff"
+    },
+    {
+      "pattern": "J\\.C\\.\\s*Star",
+      "replacement": "JC Staff"
+    },
+    {
+      "pattern": "เจซี\\s*สตาฟ[ฟ]?",
+      "replacement": "JC Staff"
+    },
+    {
+      "pattern": "foage",
+      "replacement": "footage"
+    },
+    {
+      "pattern": "ฟ[ุู]ตเท[จก]",
+      "replacement": "footage"
+    },
+    {
+      "pattern": "ad\\s*[ดดี]apt(?!ation)",
+      "replacement": "adapt"
+    },
+    {
+      "pattern": "ad\\s*[ดดี]aptation",
+      "replacement": "adaptation"
+    },
+    {
+      "pattern": "adapt\\s*ation",
+      "replacement": "adaptation"
+    },
+    {
+      "pattern": "\\borigal\\b",
+      "replacement": "original"
+    },
+    {
+      "pattern": "อริจินอ",
+      "replacement": "original"
+    },
+    {
+      "pattern": "[fฟ]อ[ื]?ม(?=[\\s,.]|$)",
+      "replacement": "form"
+    },
+    {
+      "pattern": "time\\s*m[รฤ]fr",
+      "replacement": "timeline"
+    },
+    {
+      "pattern": "time\\s*[fฟ]ร[ั]?ม",
+      "replacement": "timeline"
+    },
+    {
+      "pattern": "ฮกสตาร",
+      "replacement": "Honkai Star Rail"
+    },
+    {
+      "pattern": "wing\\s*wave",
+      "replacement": "Wuthering Waves"
+    },
+    {
+      "pattern": "Wing\\s*Wave",
+      "replacement": "Wuthering Waves"
+    },
+    {
+      "pattern": "Wuthering\\s*Wave\\b",
+      "replacement": "Wuthering Waves"
+    },
+    {
+      "pattern": "seele\\s*leaks?",
+      "replacement": "Seele Leaks"
+    },
+    {
+      "pattern": "adดaptเตation",
+      "replacement": "แอดัปเตชัน"
+    },
+    {
+      "pattern": "adดapt",
+      "replacement": "แอดัปต์"
+    },
+    {
+      "pattern": "ดaptation",
+      "replacement": "แอดัปเตชัน"
+    },
+    {
+      "pattern": "เบอร์ซerกอร",
+      "replacement": "เบอร์เซอร์เกอร์"
+    },
+    {
+      "pattern": "เบอร์เซer",
+      "replacement": "เบอร์เซอร์"
+    },
+    {
+      "pattern": "เซerกอร",
+      "replacement": "เซอร์เกอร์"
+    },
+    {
+      "pattern": "ยูทูบer",
+      "replacement": "ยูทูเบอร์"
+    },
+    {
+      "pattern": "ยูทูปer",
+      "replacement": "ยูทูเบอร์"
+    },
+    {
+      "pattern": "ยูทูer",
+      "replacement": "ยูทูเบอร์"
+    },
+    {
+      "pattern": "ยูทer",
+      "replacement": "ยูทูเบอร์"
+    },
+    {
+      "pattern": "แอทack",
+      "replacement": "แอตแท็ก"
+    },
+    {
+      "pattern": "แทack",
+      "replacement": "แอตแท็ก"
+    },
+    {
+      "pattern": "แคปture",
+      "replacement": "แคปเจอร์"
+    },
+    {
+      "pattern": "แคture",
+      "replacement": "แคปเจอร์"
+    },
+    {
+      "pattern": "คทent",
+      "replacement": "คอนเทนต์"
+    },
+    {
+      "pattern": "อีเวent",
+      "replacement": "อีเวนต์"
+    },
+    {
+      "pattern": "ทarเก็ต",
+      "replacement": "ทาร์เก็ต"
+    },
+    {
+      "pattern": "โate",
+      "replacement": "โดเนต"
+    },
+    {
+      "pattern": "โดate",
+      "replacement": "โดเนต"
+    },
+    {
+      "pattern": "คent",
+      "replacement": "คอนเทนต์"
+    },
+    {
+      "pattern": "แack",
+      "replacement": "แอ็ก"
+    },
+    {
+      "pattern": "สวิตch",
+      "replacement": "สวิตช์"
+    },
+    {
+      "pattern": "อิบukิ",
+      "replacement": "อิบุกิ"
+    },
+    {
+      "pattern": "บาanceซ",
+      "replacement": "แบลงซ์"
+    },
+    {
+      "pattern": "บาance",
+      "replacement": "แบลงซ์"
+    },
+    {
+      "pattern": "คอแลap",
+      "replacement": "คอลแลปส์"
+    },
+    {
+      "pattern": "ฟield",
+      "replacement": "ฟีลด์"
+    },
+    {
+      "pattern": "ฟiel",
+      "replacement": "ฟีลด์"
+    },
+    {
+      "pattern": "สปริit",
+      "replacement": "สปิริต"
+    },
+    {
+      "pattern": "โรบินฮost",
+      "replacement": "โรบินฮูด"
+    },
+    {
+      "pattern": "ครtical",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "crครtical",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "เซerกอ",
+      "replacement": "เซอร์เกอร์"
+    },
+    {
+      "pattern": "Crิtical",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "คริal",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "ิtical",
+      "replacement": "ิติคอล"
+    },
+    {
+      "pattern": "ชารกate",
+      "replacement": "ชาร์จ"
+    },
+    {
+      "pattern": "อoriginal",
+      "replacement": "ออริจินัล"
+    },
+    {
+      "pattern": "อtimiz",
+      "replacement": "ออพติไมซ์"
+    },
+    {
+      "pattern": "สรีมing",
+      "replacement": "สตรีมมิ่ง"
+    },
+    {
+      "pattern": "โดนate",
+      "replacement": "โดเนต"
+    },
+    {
+      "pattern": "เice",
+      "replacement": "ไนซ์"
+    },
+    {
+      "pattern": "ชุดพีce",
+      "replacement": "ชุดพีซ"
+    },
+    {
+      "pattern": "คอเplay",
+      "replacement": "คอสเพลย์"
+    },
+    {
+      "pattern": "อริจินal",
+      "replacement": "ออริจินัล"
+    },
+    {
+      "pattern": "เพฟect",
+      "replacement": "เพอร์เฟกต์"
+    },
+    {
+      "pattern": "เอฟเฟect",
+      "replacement": "เอฟเฟกต์"
+    },
+    {
+      "pattern": "เบอร์ซer",
+      "replacement": "เบอร์เซอร์"
+    },
+    {
+      "pattern": "เบอรซer",
+      "replacement": "เบอร์เซอร์"
+    },
+    {
+      "pattern": "บซer",
+      "replacement": "เบอร์เซอร์"
+    },
+    {
+      "pattern": "เซer(?=[\\s,.]|$)",
+      "replacement": "เซอร์"
+    },
+    {
+      "pattern": "ซer(?=[\\s,.]|$)",
+      "replacement": "เซอร์"
+    },
+    {
+      "pattern": "ทer\\s+Movie",
+      "replacement": "เดอะ มูฟวี่"
+    },
+    {
+      "pattern": "แlance",
+      "replacement": "แบลงซ์"
+    },
+    {
+      "pattern": "แance",
+      "replacement": "แบลงซ์"
+    },
+    {
+      "pattern": "crคริติคอล",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "crิal",
+      "replacement": "คริติคอล"
+    },
+    {
+      "pattern": "Avengอร",
+      "replacement": "อเวนเจอร"
+    },
+    {
+      "pattern": "Robinฮood",
+      "replacement": "โรบินฮูด"
+    },
+    {
+      "pattern": "เame",
+      "replacement": "เกม"
+    },
+    {
+      "pattern": "adaptเตation",
+      "replacement": "แอดัปเตชัน"
+    },
+    {
+      "pattern": "influenซอร์",
+      "replacement": "อินฟลูเอนเซอร์"
+    },
+    {
+      "pattern": "Subscriบอร์",
+      "replacement": "ซับสไครเบอร์"
+    },
+    {
+      "pattern": "donโดเนต",
+      "replacement": "โดเนต"
+    },
+    {
+      "pattern": "อีuki",
+      "replacement": "อิบุกิ"
+    },
+    {
+      "pattern": "พีender",
+      "replacement": "Pretender"
+    },
+    {
+      "pattern": "เect",
+      "replacement": "เอฟเฟกต์"
+    },
+    {
+      "pattern": "tiิTok",
+      "replacement": "ติ๊กต็อก"
+    },
+    {
+      "pattern": "makeชัวร์",
+      "replacement": "เมกชัวร์"
+    },
+    {
+      "pattern": "amกon",
+      "replacement": "อมเกดอน"
+    },
+    {
+      "pattern": "promิ",
+      "replacement": "โปรมีส"
+    },
+    {
+      "pattern": "arิct",
+      "replacement": "อาร์ติแฟกต์"
+    },
+    {
+      "pattern": "เenity",
+      "replacement": "เซเรนิตี้"
+    }
   ]
 }
