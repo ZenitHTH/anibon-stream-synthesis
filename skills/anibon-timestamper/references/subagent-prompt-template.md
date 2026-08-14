@@ -151,6 +151,17 @@ For every valid timestamp event:
 
 **Rule of thumb:** If the player is FIGHTING a named boss → `[Boss]`. If the player dies → `[Death]`. If the player completes a major objective → `[Victory]`. If the player is farming/running stages → `[Gameplay]`. If Boat looks at external video → `[Reaction]`.
 
+## Step 3.2: Speaker-Change Attribution (Video Audio vs Boat Voice)
+
+YouTube ASR marks audio-source switches with `>>` prefixes (`isSpeakerChange: 1`); they survive into chunk XML. When Boat plays an external video, the transcript mixes the video's audio with Boat's own voice. Separate them by content, NOT by the marker:
+
+- **`>>` is a generic speaker-change marker, not a boat-vs-video splitter.** Boat's own lines can carry `>>` (e.g. `>> คือขอพลอตก่อน...` plot critique). Attribute by content.
+- **Video audio** = the clip's speaker narrating in first person about its own content: `ผมเขียนบทครั้งแรก`, `ด้วยเงินทุนภาคละ 300 ล้านบาท`, plot/story narration, news-anchor delivery.
+- **Boat voice** = deictic framing referencing the video's person/subject: `เขา/แก` ("แกโมเยอะไปนิดนึง"), playback commands (`แป๊บนึง`, `เดี๋ยวเอาช่วงนี้`, `นี่ไง`, `เปิดให้ดู`, `มาเปิดคลิป`), reactions (`โอ้โห`, `ฮา`, `เฮ้ย`).
+- **Silence** = transcript gap; the video is playing without captioned speech. Still the SAME reaction moment, not a new topic.
+
+**Tagging consequence:** Boat silent while the video plays + Boat talking over it = ONE timestamp describing the reaction. Tag describes what's on screen: external video playback → `[Reaction]`; if the video is news content → `[News]`; episode/long-form watch-along → `[WatchParty]`. Never split watching vs talking-while-watching into two stamps.
+
 ## Step 3.5: Garbled-English + Contextual Safety Gate (Before Writing)
 
 If the chunk has been through `clean_garbled_english.py`, most English loanwords
