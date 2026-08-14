@@ -64,6 +64,14 @@ python3 scripts/fetch_pokemon_db.py --check --db "references/Pokemon DATA/pokemo
   python3 scripts/fetch_pokemon_db.py --db "references/Pokemon DATA/pokemon.db"
 ```
 
+## Mandatory Pokémon Naming Rules
+
+Whenever any Pokémon species, entity, or stream topic is detected:
+1. **Primary Name MUST be in Thai**: Always output the Thai community/English-sound name (`name_th_english_sound`) or official Thai name (`name_th_official`) first.
+   - Example: `แบกซ์แคลิเบอร์ (Baxcalibur)`, `ม้าดำ (Spectrier)`, `การ์โชมป์ (Garchomp)`, `เป็ดต้นหอม (Farfetch'd)`.
+2. **Dual-Lookup Verification**: Cross-check candidate strings against `references/Pokemon DATA/pokemon.db` matching `name_en`, `name_th_official`, or `name_th_english_sound`.
+3. **No Bare English Names**: Never output bare English Pokémon names alone (e.g. write `แบกซ์แคลิเบอร์ (Baxcalibur)` or `แบกซ์แคลิเบอร์`, not just `Baxcalibur`).
+
 ## When to Skip
 
 - Stream covers well-known characters/games within training data cutoff
