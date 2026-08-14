@@ -3,6 +3,19 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] — 2026-08-14
+
+### Added
+- **Multilingual Pokémon Relational Database (`pokemon.db`)** — Built relational SQLite database containing 1,025 Pokémon species (Gens 1–9) mapped across EN, JA (Kana), official TPC Japanese-phonetic Thai (`name_th_official`), and community English-sound Thai / streamer nicknames (`name_th_english_sound`).
+- **`fetch_pokemon_db.py` Bootstrap Script** — Zero-setup SQLite builder script (`skills/anibon-world-identity/scripts/fetch_pokemon_db.py`) supporting `--check`, `--force`, and `--db` flags for fast <5ms preflight checks.
+- **Mandatory Thai Pokémon Naming Rules** — Enforced Thai primary display formatting (`แบกซ์แคลิเบอร์ (Baxcalibur)`, `ม้าดำ (Spectrier)`) across `anibon-world-identity/SKILL.md` for all Pokémon stream timestamps and entity lookups.
+- **Expanded Garbled-Word Dictionary** — Grown `resources/garbled_replacements.json` to 144 regex replacement rules (added 50 new Thai-Latin ASR proper noun corrections).
+
+### Changed
+- `anibon-world-identity` SKILL.md updated with strict dual-system lookup instructions prioritizing community Thai names.
+
+---
+
 ## [1.2.0] — 2026-08-13
 
 ### Added
