@@ -377,6 +377,206 @@
     {
       "pattern": "เenity",
       "replacement": "เซเรนิตี้"
+    },
+    {
+      "pattern": "accessorี่",
+      "replacement": "แอ็กเซสซอรี่"
+    },
+    {
+      "pattern": "Megก[้]?้า?",
+      "replacement": "เมกะ"
+    },
+    {
+      "pattern": "Cardด",
+      "replacement": "การ์ด"
+    },
+    {
+      "pattern": "โปรteคต",
+      "replacement": "โปรเทกต์"
+    },
+    {
+      "pattern": "poemอน",
+      "replacement": "โปเกมอน"
+    },
+    {
+      "pattern": "คิRayman",
+      "replacement": "คิวเรม"
+    },
+    {
+      "pattern": "คอ(เจ็)?et",
+      "replacement": "อควาเจ็ต"
+    },
+    {
+      "pattern": "intิidate",
+      "replacement": "Intimidate"
+    },
+    {
+      "pattern": "King\\s*Gabิ",
+      "replacement": "Kingambit"
+    },
+    {
+      "pattern": "sซนเวล",
+      "replacement": "Sand Veil"
+    },
+    {
+      "pattern": "โวิตch",
+      "replacement": "สวิตช์"
+    },
+    {
+      "pattern": "มายาสat",
+      "replacement": "มายา Stat"
+    },
+    {
+      "pattern": "โอunูโน่",
+      "replacement": "Audino"
+    },
+    {
+      "pattern": "ดูโo่",
+      "replacement": "Audino"
+    },
+    {
+      "pattern": "Boyอย",
+      "replacement": "บอย"
+    },
+    {
+      "pattern": "โพy",
+      "replacement": "โพนี่"
+    },
+    {
+      "pattern": "Whiteท",
+      "replacement": "White"
+    },
+    {
+      "pattern": "poเกมอน",
+      "replacement": "โปเกมอน"
+    },
+    {
+      "pattern": "h่(?=นะ)",
+      "replacement": "ฮอร์นี่"
+    },
+    {
+      "pattern": "(Se|สิ|ส)?ซอce",
+      "replacement": "Sacred Sword"
+    },
+    {
+      "pattern": "ชnตy?",
+      "replacement": "Sharpness"
+    },
+    {
+      "pattern": "สิidี้",
+      "replacement": "สคิดโด"
+    },
+    {
+      "pattern": "swวall",
+      "replacement": "The Wall"
+    },
+    {
+      "pattern": "โกโดora่า",
+      "replacement": "โกโดร่า"
+    },
+    {
+      "pattern": "โกarona",
+      "replacement": "วอลคาโรนา"
+    },
+    {
+      "pattern": "โมpoemอน",
+      "replacement": "โมโปเกมอน"
+    },
+    {
+      "pattern": "Breatฟ",
+      "replacement": "Breath"
+    },
+    {
+      "pattern": "ยูกen",
+      "replacement": "UGREEN"
+    },
+    {
+      "pattern": "เทียing",
+      "replacement": "Tears"
+    },
+    {
+      "pattern": "แซนาคonda",
+      "replacement": "Sandaconda"
+    },
+    {
+      "pattern": "burบ",
+      "replacement": "Burnt"
+    },
+    {
+      "pattern": "เบอร์ี่",
+      "replacement": "เบอร์รี่"
+    },
+    {
+      "pattern": "คalบอร์",
+      "replacement": "คาลิเบอร์"
+    },
+    {
+      "pattern": "ิard[ด]?อน",
+      "replacement": "ลิซาร์ดอน"
+    },
+    {
+      "pattern": "Kingชilli",
+      "replacement": "King's Shield"
+    },
+    {
+      "pattern": "สat",
+      "replacement": "สเตตัส"
+    },
+    {
+      "pattern": "โมรaker",
+      "replacement": "Mold Breaker"
+    },
+    {
+      "pattern": "shชadow",
+      "replacement": "shadow"
+    },
+    {
+      "pattern": "ใสการดไ?การด",
+      "replacement": "ไซการ์ด"
+    },
+    {
+      "pattern": "ไอ้เke",
+      "replacement": "Urshifu"
+    },
+    {
+      "pattern": "fores",
+      "replacement": "Florges"
+    },
+    {
+      "pattern": "เคดิโอ",
+      "replacement": "Keldeo"
+    },
+    {
+      "pattern": "อาเซียม",
+      "replacement": "อาร์เซอุส"
+    },
+    {
+      "pattern": "เซู่า",
+      "replacement": "Cursola"
+    },
+    {
+      "pattern": "ดาคแดน",
+      "replacement": "Dragon Dance"
+    },
+    {
+      "pattern": "ไอออนทอ",
+      "replacement": "Iron Hands"
+    },
+    {
+      "pattern": "อาจารย์ชีฝู",
+      "replacement": "Urshifu"
+    },
+    {
+      "pattern": "โรบันนี่",
+      "replacement": "Lopunny"
+    },
+    {
+      "pattern": "ภาษาทราย",
+      "replacement": "Palossand"
+    },
+    {
+      "pattern": "คิดอปอ",
+      "replacement": "eSports"
     }
   ]
 }

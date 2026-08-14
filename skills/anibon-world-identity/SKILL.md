@@ -60,6 +60,8 @@ python3 scripts/fetch_fgo_db.py --check --db "../reference/FGO and DATA/atlas_fg
   python3 scripts/fetch_fgo_db.py --db "../reference/FGO and DATA/atlas_fgo.db"
 python3 scripts/fetch_ygo_db.py --check --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
   python3 scripts/fetch_ygo_db.py --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
+python3 scripts/fetch_pokemon_db.py --check --db "references/Pokemon DATA/pokemon.db" || \
+  python3 scripts/fetch_pokemon_db.py --db "references/Pokemon DATA/pokemon.db"
 ```
 
 ## When to Skip
