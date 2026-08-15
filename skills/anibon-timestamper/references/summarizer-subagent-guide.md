@@ -27,6 +27,8 @@ You MUST deduplicate them:
 - If two consecutive timestamps are < 10 minutes apart and cover the same topic, **DELETE the second one**. Keep only the earliest timestamp where the topic started.
 - DO NOT list the same topic multiple times just because it continued into the next chunk.
 - If you merge them, update the first timestamp's description to reflect the full breadth of the merged topic if necessary.
+- **Non-Spoiler Gacha Verification:** Ensure `[Gacha]` timestamps do not spoil pull results in the title; adjust to anticipation/banner descriptions if a subagent leaked the outcome prematurely.
+- **18+ / Rule 34 Tone Verification:** Ensure adult fanart and Rule 34 commentary use `[Talk]` and neutral/mature phrasing rather than generic `[Reaction] ฮา...`.
 
 ## PART SPLIT & CONSOLIDATION RULES
 

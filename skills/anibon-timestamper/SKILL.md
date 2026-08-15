@@ -11,10 +11,10 @@ A routing skill for analyzing live stream transcripts to generate timestamps in 
 
 Streams or videos by "Boat" from Anibon Official that need timed topic labels.
 
-## Sub-Skills
+## Sub-Skills & Permissions
 
 **REQUIRED (first):** Load `preparing-tools` to verify dependencies (`yt-dlp`, `ffmpeg`, `python3`).
-**REQUIRED (subagent execution):** Load `batching-subagents-concurrency` when running multi-subagent analysis (max 6 per batch turn, `Model: "flash"`).
+**REQUIRED (subagent execution):** Load `batching-subagents-concurrency` when running multi-subagent analysis (max 6 per batch turn, `Model: "flash"`). Ask user permission before downloading large external media or performing long web fetches.
 
 Loaded by signal (add to prompt when needed):
 - `anibon-world-identity` — verify game/char names against references before story stamps
@@ -339,3 +339,5 @@ HH:MM:SS - [Tag] Description
 - **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `merge_timestamps.py` → `anibon-summarizer`.
 - **READ BOTH SIDES** — subagents must read the ENTIRE transcript chunk AND its LiveChat log (when present) before writing any timestamp. Situation + emotion come from both talks and chat, never from `primary_topic` alone.
 - **HONOUR THE MOOD VERDICT** — when `mood_555.json` exists, inject each chunk's `tone` guidance (mood + suggested verbs) into the subagent prompt. The AI keeps its own first-verb choice, but must not flatline a chat-laugh/hype peak into a calm factual verb.
+- **NON-SPOILER GACHA POLICY** — Never spoil whether the streamer won or lost a gacha pull in the timestamp description. Focus on anticipation, the featured banner/character, and chat interactions.
+- **18+ / RULE 34 TONE INTEGRITY** — Do not trivialize adult fanart or Rule 34 commentary under generic comedic tags (`[Reaction] ฮา...`). Use `[Talk]` with mature, direct, and accurate summaries.

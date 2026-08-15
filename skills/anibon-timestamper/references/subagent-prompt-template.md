@@ -317,6 +317,9 @@ Do NOT overstate: if the live is calm about a gacha fail, do NOT write words tha
 - Load `references/stream/timestamp-description.md`.
 - If KNOWLEDGE FILES are provided, use them for canonical names. Whisper often transcribes game/character names phonetically.
 - **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
+- **Non-Spoiler Gacha Policy (`[Gacha]`):** Do NOT spoil whether the streamer won, lost, or got salt in the initial gacha timestamp description. Focus on the anticipation, featured character, and chat bets/superstitions (e.g. `[Gacha] ลุ้นเปิดกาชา เรมิเอล (Remielle) ใน ZZZ วัดดวงท้าทายอาถรรพ์เพลงเกลือ` instead of spoiling `[Gacha] สุ่มได้ เรมิเอล สำเร็จ`).
+- **18+ / Rule 34 / NSFW Tone Policy:** Do NOT trivialize adult fanart, Rule 34, or 18+ internet meme commentary under generic comedic tags (avoid `[Reaction] ฮา...`). Use `[Talk]` with mature, direct, and accurate wording (e.g. `[Talk] เม้าท์มอยคลิปอนิเมชัน 18+ บน Twitter และประเด็นเสียงพากย์วิปครีมสาย Rule 34`).
+- **Multi-Topic Preservation:** If a chunk contains distinct major subjects (e.g. meme discussion → banner pull planning → meta analysis) lasting >2–3 minutes each, emit separate timestamps rather than collapsing them into a single tag.
 - Macro summary only. Language: <User's Requested Language>.
 - Use exact technical terms, game names, character names. No invented names.
 - **Multilingual Naming Rule:** 
