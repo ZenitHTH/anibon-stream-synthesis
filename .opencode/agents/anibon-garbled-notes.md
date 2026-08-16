@@ -41,8 +41,8 @@ Your job is to consolidate those notes and grow the cleaning dictionary.
 
 `correct` is `null` when the word cannot be confidently resolved.
 
-2. Append **only confirmed** entries to `garbled_replacements.json`. Add them as regex
-   entries following the file's existing schema (first-match wins, most-specific first).
+2. Append **only confirmed** entries to `garbled_replacements.json` via `update_garbled_dictionary.py`
+   under the Version 2 Grouped Schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`).
 
 ## WORKFLOW
 
@@ -67,11 +67,11 @@ Rules:
   aren't mangled.
 - Never invent a rule from a single ambiguous occurrence.
 
-### Step 3: Write outputs
+### Step 3: Write outputs & Sync
 - Write `garbled_notes.json` (all candidates, resolved or not).
-- Append confirmed rules to `garbled_replacements.json` — insert new entries at the END
-  of the replacements array, preserving valid JSON. Do not reorder or edit existing rules.
-- Re-verify: after appending, grep the transcript again for `[\u0e00-\u0e7f]+[A-Za-z]{2,}`
+- Run `python3 <plugin_root>/skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py --from-notes <workspace>/garbled_notes.json`
+  to append confirmed rules and auto-sync across all plugin resource copies.
+- Re-verify: grep the transcript again for `[\u0e00-\u0e7f]+[A-Za-z]{2,}`
   and confirm the newly-added patterns match. Report the remaining hybrid count.
 
 ## REPORT FORMAT

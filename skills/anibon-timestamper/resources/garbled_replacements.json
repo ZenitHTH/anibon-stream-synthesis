@@ -1,602 +1,933 @@
 {
+  "version": 2,
   "description": "Garbled English → correct mapping for clean_garbled_english.py",
-  "note": "First-match wins. Order matters: put longer/more specific patterns first.",
-  "replacements": [
-    {
-      "pattern": "one\\s+พ[ั้]?man",
-      "replacement": "One Punch Man"
-    },
-    {
-      "pattern": "one\\s+punch\\s*man",
-      "replacement": "One Punch Man"
-    },
-    {
-      "pattern": "แมป[ป]?[าa]",
-      "replacement": "MAPPA"
-    },
-    {
-      "pattern": "JC\\s*Star",
-      "replacement": "JC Staff"
-    },
-    {
-      "pattern": "J\\.C\\.\\s*Star",
-      "replacement": "JC Staff"
-    },
-    {
-      "pattern": "เจซี\\s*สตาฟ[ฟ]?",
-      "replacement": "JC Staff"
-    },
-    {
-      "pattern": "foage",
-      "replacement": "footage"
-    },
-    {
-      "pattern": "ฟ[ุู]ตเท[จก]",
-      "replacement": "footage"
-    },
-    {
-      "pattern": "ad\\s*[ดดี]apt(?!ation)",
-      "replacement": "adapt"
-    },
-    {
-      "pattern": "ad\\s*[ดดี]aptation",
-      "replacement": "adaptation"
-    },
-    {
-      "pattern": "adapt\\s*ation",
-      "replacement": "adaptation"
-    },
-    {
-      "pattern": "\\borigal\\b",
-      "replacement": "original"
-    },
-    {
-      "pattern": "อริจินอ",
-      "replacement": "original"
-    },
-    {
-      "pattern": "[fฟ]อ[ื]?ม(?=[\\s,.]|$)",
-      "replacement": "form"
-    },
-    {
-      "pattern": "time\\s*m[รฤ]fr",
-      "replacement": "timeline"
-    },
-    {
-      "pattern": "time\\s*[fฟ]ร[ั]?ม",
-      "replacement": "timeline"
-    },
-    {
-      "pattern": "ฮกสตาร",
-      "replacement": "Honkai Star Rail"
-    },
-    {
-      "pattern": "wing\\s*wave",
-      "replacement": "Wuthering Waves"
-    },
-    {
-      "pattern": "Wing\\s*Wave",
-      "replacement": "Wuthering Waves"
-    },
-    {
-      "pattern": "Wuthering\\s*Wave\\b",
-      "replacement": "Wuthering Waves"
-    },
-    {
-      "pattern": "seele\\s*leaks?",
-      "replacement": "Seele Leaks"
-    },
-    {
-      "pattern": "แกนบูfฟตasyink",
-      "replacement": "Granblue Fantasy: Relink"
-    },
-    {
-      "pattern": "outทอร์",
-      "replacement": "Alter"
-    },
-    {
-      "pattern": "mมัติคore",
-      "replacement": "multi-core"
-    },
-    {
-      "pattern": "r[เด]อร์(?=[\\s,.]|$)",
-      "replacement": "Rider"
-    },
-    {
-      "pattern": "ชักเกate",
-      "replacement": "ชาร์จเกจ"
-    },
-    {
-      "pattern": "ชapply",
-      "replacement": "apply"
-    },
-    {
-      "pattern": "multิคall",
-      "replacement": "มัลติคอร์"
-    },
-    {
-      "pattern": "คิพiaอต้า",
-      "replacement": "คิงโพรเทีย"
-    },
-    {
-      "pattern": "KingทAlเตอร์",
-      "replacement": "Kingprotea Alter"
-    },
-    {
-      "pattern": "ชารgกate",
-      "replacement": "ชาร์จเกจ"
-    },
-    {
-      "pattern": "เซerกer",
-      "replacement": "เบอร์เซิร์กเกอร์"
-    },
-    {
-      "pattern": "ปารตี้ชarเกต",
-      "replacement": "ปาร์ตี้ชาร์จเกจ"
-    },
-    {
-      "pattern": "Modม",
-      "replacement": "ม็อด"
-    },
-    {
-      "pattern": "GLบAL",
-      "replacement": "Global"
-    },
-    {
-      "pattern": "rูer(?=[\\s,.]|$)",
-      "replacement": "Ruler"
-    },
-    {
-      "pattern": "เคาน์เตอร์guardเดีี้ยน",
-      "replacement": "Counter Guardian"
-    },
-    {
-      "pattern": "fujิโนะ",
-      "replacement": "ฟูจิโนะ"
-    },
-    {
-      "pattern": "ข้อ\\s*time\\s*คิ",
-      "replacement": "ข้อเท้าอคิลิส"
-    },
-    {
-      "pattern": "แฟน\\s*me[ท]?\\s*12\\s*pfg",
-      "replacement": "แฟนมีต 12 ปี FGO"
-    },
-    {
-      "pattern": "Mario\\s+Alter\\b",
-      "replacement": "Marie Alter"
-    },
-    {
-      "pattern": "แedia",
-      "replacement": "AppMedia"
-    },
-    {
-      "pattern": "King\\s*Poต",
-      "replacement": "Kingprotea"
-    },
-    {
-      "pattern": "blัแอ่ะ",
-      "replacement": "Black Grail"
-    },
-    {
-      "pattern": "archerร",
-      "replacement": "Archer"
-    },
-    {
-      "pattern": "assassิน",
-      "replacement": "Assassin"
-    },
-    {
-      "pattern": "avengจอร์",
-      "replacement": "Avenger"
-    },
-    {
-      "pattern": "เพเfect",
-      "replacement": "เพอร์เฟกต์"
-    },
-    {
-      "pattern": "คาซึด\\s*Drop",
-      "replacement": "คาซุระดรอป"
-    },
-    {
-      "pattern": "ไกสตาร",
-      "replacement": "Honkai: Star Rail"
-    },
-    {
-      "pattern": "Marvel\\s+Ral\\b",
-      "replacement": "Marvel Rivals"
-    },
-    {
-      "pattern": "shoเตอร์",
-      "replacement": "ชูตเตอร์"
-    },
-    {
-      "pattern": "ฮาคูโนะฮunอน",
-      "replacement": "ฮาคูโนะ"
-    },
-    {
-      "pattern": "ฟ[จ]?ukิ",
-      "replacement": "ฟุยุคิ"
-    },
-    {
-      "pattern": "ฮาเบตรอ(?=[\\s,.]|$)",
-      "replacement": "ฮาเบตร็อต"
-    },
-    {
-      "pattern": "King\\s*Poที\\s*Ultra\\s*Avenger",
-      "replacement": "Kingprotea Alter Avenger"
-    },
-    {
-      "pattern": "Baphometาชู",
-      "replacement": "บัฟมาชู"
-    },
-    {
-      "pattern": "เรา\\s+Single\\b",
-      "replacement": "Lasengle"
-    },
-    {
-      "pattern": "Moon\\s+canเซอร์",
-      "replacement": "Moon Cancer"
-    },
-    {
-      "pattern": "ชาวทวเตี้นญี่ปุ่น",
-      "replacement": "ชาวทวิตเตอร์ญี่ปุ่น"
-    },
-    {
-      "pattern": "ซาชิซerกอร",
-      "replacement": "ซัมเมอร์เบอร์เซิร์กเกอร์"
-    },
-    {
-      "pattern": "looperร์",
-      "replacement": "Looper"
-    },
-    {
-      "pattern": "contทent",
-      "replacement": "คอนเทนต์"
-    },
-    {
-      "pattern": "เซucker",
-      "replacement": "เบอร์เซิร์กเกอร์"
-    },
-    {
-      "pattern": "ด่าchallน",
-      "replacement": "ด่าน Challenge"
-    },
-    {
-      "pattern": "โอาวa",
-      "replacement": "โอกินาวา"
-    },
-    {
-      "pattern": "alล็กซandra",
-      "replacement": "อเล็กซานเดอร์"
-    },
-    {
-      "pattern": "ชิเดอร์",
-      "replacement": "ชิลเดอร์"
-    },
-    {
-      "pattern": "โฮงไกซา",
-      "replacement": "Honkai: Star Rail"
-    },
-    {
-      "pattern": "Grand\\s+Fame\\s+Boy",
-      "replacement": "Grand Femboy"
-    },
-    {
-      "pattern": "บullลี่",
-      "replacement": "บูลลี่"
-    },
-    {
-      "pattern": "Merิน",
-      "replacement": "เมอร์ลิน"
-    },
-    {
-      "pattern": "Universรซั",
-      "replacement": "Universal"
-    },
-    {
-      "pattern": "พadิ[น]?",
-      "replacement": "Paladin"
-    },
-    {
-      "pattern": "fantั\\s*moon",
-      "replacement": "Phantas-Moon"
-    },
-    {
-      "pattern": "Analอก\\s+Herror",
-      "replacement": "Analog Horror"
-    },
-    {
-      "pattern": "แวel",
-      "replacement": "เวลท์"
-    },
-    {
-      "pattern": "Avengจurีน",
-      "replacement": "อเวนจูรีน"
-    },
-    {
-      "pattern": "forซอ",
-      "replacement": "Forza"
-    },
-    {
-      "pattern": "garีa",
-      "replacement": "Garena"
-    },
-    {
-      "pattern": "speedฟต",
-      "replacement": "Speed Drifters"
-    },
-    {
-      "pattern": "[Ee]vวent",
-      "replacement": "อีเวนต์"
-    },
-    {
-      "pattern": "Endก",
-      "replacement": "Endgame"
-    },
-    {
-      "pattern": "shoตอร",
-      "replacement": "ชูตเตอร์"
-    },
-    {
-      "pattern": "Marวal",
-      "replacement": "Marvel Rivals"
-    },
-    {
-      "pattern": "แฟนซum่า",
-      "replacement": "Persona"
-    },
-    {
-      "pattern": "คอแลAB",
-      "replacement": "คอลแลปส์"
-    },
-    {
-      "pattern": "คาซumี่",
-      "replacement": "คาซูมิ"
-    },
-    {
-      "pattern": "evangerน",
-      "replacement": "Evangelion"
-    },
-    {
-      "pattern": "DreมTeีม",
-      "replacement": "Dream Team"
-    },
-    {
-      "pattern": "poนtiล",
-      "replacement": "โพเทนเชียล"
-    },
-    {
-      "pattern": "ไตan\\s+final\\s+ซีซั",
-      "replacement": "Titan Final Season"
-    },
-    {
-      "pattern": "เซida้า",
-      "replacement": "เซรีด้า"
-    },
-    {
-      "pattern": "เซีIDa",
-      "replacement": "เซรีด้า"
-    },
-    {
-      "pattern": "พโดy",
-      "replacement": "พาโรดี้"
-    },
-    {
-      "pattern": "เida",
-      "replacement": "เซรีด้า"
-    },
-    {
-      "pattern": "เซนID",
-      "replacement": "เซรีด้า"
-    },
-    {
-      "pattern": "พingin",
-      "replacement": "pumpkin"
-    },
-    {
-      "pattern": "my\\s+creีม",
-      "replacement": "my cream"
-    },
-    {
-      "pattern": "ทarเกต",
-      "replacement": "ทาร์เก็ต"
-    },
-    {
-      "pattern": "สack",
-      "replacement": "สแตก"
-    },
-    {
-      "pattern": "คมิกet",
-      "replacement": "คอมิเก็ต"
-    },
-    {
-      "pattern": "Twinทล",
-      "replacement": "ทวินเทล"
-    },
-    {
-      "pattern": "tวinta",
-      "replacement": "ทวินเทล"
-    },
-    {
-      "pattern": "tวinทล",
-      "replacement": "ทวินเทล"
-    },
-    {
-      "pattern": "Silverวol",
-      "replacement": "Silver Wolf"
-    },
-    {
-      "pattern": "Silver\\s+Wolูฟ",
-      "replacement": "Silver Wolf"
-    },
-    {
-      "pattern": "Quวตัม",
-      "replacement": "Quantum"
-    },
-    {
-      "pattern": "transกual",
-      "replacement": "Transsexual"
-    },
-    {
-      "pattern": "Metaฟio",
-      "replacement": "Metaphor: ReFantazio"
-    },
-    {
-      "pattern": "SE[ก]?้า",
-      "replacement": "SEGA"
-    },
-    {
-      "pattern": "metฟรีantio",
-      "replacement": "Metaphor: ReFantazio"
-    },
-    {
-      "pattern": "adิctive",
-      "replacement": "addictive"
-    },
-    {
-      "pattern": "มอนฮทั",
-      "replacement": "มอนฮัน"
-    },
-    {
-      "pattern": "Level\\s*อัพเent",
-      "replacement": "Level Up Event"
-    },
-    {
-      "pattern": "redด",
-      "replacement": "รีดักชัน"
-    },
-    {
-      "pattern": "diดamagerดักช",
-      "replacement": "ดาเมจรีดักชัน"
-    },
-    {
-      "pattern": "finishช่า",
-      "replacement": "ฟินิชเชอร์"
-    },
-    {
-      "pattern": "swวิตchค",
-      "replacement": "สวิตช์"
-    },
-    {
-      "pattern": "แมber",
-      "replacement": "Ember"
-    },
-    {
-      "pattern": "chชalleng",
-      "replacement": "Challenge"
-    },
-    {
-      "pattern": "Cerเกิ",
-      "replacement": "เบอร์เซิร์กเกอร์"
-    },
-    {
-      "pattern": "ซamina",
-      "replacement": "สตามิน่า"
-    },
-    {
-      "pattern": "ซamิน่า",
-      "replacement": "สตามิน่า"
-    },
-    {
-      "pattern": "de\\s*stารี",
-      "replacement": "เดรสปาร์ตี้"
-    },
-    {
-      "pattern": "Wpping\\s+Cradle",
-      "replacement": "Weeping Cradle"
-    },
-    {
-      "pattern": "twiตter",
-      "replacement": "Twitter"
-    },
-    {
-      "pattern": "ทwiตเter",
-      "replacement": "Twitter"
-    },
-    {
-      "pattern": "โค้ยคสึ",
-      "replacement": "Koikatsu"
-    },
-    {
-      "pattern": "seกชual",
-      "replacement": "sexual"
-    },
-    {
-      "pattern": "เฟมrท",
-      "replacement": "เฟรมเรต"
-    },
-    {
-      "pattern": "อtim(?=[\\s,.]|$)",
-      "replacement": "ออพติไมซ์"
-    },
-    {
-      "pattern": "duอล",
-      "replacement": "ดูเอล"
-    },
-    {
-      "pattern": "ลลิสเตตัสe",
-      "replacement": "ลิสต์สเตตัส"
-    },
-    {
-      "pattern": "แnit",
-      "replacement": "แมนติส"
-    },
-    {
-      "pattern": "Moonไท",
-      "replacement": "Moon Knight"
-    },
-    {
-      "pattern": "โหลดเure",
-      "replacement": "โหลด Texture"
-    },
-    {
-      "pattern": "Mediม",
-      "replacement": "Medium"
-    },
-    {
-      "pattern": "ซomบี้",
-      "replacement": "ซอมบี้"
-    },
-    {
-      "pattern": "กรมฮัชวา",
-      "replacement": "ฮัชวาลต์"
-    },
-    {
-      "pattern": "extrม",
-      "replacement": "Extreme"
-    },
-    {
-      "pattern": "areaีย",
-      "replacement": "แอเรีย"
-    },
-    {
-      "pattern": "m็",
-      "replacement": "ม็อบ"
-    },
-    {
-      "pattern": "Oneพiece",
-      "replacement": "One Piece"
-    },
-    {
-      "pattern": "แพลตtinั่ม",
-      "replacement": "แพลตตินัม"
-    },
-    {
-      "pattern": "Rฮู้",
-      "replacement": "The Hood"
-    },
-    {
-      "pattern": "Blackวาย",
-      "replacement": "Black Widow"
-    },
-    {
-      "pattern": "เริ่มันRayman Legends Retoldัน",
-      "replacement": "เริ่มมัน"
-    },
-    {
-      "pattern": "โนate",
-      "replacement": "โดเนต"
-    }
-  ]
+  "note": "First-match wins. Within each word, longer/more specific patterns are tried first.",
+  "mappings": {
+    "AC Milan": [
+      "AC Mirาน"
+    ],
+    "adapt": [
+      "ad\\s*[ดดี]apt(?!ation)"
+    ],
+    "adaptation": [
+      "ad\\s*[ดดี]aptation",
+      "adapt\\s*ation"
+    ],
+    "addictive": [
+      "adิctive"
+    ],
+    "Agatha All Along": [
+      "อากaอรอง"
+    ],
+    "Alter": [
+      "outทอร์"
+    ],
+    "Analog Horror": [
+      "Analอก\\s+Herror"
+    ],
+    "apply": [
+      "ชapply"
+    ],
+    "AppMedia": [
+      "แedia"
+    ],
+    "Archer": [
+      "archerร"
+    ],
+    "Assassin": [
+      "assassิน"
+    ],
+    "Audino": [
+      "โอunูโน่",
+      "ดูโo่"
+    ],
+    "Avenger": [
+      "avengจอร์"
+    ],
+    "Battle Spirits": [
+      "Battle Watingชan"
+    ],
+    "Bibury Animation Studios": [
+      "บิบลี่"
+    ],
+    "Black Grail": [
+      "blัแอ่ะ"
+    ],
+    "Black Widow": [
+      "Blackวาย"
+    ],
+    "BLACKPINK": [
+      "Black Kink"
+    ],
+    "Blue Archive": [
+      "ล้อบัวใคร"
+    ],
+    "boost": [
+      "บูost"
+    ],
+    "Breath": [
+      "Breatฟ"
+    ],
+    "Burnt": [
+      "burบ"
+    ],
+    "Challenge": [
+      "chชalleng"
+    ],
+    "Challenge Quest": [
+      "challeng เควส"
+    ],
+    "Cinderella Eliza": [
+      "เอิซ่า"
+    ],
+    "Comiket": [
+      "คอมิateโตะ"
+    ],
+    "Comiket C108": [
+      "คมิ 108"
+    ],
+    "Counter Guardian": [
+      "เคาน์เตอร์guardเดีี้ยน"
+    ],
+    "Cursola": [
+      "เซู่า"
+    ],
+    "Doomsday": [
+      "doม day"
+    ],
+    "Double Skadi": [
+      "2 สardี้"
+    ],
+    "Dragon Dance": [
+      "ดาคแดน"
+    ],
+    "Dream Team": [
+      "DreมTeีม"
+    ],
+    "Earth": [
+      "เth"
+    ],
+    "Ember": [
+      "แมber"
+    ],
+    "Endfield": [
+      "nฟfield"
+    ],
+    "Endgame": [
+      "Endก"
+    ],
+    "energy": [
+      "enนerร์",
+      "Enนจี้"
+    ],
+    "eSports": [
+      "คิดอปอ"
+    ],
+    "Evangelion": [
+      "evangerน"
+    ],
+    "Extreme": [
+      "extrม"
+    ],
+    "Florges": [
+      "fores"
+    ],
+    "footage": [
+      "ฟ[ุู]ตเท[จก]",
+      "foage"
+    ],
+    "form": [
+      "[fฟ]อ[ื]?ม(?=[\\s,.]|$)"
+    ],
+    "Forza": [
+      "forซอ"
+    ],
+    "Gameplay": [
+      "เกมplayย"
+    ],
+    "Garena": [
+      "garีa"
+    ],
+    "Gen Alpha": [
+      "พัalฟ่า"
+    ],
+    "Global": [
+      "GLบAL"
+    ],
+    "Granblue Fantasy: Relink": [
+      "แกนบูfฟตasyink"
+    ],
+    "Grand Femboy": [
+      "Grand\\s+Fame\\s+Boy"
+    ],
+    "Harley Quinn": [
+      "Harี่Quว queen"
+    ],
+    "Honkai Star Rail": [
+      "ฮกสตาร"
+    ],
+    "Honkai: Star Rail": [
+      "คองกซาเรล",
+      "โฮงไกซา",
+      "ไกสตาร"
+    ],
+    "Intimidate": [
+      "intิidate"
+    ],
+    "Iron Hands": [
+      "ไอออนทอ"
+    ],
+    "Ironheart": [
+      "Ironฮาร",
+      "ironฮาน"
+    ],
+    "JC Staff": [
+      "เจซี\\s*สตาฟ[ฟ]?",
+      "J\\.C\\.\\s*Star",
+      "JC\\s*Star"
+    ],
+    "Joker": [
+      "Jokกอร์"
+    ],
+    "Kagurabachi": [
+      "สakิเกบาจิ"
+    ],
+    "Kaguya-hime": [
+      "คาุยะฮิเมะ"
+    ],
+    "Keldeo": [
+      "เคดิโอ"
+    ],
+    "King's Shield": [
+      "Kingชilli"
+    ],
+    "Kingambit": [
+      "King\\s*Gabิ"
+    ],
+    "Kingprotea": [
+      "King\\s*Poต"
+    ],
+    "Kingprotea Alter": [
+      "KingทAlเตอร์"
+    ],
+    "Kingprotea Alter Avenger": [
+      "King\\s*Poที\\s*Ultra\\s*Avenger"
+    ],
+    "Koikatsu": [
+      "โค้ยคสึ"
+    ],
+    "Lasengle": [
+      "เรา\\s+Single\\b"
+    ],
+    "leak": [
+      "leีก"
+    ],
+    "Level Up Event": [
+      "Level\\s*อัพเent"
+    ],
+    "Looper": [
+      "looperร์"
+    ],
+    "Lopunny": [
+      "โรบันนี่"
+    ],
+    "Low Energy": [
+      "L energy"
+    ],
+    "Mairimashita! Iruma-kun": [
+      "อิumมะ"
+    ],
+    "Manchester United": [
+      "Manchesterตยited"
+    ],
+    "MAPPA": [
+      "แมป[ป]?[าa]"
+    ],
+    "Marie Alter": [
+      "Mario\\s+Alter\\b"
+    ],
+    "Marvel Rivals": [
+      "Marvel\\s+Ral\\b",
+      "Marวal"
+    ],
+    "Medium": [
+      "Mediม"
+    ],
+    "Meeting": [
+      "meติ้ง"
+    ],
+    "Metaphor: ReFantazio": [
+      "metฟรีantio",
+      "Metaฟio"
+    ],
+    "Mold Breaker": [
+      "โมรaker"
+    ],
+    "Moon Cancer": [
+      "Moon\\s+canเซอร์"
+    ],
+    "Moon Knight": [
+      "Moonไท"
+    ],
+    "MrBeast Campaign": [
+      "mea camเีียน"
+    ],
+    "MrBeast Gaming": [
+      "มิสเing"
+    ],
+    "multi-core": [
+      "mมัติคore"
+    ],
+    "my cream": [
+      "my\\s+creีม"
+    ],
+    "Odyssey": [
+      "odิy"
+    ],
+    "One Piece": [
+      "Oneพiece"
+    ],
+    "One Punch Man": [
+      "one\\s+punch\\s*man",
+      "one\\s+พ[ั้]?man"
+    ],
+    "original": [
+      "\\borigal\\b",
+      "อริจินอ"
+    ],
+    "Paladin": [
+      "พadิ[น]?"
+    ],
+    "Palossand": [
+      "ภาษาทราย"
+    ],
+    "Perlica": [
+      "รูพลิก้า"
+    ],
+    "Persona": [
+      "แฟนซum่า"
+    ],
+    "Phantas-Moon": [
+      "fantั\\s*moon"
+    ],
+    "Phantasmoon": [
+      "fฟantus moon"
+    ],
+    "potential": [
+      "poนciล"
+    ],
+    "Predator": [
+      "prat"
+    ],
+    "Pretender": [
+      "พีender"
+    ],
+    "pumpkin": [
+      "พingin"
+    ],
+    "Quantum": [
+      "Quวตัม"
+    ],
+    "Ramiel": [
+      "ลามิเอล",
+      "ราิเอล"
+    ],
+    "Reines": [
+      "เรนส"
+    ],
+    "Rider": [
+      "r[เด]อร์(?=[\\s,.]|$)"
+    ],
+    "Robert Downey Jr.": [
+      "Jจนียor"
+    ],
+    "Roblox": [
+      "Rock One",
+      "Roboอก",
+      "Robลอก"
+    ],
+    "Ruler": [
+      "rูer(?=[\\s,.]|$)"
+    ],
+    "Sacred Sword": [
+      "(Se|สิ|ส)?ซอce"
+    ],
+    "Sand Veil": [
+      "sซนเวล"
+    ],
+    "Sandaconda": [
+      "แซนาคonda"
+    ],
+    "Sean Casey": [
+      "ชอเคซี่ทิเมอร์"
+    ],
+    "Seele Leaks": [
+      "seele\\s*leaks?"
+    ],
+    "SEGA": [
+      "SE[ก]?้า"
+    ],
+    "sexual": [
+      "seกชual"
+    ],
+    "shadow": [
+      "shชadow"
+    ],
+    "Sharpness": [
+      "ชnตy?"
+    ],
+    "Silver Wolf": [
+      "Silver\\s+Wolูฟ",
+      "Silverวol"
+    ],
+    "Sir_B": [
+      "เซอร์Bี่"
+    ],
+    "Skadi Ruler": [
+      "สy rูer"
+    ],
+    "slow burn": [
+      "slลวเบิร์น"
+    ],
+    "Solo Leveling": [
+      "Soloโo Living"
+    ],
+    "Sonny Boy": [
+      "Sonyบบอย"
+    ],
+    "Soul Society": [
+      "sociy"
+    ],
+    "Speed Drifters": [
+      "speedฟต"
+    ],
+    "Spider-Man": [
+      "สไปเดอร์แman"
+    ],
+    "Storm Chasing Car": [
+      "Strom Chasing Carอ"
+    ],
+    "Storm Pod": [
+      "Storพ"
+    ],
+    "Streaming": [
+      "สamมing",
+      "สมมing"
+    ],
+    "subconscious": [
+      "ซับคอชus"
+    ],
+    "Support Servant": [
+      "supพort servant"
+    ],
+    "Tears": [
+      "เทียing"
+    ],
+    "The Hood": [
+      "Rฮู้"
+    ],
+    "The Wall": [
+      "swวall"
+    ],
+    "TikTok": [
+      "ติtอก"
+    ],
+    "TikToker": [
+      "ติtอกer"
+    ],
+    "timeline": [
+      "time\\s*[fฟ]ร[ั]?ม",
+      "time\\s*m[รฤ]fr"
+    ],
+    "Titan Final Season": [
+      "ไตan\\s+final\\s+ซีซั"
+    ],
+    "Tony Stark": [
+      "โทy stark"
+    ],
+    "Transsexual": [
+      "transกual"
+    ],
+    "TV Series": [
+      "ทวีวซีรies์"
+    ],
+    "Twitter": [
+      "ทwiตเter",
+      "twiตter"
+    ],
+    "UGREEN": [
+      "ยูกen"
+    ],
+    "Universal": [
+      "Universรซั"
+    ],
+    "Urshifu": [
+      "อาจารย์ชีฝู",
+      "ไอ้เke"
+    ],
+    "Vanguard": [
+      "แardด"
+    ],
+    "Victor Von Doom": [
+      "Victor Wom"
+    ],
+    "Weeping Cradle": [
+      "Wpping\\s+Cradle"
+    ],
+    "White": [
+      "Whiteท"
+    ],
+    "Wuthering Waves": [
+      "Wuthering\\s*Wave\\b",
+      "wing\\s*wave",
+      "Wing\\s*Wave"
+    ],
+    "Youjo Senki": [
+      "โยโจซenกิ"
+    ],
+    "Zenless Zone Zero": [
+      "สดซิรo"
+    ],
+    "การ์ด": [
+      "Cardด"
+    ],
+    "ข้อเท้าอคิลิส": [
+      "ข้อ\\s*time\\s*คิ"
+    ],
+    "คริติคอล": [
+      "crคริติคอล",
+      "crครtical",
+      "Crิtical",
+      "ครtical",
+      "คริal",
+      "crิal"
+    ],
+    "คอนเทนต์": [
+      "contทent",
+      "คทent",
+      "คent"
+    ],
+    "คอมิเก็ต": [
+      "คมิกet"
+    ],
+    "คอลแลปส์": [
+      "คอแลap",
+      "คอแลAB"
+    ],
+    "คอสเพลย์": [
+      "คอเplay"
+    ],
+    "คาซุระดรอป": [
+      "คาซึด\\s*Drop"
+    ],
+    "คาซูมิ": [
+      "คาซumี่"
+    ],
+    "คาลิเบอร์": [
+      "คalบอร์"
+    ],
+    "คาเมนไรเดอร์": [
+      "คมrเดอร์"
+    ],
+    "คิงโพรเทีย": [
+      "คิพiaอต้า"
+    ],
+    "คิวเรม": [
+      "คิRayman"
+    ],
+    "ชาร์จ": [
+      "ชารกate"
+    ],
+    "ชาร์จเกจ": [
+      "ชักเกate",
+      "ชารgกate"
+    ],
+    "ชาวทวิตเตอร์ญี่ปุ่น": [
+      "ชาวทวเตี้นญี่ปุ่น"
+    ],
+    "ชิลเดอร์": [
+      "ชิเดอร์"
+    ],
+    "ชุดพีซ": [
+      "ชุดพีce"
+    ],
+    "ชูตเตอร์": [
+      "shoเตอร์",
+      "shoตอร"
+    ],
+    "ซอมบี้": [
+      "ซomบี้"
+    ],
+    "ซับสไครเบอร์": [
+      "Subscriบอร์"
+    ],
+    "ซัมเมอร์เบอร์เซิร์กเกอร์": [
+      "ซาชิซerกอร"
+    ],
+    "ดาเมจรีดักชัน": [
+      "diดamagerดักช"
+    ],
+    "ดูเอล": [
+      "duอล"
+    ],
+    "ด่าน Challenge": [
+      "ด่าchallน"
+    ],
+    "ติ๊กต็อก": [
+      "tiิTok"
+    ],
+    "ทวินเทล": [
+      "Twinทล",
+      "tวinta",
+      "tวinทล"
+    ],
+    "ทาร์เก็ต": [
+      "ทarเก็ต",
+      "ทarเกต"
+    ],
+    "นอสทัลเจีย": [
+      "นอสalเจีย"
+    ],
+    "บอย": [
+      "Boyอย"
+    ],
+    "บัฟมาชู": [
+      "Baphometาชู"
+    ],
+    "บูลลี่": [
+      "บullลี่"
+    ],
+    "ปาร์ตี้ชาร์จเกจ": [
+      "ปารตี้ชarเกต"
+    ],
+    "พาโรดี้": [
+      "พโดy"
+    ],
+    "ฟินิชเชอร์": [
+      "finishช่า"
+    ],
+    "ฟีลด์": [
+      "ฟield",
+      "ฟiel"
+    ],
+    "ฟุยุคิ": [
+      "ฟ[จ]?ukิ"
+    ],
+    "ฟูจิโนะ": [
+      "fujิโนะ"
+    ],
+    "มอนฮัน": [
+      "มอนฮทั"
+    ],
+    "มัลติคอร์": [
+      "multิคall"
+    ],
+    "มายา Stat": [
+      "มายาสat"
+    ],
+    "ม็อด": [
+      "Modม"
+    ],
+    "ม็อบ": [
+      "m็"
+    ],
+    "ยานิเนโกะ": [
+      "ยันิแน่นโกะ"
+    ],
+    "ยูทูเบอร์": [
+      "ยูทูบer",
+      "ยูทูปer",
+      "ยูทูer",
+      "ยูทer"
+    ],
+    "รีดักชัน": [
+      "redด"
+    ],
+    "ลิซาร์ดอน": [
+      "ิard[ด]?อน"
+    ],
+    "ลิสต์สเตตัส": [
+      "ลลิสเตตัสe"
+    ],
+    "วอลคาโรนา": [
+      "โกarona"
+    ],
+    "สคิดโด": [
+      "สิidี้"
+    ],
+    "สตรีมมิ่ง": [
+      "สรีมing"
+    ],
+    "สตามิน่า": [
+      "ซamิน่า",
+      "ซamina"
+    ],
+    "สปิริต": [
+      "สปริit"
+    ],
+    "สวิตช์": [
+      "swวิตchค",
+      "สวิตch",
+      "โวิตch"
+    ],
+    "สาวๆ ยูกิโอ": [
+      "สาวยิKemuriือ"
+    ],
+    "สเตตัส": [
+      "สat"
+    ],
+    "สแตก": [
+      "สack"
+    ],
+    "อควาเจ็ต": [
+      "คอ(เจ็)?et"
+    ],
+    "อมเกดอน": [
+      "amกon"
+    ],
+    "ออพติไมซ์": [
+      "อtim(?=[\\s,.]|$)",
+      "อtimiz"
+    ],
+    "ออฟสกรีน": [
+      "อสกreน"
+    ],
+    "ออริจินัล": [
+      "อoriginal",
+      "อริจินal"
+    ],
+    "อาร์ติแฟกต์": [
+      "arิct"
+    ],
+    "อาร์เซอุส": [
+      "อาเซียม"
+    ],
+    "อินฟลูเอนเซอร์": [
+      "influenซอร์"
+    ],
+    "อิบุกิ": [
+      "อิบukิ",
+      "อีuki"
+    ],
+    "อีเวนต์": [
+      "[Ee]vวent",
+      "อีเวent"
+    ],
+    "อเจนด้า": [
+      "agเจนด้า",
+      "agจนด้า"
+    ],
+    "อเล็กซานเดอร์": [
+      "alล็กซandra"
+    ],
+    "อเวจี": [
+      "อgี"
+    ],
+    "อเวนจูรีน": [
+      "Avengจurีน"
+    ],
+    "อเวนเจอร": [
+      "Avengอร"
+    ],
+    "อ่อนต่อโลก": [
+      "อocน"
+    ],
+    "ฮอร์นี่": [
+      "h่(?=นะ)"
+    ],
+    "ฮัชวาลต์": [
+      "กรมฮัชวา"
+    ],
+    "ฮาคูโนะ": [
+      "ฮาคูโนะฮunอน"
+    ],
+    "ฮาเบตร็อต": [
+      "ฮาเบตรอ(?=[\\s,.]|$)"
+    ],
+    "ฮาเร็ม": [
+      "ฮาRayman Legends Retold"
+    ],
+    "ิติคอล": [
+      "ิtical"
+    ],
+    "เกม": [
+      "เame"
+    ],
+    "เซรีด้า": [
+      "เซida้า",
+      "เซีIDa",
+      "เซนID",
+      "เida"
+    ],
+    "เซรีบรัม": [
+      "เซลบrัม"
+    ],
+    "เซอร์": [
+      "เซer(?=[\\s,.]|$)",
+      "ซer(?=[\\s,.]|$)"
+    ],
+    "เซอร์เกอร์": [
+      "เซerกอร",
+      "เซerกอ"
+    ],
+    "เซเรนิตี้": [
+      "เenity"
+    ],
+    "เดรสปาร์ตี้": [
+      "de\\s*stารี"
+    ],
+    "เดอะ มูฟวี่": [
+      "ทer\\s+Movie"
+    ],
+    "เด็ก Gen Alpha": [
+      "เด็กเจenalฟ่า"
+    ],
+    "เบอร์รี่": [
+      "เบอร์ี่"
+    ],
+    "เบอร์เซอร์": [
+      "เบอร์เซer",
+      "เบอร์ซer",
+      "เบอรซer",
+      "บซer"
+    ],
+    "เบอร์เซอร์เกอร์": [
+      "เบอร์ซerกอร"
+    ],
+    "เบอร์เซิร์กเกอร์": [
+      "เซerกer",
+      "เซucker",
+      "Cerเกิ"
+    ],
+    "เพอร์เฟกต์": [
+      "เพเfect",
+      "เพฟect"
+    ],
+    "เฟรมเรต": [
+      "เฟมrท"
+    ],
+    "เมกชัวร์": [
+      "makeชัวร์"
+    ],
+    "เมกะ": [
+      "Megก[้]?้า?"
+    ],
+    "เมอร์ลิน": [
+      "Merิน"
+    ],
+    "เริ่มมัน": [
+      "เริ่มันRayman Legends Retoldัน"
+    ],
+    "เวลท์": [
+      "แวel"
+    ],
+    "เอฟเฟกต์": [
+      "เอฟเฟect",
+      "เect"
+    ],
+    "แคปเจอร์": [
+      "แคปture",
+      "แคture"
+    ],
+    "แบลงซ์": [
+      "บาanceซ",
+      "บาance",
+      "แlance",
+      "แance"
+    ],
+    "แพลตตินัม": [
+      "แพลตtinั่ม"
+    ],
+    "แฟนมีต 12 ปี FGO": [
+      "แฟน\\s*me[ท]?\\s*12\\s*pfg"
+    ],
+    "แมนติส": [
+      "แnit"
+    ],
+    "แอดัปต์": [
+      "adดapt"
+    ],
+    "แอดัปเตชัน": [
+      "adดaptเตation",
+      "adaptเตation",
+      "ดaptation"
+    ],
+    "แอตแท็ก": [
+      "แอทack",
+      "แทack"
+    ],
+    "แอเรีย": [
+      "areaีย"
+    ],
+    "แอ็ก": [
+      "แack"
+    ],
+    "แอ็กเซสซอรี่": [
+      "accessorี่"
+    ],
+    "โกโดร่า": [
+      "โกโดora่า"
+    ],
+    "โคยันสกายา": [
+      "โคยสกาย"
+    ],
+    "โดราเอมอน": [
+      "โดRayman Legends Retoldอน"
+    ],
+    "โดเนต": [
+      "donโดเนต",
+      "โดนate",
+      "โดate",
+      "โนate",
+      "โate"
+    ],
+    "โนซาราชิ": [
+      "โนซาจิ"
+    ],
+    "โปรมีส": [
+      "promิ"
+    ],
+    "โปรเทกต์": [
+      "โปรteคต"
+    ],
+    "โปเกมอน": [
+      "poเกมอน",
+      "poemอน"
+    ],
+    "โพนี่": [
+      "โพy"
+    ],
+    "โพลียูรีเทน": [
+      "poยูเทน"
+    ],
+    "โพเทนเชียล": [
+      "poนtiล"
+    ],
+    "โมะแสง": [
+      "โม้แสง",
+      "โมแสง"
+    ],
+    "โมโปเกมอน": [
+      "โมpoemอน"
+    ],
+    "โรบินฮูด": [
+      "โรบินฮost",
+      "Robinฮood"
+    ],
+    "โหลด Texture": [
+      "โหลดเure"
+    ],
+    "โอกินาวา": [
+      "โอาวa"
+    ],
+    "โอเวอร์โหลด": [
+      "โอเวอร์โหลAD"
+    ],
+    "ไซการ์ด": [
+      "ใสการดไ?การด"
+    ],
+    "ไนซ์": [
+      "เice"
+    ]
+  }
 }

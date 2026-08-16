@@ -19,12 +19,12 @@ _FILE = Path(__file__).resolve()
 def resource_path(name: str) -> Path:
     """Return an absolute path to resource ``name``.
 
-    Walks up from this module until finding a ``resources/<name>`` that exists,
-    falling back to the last candidate if none is found.
+    Walks down from the highest plugin root ancestor to prioritize the master
+    ``resources/<name>``, falling back to local copies if standalone.
     """
-    candidates = [p / "resources" / name for p in _FILE.parents]
+    candidates = [p / "resources" / name for p in reversed(_FILE.parents)]
     first = next((p for p in candidates if p.is_file()), None)
-    return first or candidates[0]
+    return first or candidates[-1]
 
 
 def plugin_root() -> Path:

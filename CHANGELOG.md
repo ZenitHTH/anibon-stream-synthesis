@@ -3,6 +3,19 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.2] — 2026-08-16
+
+### Added
+- **Version 2 Grouped Garbled Dictionary Schema** — Restructured `garbled_replacements.json` from flat 1:1 list to canonical-target grouped schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`), expanding to 284 canonical target words and 358 noise patterns.
+- **`update_garbled_dictionary.py` Automation Tool** — Added automated CLI and library tool in `cleaning-auto-transcripts` supporting `--from-raw-dir`, `--from-notes`, `--add`, and multi-file atomic synchronization across root and skill resources.
+- **Root Resource Priority** — Updated `resource_path()` across all modules to prioritize master root `resources/` over local shadow copies.
+
+### Changed
+- `clean_garbled_english.py` updated to compile grouped mappings with descending pattern length precedence and backward compatibility.
+- `anibon-timestamper/SKILL.md` (Step 8.6), `cleaning-auto-transcripts/SKILL.md`, and `anibon-garbled-notes` agent specifications updated for automated dictionary growth.
+
+---
+
 ## [1.2.1] — 2026-08-14
 
 ### Added

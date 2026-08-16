@@ -201,17 +201,18 @@ python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 # exit 0: no gaps. exit 1: prints e.g. "12m 01:13 -> 01:25 (fill around chunk_26)"
 ```
 
-### 8.6 Collect Garbled Notes → Grow Dictionary (NEW)
+### 8.6 Collect Garbled Notes → Grow Dictionary (Automated)
 
-Each chunk subagent emitted a `GARBLED_NOTES:` block (Step 3.5) for Thai-Latin hybrid words that survived cleaning. Collect + consolidate them into a structured file, then append confirmed corrections to the shared cleaning dictionary.
+Each chunk subagent emitted a `GARBLED_NOTES:` block (Step 3.5) for Thai-Latin hybrid words that survived cleaning. Extract them into `garbled_notes_raw/`, then automatically consolidate and sync into `resources/garbled_replacements.json`:
 
 ```bash
-# 1. Extract GARBLED_NOTES blocks from each subagent's output file into a raw notes dir
-#    (orchestrator: after writing chunk_<group>.txt, copy each GARBLED_NOTES block to
-#     ~/youtube_<id>_workspace/garbled_notes_raw/<group>.txt — empty files allowed)
+# 1. Run dictionary updater to consolidate raw notes & auto-update grouped dictionary
+python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
+  --from-raw-dir ~/youtube_<id>_workspace/garbled_notes_raw/ \
+  --workspace ~/youtube_<id>_workspace
 ```
 
-Then spawn **`anibon-garbled-notes`** (one run, after all groups have returned and merged):
+Or spawn **`anibon-garbled-notes`** for deep LLM verification before writing:
 
 ```python
 invoke_subagent(
@@ -220,14 +221,14 @@ invoke_subagent(
         f"WORKSPACE: ~/youtube_<id>_workspace\n"
         f"PLUGIN_ROOT: <anibon-stream-synthesis plugin root>\n"
         f"Read garbled_notes_raw/*.txt, consolidate against raw_transcript.json + chunks/,\n"
-        f"write garbled_notes.json, append confirmed rules to resources/garbled_replacements.json."
+        f"write garbled_notes.json, and run update_garbled_dictionary.py."
     )
 )
 ```
 
 Outputs:
 - `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `correct` or `null`, `chunk`, `ts`, `context`)
-- `resources/garbled_replacements.json` — appended with only HIGH-confidence rules (valid JSON preserved)
+- `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
 The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
 auto-loads the new rules. Unresolved proper nouns are left `correct: null` for human confirmation.

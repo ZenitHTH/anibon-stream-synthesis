@@ -26,12 +26,36 @@ from anibon.resources import resource_path
 
 
 def load_replacements() -> list[tuple[re.Pattern, str]]:
-    """Load garbled→correct replacements from JSON config."""
+    """Load garbled→correct replacements from JSON config (supports v1 and v2 schemas)."""
     path = resource_path("garbled_replacements.json")
     data = json.loads(path.read_text(encoding="utf-8"))
     compiled = []
+
+    # Version 2 schema: "mappings": { "CanonicalWord": ["pat1", "pat2"] }
+    if "mappings" in data and isinstance(data["mappings"], dict):
+        pairs = []
+        for target, patterns in data["mappings"].items():
+            pats = patterns if isinstance(patterns, list) else [patterns]
+            for p in pats:
+                p_str = str(p).strip()
+                if p_str:
+                    pairs.append((p_str, str(target).strip()))
+
+        # Sort by pattern length descending (more specific patterns match first)
+        pairs.sort(key=lambda x: len(x[0]), reverse=True)
+        for pat, rep in pairs:
+            try:
+                compiled.append((re.compile(pat, re.IGNORECASE), rep))
+            except re.error as err:
+                print(f"[!] Warning: failed to compile pattern '{pat}': {err}", file=sys.stderr)
+        return compiled
+
+    # Version 1 schema fallback: "replacements": [ {"pattern": "...", "replacement": "..."} ]
     for entry in data.get("replacements", []):
-        compiled.append((re.compile(entry["pattern"], re.IGNORECASE), entry["replacement"]))
+        try:
+            compiled.append((re.compile(entry["pattern"], re.IGNORECASE), entry["replacement"]))
+        except re.error as err:
+            print(f"[!] Warning: failed to compile pattern '{entry.get('pattern')}': {err}", file=sys.stderr)
     return compiled
 
 
