@@ -3,8 +3,35 @@
   "description": "Garbled English → correct mapping for clean_garbled_english.py",
   "note": "First-match wins. Within each word, longer/more specific patterns are tried first.",
   "mappings": {
+    "\"Buffer Zone\"": [
+      "Buffอร์ซone"
+    ],
+    "\"handicraft\"": [
+      "แฮนcาฟ"
+    ],
+    "\"handmade\"": [
+      "handมade"
+    ],
+    "\"Kemono Friends\"": [
+      "chมิโนเฟน"
+    ],
+    "\"Nas Daily\"": [
+      "พี่นาสDaลี่"
+    ],
+    "\"non-Muslim\"": [
+      "non มmusุสlิ"
+    ],
+    "\"watashi wa taikoku no\"": [
+      "วตาชingาไทโกเนาะ"
+    ],
+    "22/7 (Nanabun no Nijyuuni)": [
+      "นานุโนนิูนิ"
+    ],
     "AC Milan": [
       "AC Mirาน"
+    ],
+    "Actas": [
+      "แLลance"
     ],
     "adapt": [
       "ad\\s*[ดดี]apt(?!ation)"
@@ -31,6 +58,9 @@
     "AppMedia": [
       "แedia"
     ],
+    "Aratama (Toji no Miko)": [
+      "hฮอโล"
+    ],
     "Archer": [
       "archerร"
     ],
@@ -41,11 +71,18 @@
       "โอunูโน่",
       "ดูโo่"
     ],
+    "Ave Mujica": [
+      "เอมูชิ"
+    ],
     "Avenger": [
       "avengจอร์"
     ],
     "Battle Spirits": [
       "Battle Watingชan"
+    ],
+    "Ben 10": [
+      "Bทen",
+      "Bทน"
     ],
     "Bibury Animation Studios": [
       "บิบลี่"
@@ -58,6 +95,9 @@
     ],
     "BLACKPINK": [
       "Black Kink"
+    ],
+    "Bleach": [
+      "บิdช"
     ],
     "Blue Archive": [
       "ล้อบัวใคร"
@@ -74,11 +114,22 @@
     "Challenge": [
       "chชalleng"
     ],
+    "challenge": [
+      "ชalleng",
+      "ชallน"
+    ],
     "Challenge Quest": [
       "challeng เควส"
     ],
     "Cinderella Eliza": [
       "เอิซ่า"
+    ],
+    "Coconut": [
+      "CoconัLี่"
+    ],
+    "Coconut School": [
+      "โocกนั School",
+      "โคโกนั สกู"
     ],
     "Comiket": [
       "คอมิateโตะ"
@@ -89,11 +140,17 @@
     "Counter Guardian": [
       "เคาน์เตอร์guardเดีี้ยน"
     ],
+    "Crowdfunding": [
+      "Cloud Funding"
+    ],
     "Cursola": [
       "เซู่า"
     ],
     "Doomsday": [
       "doม day"
+    ],
+    "double down": [
+      "douบดาว"
     ],
     "Double Skadi": [
       "2 สardี้"
@@ -106,6 +163,9 @@
     ],
     "Earth": [
       "เth"
+    ],
+    "Eighty-Six (86)": [
+      "XT6"
     ],
     "Ember": [
       "แมber"
@@ -142,6 +202,9 @@
     "Forza": [
       "forซอ"
     ],
+    "Gakuen Idolmaster": [
+      "กากุน"
+    ],
     "Gameplay": [
       "เกมplayย"
     ],
@@ -151,14 +214,26 @@
     "Gen Alpha": [
       "พัalฟ่า"
     ],
+    "generation": [
+      "genชัน"
+    ],
+    "Girls und Panzer": [
+      "เกฟองซอร"
+    ],
     "Global": [
       "GLบAL"
+    ],
+    "good vibe": [
+      "good viwel"
     ],
     "Granblue Fantasy: Relink": [
       "แกนบูfฟตasyink"
     ],
     "Grand Femboy": [
       "Grand\\s+Fame\\s+Boy"
+    ],
+    "Guesthouse": [
+      "เกสเฮ์"
     ],
     "Harley Quinn": [
       "Harี่Quว queen"
@@ -170,6 +245,12 @@
       "คองกซาเรล",
       "โฮงไกซา",
       "ไกสตาร"
+    ],
+    "Idoly Pride": [
+      "Iy PR"
+    ],
+    "Influencer แบบ Nas Daily": [
+      "influูแบบ n daily"
     ],
     "Intimidate": [
       "intิidate"
@@ -216,6 +297,12 @@
     "Koikatsu": [
       "โค้ยคสึ"
     ],
+    "Land of": [
+      "Landน off"
+    ],
+    "Lapis Re:LiGHTs": [
+      "ลปิโตะ"
+    ],
     "Lasengle": [
       "เรา\\s+Single\\b"
     ],
@@ -260,6 +347,9 @@
       "metฟรีantio",
       "Metaฟio"
     ],
+    "modern Bleach": [
+      "modิ bleach"
+    ],
     "Mold Breaker": [
       "โมรaker"
     ],
@@ -281,8 +371,35 @@
     "my cream": [
       "my\\s+creีม"
     ],
+    "MyGO!!!!!": [
+      "ไมโกะ"
+    ],
+    "Nas Daily": [
+      "Nashช Daily",
+      "ตัวนัDaี่",
+      "nสdaี่ที่",
+      "Nas daี่",
+      "Nas Daas",
+      "n daี่",
+      "น Da",
+      "Daี่"
+    ],
+    "Nas Daily Cambodia": [
+      "n cambodเดia"
+    ],
+    "Nas House": [
+      "Nasฮ House",
+      "Nฮ House",
+      "NASฮ"
+    ],
+    "Nintendo Switch": [
+      "Swiชilli"
+    ],
     "Odyssey": [
       "odิy"
+    ],
+    "omegalul": [
+      "omeg้า la"
     ],
     "One Piece": [
       "Oneพiece"
@@ -322,6 +439,15 @@
     "Pretender": [
       "พีender"
     ],
+    "Princess Principal": [
+      "คุณแJฟ PP"
+    ],
+    "Project No.9": [
+      "โปรเจคน้ำนาย"
+    ],
+    "propaganda": [
+      "propปันด้า"
+    ],
     "pumpkin": [
       "พingin"
     ],
@@ -332,8 +458,14 @@
       "ลามิเอล",
       "ราิเอล"
     ],
+    "reality": [
+      "เรity"
+    ],
     "Reines": [
       "เรนส"
+    ],
+    "Revue Starlight": [
+      "reรี Star"
     ],
     "Rider": [
       "r[เด]อร์(?=[\\s,.]|$)"
@@ -376,6 +508,9 @@
     "Sharpness": [
       "ชnตy?"
     ],
+    "Shitsurei shimasu": [
+      "ชิติมาซen"
+    ],
     "Silver Wolf": [
       "Silver\\s+Wolูฟ",
       "Silverวol"
@@ -388,6 +523,9 @@
     ],
     "slow burn": [
       "slลวเบิร์น"
+    ],
+    "SME": [
+      "SMEPโน"
     ],
     "Solo Leveling": [
       "Soloโo Living"
@@ -404,6 +542,9 @@
     "Spider-Man": [
       "สไปเดอร์แman"
     ],
+    "Square Enix": [
+      "Squินะ"
+    ],
     "Storm Chasing Car": [
       "Strom Chasing Carอ"
     ],
@@ -419,6 +560,9 @@
     ],
     "Support Servant": [
       "supพort servant"
+    ],
+    "Takt Op. Destiny": [
+      "ทั Destiny"
     ],
     "Tears": [
       "เทียing"
@@ -442,8 +586,19 @@
     "Titan Final Season": [
       "ไตan\\s+final\\s+ซีซั"
     ],
+    "Toji no Miko": [
+      "โทยิโกะ"
+    ],
     "Tony Stark": [
       "โทy stark"
+    ],
+    "Tourist trap": [
+      "urิ trap",
+      "Tet TRAP"
+    ],
+    "tourist trap": [
+      "สร้างแap",
+      "uristแap"
     ],
     "Transsexual": [
       "transกual"
@@ -454,6 +609,9 @@
     "Twitter": [
       "ทwiตเter",
       "twiตter"
+    ],
+    "Two Blue Vortex": [
+      "true blue อx"
     ],
     "UGREEN": [
       "ยูกen"
@@ -476,6 +634,9 @@
     ],
     "White": [
       "Whiteท"
+    ],
+    "World Witches Series": [
+      "World withซีรies"
     ],
     "Wuthering Waves": [
       "Wuthering\\s*Wave\\b",
@@ -505,6 +666,7 @@
     "คอนเทนต์": [
       "contทent",
       "คทent",
+      "คทest",
       "คent"
     ],
     "คอมิเก็ต": [
@@ -525,6 +687,9 @@
     ],
     "คาลิเบอร์": [
       "คalบอร์"
+    ],
+    "คาเฟ่": [
+      "cาฟ"
     ],
     "คาเมนไรเดอร์": [
       "คมrเดอร์"
@@ -588,6 +753,12 @@
     "นอสทัลเจีย": [
       "นอสalเจีย"
     ],
+    "นอสทัลเจีย (Nostalgia)": [
+      "นอสalาเจีย"
+    ],
+    "บลีช": [
+      "บีed"
+    ],
     "บอย": [
       "Boyอย"
     ],
@@ -599,6 +770,9 @@
     ],
     "ปาร์ตี้ชาร์จเกจ": [
       "ปารตี้ชarเกต"
+    ],
+    "พรีเคียว": [
+      "เพียวคาชadow"
     ],
     "พาโรดี้": [
       "พโดy"
@@ -615,6 +789,9 @@
     ],
     "ฟูจิโนะ": [
       "fujิโนะ"
+    ],
+    "ฟูจิโมโตะ (Tatsuki Fujimoto)": [
+      "ฟูim"
     ],
     "มอนฮัน": [
       "มอนฮทั"
@@ -665,6 +842,9 @@
     "สปิริต": [
       "สปริit"
     ],
+    "สร้าง Branding": [
+      "สร้างbrรนing"
+    ],
     "สวิตช์": [
       "swวิตchค",
       "สวิตch",
@@ -675,6 +855,9 @@
     ],
     "สเตตัส": [
       "สat"
+    ],
+    "สแควร์เอนิกซ์": [
+      "Squenิน"
     ],
     "สแตก": [
       "สack"
@@ -695,6 +878,9 @@
     "ออริจินัล": [
       "อoriginal",
       "อริจินal"
+    ],
+    "อากิระ โทริยามะ": [
+      "agิทริama"
     ],
     "อาร์ติแฟกต์": [
       "arิct"
@@ -753,6 +939,15 @@
     "เกม": [
       "เame"
     ],
+    "เคย์จัง": [
+      "เคang"
+    ],
+    "เงิน donation": [
+      "เงินโดนชั"
+    ],
+    "เชนซอแมน (Chainsaw Man)": [
+      "เนซman"
+    ],
     "เซรีด้า": [
       "เซida้า",
       "เซีIDa",
@@ -782,6 +977,9 @@
     "เด็ก Gen Alpha": [
       "เด็กเจenalฟ่า"
     ],
+    "เทรนด์รีเมค": [
+      "เนรีมake"
+    ],
     "เบอร์รี่": [
       "เบอร์ี่"
     ],
@@ -793,6 +991,9 @@
     ],
     "เบอร์เซอร์เกอร์": [
       "เบอร์ซerกอร"
+    ],
+    "เบอร์เซิร์ก (Berserk)": [
+      "เบอร์เซิk"
     ],
     "เบอร์เซิร์กเกอร์": [
       "เซerกer",
@@ -880,6 +1081,18 @@
       "โดate",
       "โนate",
       "โate"
+    ],
+    "โทคิซากิ": [
+      "โทkิซากิ"
+    ],
+    "โทคุ": [
+      "โทkุ"
+    ],
+    "โทคุซัทสึ": [
+      "โทkุซัทสึ"
+    ],
+    "โทวะสึไก (Towa Tsugai)": [
+      "ทรumิโกะ"
     ],
     "โนซาราชิ": [
       "โนซาจิ"
