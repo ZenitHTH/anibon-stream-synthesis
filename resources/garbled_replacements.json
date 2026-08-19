@@ -15,9 +15,6 @@
     "\"Kemono Friends\"": [
       "chมิโนเฟน"
     ],
-    "\"Nas Daily\"": [
-      "พี่นาสDaลี่"
-    ],
     "\"non-Muslim\"": [
       "non มmusุสlิ"
     ],
@@ -26,6 +23,9 @@
     ],
     "22/7 (Nanabun no Nijyuuni)": [
       "นานุโนนิูนิ"
+    ],
+    "60 Stamina": [
+      "60 amิน่า"
     ],
     "AC Milan": [
       "AC Mirาน"
@@ -43,6 +43,9 @@
     "addictive": [
       "adิctive"
     ],
+    "Aesc the Savior": [
+      "เอสกึ theนวเ"
+    ],
     "Agatha All Along": [
       "อากaอรอง"
     ],
@@ -51,6 +54,15 @@
     ],
     "Analog Horror": [
       "Analอก\\s+Herror"
+    ],
+    "Aniplex": [
+      "ในเพค"
+    ],
+    "Aniplex ID": [
+      "อันึ ID"
+    ],
+    "Apostles of the Alien World (สาวกเทพต่างดาว)": [
+      "Apostle Aian World"
     ],
     "apply": [
       "ชapply"
@@ -64,6 +76,18 @@
     "Archer": [
       "archerร"
     ],
+    "Archetype Inception": [
+      "Ar Inception"
+    ],
+    "Archetype Inception (ออร์ดีลคอล)": [
+      "Ar Inception"
+    ],
+    "Archetype: Earth": [
+      "ArคtipArึ"
+    ],
+    "Argument": [
+      "arน"
+    ],
     "Assassin": [
       "assassิน"
     ],
@@ -71,14 +95,23 @@
       "โอunูโน่",
       "ดูโo่"
     ],
+    "Augusta (Wuthering Waves)": [
+      "อastต้า"
+    ],
     "Ave Mujica": [
       "เอมูชิ"
     ],
     "Avenger": [
       "avengจอร์"
     ],
+    "Bakatoria (Summer Castoria)": [
+      "บากาทเรีย"
+    ],
     "Battle Spirits": [
       "Battle Watingชan"
+    ],
+    "Beast Ereshkigal": [
+      "Beast er"
     ],
     "Ben 10": [
       "Bทen",
@@ -100,6 +133,7 @@
       "บิdช"
     ],
     "Blue Archive": [
+      "มั่ววัวใคร",
       "ล้อบัวใคร"
     ],
     "boost": [
@@ -111,6 +145,12 @@
     "Burnt": [
       "burบ"
     ],
+    "Carnival Phantasm": [
+      "คอFantasึม"
+    ],
+    "Chaldeas": [
+      "คเดีีย"
+    ],
     "Challenge": [
       "chชalleng"
     ],
@@ -121,8 +161,21 @@
     "Challenge Quest": [
       "challeng เควส"
     ],
+    "Chaos Zero Nightmare": [
+      "แคซman",
+      "เคซิเม"
+    ],
+    "Charge Gauge (ชาร์จเกจ)": [
+      "ชารเกด"
+    ],
+    "Ciel": [
+      "my exterึ"
+    ],
     "Cinderella Eliza": [
       "เอิซ่า"
+    ],
+    "Class Score": [
+      "คลาสกore"
     ],
     "Coconut": [
       "CoconัLี่"
@@ -143,6 +196,9 @@
     "Crowdfunding": [
       "Cloud Funding"
     ],
+    "Crunchyroll": [
+      "คันชิโร"
+    ],
     "Cursola": [
       "เซู่า"
     ],
@@ -155,11 +211,17 @@
     "Double Skadi": [
       "2 สardี้"
     ],
+    "Draco Beast": [
+      "เดโกีส"
+    ],
     "Dragon Dance": [
       "ดาคแดน"
     ],
     "Dream Team": [
       "DreมTeีม"
+    ],
+    "Duet Night Abyss": [
+      "Do it abี"
     ],
     "Earth": [
       "เth"
@@ -180,6 +242,9 @@
       "enนerร์",
       "Enนจี้"
     ],
+    "Eric Bloodaxe": [
+      "elิblัแ"
+    ],
     "eSports": [
       "คิดอปอ"
     ],
@@ -189,12 +254,56 @@
     "Extreme": [
       "extrม"
     ],
+    "Fate/Apocrypha": [
+      "Apple โพ"
+    ],
+    "Fate/Extra Record": [
+      "เฟสtrarecคอร์ด",
+      "exra recคอร์ด"
+    ],
+    "Fate/Grand Order": [
+      "เฟสgrดอร์"
+    ],
+    "Fate/Prototype": [
+      "ูทโปรโตไทpe"
+    ],
+    "Fate/Requiem": [
+      "ูลีquมป",
+      "เQU"
+    ],
+    "Fate/Samurai Remnant": [
+      "remonance"
+    ],
+    "Fate/strange Fake": [
+      "เฟส streng เฟ",
+      "streng เฟ"
+    ],
+    "Femboy": [
+      "เฟameboอย"
+    ],
+    "FGA (Fate/Grand Order Auto)": [
+      "M F MA"
+    ],
+    "Final Chapter": [
+      "Final Shapter",
+      "final shfter"
+    ],
+    "Final Requiem": [
+      "Final Requม"
+    ],
+    "Floodgate": [
+      "flั gate"
+    ],
     "Florges": [
       "fores"
     ],
     "footage": [
       "ฟ[ุู]ตเท[จก]",
       "foage"
+    ],
+    "Foreigner": [
+      "CF Forer",
+      "forนer"
     ],
     "form": [
       "[fฟ]อ[ื]?ม(?=[\\s,.]|$)"
@@ -226,17 +335,36 @@
     "good vibe": [
       "good viwel"
     ],
+    "Grail Front": [
+      "Gฟ Font",
+      "Gฟce"
+    ],
     "Granblue Fantasy: Relink": [
       "แกนบูfฟตasyink"
     ],
+    "Grand Assassin": [
+      "แกนอาิน"
+    ],
+    "Grand Chase": [
+      "Grand Chส"
+    ],
     "Grand Femboy": [
       "Grand\\s+Fame\\s+Boy"
+    ],
+    "Grand Lancer (แกรนด์แลนเซอร์)": [
+      "แกนเซอร์"
     ],
     "Guesthouse": [
       "เกสเฮ์"
     ],
     "Harley Quinn": [
       "Harี่Quว queen"
+    ],
+    "Hell's Kitchen": [
+      "Henk Ken"
+    ],
+    "Hell's Kitchen Season 2": [
+      "H question 2"
     ],
     "Honkai Star Rail": [
       "ฮกสตาร"
@@ -246,11 +374,19 @@
       "โฮงไกซา",
       "ไกสตาร"
     ],
+    "Hypergryph": [
+      "แฮปป์กิฟ"
+    ],
     "Idoly Pride": [
       "Iy PR"
     ],
-    "Influencer แบบ Nas Daily": [
-      "influูแบบ n daily"
+    "Interlude": [
+      "interlute",
+      "อิตรูด",
+      "อิตลูด"
+    ],
+    "Interlude (อินเตอร์ลูด)": [
+      "อิตรูด"
     ],
     "Intimidate": [
       "intิidate"
@@ -270,6 +406,9 @@
     "Joker": [
       "Jokกอร์"
     ],
+    "Jump Festa": [
+      "จัเฟต้า"
+    ],
     "Kagurabachi": [
       "สakิเกบาจิ"
     ],
@@ -278,6 +417,12 @@
     ],
     "Keldeo": [
       "เคดิโอ"
+    ],
+    "Kiara (คิอาระ)": [
+      "เีย่าชิง"
+    ],
+    "King of Sekigahara Academy": [
+      "King of Smิกิฮาระ"
     ],
     "King's Shield": [
       "Kingชilli"
@@ -297,6 +442,9 @@
     "Koikatsu": [
       "โค้ยคสึ"
     ],
+    "Koyanskaya of Light (โคยันสกาย่าแสง)": [
+      "โคยันส่าไล"
+    ],
     "Land of": [
       "Landน off"
     ],
@@ -312,6 +460,9 @@
     "Level Up Event": [
       "Level\\s*อัพเent"
     ],
+    "Live Service": [
+      "ไ service"
+    ],
     "Looper": [
       "looperร์"
     ],
@@ -320,6 +471,9 @@
     ],
     "Low Energy": [
       "L energy"
+    ],
+    "Lowlight": [
+      "lowไล"
     ],
     "Mairimashita! Iruma-kun": [
       "อิumมะ"
@@ -337,11 +491,17 @@
       "Marvel\\s+Ral\\b",
       "Marวal"
     ],
+    "Mash Kyrielight (มาชู คิริเอไลท์)": [
+      "มาชูคิไดโถ"
+    ],
     "Medium": [
       "Mediม"
     ],
     "Meeting": [
       "meติ้ง"
+    ],
+    "Memory of Londinium": [
+      "Memmory of Londinum"
     ],
     "Metaphor: ReFantazio": [
       "metฟรีantio",
@@ -354,7 +514,8 @@
       "โมรaker"
     ],
     "Moon Cancer": [
-      "Moon\\s+canเซอร์"
+      "Moon\\s+canเซอร์",
+      "Moon canza"
     ],
     "Moon Knight": [
       "Moonไท"
@@ -374,26 +535,23 @@
     "MyGO!!!!!": [
       "ไมโกะ"
     ],
-    "Nas Daily": [
-      "Nashช Daily",
-      "ตัวนัDaี่",
-      "nสdaี่ที่",
-      "Nas daี่",
-      "Nas Daas",
-      "n daี่",
-      "น Da",
-      "Daี่"
-    ],
-    "Nas Daily Cambodia": [
-      "n cambodเดia"
-    ],
     "Nas House": [
       "Nasฮ House",
       "Nฮ House",
       "NASฮ"
     ],
+    "Nero Beast": [
+      "ne เนobe"
+    ],
+    "Neural Cloud": [
+      "Newal Croud",
+      "neal crาว"
+    ],
     "Nintendo Switch": [
       "Swiชilli"
+    ],
+    "Noble Phantasm": [
+      "noble fantasึม"
     ],
     "Odyssey": [
       "odิy"
@@ -407,6 +565,15 @@
     "One Punch Man": [
       "one\\s+punch\\s*man",
       "one\\s+พ[ั้]?man"
+    ],
+    "Ordeal Call (ออร์เดลคอล)": [
+      "โอรูโตะ"
+    ],
+    "Ordeal Call 3": [
+      "ออคอ 3"
+    ],
+    "Ordeal Call Foreigner": [
+      "Audio Call Forena"
     ],
     "original": [
       "\\borigal\\b",
@@ -426,6 +593,9 @@
     ],
     "Phantas-Moon": [
       "fantั\\s*moon"
+    ],
+    "Phantas-Moon (Archetype: Earth)": [
+      "Fantasั Moon"
     ],
     "Phantasmoon": [
       "fฟantus moon"
@@ -461,6 +631,9 @@
     "reality": [
       "เรity"
     ],
+    "Reddit": [
+      "เรit 6 k"
+    ],
     "Reines": [
       "เรนส"
     ],
@@ -474,7 +647,6 @@
       "Jจนียor"
     ],
     "Roblox": [
-      "Rock One",
       "Roboอก",
       "Robลอก"
     ],
@@ -499,6 +671,9 @@
     "SEGA": [
       "SE[ก]?้า"
     ],
+    "Servantverse (เซอร์แวนต์เวิร์ส)": [
+      "เซบาจิวส"
+    ],
     "sexual": [
       "seกชual"
     ],
@@ -511,9 +686,18 @@
     "Shitsurei shimasu": [
       "ชิติมาซen"
     ],
+    "Siegfried (FGO)": [
+      "ไอ้นัสึกฟีด"
+    ],
+    "Sieghart": [
+      "ซิฮาร"
+    ],
     "Silver Wolf": [
       "Silver\\s+Wolูฟ",
       "Silverวol"
+    ],
+    "Singularity Foreigner": [
+      "Scrulity Forena"
     ],
     "Sir_B": [
       "เซอร์Bี่"
@@ -526,6 +710,15 @@
     ],
     "SME": [
       "SMEPโน"
+    ],
+    "Sodom's Beast": [
+      "โซดom beast"
+    ],
+    "Sodom's Beast (โซดอม บีสต์)": [
+      "โซดomบีสตะ"
+    ],
+    "Sodom's Beast Draco": [
+      "โซดomบิสตะเดโก"
     ],
     "Solo Leveling": [
       "Soloโo Living"
@@ -603,6 +796,9 @@
     "Transsexual": [
       "transกual"
     ],
+    "Tsukihime (สึคิฮิเมะ)": [
+      "สกิเมะ"
+    ],
     "TV Series": [
       "ทวีวซีรies์"
     ],
@@ -613,11 +809,23 @@
     "Two Blue Vortex": [
       "true blue อx"
     ],
+    "Typhon": [
+      "ไทฟon"
+    ],
+    "U-Olga Marie": [
+      "อ้ายูอu"
+    ],
+    "ufotable": [
+      "Forable"
+    ],
     "UGREEN": [
       "ยูกen"
     ],
     "Universal": [
       "Universรซั"
+    ],
+    "Unlimited Blade Works": [
+      "unlimit breakวิ"
     ],
     "Urshifu": [
       "อาจารย์ชีฝู",
@@ -629,28 +837,56 @@
     "Victor Von Doom": [
       "Victor Wom"
     ],
+    "Volond (โวลุนด์)": [
+      "โวลอน"
+    ],
     "Weeping Cradle": [
       "Wpping\\s+Cradle"
     ],
+    "Wheel of Names": [
+      "Wheel of Mes"
+    ],
+    "Where Winds Meet": [
+      "ตัวเวินมิ"
+    ],
     "White": [
       "Whiteท"
+    ],
+    "World Ciel": [
+      "World Cerกิ"
     ],
     "World Witches Series": [
       "World withซีรies"
     ],
     "Wuthering Waves": [
       "Wuthering\\s*Wave\\b",
+      "wherein meat",
       "wing\\s*wave",
-      "Wing\\s*Wave"
+      "Wing\\s*Wave",
+      "wting wave",
+      "แว me"
+    ],
+    "WWE ดูฟรีใน YouTube แมตช์อำลา John Cena": [
+      "เ W ดูฟรีใน YouTube แบบแมทอำราจซีน่า"
     ],
     "Youjo Senki": [
       "โยโจซenกิ"
     ],
+    "Yugituber": [
+      "yยukiทูer"
+    ],
     "Zenless Zone Zero": [
-      "สดซิรo"
+      "สดซิรo",
+      "สซิโร"
+    ],
+    "กาน้ำชา (Tea Pot)": [
+      "การน้ำชา"
     ],
     "การ์ด": [
       "Cardด"
+    ],
+    "ก๊อดอรชุน (God Arjuna)": [
+      "Godชูน"
     ],
     "ข้อเท้าอคิลิส": [
       "ข้อ\\s*time\\s*คิ"
@@ -662,6 +898,9 @@
       "ครtical",
       "คริal",
       "crิal"
+    ],
+    "คลาสสกอร์ (Class Score)": [
+      "คาสกอ"
     ],
     "คอนเทนต์": [
       "contทent",
@@ -697,8 +936,11 @@
     "คิงโพรเทีย": [
       "คิพiaอต้า"
     ],
-    "คิวเรม": [
-      "คิRayman"
+    "คิงโพรเทีย (Kingprotea)": [
+      "kิโพีย"
+    ],
+    "คิตะชินแซะแกรนบลู": [
+      "คิตาชีแซะแกมบูซิ"
     ],
     "ชาร์จ": [
       "ชารกate"
@@ -720,6 +962,9 @@
       "shoเตอร์",
       "shoตอร"
     ],
+    "ซองจินอู (Sung Jin-woo)": [
+      "ซุจินู"
+    ],
     "ซอมบี้": [
       "ซomบี้"
     ],
@@ -731,6 +976,9 @@
     ],
     "ดาเมจรีดักชัน": [
       "diดamagerดักช"
+    ],
+    "ดาเลีย / ดาเรีย (Dahlia)": [
+      "ดาเีย"
     ],
     "ดูเอล": [
       "duอล"
@@ -762,11 +1010,11 @@
     "บอย": [
       "Boyอย"
     ],
-    "บัฟมาชู": [
-      "Baphometาชู"
-    ],
     "บูลลี่": [
       "บullลี่"
+    ],
+    "บูเช็คเทียน (Wu Zetian)": [
+      "บูชคเทียน"
     ],
     "ปาร์ตี้ชาร์จเกจ": [
       "ปารตี้ชarเกต"
@@ -785,7 +1033,8 @@
       "ฟiel"
     ],
     "ฟุยุคิ": [
-      "ฟ[จ]?ukิ"
+      "ฟ[จ]?ukิ",
+      "FUKI"
     ],
     "ฟูจิโนะ": [
       "fujิโนะ"
@@ -795,6 +1044,12 @@
     ],
     "มอนฮัน": [
       "มอนฮทั"
+    ],
+    "มอร์แกน": [
+      "มรorแกน"
+    ],
+    "มอร์แกน (Morgan)": [
+      "Morแกน"
     ],
     "มัลติคอร์": [
       "multิคall"
@@ -850,9 +1105,6 @@
       "สวิตch",
       "โวิตch"
     ],
-    "สาวๆ ยูกิโอ": [
-      "สาวยิKemuriือ"
-    ],
     "สเตตัส": [
       "สat"
     ],
@@ -861,6 +1113,9 @@
     ],
     "สแตก": [
       "สack"
+    ],
+    "หลานหลิงหวาง (Prince of Lanling)": [
+      "หลังลิงหวาง"
     ],
     "อควาเจ็ต": [
       "คอ(เจ็)?et"
@@ -879,6 +1134,12 @@
       "อoriginal",
       "อริจินal"
     ],
+    "อันลิมิเต็ดเบลดเวิร์ก (Unlimited Blade Works)": [
+      "unลิมิเวิร์ค"
+    ],
+    "อัปเดต Class Score": [
+      "อัพคลาสกore"
+    ],
     "อากิระ โทริยามะ": [
       "agิทริama"
     ],
@@ -890,6 +1151,11 @@
     ],
     "อินฟลูเอนเซอร์": [
       "influenซอร์"
+    ],
+    "อินเตอร์ลูด (Interlude)": [
+      "อินเตอร์ูโดะ",
+      "ไอ้อตลูด",
+      "อินตูด"
     ],
     "อิบุกิ": [
       "อิบukิ",
@@ -930,9 +1196,6 @@
     "ฮาเบตร็อต": [
       "ฮาเบตรอ(?=[\\s,.]|$)"
     ],
-    "ฮาเร็ม": [
-      "ฮาRayman Legends Retold"
-    ],
     "ิติคอล": [
       "ิtical"
     ],
@@ -947,6 +1210,9 @@
     ],
     "เชนซอแมน (Chainsaw Man)": [
       "เนซman"
+    ],
+    "เซนโนะ ริคิว (Sen no Rikyu)": [
+      "เซนูคิ"
     ],
     "เซรีด้า": [
       "เซida้า",
@@ -968,8 +1234,14 @@
     "เซเรนิตี้": [
       "เenity"
     ],
+    "เซ็ตโชอิน คิอาระ (Sessyoin Kiara)": [
+      "เคียแกสชูอิน"
+    ],
     "เดรสปาร์ตี้": [
       "de\\s*stารี"
+    ],
+    "เดรโก (Draco)": [
+      "เดโก"
     ],
     "เดอะ มูฟวี่": [
       "ทer\\s+Movie"
@@ -979,6 +1251,12 @@
     ],
     "เทรนด์รีเมค": [
       "เนรีมake"
+    ],
+    "เนโร บีสต์ (Nero Beast / Draco)": [
+      "เนโรบีส"
+    ],
+    "เนโร บีสต์ (Nero Beast)": [
+      "เนโรast"
     ],
     "เบอร์รี่": [
       "เบอร์ี่"
@@ -1004,6 +1282,9 @@
       "เพเfect",
       "เพฟect"
     ],
+    "เฟรมิเนต์ (Freminet)": [
+      "เฟมินส"
+    ],
     "เฟรมเรต": [
       "เฟมrท"
     ],
@@ -1016,8 +1297,8 @@
     "เมอร์ลิน": [
       "Merิน"
     ],
-    "เริ่มมัน": [
-      "เริ่มันRayman Legends Retoldัน"
+    "เรือ Xianzhou (Honkai: Star Rail)": [
+      "เรือเซียงโจ"
     ],
     "เวลท์": [
       "แวel"
@@ -1025,6 +1306,9 @@
     "เอฟเฟกต์": [
       "เอฟเฟect",
       "เect"
+    ],
+    "แกรนด์แลนเซอร์กับแกรนด์ไรเดอร์": [
+      "แกนlanซerกับแกน rer"
     ],
     "แคปเจอร์": [
       "แคปture",
@@ -1072,8 +1356,11 @@
     "โคยันสกายา": [
       "โคยสกาย"
     ],
-    "โดราเอมอน": [
-      "โดRayman Legends Retoldอน"
+    "โคยันแสง (Koyanskaya of Light)": [
+      "คอมโมแสง"
+    ],
+    "โดจินของแอสโทลโฟ (Astolfo)": [
+      "โดของแ4"
     ],
     "โดเนต": [
       "donโดเนต",
@@ -1138,6 +1425,9 @@
     ],
     "ไซการ์ด": [
       "ใสการดไ?การด"
+    ],
+    "ไดนามิก": [
+      "ไดนamิ"
     ],
     "ไนซ์": [
       "เice"

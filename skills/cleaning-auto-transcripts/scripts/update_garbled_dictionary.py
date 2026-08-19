@@ -92,8 +92,38 @@ def load_master_dictionary() -> tuple[dict[str, list[str]], str]:
     return merged_mappings, description
 
 
+# Known real franchise/game titles and common phrases that must never be used as noise replacement patterns
+_BLOCKED_SUBSTRINGS = [
+    "Marvel Tōkon",
+    "Alien: Isolation",
+    "TMNT",
+    "God of War",
+    "Rayman Legends",
+    "Velina & Norma",
+    "Control: Resonant",
+]
+
+_EXACT_BLOCKED_PATTERNS = {
+    "rock one",
+    "where we meet",
+    "where meet",
+    "wherein meet",
+}
+
+
+def is_blocked_pattern(target: str, pattern: str) -> tuple[bool, str]:
+    """Check if a pattern is a real game title or common phrase that shouldn't be overwritten."""
+    p_lower = pattern.lower().strip()
+    if p_lower in _EXACT_BLOCKED_PATTERNS:
+        return True, "matches blocked common phrase / false positive"
+    for bs in _BLOCKED_SUBSTRINGS:
+        if bs.lower() in p_lower and bs.lower() not in target.lower():
+            return True, f"contains protected game/brand name '{bs}'"
+    return False, ""
+
+
 def validate_and_sort_mappings(mappings: dict[str, list[str]]) -> dict[str, list[str]]:
-    """Validate all regex patterns and sort canonical words & patterns deterministically."""
+    """Validate all regex patterns, filter false-positives, and sort canonical words & patterns."""
     clean_mappings: dict[str, list[str]] = {}
 
     for target in sorted(mappings.keys(), key=lambda s: s.lower()):
@@ -103,6 +133,12 @@ def validate_and_sort_mappings(mappings: dict[str, list[str]]) -> dict[str, list
             p_clean = p.strip()
             if not p_clean:
                 continue
+
+            blocked, reason = is_blocked_pattern(target, p_clean)
+            if blocked:
+                print(f"[!] Blocked bad pattern for '{target}': '{p_clean}' ({reason}) - Skipping", file=sys.stderr)
+                continue
+
             try:
                 re.compile(p_clean, re.IGNORECASE)
                 if p_clean not in valid_patterns:
@@ -116,6 +152,7 @@ def validate_and_sort_mappings(mappings: dict[str, list[str]]) -> dict[str, list
             clean_mappings[target] = valid_patterns
 
     return clean_mappings
+
 
 
 def save_dictionary(mappings: dict[str, list[str]], description: str = "") -> None:

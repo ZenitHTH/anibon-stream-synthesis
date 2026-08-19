@@ -342,3 +342,5 @@ HH:MM:SS - [Tag] Description
 - **HONOUR THE MOOD VERDICT** — when `mood_555.json` exists, inject each chunk's `tone` guidance (mood + suggested verbs) into the subagent prompt. The AI keeps its own first-verb choice, but must not flatline a chat-laugh/hype peak into a calm factual verb.
 - **NON-SPOILER GACHA POLICY** — Never spoil whether the streamer won or lost a gacha pull in the timestamp description. Focus on anticipation, the featured banner/character, and chat interactions.
 - **18+ / RULE 34 TONE INTEGRITY** — Do not trivialize adult fanart or Rule 34 commentary under generic comedic tags (`[Reaction] ฮา...`). Use `[Talk]` with mature, direct, and accurate summaries.
+- **PROPER NOUN & GAME TITLE INTEGRITY** — When processing garbled notes (Step 8.6), NEVER map legitimate external game titles (e.g. *MARVEL Tōkon: Fighting Souls*, *Alien: Isolation*, *TMNT: The Last Ronin*), brand names, or common English phrases (e.g. *where we meet*) as noise patterns. Unconfirmed proper nouns must remain `correct: null` for human review rather than being forced into generic Thai terms.
+

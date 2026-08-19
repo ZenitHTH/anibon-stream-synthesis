@@ -113,6 +113,12 @@ Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an
 4. **Never guess proper nouns**: ambiguous single-occurrence names (`ดองซam`, `โinaa`, `โอเดet`) → mark unresolved in notes and ask the user for the correct form instead of blind-regexing (see Iron Rules).
 5. **Verify**: re-run the scan; confirm remaining hybrids are only intentional English loanwords (`FGO`, `NP`, `YouTube`) or unconfirmed proper nouns.
 
+### Proper Noun & Real Title Protection Gate (MANDATORY)
+
+1. **Real Game / Trademark Collision Check**: Before adding any replacement rule to `garbled_replacements.json` or `default_mappings.json`, verify whether the candidate pattern is a legitimate standalone game title, trademark, or franchise (e.g. *MARVEL Tōkon: Fighting Souls*, *Alien: Isolation*, *TMNT: The Last Ronin*, *Rayman Legends*). Never overwrite a real game title with generic words like `โทคุ` or character names.
+2. **Generic Phrase Protection**: Never register common conversational English phrases (e.g., `where we meet`, `where meet`, `Rock One`) as replacement patterns for game titles (e.g., `Where Winds Meet`, `Roblox`).
+3. **Specific Subtitle Over-mapping**: In `default_mappings.json`, never map common Thai words or broad root names (`คอนโทรล`, `เฟย`, `until dawn`) to specific video subtitles or unconfirmed sequels (`Control: Resonant`, `God of War: Laufey`, `Until Dawn 2`). Use base titles only (`Control`, `Laufey`, `Until Dawn`).
+
 ---
 
 ## Integration with Other Skills
@@ -132,8 +138,10 @@ When activating a summarization or timestamping skill, follow these steps:
 - **Space Normalization first**: ALWAYS apply Space Normalization before any comparison. Uneven spacing breaks word mapping.
 - **Handle exclusions carefully**: Manage overlapping-term exclusions strictly via the `exclude_if_contains` system in the script at all times.
 - **NEVER use Python YouTube Transcript APIs**: Do NOT write `python3 -c "from youtube_transcript_api import ..."` or install extra dependencies. Use standard native `yt-dlp --write-auto-subs` to fetch transcripts.
+- **NO OVERWRITING REAL TITLES OR COMMON PHRASES**: Never map legitimate external game titles, franchise names, or common English conversational phrases as garbled noise patterns to be overwritten by Thai terms or other game names.
 - **Ask user and log unknown or mismatched search terms**: If you try to search for an unfamiliar or distorted word using search tools, but the search results do not seem to fit the spoken context (e.g. searching "Bฟet" returns food buffets but context is about law/succession), **stop and ask the user directly in the chat**. Display the mismatched word, its exact timestamp, and the surrounding transcript sentence/segment. Once the user clarifies the correct meaning, save the corrected phonetic mapping back to `default_mappings.json` or custom mappings.
 - **Low-Context AI Defense (< 8k context)**: If your context limit is extremely restricted (e.g., `gemma4:31b` or `e2b`), NEVER run unbounded searches, previews, or full file reads on transcripts or mappings files. You MUST strictly limit output by piping to `head` / `Select-Object -First`, adding `--limit 5` where applicable, or keeping `dump` ranges strictly under 60 seconds. Rely entirely on the python script for full-scale processing to protect your context window.
+
 
 
 
