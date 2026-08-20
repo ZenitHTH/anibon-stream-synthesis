@@ -18,6 +18,35 @@ Do NOT use for: purely audio analysis, already-transcribed text, tasks where tra
 
 ## Frame Extraction
 
+### Option A: Lightweight YouTube Storyboard (`sb0`) — Preferred for YouTube (No full video download, ~15MB total)
+
+```bash
+# 1. Download storyboard mhtml (covers entire multi-hour stream in ~15MB)
+yt-dlp -f sb0 "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/storyboard.%(ext)s"
+
+# 2. Unpack MHTML slides and crop timestamp tile
+# Each slide is 960x540 (3x3 grid of 320x180 tiles, ~89.93s per slide, ~10s per tile)
+python3 -c "
+import email, os
+from email import policy
+
+mhtml = 'frames/storyboard.mhtml'
+os.makedirs('frames/slides', exist_ok=True)
+with open(mhtml, 'rb') as f:
+    msg = email.message_from_binary_file(f, policy=policy.default)
+for idx, p in enumerate(list(msg.iter_parts())[1:], 1):
+    with open(f'frames/slides/slide_{idx:03d}.jpg', 'wb') as out:
+        out.write(p.get_payload(decode=True))
+"
+
+# 3. Crop target timestamp HH:MM:SS
+# slide_idx = int(sec / 89.932) + 1, sub = min(8, int((sec % 89.932) / 9.9924))
+# x = (sub % 3) * 320, y = (sub // 3) * 180
+ffmpeg -y -i frames/slides/slide_007.jpg -vf "crop=320:180:640:180" frames/frame_00_09_57.jpg
+```
+
+### Option B: Local Video / MP4 File
+
 ```powershell
 # Single frame
 ffmpeg -ss HH:MM:SS -i full_video.mp4 -frames:v 1 -q:v 2 frames\frame.jpg

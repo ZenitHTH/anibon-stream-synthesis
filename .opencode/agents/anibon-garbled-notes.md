@@ -57,18 +57,15 @@ For each unique candidate, locate it in the raw transcript (grep the workspace).
 ~60 chars either side. The correct form is the full Thai word the Latin tail is a fragment
 of (`อีเวent` → `อีเวนต์`, `ทarเก็ต` → `ทาร์เก็ต`).
 
-Rules:
-- Resolve only HIGH-confidence candidates. Add a rule only when the decoded form is
-  unambiguous from context AND matches the phoneme pattern.
-- For proper nouns (character/game names you cannot verify): set `correct: null`, do NOT
-  append a rule. Ask the orchestrator/human instead (write them to the notes file as unresolved).
-- Apply fuzzy-suffix patterns as `Thai+Latin` pairs (`เบอร์ซer` → `เบอร์เซอร์`), whole
-  words before fragments. Use `(?=[\s,.]|$)` lookahead on short fragments so longer words
-  aren't mangled.
-- Never invent a rule from a single ambiguous occurrence.
+### Step 2.5: Vision Inspection for Doubting Words / Proper Nouns
+When audio context alone is ambiguous for game titles, character names, UI terms, or on-screen references (`correct: null`):
+1. Extract the video frame at the candidate's exact timestamp (`ts`) using the lightweight Storyboard `sb0` crop recipe (from `antigravity-vision-proxy`).
+2. Inspect on-screen UI, character rosters, banner titles, or game HUD to confirm the exact canonical spelling.
+3. If confirmed on-screen: set `correct: "<CanonicalName>"` and include in confirmed rules rather than leaving as `null`.
+4. Only leave `correct: null` if the visual frame lacks relevant text or cues (e.g. blank webcam / off-topic talk).
 
 ### Step 3: Write outputs & Sync
-- Write `garbled_notes.json` (all candidates, resolved or not).
+- **CRITICAL**: Use `run_command` to write `<workspace>/garbled_notes.json` directly to disk (all candidates, resolved or not). Do not just output JSON in text.
 - Run `python3 <plugin_root>/skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py --from-notes <workspace>/garbled_notes.json`
   to append confirmed rules and auto-sync across all plugin resource copies.
 - Re-verify: grep the transcript again for `[\u0e00-\u0e7f]+[A-Za-z]{2,}`

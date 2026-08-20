@@ -206,13 +206,13 @@ python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 Each chunk subagent emitted a `GARBLED_NOTES:` block (Step 3.5) for Thai-Latin hybrid words that survived cleaning. Extract them into `garbled_notes_raw/`, then automatically consolidate and sync into `resources/garbled_replacements.json`:
 
 ```bash
-# 1. Run dictionary updater to consolidate raw notes & auto-update grouped dictionary
+# 1. ALWAYS run dictionary updater to consolidate raw notes & generate garbled_notes.json on disk
 python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
   --from-raw-dir ~/youtube_<id>_workspace/garbled_notes_raw/ \
   --workspace ~/youtube_<id>_workspace
 ```
 
-Or spawn **`anibon-garbled-notes`** for deep LLM verification before writing:
+Optional: Spawn **`anibon-garbled-notes`** for deep LLM verification before writing. If spawned, save the returned JSON payload directly to `~/youtube_<id>_workspace/garbled_notes.json` and sync dictionary via `update_garbled_dictionary.py --sync-only`.
 
 ```python
 invoke_subagent(
@@ -230,8 +230,11 @@ Outputs:
 - `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `correct` or `null`, `chunk`, `ts`, `context`)
 - `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
+> [!TIP]
+> **Vision-Assisted Resolution for Doubting Words**: When candidates are doubtful/uncertain (`correct: null`) due to ambiguous audio context (e.g. game titles, character names, UI text), use Storyboard (`sb0`) visual inspection at candidate timestamps `ts` (from `antigravity-vision-proxy`) to confirm on-screen text. If visually confirmed, undubt the candidate and set `correct: <CanonicalName>` before concluding. Only leave `correct: null` for items with no visual presence on screen.
+
 The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
-auto-loads the new rules. Unresolved proper nouns are left `correct: null` for human confirmation.
+auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.
 
 ### 9. Final Assembly — `anibon-summarizer` (Replaces wrap + pack)
 
