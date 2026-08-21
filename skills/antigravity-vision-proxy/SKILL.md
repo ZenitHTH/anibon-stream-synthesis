@@ -14,7 +14,33 @@ Use `agy --print` as a subprocess to analyze images via Gemini vision models. Fr
 - Video frame analysis needed for timestamping or scene classification
 - Any scenario requiring visual context that the current model cannot see
 
-Do NOT use for: purely audio analysis, already-transcribed text, tasks where transcript alone suffices.
+### Modality Comparison: Text-Only vs. Text + Vision
+
+| Dimension | Text-Only (ASR + LiveChat) | Text + Vision (Storyboard / Frames) |
+| :--- | :--- | :--- |
+| **Latency & Cost** | ⚡ Extremely fast, low token cost | ⏱ Moderate (requires `sb0` download ~15MB + frame crops) |
+| **Conversational Depth** | 🎯 Captures opinions, jokes, nuances, banter | ❌ Cannot hear reasoning or intent |
+| **Proper Noun Accuracy** | ⚠️ Susceptible to ASR phonetic corruption | 🎯 Exact on-screen title cards, logos, and UI text |
+| **Deictic Pronouns ("อันนี้/เกมนี้")** | ⚠️ Ambiguous without spoken name | 🎯 Immediately resolves target on screen |
+| **Silent / Montage Gameplay** | ❌ Fails when streamer is quiet | 🎯 Accurately tracks game state and action |
+
+### Decision Framework: When to Invoke Vision
+
+Apply the **Gated Trigger Rule** — do not call vision on every chunk:
+
+1. **GATED TRIGGER 1: Ambiguous Deictic Pronouns**
+   - Streamer talks about "เกมนี้", "ตัวนี้", "คลิปนี้", "ดูอันนี้" with high engagement, but no explicit title is spoken within ±30s.
+2. **GATED TRIGGER 2: Unresolved Proper Nouns / ASR Garbled Candidates**
+   - `garbled_notes.json` candidates with `correct: null` (e.g. Whisper phonetic mess like *"ดัซบลาโด"* -> *DUSKBLOODS*, *"fet bate zี"* -> *Phantom Blade Zero*).
+3. **GATED TRIGGER 3: Game / Activity Transition Boundaries**
+   - Precise second where a game launches or title card appears (e.g., verifying exact NES/SNES game title from menu).
+4. **GATED TRIGGER 4: Silent / Low-Speech High-Activity Pulses**
+   - `MEME_PULSE` or high LiveChat chat burst where transcript has < 5 spoken lines.
+5. **GATED TRIGGER 5: Explicit User Verification Request**
+   - User asks to verify with vision (`/btw i want you to use vision`, `--vision`).
+
+**BYPASS (Stay Text-Only):**
+- Static podcast/talk segments, opinion sharing, news reading where streamer reads headlines verbatim, or games already 100% confirmed by audio and TF-IDF signals.
 
 ## Frame Extraction
 
@@ -24,19 +50,26 @@ Do NOT use for: purely audio analysis, already-transcribed text, tasks where tra
 # 1. Download storyboard mhtml (covers entire multi-hour stream in ~15MB)
 yt-dlp -f sb0 "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/storyboard.%(ext)s"
 
-# 2. Unpack MHTML slides and crop timestamp tile
-# Each slide is 960x540 (3x3 grid of 320x180 tiles, ~89.93s per slide, ~10s per tile)
+# 2. Unpack clean MHTML slides (robust binary JPEG extraction)
 python3 -c "
-import email, os
-from email import policy
-
-mhtml = 'frames/storyboard.mhtml'
-os.makedirs('frames/slides', exist_ok=True)
+import glob, os
+mhtml = glob.glob('frames/storyboard*')[0]
+slides_dir = 'frames/slides'
+os.makedirs(slides_dir, exist_ok=True)
 with open(mhtml, 'rb') as f:
-    msg = email.message_from_binary_file(f, policy=policy.default)
-for idx, p in enumerate(list(msg.iter_parts())[1:], 1):
-    with open(f'frames/slides/slide_{idx:03d}.jpg', 'wb') as out:
-        out.write(p.get_payload(decode=True))
+    data = f.read()
+parts = data.split(b'--')
+valid_count = 0
+for p in parts:
+    if b'image/jpeg' in p:
+        idx = p.find(b'\xff\xd8')
+        end_idx = p.rfind(b'\xff\xd9')
+        if idx != -1:
+            valid_count += 1
+            jpg_data = p[idx:end_idx+2] if end_idx != -1 else p[idx:]
+            with open(f'{slides_dir}/slide_{valid_count:03d}.jpg', 'wb') as out:
+                out.write(jpg_data)
+print(f'Extracted {valid_count} clean slides.')
 "
 
 # 3. Crop target timestamp HH:MM:SS

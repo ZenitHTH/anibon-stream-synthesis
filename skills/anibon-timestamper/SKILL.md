@@ -21,6 +21,7 @@ Loaded by signal (add to prompt when needed):
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 - `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
 - `anibon-livechat-analysis` — parse LiveChat replay so subagents can read the live from both sides (talker + chat)
+- `antigravity-vision-proxy` — storyboard (sb0) frame inspection for ambiguous pronouns, game title verification, or unresolved garbled notes
 
 ## Pipeline (Linear, Top-to-Bottom)
 
@@ -231,7 +232,7 @@ Outputs:
 - `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
 > [!TIP]
-> **Vision-Assisted Resolution for Doubting Words**: When candidates are doubtful/uncertain (`correct: null`) due to ambiguous audio context (e.g. game titles, character names, UI text), use Storyboard (`sb0`) visual inspection at candidate timestamps `ts` (from `antigravity-vision-proxy`) to confirm on-screen text. If visually confirmed, undubt the candidate and set `correct: <CanonicalName>` before concluding. Only leave `correct: null` for items with no visual presence on screen.
+> **Vision Escalation Gate**: When audio is ambiguous (deictic "เกมนี้", ASR phonetics corrupted, or candidate `correct: null`), load `antigravity-vision-proxy` to download storyboard `sb0` (~15MB) and inspect exact timestamp frames. Never guess or hallucinate foreign titles when visual ground truth is available. If visually confirmed, undubt the candidate and set `correct: <CanonicalName>` before concluding. Only leave `correct: null` for items with no visual presence on screen.
 
 The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
 auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.
