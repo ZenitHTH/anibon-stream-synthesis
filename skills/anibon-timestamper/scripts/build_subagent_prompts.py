@@ -74,12 +74,25 @@ def build_prompts(workspace):
             cmood = mood_data.get(cid, {})
             mood_str = f"verdict: {cmood.get('verdict')}, tone: {cmood.get('tone')}, verbs: {cmood.get('verbs')}" if cmood else "no mood_555"
 
+            try:
+                import xml.etree.ElementTree as ET
+                root = ET.fromstring(chunk_xml)
+                lines = []
+                for el in root.findall("item"):
+                    ts = el.attrib.get("timestamp", "00:00:00")
+                    txt = (el.text or "").strip()
+                    if txt:
+                        lines.append(f"{ts} | {txt}")
+                chunk_dialogue = "\n".join(lines)
+            except Exception:
+                chunk_dialogue = chunk_xml
+
             group_prompt.append(f"=== CHUNK {cnum} ({cid}) ===")
             group_prompt.append(f"PRIMARY TOPIC: {primary_topic}")
             group_prompt.append(f"LIVE-CHAT LOG:\n{lc_content[:2000]}")
             group_prompt.append(f"MOOD & TONE GUIDANCE: {mood_str}")
             group_prompt.append(f"DETECTION SIGNALS: {json.dumps(csig, ensure_ascii=False)}")
-            group_prompt.append(f"TRANSCRIPT XML:\n{chunk_xml}\n")
+            group_prompt.append(f"TRANSCRIPT DIALOGUE:\n{chunk_dialogue}\n")
 
         group_prompt.append("\n" + template_text)
 
