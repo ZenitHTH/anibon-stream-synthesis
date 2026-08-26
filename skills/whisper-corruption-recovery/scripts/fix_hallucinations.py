@@ -124,7 +124,7 @@ def ffmpeg_cut(audio_wav: Path, start_ms: int, end_ms: int) -> Path:
     return out
 
 
-def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float) -> list:
+def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float, device: int = 0, threads: int = 4) -> list:
     """
     Run whisper-cli on slice_wav at given temperature.
     Returns list of raw transcription dicts from whisper-cli JSON.
@@ -136,6 +136,8 @@ def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float) -> lis
             WHISPER_CLI,
             "-m", model,
             "-l", "th",
+            "-dev", str(device),
+            "-t", str(threads),
             "-tp", str(temperature),
             "-f", str(slice_wav),
             "-ojf",
@@ -169,10 +171,15 @@ def _fmt_ts(seconds: float) -> str:
 def _try_whisper_task(task):
     """
     Worker function for one BFS task. Evaluates text and logs instantly.
-    task = (worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker)
+    task = (worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads)
     """
-    worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker = task
-    worker_id = f"W{worker_num}"
+    if len(task) == 10:
+        worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads = task
+    else:
+        worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker = task
+        device, threads = 0, 4
+
+    worker_id = f"W{worker_num}:GPU{device}"
     duration_s = (end_ms - start_ms) / 1000.0
     slice_wav = None
     
@@ -181,11 +188,11 @@ def _try_whisper_task(task):
     t0 = time.time()
     try:
         slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
-        segs = run_whisper_on_slice(slice_wav, model, temperature=0.2)
+        segs = run_whisper_on_slice(slice_wav, model, temperature=0.2, device=device, threads=threads)
         w_dur = time.time() - t0
-        log_event(worker_id, "WHISPER", f"Processed slice in {w_dur:.1f}s -> {len(segs)} segments returned", tracker, advance=False)
+        log_event(worker_id, "WHISPER", f"Processed slice on GPU {device} in {w_dur:.1f}s -> {len(segs)} segments returned", tracker, advance=False)
     except subprocess.CalledProcessError as e:
-        log_event(worker_id, "ERR", f"ffmpeg/whisper failed {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}: {e}", tracker, advance=True)
+        log_event(worker_id, "ERR", f"ffmpeg/whisper failed on GPU {device} {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}: {e}", tracker, advance=True)
         return worker_num, start_ms, end_ms, None, [], [(start_ms, end_ms)]
     finally:
         if slice_wav is not None:
@@ -257,16 +264,20 @@ def _bfs_recover(
     model: str = MODEL_PATH,
     threshold: float = 0.4,
     min_duration_s: float = 1.0,
-    workers: int = 2,
+    workers: int = 3,
+    devices = 0,
+    threads: int = 4,
 ) -> tuple:
     """
-    BFS parallel divide-and-conquer recovery.
+    BFS parallel divide-and-conquer recovery across single or multiple GPUs.
     """
     clean_items = []
     uncertain_items = []
     pending = list(ranges)  # list of (start_ms, end_ms)
     level = 0
     MAX_LEVEL = 20  # ponytail: hard cap — anything still bad at depth 20 is marked [?]; prevents infinite splitting on regions Whisper can never clean
+
+    dev_list = devices if isinstance(devices, (list, tuple)) else [devices]
 
     with ThreadPoolExecutor(max_workers=workers) as executor:
         while pending:
@@ -288,12 +299,12 @@ def _bfs_recover(
                     })
                 break
 
-            log_event("MAIN", "START", f"[{level_name}] Launching {n} task(s) on {workers} worker(s)... (avg {avg_s:.1f}s each)")
+            log_event("MAIN", "START", f"[{level_name}] Launching {n} task(s) on {workers} worker(s) across GPU(s) {dev_list}... (avg {avg_s:.1f}s each)")
 
             future_to_task = {
                 executor.submit(
                     _try_whisper_task,
-                    (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker)
+                    (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker, dev_list[i % len(dev_list)], threads)
                 ): (s, e)
                 for i, (s, e) in enumerate(pending)
             }
@@ -327,10 +338,12 @@ def _second_chance_pass(
     model: str = MODEL_PATH,
     threshold: float = 0.4,
     min_duration_s: float = 1.0,
-    workers: int = 2,
+    workers: int = 3,
+    devices = 0,
+    threads: int = 4,
 ) -> tuple:
     """
-    Merge consecutive [?] runs spanning > 1s and retry recovery in parallel.
+    Merge consecutive [?] runs spanning > 1s and retry recovery in parallel across GPUs.
 
     Returns (recovered_items, still_uncertain_items).
     """
@@ -368,10 +381,11 @@ def _second_chance_pass(
     if not retry_runs:
         return recovered, still_uncertain
 
+    dev_list = devices if isinstance(devices, (list, tuple)) else [devices]
     level_name = "Second-Chance"
     n_retry = len(retry_runs)
     tracker = ProgressTracker(level_name, n_retry)
-    log_event("MAIN", "START", f"[{level_name}] Launching retry for {n_retry} uncertain region(s) > {min_duration_s:.1f}s on {workers} worker(s)...")
+    log_event("MAIN", "START", f"[{level_name}] Launching retry for {n_retry} uncertain region(s) > {min_duration_s:.1f}s on {workers} worker(s) across GPU(s) {dev_list}...")
 
     # Build retry tasks
     retry_ranges = []
@@ -381,7 +395,7 @@ def _second_chance_pass(
         retry_ranges.append((start_ms, end_ms))
 
     tasks = [
-        (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker)
+        (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker, dev_list[i % len(dev_list)], threads)
         for i, (s, e) in enumerate(retry_ranges)
     ]
 
@@ -406,13 +420,15 @@ def detect_and_recover(
     model: str = MODEL_PATH,
     threshold: float = 0.4,
     min_duration_s: float = 1.0,
-    workers: int = 2,
+    workers: int = 3,
     max_consec_repeat: int = 4,
+    devices = 0,
+    threads: int = 4,
 ) -> list:
     """
     Scan items for in-segment phoneme loops and cross-segment repetition loops.
     Merges contiguous corrupt items into 5-minute audio slice tasks, running D&C
-    recovery across N workers concurrently.
+    recovery across N workers concurrently across single or multiple GPUs.
     Returns merged, timestamp-sorted list.
     """
     is_corrupt = [False] * len(items)
@@ -496,10 +512,10 @@ def detect_and_recover(
 
     log_event("MAIN", "CHUNK", f"Split into {len(chunked_ranges)} recovery tasks (max 30s each).")
     clean_recovered, uncertain_items = _bfs_recover(
-        chunked_ranges, audio_wav, model, threshold, min_duration_s, workers
+        chunked_ranges, audio_wav, model, threshold, min_duration_s, workers, devices=devices, threads=threads
     )
     sc_recovered, sc_uncertain = _second_chance_pass(
-        uncertain_items, audio_wav, model, threshold, min_duration_s, workers
+        uncertain_items, audio_wav, model, threshold, min_duration_s, workers, devices=devices, threads=threads
     )
     recovered_items = clean_recovered + sc_recovered + sc_uncertain
 
@@ -539,7 +555,7 @@ def detect_and_recover(
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Detect and fix Whisper in-segment phoneme loop hallucinations with multi-worker support."
+        description="Detect and fix Whisper in-segment phoneme loop hallucinations with multi-worker / multi-GPU support."
     )
     ap.add_argument("whisper_json", help="Path to whisper-cli JSON output (audio.wav.json)")
     ap.add_argument("audio_wav",    help="Path to original WAV audio file")
@@ -549,17 +565,31 @@ def main():
                     help="N-gram repetition ratio threshold (default: 0.4)")
     ap.add_argument("--min-duration", type=float, default=1.0,
                     help="Min slice duration in seconds before discarding (default: 1.0)")
-    ap.add_argument("-w", "--workers", type=int, default=2,
-                    help="Number of parallel whisper-cli workers (default: 2)")
+    ap.add_argument("-w", "--workers", type=int, default=4,
+                    help="Number of parallel whisper-cli workers (default: 4)")
+    ap.add_argument("-dev", "--devices", nargs="+", default=["0"],
+                    help="GPU device ID(s) for whisper-cli pool, e.g. --devices 0 1 (default: 0)")
+    ap.add_argument("-t", "--threads", type=int, default=4,
+                    help="CPU threads per worker (default: 4)")
     ap.add_argument("-o", "--output", default=None,
                     help="Output JSON path (default: overwrite input)")
     args = ap.parse_args()
+
+    # Parse devices (accepts list of strings or comma-separated values)
+    parsed_devices = []
+    for d in args.devices:
+        for sub in str(d).split(","):
+            sub = sub.strip()
+            if sub.isdigit():
+                parsed_devices.append(int(sub))
+    if not parsed_devices:
+        parsed_devices = [0]
 
     json_path  = Path(args.whisper_json)
     audio_path = Path(args.audio_wav)
     out_path   = Path(args.output) if args.output else json_path
 
-    log_event("MAIN", "INIT", f"Loading {json_path} ...")
+    log_event("MAIN", "INIT", f"Loading {json_path} ... (Target GPUs: {parsed_devices})")
     with open(json_path, "r", encoding="utf-8", errors="replace") as f:
         data = json.load(f)
 
@@ -578,7 +608,10 @@ def main():
             "timestamp": _fmt_ts(start_s),
         })
 
-    fixed = detect_and_recover(raw, audio_path, args.model, args.threshold, args.min_duration, workers=args.workers)
+    fixed = detect_and_recover(
+        raw, audio_path, args.model, args.threshold, args.min_duration,
+        workers=args.workers, devices=parsed_devices, threads=args.threads
+    )
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(fixed, f, ensure_ascii=False, indent=2)

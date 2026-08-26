@@ -67,7 +67,7 @@ class TestBfsRecover(unittest.TestCase):
         # Level 0 (4s): hallucinated → splits into two 2s halves
         # Level 1 (2s each): both clean
         call_count = [0]
-        def whisper_side_effect(path, model, temperature):
+        def whisper_side_effect(path, model, temperature=0.2, **kwargs):
             call_count[0] += 1
             if call_count[0] == 1:
                 # First call (4s range): hallucinated

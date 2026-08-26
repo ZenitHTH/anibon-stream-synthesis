@@ -17,11 +17,17 @@ Whisper on audio ≥2h can enter repetition loops — in-segment phoneme repeats
 Scans transcripts for in-segment phoneme loops and cross-segment multi-sentence loops ($A-A-A-A$, $A-B-A-B$, $A-B-C-A-B-C$), chunks corrupt ranges into 30s tasks matching Whisper's native context window, and executes parallel BFS D&C recovery down to sub-1-second slices.
 
 ```bash
-python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> -w 2 -o recovered_transcript.json
+# Single GPU (Fastest: RX 7600 Vulkan matrix cores)
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 -w 3 -o recovered_transcript.json
+
+# Dual-GPU Parallel (RX 7600 + Tesla P100 concurrently)
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 1 -w 4 -o recovered_transcript.json
 ```
 
 **Options**:
-- `-w 2` / `--workers 2` — Number of concurrent `whisper-cli` worker threads (default: 2).
+- `-dev` / `--devices` — GPU device ID(s) pool (e.g., `--devices 0` for single GPU or `--devices 0 1` for dual-GPU load balancing, default: `0`).
+- `-w 4` / `--workers 4` — Number of concurrent worker threads (default: `4`).
+- `-t 4` / `--threads 4` — CPU thread count per worker (default: `4`).
 - `--threshold 0.4` — Repetition n-gram ratio threshold (default: 0.4).
 - `--min-duration 1.0` — Minimum duration in seconds before hitting the base case (default: 1.0s).
 - `-o output.json` — Path for final recovered transcript JSON.
