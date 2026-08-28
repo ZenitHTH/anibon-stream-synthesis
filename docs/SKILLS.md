@@ -1,6 +1,6 @@
 # Anibon Stream Synthesis — Skills Index & Sitemap
 
-This document lists all 19 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
+This document lists all 20 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
 
 ## 1. Orchestrator Skills
 
@@ -17,6 +17,7 @@ Specialized handlers loaded by signal triggers or fallback logic:
 
 - preparing-tools — Verifies system CLI dependencies (yt-dlp, ffmpeg, python3).
 - anibon-world-identity — Verifies game lore, character names, and card names against FGO/YGO DBs.
+- anibon-stream-activity — High-res storyboard sampling for on-screen gameplay, webcam presence/AFK, and visual grounding.
 - anibon-local-transcription — Renders local audio via whisper.cpp when YouTube captions are missing.
 - whisper-corruption-recovery — Detects repetition loops in Whisper output and re-renders corrupt audio tails.
 - masking-royal-news — Applies strict political metaphor masking for Thai news & royal references.

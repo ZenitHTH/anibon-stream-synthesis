@@ -77,12 +77,12 @@ def test_reference_knowledge_readme_exists():
     assert 'FGO' in text and 'Yu-Gi-Oh' in text, 'Reference README missing database indexes'
 
 
-def test_all_19_skills_in_sitemap():
+def test_all_20_skills_in_sitemap():
     sitemap = os.path.join(PLUGIN_ROOT, 'docs', 'SKILLS.md')
     with open(sitemap, 'r', encoding='utf-8') as f:
         text = f.read()
     
     skill_dirs = [d for d in os.listdir(SKILLS_DIR) if os.path.isdir(os.path.join(SKILLS_DIR, d)) and d != 'reference']
-    assert len(skill_dirs) == 18, f'Expected 18 skill directories, found {len(skill_dirs)}'
+    assert len(skill_dirs) == 20, f'Expected 20 skill directories, found {len(skill_dirs)}'
     for d in skill_dirs:
         assert d in text, f'docs/SKILLS.md missing entry for {d}'
