@@ -33,6 +33,17 @@ def test_extract_slides_from_mhtml_bytes(tmp_path):
     assert os.path.exists(slides[0])
 
 
+def test_extract_slides_direct_jpeg(tmp_path):
+    img = Image.new("RGB", (320, 180), color="green")
+    img_path = tmp_path / "direct_sprite.jpg"
+    img.save(img_path, "JPEG")
+    jpeg_bytes = img_path.read_bytes()
+
+    slides = extract_slides_from_mhtml_bytes(jpeg_bytes, str(tmp_path / "direct_slides"))
+    assert len(slides) == 1
+    assert os.path.exists(slides[0])
+
+
 def test_crop_frame_at_second(tmp_path):
     # Create a 3x3 grid image (960x540) with red tile at center
     sheet = Image.new("RGB", (960, 540), color="white")

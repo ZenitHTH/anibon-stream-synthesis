@@ -75,20 +75,26 @@ def merge_frame_classifications(frames: list[dict], step_sec: int = 60) -> list[
         app = f.get("app_or_game", "Unknown")
         cat = f.get("category", "Other")
         state = f.get("state", "")
-        wb = f.get("webcam", {"speaker_present": True, "expression": "neutral", "layout": "corner_cam"})
+        raw_wb = f.get("webcam")
+        wb = raw_wb if isinstance(raw_wb, dict) else {"speaker_present": True, "expression": "neutral", "layout": "corner_cam"}
         speaker_present = wb.get("speaker_present", True)
+        expression = wb.get("expression", "neutral")
 
         # Check if current interval continues
         if (
             current is not None
             and current["app_or_game"] == app
             and current["category"] == cat
-            and current["webcam"]["speaker_present"] == speaker_present
+            and current["webcam"].get("speaker_present", True) == speaker_present
         ):
             current["end_sec"] = sec + step_sec
             current["end"] = format_timestamp(current["end_sec"])
             if state and state not in current["states"]:
                 current["states"].append(state)
+            if expression and expression != "neutral" and expression not in current["expressions"]:
+                current["expressions"].append(expression)
+                # Elevate current primary expression to most notable
+                current["webcam"]["expression"] = expression
         else:
             if current is not None:
                 intervals.append(
@@ -100,6 +106,7 @@ def merge_frame_classifications(frames: list[dict], step_sec: int = 60) -> list[
                         "app_or_game": current["app_or_game"],
                         "category": current["category"],
                         "details": "; ".join(current["states"]) or current["app_or_game"],
+                        "expressions": list(current["expressions"]),
                         "webcam": current["webcam"],
                     }
                 )
@@ -111,7 +118,8 @@ def merge_frame_classifications(frames: list[dict], step_sec: int = 60) -> list[
                 "app_or_game": app,
                 "category": cat,
                 "states": [state] if state else [],
-                "webcam": wb,
+                "expressions": [expression] if expression and expression != "neutral" else [],
+                "webcam": dict(wb),
             }
 
     if current is not None:
@@ -124,6 +132,7 @@ def merge_frame_classifications(frames: list[dict], step_sec: int = 60) -> list[
                 "app_or_game": current["app_or_game"],
                 "category": current["category"],
                 "details": "; ".join(current["states"]) or current["app_or_game"],
+                "expressions": list(current["expressions"]),
                 "webcam": current["webcam"],
             }
         )
@@ -131,10 +140,44 @@ def merge_frame_classifications(frames: list[dict], step_sec: int = 60) -> list[
     return intervals
 
 
+def sample_frames_from_slides(slides_dir: str, duration: float, step_sec: int = 60, samples_dir: str = "frames/samples") -> list[dict]:
+    """Sample frame timestamps and optionally slice cropped images into samples_dir."""
+    slide_files = sorted(glob.glob(os.path.join(slides_dir, "slide_*.jpg")))
+    if not slide_files:
+        print(f"Warning: No slides found in {slides_dir}", file=sys.stderr)
+        return []
+    
+    os.makedirs(samples_dir, exist_ok=True)
+    total_dur = duration if duration > 0 else len(slide_files) * 90.0
+    sec = 0.0
+    samples = []
+    
+    # Import cropper dynamically if available
+    try:
+        from unpack_storyboard import crop_frame_at_second
+    except ImportError:
+        crop_frame_at_second = None
+
+    while sec < total_dur:
+        ts_str = format_timestamp(sec)
+        sample_info = {"sec": int(sec), "timestamp": ts_str}
+        if crop_frame_at_second:
+            out_img = os.path.join(samples_dir, f"frame_{int(sec):06d}.jpg")
+            try:
+                crop_frame_at_second(slide_files, target_sec=sec, total_duration=total_dur, out_path=out_img)
+                sample_info["image"] = out_img
+            except Exception as e:
+                print(f"Warning: Failed to crop frame at {ts_str}: {e}", file=sys.stderr)
+        samples.append(sample_info)
+        sec += step_sec
+    return samples
+
+
 def main():
     parser = argparse.ArgumentParser(description="Extract activity and webcam timeline from storyboard frames")
     parser.add_argument("--raw-json", help="Path to raw frame classifications JSON file")
     parser.add_argument("--slides-dir", help="Directory containing unpacked storyboard slides")
+    parser.add_argument("--samples-out", default="frames/samples", help="Directory to save sampled frames")
     parser.add_argument("--step-sec", type=int, default=60, help="Sampling interval in seconds (default 60)")
     parser.add_argument("--duration", type=float, default=0.0, help="Total stream duration in seconds")
     parser.add_argument("-o", "--output", default="activity_timeline.json", help="Output JSON path")
@@ -145,6 +188,11 @@ def main():
     if args.raw_json and os.path.exists(args.raw_json):
         with open(args.raw_json, "r", encoding="utf-8") as f:
             raw_frames = json.load(f)
+    elif args.slides_dir and os.path.exists(args.slides_dir):
+        # Generate sample frame crops ready for agy vision classification
+        samples = sample_frames_from_slides(args.slides_dir, args.duration, step_sec=args.step_sec, samples_dir=args.samples_out)
+        print(f"Sampled {len(samples)} frames into {args.samples_out}.")
+        print("Run `agy` or Gemini Vision batch classifier on sampled frames to produce raw_classifications.json.")
 
     merged = merge_frame_classifications(raw_frames, step_sec=args.step_sec)
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)

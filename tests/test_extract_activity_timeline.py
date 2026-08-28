@@ -96,3 +96,33 @@ def test_parse_vision_response_json():
     assert len(data) == 1
     assert data[0]["app_or_game"] == "Elden Ring"
     assert data[0]["webcam"]["expression"] == "shocked_facepalm"
+
+
+def test_merge_frame_classifications_none_webcam_and_expressions():
+    # Test frames with None webcam and expression elevation
+    raw_frames = [
+        {
+            "sec": 0,
+            "timestamp": "00:00:00",
+            "app_or_game": "Genshin Impact",
+            "category": "Gameplay",
+            "state": "exploring",
+            "webcam": None,
+        },
+        {
+            "sec": 60,
+            "timestamp": "00:01:00",
+            "app_or_game": "Genshin Impact",
+            "category": "Gameplay",
+            "state": "boss fight",
+            "webcam": {"speaker_present": True, "expression": "shocked_facepalm", "layout": "corner_cam"},
+        },
+    ]
+
+    merged = merge_frame_classifications(raw_frames, step_sec=60)
+    assert len(merged) == 1
+    assert merged[0]["app_or_game"] == "Genshin Impact"
+    assert merged[0]["webcam"]["speaker_present"] is True
+    # Expression elevated from frame 2
+    assert merged[0]["webcam"]["expression"] == "shocked_facepalm"
+    assert "shocked_facepalm" in merged[0]["expressions"]

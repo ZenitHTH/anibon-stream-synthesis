@@ -30,7 +30,8 @@ def align_intervals_to_chunk(
 
     lines = []
     for m in matching:
-        wb = m.get("webcam", {})
+        raw_wb = m.get("webcam")
+        wb = raw_wb if isinstance(raw_wb, dict) else {}
         speaker_present = wb.get("speaker_present", True)
         afk_note = " [⚠️ SPEAKER AWAY/AFK]" if not speaker_present else ""
         expr = wb.get("expression", "")
@@ -89,10 +90,25 @@ def process_all_chunks(timeline_path: str, chunks_dir: str, out_dir: str) -> Non
     with open(timeline_path, "r", encoding="utf-8") as f:
         intervals = json.load(f)
 
-    chunk_files = sorted(
-        glob.glob(os.path.join(chunks_dir, "chunk_*.xml"))
-        + glob.glob(os.path.join(chunks_dir, "chunk_*.json"))
-    )
+    xml_files = sorted(glob.glob(os.path.join(chunks_dir, "chunk_*.xml")))
+    json_files = sorted(glob.glob(os.path.join(chunks_dir, "chunk_*.json")))
+
+    # Prefer XML files, fallback to JSON for missing chunks
+    seen_stems = set()
+    chunk_files = []
+    for f in xml_files:
+        stem = re.search(r"chunk_\d+", os.path.basename(f))
+        if stem:
+            seen_stems.add(stem.group(0))
+        chunk_files.append(f)
+
+    for f in json_files:
+        stem = re.search(r"chunk_\d+", os.path.basename(f))
+        if stem and stem.group(0) not in seen_stems:
+            seen_stems.add(stem.group(0))
+            chunk_files.append(f)
+
+    chunk_files.sort()
 
     for cf in chunk_files:
         base_name = os.path.splitext(os.path.basename(cf))[0]

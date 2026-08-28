@@ -12,8 +12,16 @@ from PIL import Image
 
 
 def extract_slides_from_mhtml_bytes(data: bytes, output_dir: str) -> list[str]:
-    """Extract individual JPEG slides from MHTML multipart byte data."""
+    """Extract individual JPEG slides from MHTML multipart byte data or direct JPEG image."""
     os.makedirs(output_dir, exist_ok=True)
+    
+    # If the input is already a raw JPEG image file
+    if data.startswith(b"\xff\xd8"):
+        out_path = os.path.join(output_dir, "slide_0001.jpg")
+        with open(out_path, "wb") as f:
+            f.write(data)
+        return [out_path]
+
     parts = data.split(b"--")
     slide_paths = []
     valid_count = 0
@@ -32,7 +40,7 @@ def extract_slides_from_mhtml_bytes(data: bytes, output_dir: str) -> list[str]:
 
 
 def extract_slides_from_mhtml_file(mhtml_path: str, output_dir: str) -> list[str]:
-    """Extract individual JPEG slides from an MHTML file path."""
+    """Extract individual JPEG slides from an MHTML file path or direct image file."""
     with open(mhtml_path, "rb") as f:
         data = f.read()
     return extract_slides_from_mhtml_bytes(data, output_dir)
