@@ -95,7 +95,7 @@ def test_match_chunk_threshold():
 def test_process_single_chunk():
     entries = {"FGO": {"kind": "game", "file": "fgo.md"}}
     item = ("chunk_001", 10, "พูดถึง FGO ครับ")
-    name, res, matched = _process_single_chunk(item, entries, 1)
+    name, res, matched = _process_single_chunk(item, entries, {"FGO": 1}, 1, 1)
     assert name == "chunk_001"
     assert res["start_sec"] == 10
     assert "FGO" in res["matched_keywords"]
@@ -106,7 +106,7 @@ def test_multithreaded_execution():
     entries = {"FGO": {"kind": "game", "file": "fgo.md"}}
     items = [("chunk_01", 0, "FGO"), ("chunk_02", 10, "nothing")]
     with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(executor.map(lambda it: _process_single_chunk(it, entries, 1), items))
+        results = list(executor.map(lambda it: _process_single_chunk(it, entries, {"FGO": 1}, 2, 1), items))
     assert len(results) == 2
     assert results[0][0] == "chunk_01" and results[0][2] is True
     assert results[1][0] == "chunk_02" and results[1][2] is False

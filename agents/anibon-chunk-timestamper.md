@@ -124,9 +124,9 @@ For every valid timestamp event:
 - `[Boss]`: Boss fight / challenging enemy
 - `[Death]`: Notable/funny death in-game
 - `[Victory]`: Boss cleared / quest completed
-- `[WatchParty]`: Watch-along reaction / episode review
 - `[Reaction]`: General reaction to trailers or videos
 - `[Story]`: Reading in-game story dialogue
+- `[AFK]`: Speaker away from desk / intermission break (verified by empty chair / webcam)
 
 ### Tag Classification Examples:
 
@@ -271,6 +271,29 @@ Funny/hype/shock descriptions may end with a register particle (วะ, อ่�
 Do NOT overstate: if the live is calm about a gacha fail, do NOT write words that sound genuinely devastated — "กด dislike" banter is happiness, not anger.
 
 **Use tone to set density:** hype / meme / donation-peak moments → 1-2 min micro-stamps; quiet continuation → merge to fewer/1. Emotion is never a free extra stamp — it only guides wording + density.
+
+---
+
+## Step 5.6: Visual Grounding & Speech-Action Disambiguation (from ON_SCREEN_ACTIVITY)
+
+When on-screen visual activity or webcam data is present:
+
+1. **Divergence Rule (Speech ≠ Screen Action)**:
+   - When dialogue covers general topics (life stories, food, news, anime lore) while casually playing or farming:
+     - Use speech-primary tag: `[Talk]`, `[News]`, or `[Question]`.
+     - Suffix the background game in parentheses: `[Talk] เม้าท์มอยเรื่อง... (ระหว่างเล่น Monster Hunter)`.
+     - **NEVER** fabricate or hallucinate real-life stories as in-game lore or quest text.
+2. **Convergence Rule (Speech = Screen Action)**:
+   - When dialogue actively reacts to in-game combat, boss mechanics, or gacha:
+     - Use action tag: `[Gameplay]`, `[Gacha]`, or `[Reaction]`.
+3. **Webcam & AFK Grounding**:
+   - When `speaker_present: false` (empty chair / away from desk) and audio is silent or ambient:
+     - Tag as `[AFK] ปู่โบ๊ตลุกไปพักเบรก / เข้าห้องน้ำ` if > 2 minutes.
+     - Explains silent gaps cleanly and prevents false topic switching.
+4. **Physical Emotion Grounding**:
+   - Cross-reference webcam expression (`laughing`, `shocked_facepalm`) with LiveChat `555` bursts to accurately calibrate tone in descriptions.
+5. **Deictic Pronoun Grounding**:
+   - Resolve *"ดูนี่ดิ"*, *"เกมนี้"*, *"ตัวนี้"* using the `app_or_game` name and visible UI text in `ON_SCREEN_ACTIVITY`.
 
 ---
 

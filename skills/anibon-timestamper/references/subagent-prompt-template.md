@@ -30,6 +30,10 @@ CURRENT CHUNK PRIMARY TOPIC: <Orchestrator: inject topic from detect_signals.py>
 LIVE-CHAT LOG (watchers, this chunk):
 <Orchestrator: inject livechat/livechat_chunk_NN.txt content, or "no livechat available">
 
+ON-SCREEN ACTIVITY & WEBCAM (Ground Truth from Storyboard):
+<Orchestrator: inject activity/activity_chunk_NN.txt content, or "no visual activity data">
+(Ground truth for on-screen game/app, webcam presence/AFK, and physical expressions)
+
 MOOD + TONE GUIDANCE (from analyze_555.py mood_555.json, optional):
 <Orchestrator: inject this chunk's {verdict, tone, verbs} from mood_555.json, or "no mood_555". 
 The tone/verbs hint is a REMINDER of the vibe the chat carried — you still choose your own

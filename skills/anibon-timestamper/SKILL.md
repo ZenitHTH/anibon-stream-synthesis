@@ -18,6 +18,7 @@ Streams or videos by "Boat" from Anibon Official that need timed topic labels.
 
 Loaded by signal (add to prompt when needed):
 - `anibon-world-identity` — verify game/char names against references before story stamps
+- `anibon-stream-activity` — high-res storyboard sampling for on-screen gameplay, webcam presence/AFK, and visual grounding
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 - `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
 - `anibon-livechat-analysis` — parse LiveChat replay so subagents can read the live from both sides (talker + chat)
@@ -75,6 +76,23 @@ python3 -X utf8 scripts/align_live_chat.py --events <workspace>/livechat_events.
 ```
 
 Output: `livechat/livechat_chunk_NN.txt` (per transcript chunk) + `livechat/livechat_index.json`. If `yt-dlp` reports no `live_chat` subtitles, continue — the subagent falls back to transcript-only.
+
+### 3.6 Extract Activity & Webcam Timeline (Optional but preferred)
+
+Captures on-screen gameplay/web browsing and Pu Boat's webcam presence/AFK state to eliminate Speech vs. Action divergence errors.
+
+```bash
+# 1. Download high-res storyboard (sb3 -> sb2 -> sb1 -> sb0)
+yt-dlp -f "sb3/sb2/sb1/sb0" "https://www.youtube.com/watch?v=<VIDEO_ID>" -o "<workspace>/frames/storyboard.%(ext)s"
+# 2. Unpack slides
+python3 -X utf8 ../anibon-stream-activity/scripts/unpack_storyboard.py --mhtml "<workspace>/frames/storyboard*" --out-dir "<workspace>/frames/slides"
+# 3. Extract continuous activity timeline
+python3 -X utf8 ../anibon-stream-activity/scripts/extract_activity_timeline.py --slides-dir "<workspace>/frames/slides" -o "<workspace>/activity_timeline.json"
+# 4. Align activity to chunk windows
+python3 -X utf8 ../anibon-stream-activity/scripts/align_activity_timeline.py --timeline "<workspace>/activity_timeline.json" --chunks "<workspace>/chunks/" -o "<workspace>/activity/"
+```
+
+Output: `<workspace>/activity/activity_chunk_NN.txt` containing on-screen game/app state, webcam presence, and physical expressions for subagent injection.
 
 ### 3.7 Detect Thai-Laugh / Meme Pulses (Optional but preferred)
 
@@ -175,6 +193,7 @@ Build each prompt from `references/subagent-prompt-template.md`. For each chunk 
 - Chunk JSON content (agent reads sequentially — do NOT summarize chunks yourself)
 - Per-chunk detection signals from `signals.json` (`best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`)
 - Per-chunk **LiveChat log** content (`livechat/livechat_chunk_NN.txt`) — inject when available, else `"no livechat available"`
+- Per-chunk **on-screen visual activity log** (`activity/activity_chunk_NN.txt`) — inject when Step 3.6 ran, else `"no visual activity data"`
 - Per-chunk **mood verdict + tone guidance** from `mood_555.json` (if Step 3.7 ran) — inject the chunk's `tone`/`verbs` hint; the subagent keeps its own first-verb choice. If no mood file, omit.
 - Knowledge file content for **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files when `confidence` is ambiguous
 - **PREVIOUS GROUP'S LAST TOPIC** — inject the final topic of the previous group so the agent applies continuity across group boundaries

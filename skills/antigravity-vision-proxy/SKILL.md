@@ -44,38 +44,19 @@ Apply the **Gated Trigger Rule** — do not call vision on every chunk:
 
 ## Frame Extraction
 
-### Option A: Lightweight YouTube Storyboard (`sb0`) — Preferred for YouTube (No full video download, ~15MB total)
+### Option A: High-Resolution YouTube Storyboard (`sb3`/`sb2`/`sb1`/`sb0`) — Preferred for YouTube (No full video download, ~15-40MB total)
 
 ```bash
-# 1. Download storyboard mhtml (covers entire multi-hour stream in ~15MB)
-yt-dlp -f sb0 "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/storyboard.%(ext)s"
+# 1. Download highest available resolution storyboard mhtml
+yt-dlp -f "sb3/sb2/sb1/sb0" "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/storyboard.%(ext)s"
 
-# 2. Unpack clean MHTML slides (robust binary JPEG extraction)
-python3 -c "
-import glob, os
-mhtml = glob.glob('frames/storyboard*')[0]
-slides_dir = 'frames/slides'
-os.makedirs(slides_dir, exist_ok=True)
-with open(mhtml, 'rb') as f:
-    data = f.read()
-parts = data.split(b'--')
-valid_count = 0
-for p in parts:
-    if b'image/jpeg' in p:
-        idx = p.find(b'\xff\xd8')
-        end_idx = p.rfind(b'\xff\xd9')
-        if idx != -1:
-            valid_count += 1
-            jpg_data = p[idx:end_idx+2] if end_idx != -1 else p[idx:]
-            with open(f'{slides_dir}/slide_{valid_count:03d}.jpg', 'wb') as out:
-                out.write(jpg_data)
-print(f'Extracted {valid_count} clean slides.')
-"
-
-# 3. Crop target timestamp HH:MM:SS
-# slide_idx = int(sec / 89.932) + 1, sub = min(8, int((sec % 89.932) / 9.9924))
-# x = (sub % 3) * 320, y = (sub // 3) * 180
-ffmpeg -y -i frames/slides/slide_007.jpg -vf "crop=320:180:640:180" frames/frame_00_09_57.jpg
+# 2. Unpack clean MHTML slides & crop high-res frame using unpack_storyboard.py
+python3 ../anibon-stream-activity/scripts/unpack_storyboard.py \
+  --mhtml "frames/storyboard*" \
+  --out-dir "frames/slides" \
+  --crop-sec 597 \
+  --duration <DURATION_SEC> \
+  --out-crop "frames/frame_00_09_57.jpg"
 ```
 
 ### Option B: Local Video / MP4 File
