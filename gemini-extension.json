@@ -1,6 +1,6 @@
 {
   "name": "anibon-stream-synthesis",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Automated YouTube stream transcription, noise cleaning, sensitive content masking, and FGO/YGO SQLite card lookup for Boat's (Pu Boat) streams from Anibon Official.",
   "contextFileName": "README.md"
 }

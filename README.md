@@ -1,7 +1,7 @@
 # Anibon Stream Synthesis Plugin
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue)
-[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.2.1)
+![Version](https://img.shields.io/badge/version-1.2.2-blue)
+[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.2.2)
 
 A suite of AI agent skills for deep research, live-stream transcript processing, automated timestamping, LiveChat subculture mood analysis, and highlight video cutting. Works across **Antigravity CLI**, **Claude Code**, **OpenCode**, and **Pi Coding Agent**.
 
@@ -113,6 +113,7 @@ npx skills add zenithth/anibon-stream-synthesis/skills/anibon-timestamper -g
 | `youtube-minutes-synthesis` | Extract YouTube transcripts into structured meeting minutes | `/youtube-minutes-synthesis <URL>` |
 | `preparing-tools` | Pre-flight system tool verifier (`yt-dlp`, `ffmpeg`, `sqlite3`) | Auto-called by orchestrators |
 | `antigravity-vision-proxy` | Frame extraction & visual inspection proxy for game/UI context | Visual verification fallback |
+| `anibon-stream-activity` | High-res storyboard sampling for on-screen activity, webcam presence/AFK, and visual grounding | Auto-loaded / `/anibon-stream-activity` |
 | `batching-subagents-concurrency` | Rate-limit-safe parallel subagent batching (MAX 6 concurrent) | Auto-loaded by orchestrators |
 
 ---

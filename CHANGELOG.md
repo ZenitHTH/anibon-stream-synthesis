@@ -3,16 +3,23 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
-## [1.2.2] — 2026-08-16
+## [1.2.2] — 2026-08-30
 
 ### Added
-- **Version 2 Grouped Garbled Dictionary Schema** — Restructured `garbled_replacements.json` from flat 1:1 list to canonical-target grouped schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`), expanding to 284 canonical target words and 358 noise patterns.
+- **Visual Activity & Webcam Grounding (`anibon-stream-activity`)** — Added storyboard unpacking (`sb3`/`sb2` sprite sheets) with tile cropping (`unpack_storyboard.py`), activity & webcam presence/AFK/face expressions timeline extractor (`extract_activity.py`), and chunk activity aligner (`align_chunk_activity.py`) integrated into `anibon-timestamper` orchestrator and chunk subagents.
+- **Global Vlog, Convention, and Book Fair Support** — Added dedicated taxonomy, parsing, and tone guidelines for off-stream vlogs, book fairs, and anime/gaming conventions.
+- **Whisper Corruption Recovery Enhancement** — Added multi-GPU worker pool support and thread tuning in `fix_hallucinations.py` for accelerated Whisper repetition loop recovery.
+- **Vision-Assisted Notes & Storyboard Inspection** — Added lightweight storyboard (`sb0`) frame extraction to `antigravity-vision-proxy` and Step 2.5 vision inspection into `anibon-garbled-notes` for visual resolution of doubting words.
+- **Version 2 Grouped Garbled Dictionary Schema** — Restructured `garbled_replacements.json` from flat 1:1 list to canonical-target grouped schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`), expanding across anime, gaming, and Thai subculture slang.
 - **`update_garbled_dictionary.py` Automation Tool** — Added automated CLI and library tool in `cleaning-auto-transcripts` supporting `--from-raw-dir`, `--from-notes`, `--add`, and multi-file atomic synchronization across root and skill resources.
 - **Root Resource Priority** — Updated `resource_path()` across all modules to prioritize master root `resources/` over local shadow copies.
+- **Non-Spoiler Gacha Policy & Game Content Updates** — Enforced non-spoiler gacha policy in prompt templates and updated Zenless Zone Zero character/content reference to v3.1.
 
 ### Changed
 - `clean_garbled_english.py` updated to compile grouped mappings with descending pattern length precedence and backward compatibility.
 - `anibon-timestamper/SKILL.md` (Step 8.6), `cleaning-auto-transcripts/SKILL.md`, and `anibon-garbled-notes` agent specifications updated for automated dictionary growth.
+- Hardened None webcam handling, preserved facial expressions, slide sampling, and chunk deduplication in activity analysis.
+- Title collision guardrails and sanitized default mappings added.
 
 ---
 

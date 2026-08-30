@@ -1,6 +1,6 @@
 {
   "name": "anibon-stream-synthesis",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Subagent pipeline enforcer. Prevents orchestrator from bypassing subagent-prompt-template.md.",
   "root_cause": "subagent-prompt-template.md exists but orchestrator writes ad-hoc prompts — no OUTPUT CONTRACT, no density self-check, no inline JSON. Subagents produce vague output. Orchestrator falls back to manual stamps → lost domain depth.",
   "fix": [
