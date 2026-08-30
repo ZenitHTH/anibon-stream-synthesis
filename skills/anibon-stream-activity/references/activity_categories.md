@@ -9,6 +9,11 @@ Standard categories used in `activity_timeline.json` for on-screen classificatio
 | `Gacha` | Summon animation, banner art, pull screen, rainbow sparks | `[Gacha]` | Mention banner & featured character (no spoilers on win/loss) |
 | `Web Browsing` | Browser window, Steam Store, Twitter/X, Reddit, Shopee | `[Talk]` / `[News]` | Note website, store page, or article topic |
 | `Video Reaction` | YouTube video playback, trailer, announcement stream | `[Reaction]` / `[WatchParty]` | Name the trailer / video being watched |
+| `Booth/Exhibition` | Event booth, anime banner, figure display, company backdrop | `[Booth]` / `[Tour]` | Name event booth / publisher / exhibition zone |
+| `Food/Dining` | Food stall, plate of food, snacks, drinks, eating on camera | `[Food]` | Name food/dessert item and tasting review |
+| `Stage/Performance` | Event stage, idol live, cosplay contest, concert lights | `[Stage]` | Note stage performance, singer, or dance show |
+| `Interview/IRL Chat` | Talking face-to-face with staff, fans, or cosplayers | `[Interview]` / `[FanMeet]` | Note person/role spoken with |
+| `Outdoor/Walking` | Walking in crowd, hall corridor, escalator, street | `[Vlog]` / `[Tour]` | Note walking location / transition |
 | `AFK/Intermission` | Empty chair, "BRB / ไปห้องน้ำ" screen, static standby art | `[AFK]` | Note break / bathroom run when > 2 minutes |
 | `Fullscreen Cam` | Webcam enlarged to fullscreen with no game HUD | `[Talk]` / `[Story]` | High-focus discussion, stream intro, or outro |
 

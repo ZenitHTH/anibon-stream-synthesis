@@ -14,9 +14,9 @@ disable-model-invocation: true
 
 Local references → cached story refs → reference SRT → websearch fallback
 
-### a. Check local game references
+### a. Check local game & event references
 
-`references/INDEX.md` lists available game knowledge files. Each covers patch chronologies, character names, faction lists for major gacha games. This is the fastest and most reliable source.
+`references/INDEX.md` lists available game and cultural event knowledge files (including anime gacha games, and Japanese event conventions/cuisines like `Japan_Event_Convention.md`). This is the fastest and most reliable source.
 
 ### b. Check cached story refs
 

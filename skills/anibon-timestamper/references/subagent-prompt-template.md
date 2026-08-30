@@ -137,6 +137,15 @@ For every valid timestamp event:
 - `[Victory]`: Boss cleared / quest completed
 - `[WatchParty]`: Watch-along reaction / episode review
 - `[Reaction]`: General reaction to trailers or videos
+- `[Tour]` / `[Vlog]`: Walking through event halls, IRL walkthroughs, location transitions
+- `[Booth]`: Visiting specific company/creator booths (Kadokawa, Good Smile, Animate)
+- `[Food]`: Ordering food, tasting Japanese delicacies/sweets, drink reviews
+- `[Stage]`: Live stage performances, concert, idol show, cover dance
+- `[Cosplay]`: Cosplayers, costume craftsmanship, photo sessions
+- `[FanMeet]`: Meeting stream viewers IRL, taking photos, signing autographs
+- `[Interview]`: Face-to-face interview with booth staff, creator, or guest
+- `[Merch]`: Shopping, figure showcases, anime goods browsing
+- `[Work]`: Hands-on worksite, workshop, or pipeline tasks
 
 ### Tag Classification Examples:
 
@@ -150,10 +159,15 @@ For every valid timestamp event:
 | Boat watches trailer/youtube video | `[Reaction]` | `[Gameplay]` |
 | Boat reads in-game story dialogue | `[Story]` | `[Gameplay]` |
 | Boat pulls gacha: "จิ้มเลย" | `[Gacha]` | `[Gameplay]` |
+| Boat walks around convention hall: "เดินเข้างานนิปปอนฮาคุ" | `[Tour]` / `[Vlog]` | `[Talk]` |
+| Boat visits Good Smile booth: "มาดูฟิกเกอร์บูธนี้" | `[Booth]` | `[Gameplay]` |
+| Boat tastes food: "ชิมทาโกยากิร้อนๆ" | `[Food]` | `[Talk]` |
+| Boat watches live stage dance: "ดูโชว์บนเวทีใหญ่" | `[Stage]` | `[Reaction]` |
+| Boat meets fan IRL: "มีคนดูเข้ามาทักทาย" | `[FanMeet]` | `[Chat]` |
 | General overworld walking + fighting trash mobs | `[Gameplay]` | `[Boss]` |
 | Boat discusses news/current events | `[News]` | `[Talk]` |
 
-**Rule of thumb:** If the player is FIGHTING a named boss → `[Boss]`. If the player dies → `[Death]`. If the player completes a major objective → `[Victory]`. If the player is farming/running stages → `[Gameplay]`. If Boat looks at external video → `[Reaction]`.
+**Rule of thumb:** If the player is FIGHTING a named boss → `[Boss]`. If the player dies → `[Death]`. If the player completes a major objective → `[Victory]`. If the player is farming/running stages → `[Gameplay]`. If Boat looks at external video → `[Reaction]`. Event booth → `[Booth]`. Food tasting → `[Food]`. Stage show → `[Stage]`. Meeting fan IRL → `[FanMeet]`. Walkthrough → `[Tour]`.
 
 ## Step 3.2: Speaker-Change Attribution (Video Audio vs Boat Voice)
 

@@ -319,7 +319,39 @@
   },
   "vlog": {
    "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
+   "file": "references/stream/vlog-stream.md"
+  },
+  "nippon haku": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "japan expo": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "comic world": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "book fair": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "book expo": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "phoenix next": {
+   "kind": "publisher",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "first page pro": {
+   "kind": "publisher",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "kinokuniya": {
+   "kind": "bookstore",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
   },
   "wing wave": {
    "kind": "game",
@@ -327,7 +359,7 @@
   },
   "work": {
    "kind": "domain",
-   "file": "references/stream/talk-stream.md"
+   "file": "references/stream/vlog-stream.md"
   },
   "world cup": {
    "kind": "domain",
@@ -431,7 +463,63 @@
   },
   "วล็อก": {
    "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
+   "file": "references/stream/vlog-stream.md"
+  },
+  "นิปปอน ฮาคุ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "เจแปน เอ็กซ์โป": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "พาเที่ยว": {
+   "kind": "stream_type",
+   "file": "references/stream/vlog-stream.md"
+  },
+  "งานญี่ปุ่น": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "สัปดาห์หนังสือ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "สัปดาห์หนังสือแห่งชาติ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "มหกรรมหนังสือ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "มหกรรมหนังสือแห่งชาติ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "งานหนังสือ": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "ซื้อมาดอง": {
+   "kind": "vlog_theme",
+   "file": "references/stream/vlog-stream.md"
+  },
+  "ดองหนังสือ": {
+   "kind": "vlog_theme",
+   "file": "references/stream/vlog-stream.md"
+  },
+  "งบจำกัด": {
+   "kind": "vlog_theme",
+   "file": "references/stream/vlog-stream.md"
+  },
+  "คิโนะ": {
+   "kind": "bookstore",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "คิโนะคุนิยะ": {
+   "kind": "bookstore",
+   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
   },
   "สามเค": {
    "kind": "game",

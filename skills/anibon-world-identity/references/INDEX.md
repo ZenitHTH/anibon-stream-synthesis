@@ -18,6 +18,8 @@ Game reference files live alongside this index in `references/`.
 - [Pokémon Radical Red Reference](Pokemon_Radical_Red.md)
 - [Sekiro: Shadows Die Twice Reference](Sekiro_Shadows_Die_Twice.md)
 - [Wuthering Waves Reference](Wuthering_Waves.md)
+- [Japan Events & Conventions Reference](Japan_Event_Convention.md)
+- [Thai Book Fairs & Conventions Reference](Thai_Book_Fair_Convention.md)
 - [Zenless Zone Zero Reference](Zenless_Zone_Zero.md)
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
 

@@ -32,14 +32,30 @@ TAG_RULES = [
     (r"เคลียร์|เคลีย|ชนะ|clear|ผ่าน\s*(แล้ว|ได้)|สำเร็จ|victory|จบ\s*(แล้ว)?|เสร็จ", "[Victory]", 80),
     # Boss
     (r"บอส|boss\s*fight|สู้บอส|ตีบอส|ไฟต์บอส|เจอบอส|บอสตัว", "[Boss]", 70),
+    # Food / Tasting (IRL & Vlogs)
+    (r"กิน|ชิม|อาหาร|ทาโกยากิ|ราเมน|ยากิโซบะ|ขนม|ของกิน|สั่งอาหาร|มัตฉะ|ชาเขียว|วาฟเฟิล|ข้าวหน้า|ของหวาน|food|tasting", "[Food]", 65),
+    # Cosplay
+    (r"คอสเพลย์|cosplay|ชุดคอส|แต่งคอส|เลเยอร์", "[Cosplay]", 62),
     # Gacha
     (r"กาชา|gacha|สุ่ม|จิ้ม|summon|10\s*โรล|multi|วอช|ประกัน|ssr|เกาชา|ดึง", "[Gacha]", 60),
+    # Stage / Performances (IRL & Vlogs)
+    (r"บนเวที|เวทีใหญ่|main\s*stage|mini\s*stage|การแสดง|cover\s*dance|โชว์บนเวที|ร้องเพลง|คอนเสิร์ต", "[Stage]", 58),
+    # Fan Meet (IRL & Vlogs)
+    (r"แฟนคลับ|ทักทายแฟน|ถ่ายรูปกับแฟน|ขอลายเซ็น|เจอ\s*fc|มีคนมาทัก|แฟนรายการ", "[FanMeet]", 56),
     # Chat (speaker reading chat)
     (r"ในแชท|แชทบอก|chat\s*(บอก|ว่า)|คุณ.*บอกว่า|คนดูบอก", "[Chat]", 55),
+    # Interview (IRL & Vlogs)
+    (r"สัมภาษณ์|พูดคุยกับ(สต๊าฟ|คน|บูธ|ทีมงาน|แขก|creator)|ถามความรู้สึก", "[Interview]", 54),
+    # Booth / Merch / Shopping / Book Fair (IRL & Vlogs)
+    (r"พาชมบูธ|เดินดูบูธ|บูธ\s*|แวะบูธ|ซื้อของ|ช้อปปิ้ง|ซื้อฟิกเกอร์|กู๊ดส์|สินค้า|merchandise|แสตนดี้|มังงะในงาน|ซื้อหนังสือ|ซื้อการ์ตูน|ซื้อไลท์โนเวล|ซื้อนิยาย|ซื้อมาดอง|ดองมังงะ|ตามหาเล่ม|เลือกซื้อหนังสือ|ของพรีเมียม|แลกของแถม|โซนบอร์ดเกม|ร้านคิโนะ|บูธ\s*(phoenix|first\s*page|luckpim|สยามอินเตอร์|คิโนะ|dexpress|แซลมอน|animate)", "[Booth]", 52),
     # Donation
     (r"donation|super.?chat|ซุปฯ|sup.?chat|ขอบคุณ.*(ครับ|คะ).*donate", "[Donation]", 50),
+    # Worksite / Pipeline
+    (r"เชื่อมท่อ|งานช่าง|ตัดเหล็ก|งานไซด์|งานหน้างาน|ท่อเหล็ก|pipe\s*fitting", "[Work]", 48),
     # Reaction (watching external media)
     (r"ดูคลิป|reaction|watch|trailer|ตัวอย่าง|ดูวิดีโอ|ดูclip|ดู(ยูทูป|youtube|คลิป)", "[Reaction]", 45),
+    # Tour / Vlog
+    (r"เดินงาน|พาเที่ยว|เก็บบรรยากาศ|พาชมงาน|vlog|เดินทัวร์|เปิดโลก|บรรยากาศงาน|ทัวร์งานหนังสือ|งานหนังสือ|สัปดาห์หนังสือ|มหกรรมหนังสือ", "[Tour]", 42),
     # News
     (r"ข่าว|news|อัปเดต|update|ประกาศ|announce|พาดพิง|ล่าสุด", "[News]", 40),
 ]
@@ -55,6 +71,10 @@ FALSE_POSITIVE_BLOCK = [
     (r"เปิดไลฟ์.*อัปเดต|ทักทาย.*อัปเดต", "[News]"),
     # "donation" mentioned in passing, not a donate event
     (r"และอ่าน.*donation|และ.*donation|donation.*และ", "[Donation]"),
+    # "กิน" in game / combat context (e.g. eating damage)
+    (r"กินยา|กินดาเมจ|กินสกิล|กินเวล|กินมานา", "[Food]"),
+    # "เวที" in political/discussion metaphor
+    (r"เวทีการเมือง|เวทีโลก|เวทีเสวนา", "[Stage]"),
 ]
 
 LINE_RE = re.compile(r"^(\d{2}:\d{2}:\d{2})\s*-\s*(\[.*?\])\s+(.*)$")

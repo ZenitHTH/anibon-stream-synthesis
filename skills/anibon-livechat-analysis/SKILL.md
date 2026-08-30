@@ -57,9 +57,14 @@ Each subagent performs:
    - Ironic Cults / Overhype ("Eric คือ META" = meme banter)
    - Parasocial Memes ("กราบผัวเพื่อน" = community joke)
    - Coping Comedy (screaming at gacha failure = slapstick)
+   - **Vlog & IRL Subculture Banter**:
+     - Weeb Social Awkwardness ("ปู่เกร็ง", "แววตาสิ้นหวัง", "weeb เข้าสังคม", "Introvert อาการหนัก" = community banter about Boat's IRL shyness)
+     - Booth / Food Navigators ("ไปบูธนี้ดิ", "ลองทาโกยากิร้านนั้น", "ข้างหลังมีคอสเพลย์..." = crowd steering)
+     - Fan Sighting Celebrations ("เจอตัวจริงแล้ว", "ปู่หล่อมาก", "ขอลายเซ็นหน่อย" = real-time fan excitement)
+     - Food Tasting Peer Pressure ("กินโชว์หน่อย", "เปย์เลย" = comedy encouragement)
 
 Write each agent output to livechat_analysis_N.txt.
 
 ### 4. Synthesize LiveChat Report & Integrate Timestamps
 
-Merge chunk outputs into livechat_summary.md and merge top hype peak timestamps into nriched_timestamps.txt before running pack_timestamps.py.
+Merge chunk outputs into livechat_summary.md and merge top hype peak timestamps into  nriched_timestamps.txt before running pack_timestamps.py.

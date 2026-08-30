@@ -266,8 +266,8 @@ def check_tag_diversity(part: dict) -> list[str]:
         return []
 
     macro_counts = Counter(macros)
-    # Allow TALK + GAMEPLAY if within same game
-    if macro_set == {"TALK", "GAMEPLAY"}:
+    # Allow TALK + GAMEPLAY if within same game, or TALK + VLOG in vlog streams
+    if macro_set in ({"TALK", "GAMEPLAY"}, {"TALK", "VLOG"}):
         return []
 
     summary = ", ".join(f"{m} ({c}x)" for m, c in macro_counts.most_common())

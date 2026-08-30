@@ -11,8 +11,23 @@
     "Gameplay": "GAMEPLAY",
     "Boss": "GAMEPLAY",
     "Victory": "GAMEPLAY",
+    "Death": "GAMEPLAY",
     "News": "NEWS",
     "WatchParty": "NEWS",
-    "Gacha": "NEWS"
+    "Gacha": "NEWS",
+    "Vlog": "VLOG",
+    "Tour": "VLOG",
+    "Booth": "VLOG",
+    "Food": "VLOG",
+    "Stage": "VLOG",
+    "Cosplay": "VLOG",
+    "Interview": "VLOG",
+    "FanMeet": "VLOG",
+    "Merch": "VLOG",
+    "Shopping": "VLOG",
+    "Work": "VLOG",
+    "IRL": "VLOG",
+    "Showcase": "VLOG",
+    "Activity": "VLOG"
   }
 }

@@ -17,7 +17,7 @@ Streams or videos by "Boat" from Anibon Official that need timed topic labels.
 **REQUIRED (subagent execution):** Load `batching-subagents-concurrency` when running multi-subagent analysis (max 6 per batch turn, `Model: "flash"`). Ask user permission before downloading large external media or performing long web fetches.
 
 Loaded by signal (add to prompt when needed):
-- `anibon-world-identity` — verify game/char names against references before story stamps
+- `anibon-world-identity` — verify game/char names and Japanese convention/event terms against references before stamps
 - `anibon-stream-activity` — high-res storyboard sampling for on-screen gameplay, webcam presence/AFK, and visual grounding
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 - `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
