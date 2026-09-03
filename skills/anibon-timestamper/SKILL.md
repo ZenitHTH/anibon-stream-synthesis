@@ -221,37 +221,27 @@ python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 # exit 0: no gaps. exit 1: prints e.g. "12m 01:13 -> 01:25 (fill around chunk_26)"
 ```
 
-### 8.6 Collect Garbled Notes → Grow Dictionary (Automated)
+### 8.6 Dispatch Audio Slices to Whisper.cpp (Hardware-Aware Ground Truth)
 
-Each chunk subagent emitted a `GARBLED_NOTES:` block (Step 3.5) for Thai-Latin hybrid words that survived cleaning. Extract them into `garbled_notes_raw/`, then automatically consolidate and sync into `resources/garbled_replacements.json`:
+Subagents strictly emit spotter tokens (`- "token" @ HH:MM:SS (chunk_NN)`). The central **`whisper_dispatcher.py`** profiles hardware, deduplicates timestamps into clusters, slices audio via ffmpeg, and executes local parallel `whisper.cpp` inference to produce ground-truth transcriptions without LLM hallucination:
 
 ```bash
-# 1. ALWAYS run dictionary updater to consolidate raw notes & generate garbled_notes.json on disk
+# 1. Run Dispatcher to slice audio and transcribe ground truth via whisper.cpp
+python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --verbose
+
+# 2. Sync confirmed entries into the master dictionary
 python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
-  --from-raw-dir ~/youtube_<id>_workspace/garbled_notes_raw/ \
+  --from-notes ~/youtube_<id>_workspace/garbled_notes.json \
   --workspace ~/youtube_<id>_workspace
 ```
 
-Optional: Spawn **`anibon-garbled-notes`** for deep LLM verification before writing. If spawned, save the returned JSON payload directly to `~/youtube_<id>_workspace/garbled_notes.json` and sync dictionary via `update_garbled_dictionary.py --sync-only`.
-
-```python
-invoke_subagent(
-    "anibon-garbled-notes",
-    prompt=(
-        f"WORKSPACE: ~/youtube_<id>_workspace\n"
-        f"PLUGIN_ROOT: <anibon-stream-synthesis plugin root>\n"
-        f"Read garbled_notes_raw/*.txt, consolidate against raw_transcript.json + chunks/,\n"
-        f"write garbled_notes.json, and run update_garbled_dictionary.py."
-    )
-)
-```
+> [!CAUTION]
+> **Anti-Cascade Ground Truth Check**: Always cross-check candidate garbled notes against `raw_transcript.th-orig.json3`. If a candidate contains a multi-word game/anime title (e.g. `Yuri on Ice`, `Chaos Zero Nightmare`, `Where Winds Meet`, `SLAPP`) embedded inside Thai text, it is an artifact of an aggressive cleaner rule. Never save cleaner artifacts into `garbled_replacements.json`.
 
 Outputs:
-- `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `correct` or `null`, `chunk`, `ts`, `context`)
+- `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `whisper_transcript`, `correct`, `chunk`, `ts`, `context`, `cluster_span`)
 - `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
-> [!TIP]
-> **Vision Escalation Gate**: When audio is ambiguous (deictic "เกมนี้", ASR phonetics corrupted, or candidate `correct: null`), load `antigravity-vision-proxy` to download storyboard `sb0` (~15MB) and inspect exact timestamp frames. Never guess or hallucinate foreign titles when visual ground truth is available. If visually confirmed, undubt the candidate and set `correct: <CanonicalName>` before concluding. Only leave `correct: null` for items with no visual presence on screen.
 
 The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
 auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.

@@ -119,6 +119,22 @@ Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an
 2. **Generic Phrase Protection**: Never register common conversational English phrases (e.g., `where we meet`, `where meet`, `Rock One`) as replacement patterns for game titles (e.g., `Where Winds Meet`, `Roblox`).
 3. **Specific Subtitle Over-mapping**: In `default_mappings.json`, never map common Thai words or broad root names (`คอนโทรล`, `เฟย`, `until dawn`) to specific video subtitles or unconfirmed sequels (`Control: Resonant`, `God of War: Laufey`, `Until Dawn 2`). Use base titles only (`Control`, `Laufey`, `Until Dawn`).
 
+### Anti-Cascade & Ground-Truth Cross-Checking (MANDATORY)
+1. **Raw Transcript Cross-Check**: When extracting garbled notes from chunks or subagents, NEVER trust post-cleaned text blindly. Always cross-check the timestamp against `raw_transcript.th-orig.json3` to confirm the exact original ASR string.
+2. **Cleaner Artifact Purge**: If a candidate garbled string contains a known multi-word English game/anime title (e.g. `Yuri on Ice`, `Chaos Zero Nightmare`, `Where Winds Meet`, `SLAPP`) embedded inside Thai text (e.g. `pYuri on Iceshิ`, `SLAPPอย`), it is an artifact of a broad regex cleaner collision. Do NOT save the multi-word title as a pattern. Clean the raw ASR form (`punishิ`, `สปอยล์`) instead.
+
+### Local Audio-Slice Whisper Verification (Metal GPU) & Storyboard Grounding
+When ambiguous loanwords, brand names, or proper nouns cannot be confidently resolved from transcript context:
+1. **Download audio stream once**:
+   `yt-dlp --remote-components ejs:github --cookies-from-browser chrome -f 249/ba "<URL>" -o "audio.opus"`
+2. **Cut focused 15s audio slice**:
+   `ffmpeg -y -ss <START_SEC> -t 15 -i audio.opus -ar 16000 -ac 1 -c:a pcm_s16le slice.wav`
+3. **Transcribe locally with whisper.cpp** (Apple Silicon Metal GPU accelerated, ~0.4s per slice):
+   `whisper-cli -m ggml-large-v3-turbo.bin -f slice.wav -l th -nt`
+4. **Visual Grounding with Storyboard Frames**:
+   Extract `storyboard.mhtml` slides (`frames/slides/slide_XXX.jpg`) to visually ground on-screen web pages, auction catalogues, toy reveals, or gameplay screens.
+
+
 ---
 
 ## Integration with Other Skills

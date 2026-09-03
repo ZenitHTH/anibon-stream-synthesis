@@ -1,119 +1,8 @@
 {
   "version": 2,
-  "description": "Garbled English → correct mapping for clean_garbled_english.py",
+  "description": "Canonical word -> list of garbled phonetic patterns",
   "note": "First-match wins. Within each word, longer/more specific patterns are tried first.",
   "mappings": {
-    "\"Buffer Zone\"": [
-      "Buffอร์ซone"
-    ],
-    "\"casual\"": [
-      "แคVisual"
-    ],
-    "\"chapter\"": [
-      "shpterต"
-    ],
-    "\"Cosplay\"": [
-      "คay"
-    ],
-    "\"Cosplayer\"": [
-      "CPL"
-    ],
-    "\"Doomsday\"": [
-      "doมoms Day"
-    ],
-    "\"emulator\"": [
-      "อulator"
-    ],
-    "\"Everything\"": [
-      "EveryThai AIng"
-    ],
-    "\"Fire Emblem\"": [
-      "แฟนเบม"
-    ],
-    "\"Genshin Impact\"": [
-      "เกชินpพค"
-    ],
-    "\"handicraft\"": [
-      "แฮนcาฟ"
-    ],
-    "\"handmade\"": [
-      "handมade"
-    ],
-    "\"Kemono Friends\"": [
-      "chมิโนเฟน"
-    ],
-    "\"Lord of the Mysteries\"": [
-      "หลอดซีerรี่"
-    ],
-    "\"mentality\"": [
-      "mนary"
-    ],
-    "\"Nintendo Switch\"": [
-      "นิเรอSWวิท"
-    ],
-    "\"non-Muslim\"": [
-      "non มmusุสlิ"
-    ],
-    "\"nothing\"": [
-      "noThai AIng"
-    ],
-    "\"Pokémon World Championships\"": [
-      "ตัว poon Pokémon Champions"
-    ],
-    "\"Silver Palace\"": [
-      "Silver Pace"
-    ],
-    "\"Skywalk\"": [
-      "Skywวalk"
-    ],
-    "\"Steam Deck\"": [
-      "Steีม Dex"
-    ],
-    "\"sweet (หวานเจี๊ยบ)\"": [
-      "sweท"
-    ],
-    "\"True Vision\"": [
-      "NTE (Neverness to Everness)rue Vision",
-      "แบบูion"
-    ],
-    "\"watashi wa taikoku no\"": [
-      "วตาชingาไทโกเนาะ"
-    ],
-    "\"wonderkid\"": [
-      "er kิ"
-    ],
-    "\"Zelda\"": [
-      "Zeldด้า"
-    ],
-    "\"คลองถม\"": [
-      "บองถentน"
-    ],
-    "\"คลองถมเซ็นเตอร์\"": [
-      "คลองเซentเตอร์"
-    ],
-    "\"ชา Audrey\"": [
-      "ชา allอ day"
-    ],
-    "\"ดีเลย์\"": [
-      "ดีลay"
-    ],
-    "\"ตอนซานติก้า\"": [
-      "ตอซิก้า"
-    ],
-    "\"วงทศกัณฐ์\"": [
-      "วงทศการ",
-      "วทศการ",
-      "วงทศกร"
-    ],
-    "\"เดโม\"": [
-      "deโม่"
-    ],
-    "\"เหรียญ Leonard\"": [
-      "เหรียญเร็วหนาด"
-    ],
-    "\"ไชน่า (China)\"": [
-      "chชน่า"
-    ],
     "2122 AMON WAR": [
       "2122 อกวall"
     ],
@@ -126,6 +15,9 @@
     "2XKO": [
       "2 SKO",
       "2SKO"
+    ],
+    "5-toubun no Hanayome (The Quintessential Quintuplets)": [
+      "โกโตบุญโกโตบุญนกฮาโยมิ"
     ],
     "60 Stamina": [
       "60 amิน่า"
@@ -150,6 +42,9 @@
     ],
     "Actas": [
       "แLลance"
+    ],
+    "Action Figure": [
+      "Action Figer"
     ],
     "adapt": [
       "ad\\s*[ดดี]apt(?!ation)",
@@ -204,9 +99,6 @@
     "Alter": [
       "outทอร์"
     ],
-    "Altergeist": [
-      "ไกด"
-    ],
     "Amazon Prime": [
       "amมon prim"
     ],
@@ -233,6 +125,15 @@
     "Andromache": [
       "แom"
     ],
+    "AniGuesser": [
+      "อันนี้เกซ่า",
+      "อันนี้เกสซา",
+      "กโตไอิเกซา",
+      "อิเกศ"
+    ],
+    "Anime Matsuri": [
+      "anนิเมะมัซูริ"
+    ],
     "Aniplex": [
       "ในเพค",
       "อิpลก"
@@ -246,6 +147,9 @@
     ],
     "Anonymous": [
       "animัส"
+    ],
+    "Another": [
+      "anoer"
     ],
     "AP Point": [
       "เิปint"
@@ -375,6 +279,9 @@
     "Better Call Saul": [
       "Battle Callซ"
     ],
+    "Beyond the Boundary": [
+      "Beyond the bodyy"
+    ],
     "Bibury Animation Studios": [
       "บิบลี่"
     ],
@@ -496,6 +403,9 @@
     "budget บาน": [
       "budบ"
     ],
+    "Buffer Zone": [
+      "Buffอร์ซone"
+    ],
     "Burn the Witch": [
       "เบอร์theว",
       "เบอร์วิว",
@@ -532,6 +442,9 @@
     "Cassius": [
       "เคซูโo"
     ],
+    "casual": [
+      "แคVisual"
+    ],
     "Casual": [
       "แชual"
     ],
@@ -557,6 +470,9 @@
     "Challenge Quest": [
       "challeng เควส"
     ],
+    "Champion Class / Legend": [
+      "แชampion Legend"
+    ],
     "Chaos": [
       "Chosอ"
     ],
@@ -565,8 +481,10 @@
       "เคส man",
       "เคอเซแม",
       "แคซman",
-      "เคซิเม",
-      "เคม"
+      "เคซิเม"
+    ],
+    "chapter": [
+      "shpterต"
     ],
     "Charge Gauge (ชาร์จเกจ)": [
       "ชารเกด"
@@ -576,6 +494,9 @@
     ],
     "Chronal": [
       "โครal"
+    ],
+    "Chuunibyou demo Koi ga Shitai!": [
+      "กูมาเปียว"
     ],
     "Ciel": [
       "my exterึ"
@@ -590,7 +511,6 @@
       "City Cม"
     ],
     "Clanker (แครงเกอร์)": [
-      "MAPPAnkเกอร์",
       "แครangเกอร์"
     ],
     "Class Score": [
@@ -610,8 +530,14 @@
       "โocกนั School",
       "โคโกนั สกู"
     ],
+    "Code: Somnia": [
+      "โค้ชsomนีย"
+    ],
     "Collab Fortnite": [
       "คแลapไน"
+    ],
+    "Color Timer": [
+      "คอTimอ"
     ],
     "Colosseum": [
       "Kuro Gamesสเซียม"
@@ -640,6 +566,9 @@
     "community": [
       "คอมมิunity"
     ],
+    "Community Rider": [
+      "Commuนิty RER"
+    ],
     "Complain": [
       "compลน"
     ],
@@ -667,6 +596,12 @@
     ],
     "Corporate Greed": [
       "Corate Greedy"
+    ],
+    "Cosplay": [
+      "คay"
+    ],
+    "Cosplayer": [
+      "CPL"
     ],
     "Counter Force": [
       "counterฟ",
@@ -791,9 +726,6 @@
     "DMCA": [
       "DMT"
     ],
-    "do nothing wrong": [
-      "do noThai AIng wrong"
-    ],
     "Donate": [
       "บate"
     ],
@@ -810,6 +742,7 @@
       "ดูมสโก"
     ],
     "Doomsday": [
+      "doมoms Day",
       "doม day"
     ],
     "Doro": [
@@ -886,6 +819,9 @@
     "Ember": [
       "แมber"
     ],
+    "emulator": [
+      "อulator"
+    ],
     "Endfield": [
       "nฟfield",
       "NFIL"
@@ -934,19 +870,6 @@
     "Evangelion": [
       "evangerน"
     ],
-    "every single thing": [
-      "everyThai AIng"
-    ],
-    "Everything": [
-      "EveryThai AIng"
-    ],
-    "everything": [
-      "EveryThai AIng",
-      "everyThai AIng"
-    ],
-    "Everything AI": [
-      "EveryThai AIng"
-    ],
     "Ex Astris": [
       "XS Street"
     ],
@@ -973,6 +896,9 @@
     ],
     "FANZA": [
       "แฟนซ่า"
+    ],
+    "Farewell Mission": [
+      "สยโรนิชion"
     ],
     "Fate/Apocrypha": [
       "Apple โพ"
@@ -1019,6 +945,9 @@
     ],
     "Final Requiem": [
       "Final Requม"
+    ],
+    "Fire Emblem": [
+      "แฟนเบม"
     ],
     "Fire Emblem: Three Houses": [
       "FBAM 3 House"
@@ -1156,6 +1085,7 @@
       "เกนชินคูวอ"
     ],
     "Genshin Impact": [
+      "เกชินpพค",
       "เกียงชิน",
       "เทียนชน",
       "เนชin"
@@ -1170,6 +1100,7 @@
       "เกอรกุ๊ป"
     ],
     "Girls und Panzer": [
+      "Girl พังซอร",
       "Girl and P",
       "เกฟองซอร"
     ],
@@ -1198,6 +1129,9 @@
     ],
     "good vibe": [
       "good viwel"
+    ],
+    "Gotchardriver Memorial Edition": [
+      "Godช Memmoryal Edition"
     ],
     "Grail Battle": [
       "Gre Battle"
@@ -1247,6 +1181,12 @@
     ],
     "Handheld PC": [
       "Handc PC"
+    ],
+    "handicraft": [
+      "แฮนcาฟ"
+    ],
+    "handmade": [
+      "handมade"
     ],
     "Harley Quinn": [
       "Harี่Quว queen"
@@ -1304,9 +1244,6 @@
     ],
     "Hideo Kojima": [
       "ฮิริโอโคจim"
-    ],
-    "Hogwarts (Hogwarts Legacy)": [
-      "Hว"
     ],
     "Hollow Zero": [
       "Holl Zero"
@@ -1380,11 +1317,14 @@
     "impact": [
       "impพact"
     ],
-    "In This Corner of the World": [
-      "In Thai AIs corner of the world"
-    ],
     "Incursion ใน Marvel": [
       "Inclusion ใน Marvel"
+    ],
+    "Infinite Stratos": [
+      "Infinitาไซวิ"
+    ],
+    "Infinite Stratos (IS)": [
+      "อิสาโต"
     ],
     "Interlude": [
       "interlute",
@@ -1422,6 +1362,9 @@
     "Jedz": [
       "Jจซ"
     ],
+    "JoJo no Kimyou na Bouken (JoJo's Bizarre Adventure)": [
+      "โจโจ้คิมโบคนะฮะ"
+    ],
     "Joker": [
       "Jokกอร์"
     ],
@@ -1431,6 +1374,9 @@
     ],
     "Joy-Con Switch": [
       "จอยswวิตch"
+    ],
+    "Julien's Auctions": [
+      "Julian Action"
     ],
     "Jump Festa": [
       "จัเฟต้า",
@@ -1445,6 +1391,12 @@
     "Kaguya-hime": [
       "คาุยะฮิเมะ"
     ],
+    "Kamen Rider My-Th": [
+      "ไม้สึ"
+    ],
+    "Kamen Rider Zeztz The Movie": [
+      "Marer Set M"
+    ],
     "Katekyo Hitman Reborn!": [
       "คakเคียว Hitman"
     ],
@@ -1456,6 +1408,9 @@
     ],
     "Keldeo": [
       "เคดิโอ"
+    ],
+    "Kemono Friends": [
+      "chมิโนเฟน"
     ],
     "Kewltune": [
       "Kทool"
@@ -1477,6 +1432,9 @@
     ],
     "King of Sekigahara Academy": [
       "King of Smิกิฮาระ"
+    ],
+    "King Rouzer": [
+      "King Rซอร"
     ],
     "King's Shield": [
       "Kingชilli"
@@ -1516,6 +1474,9 @@
     "Klub Outside (คลับเอาต์ไซด์)": [
       "ขับoutไซide"
     ],
+    "know-how": [
+      "nohา"
+    ],
     "Koei Tecmo": [
       "กูเคยเทคโม่"
     ],
@@ -1537,6 +1498,9 @@
     "Konami": [
       "โamิกด"
     ],
+    "Konjiki no Gash Bell! (Zatch Bell!)": [
+      "การเบล"
+    ],
     "Koyanskaya of Light": [
       "โมะแสง"
     ],
@@ -1552,8 +1516,14 @@
     "Kuro Games": [
       "โคโล"
     ],
+    "Kyoukai no Kanata (Beyond the Boundary)": [
+      "เคียวคาโนคาตะ"
+    ],
     "Lady Dimitrescu": [
       "เจ๊แบบDBESส"
+    ],
+    "Lady Gauntlet": [
+      "Lady Glet"
     ],
     "Land Housing": [
       "LandนHousซิ่ง"
@@ -1601,6 +1571,9 @@
     "Live Service": [
       "ไ service"
     ],
+    "Lobby Card (ล็อบบี้การ์ด)": [
+      "Roby การด"
+    ],
     "LoM (Lord of Mysteries)": [
       "รถ M"
     ],
@@ -1622,6 +1595,7 @@
     ],
     "Lord of the Mysteries": [
       "หลอด Mystery",
+      "หลอดซีerรี่",
       "หลอด Myery",
       "Lord of My"
     ],
@@ -1633,6 +1607,9 @@
     ],
     "Lost Soul Aside": [
       "โซต"
+    ],
+    "Lost Technology": [
+      "Los Teทคology"
     ],
     "Love and Deepspace": [
       "Love SP"
@@ -1652,11 +1629,17 @@
     "luxury": [
       "luชurี่"
     ],
+    "Machikado Mazoku": [
+      "มาจิคาโดะ"
+    ],
     "Made in Abyss": [
       "made in the beast"
     ],
     "Madolche": [
       "มาดูเซ่อ"
+    ],
+    "Maebashi Witches": [
+      "ไมวชีวิว"
     ],
     "Magilumiere": [
       "เจิรูมิอร์"
@@ -1676,8 +1659,7 @@
     ],
     "MAPPA": [
       "แมป[ป]?[าa]",
-      "แppa",
-      "แa"
+      "แppa"
     ],
     "Mariachi Legends": [
       "มาิlegน"
@@ -1731,6 +1713,9 @@
     ],
     "Memory of Londinium": [
       "Memmory of Londinum"
+    ],
+    "mentality": [
+      "mนary"
     ],
     "Metal Gear": [
       "เียar์"
@@ -1816,7 +1801,8 @@
       "มาส์เมoryี่"
     ],
     "Mushoku Tensei": [
-      "มุชนเซ"
+      "มุชนเซ",
+      "มูจนเซ"
     ],
     "my cream": [
       "my\\s+creีม"
@@ -1852,6 +1838,7 @@
       "N dirก"
     ],
     "Nintendo Switch": [
+      "นิเรอSWวิท",
       "Swiชilli",
       "sวิตch"
     ],
@@ -1890,11 +1877,14 @@
     "Noir": [
       "Noออิซอยคนู้"
     ],
-    "nothing": [
-      "NoThai AIng"
+    "non-Muslim": [
+      "non มmusุสlิ"
     ],
     "NTE (Neverness to Everness)": [
       "ไอ้ T"
+    ],
+    "Occultic;Nine": [
+      "โอคสติกนาย"
     ],
     "Odyssey": [
       "odิy"
@@ -1916,6 +1906,9 @@
       "one\\s+punch\\s*man",
       "one\\s+พ[ั้]?man"
     ],
+    "OniAi (Onii-chan dakedo Ai sae Areba Kankeinai yo ne!)": [
+      "โอนิอ"
+    ],
     "Onimusha": [
       "อุิมูชะ"
     ],
@@ -1934,6 +1927,9 @@
     "Ordeal Call Foreigner": [
       "Audio Call Forena"
     ],
+    "Oreimo": [
+      "โอี่โมะ"
+    ],
     "original": [
       "\\borigal\\b",
       "อริจินอ"
@@ -1947,9 +1943,6 @@
     "overpower": [
       "Powerาเกินไป",
       "overพาเไป"
-    ],
-    "overthinking": [
-      "overThai AInking"
     ],
     "Paladin": [
       "พadิ[น]?"
@@ -2034,6 +2027,9 @@
     "plot twist": [
       "พortทวส"
     ],
+    "Pluto": [
+      "Plูโต"
+    ],
     "Pocket book (พ็อกเก็ตบุ๊ก)": [
       "Poetบook"
     ],
@@ -2050,6 +2046,7 @@
       "Poมอนชิูโดะ"
     ],
     "Pokémon World Championships": [
+      "ตัว poon Pokémon Champions",
       "Poemon แชamp"
     ],
     "Polychrome": [
@@ -2120,10 +2117,12 @@
     "propaganda": [
       "propปันด้า"
     ],
+    "prototype (ต้นแบบ)": [
+      "โปรตไทPEP"
+    ],
     "Proxy / Phaethon": [
       "prีis",
-      "Parิ",
-      "Pิ"
+      "Parิ"
     ],
     "PUBG: DED.NET": [
       "PUBG Deadnet"
@@ -2163,6 +2162,9 @@
     ],
     "Random": [
       "แรนดom"
+    ],
+    "Ranking of Kings (Ousama Ranking)": [
+      "อุาแanking"
     ],
     "Rapture": [
       "rัture"
@@ -2233,6 +2235,9 @@
     ],
     "Rider": [
       "r[เด]อร์(?=[\\s,.]|$)"
+    ],
+    "Rider Zeztz": [
+      "RER set"
     ],
     "Riftbound": [
       "ริฟบาม"
@@ -2339,7 +2344,8 @@
       "ชอเบิร์ด"
     ],
     "Shakugan no Shana": [
-      "ชากุกังชาน"
+      "ชากุกังชาน",
+      "ชาคุโนชนะ"
     ],
     "Shaoji (เส้าจี่)": [
       "เฉียวจิ"
@@ -2387,6 +2393,7 @@
     ],
     "Silver Palace": [
       "Silver Palaceace",
+      "Silver Pace",
       "Silver Hess",
       "Silver Pal",
       "Silver Har"
@@ -2422,9 +2429,11 @@
     "Sky News": [
       "SkyนNewิวส"
     ],
+    "Skywalk": [
+      "Skywวalk"
+    ],
     "SLAPP": [
-      "ฟองสAP",
-      "สAP"
+      "ฟองสAP"
     ],
     "slow burn": [
       "slลวเบิร์น"
@@ -2437,6 +2446,9 @@
     ],
     "Smoke Detector": [
       "สมokedeทคตor"
+    ],
+    "Snap-fit": [
+      "สนap"
     ],
     "Snapboo": [
       "สนapบู"
@@ -2459,10 +2471,6 @@
     "Solo Leveling": [
       "Soloโo Living"
     ],
-    "something": [
-      "Somิ someThai AIng",
-      "someThai AIng"
-    ],
     "Sonny Boy": [
       "Sonyบบอย"
     ],
@@ -2474,6 +2482,9 @@
     ],
     "Souls series": [
       "โซนซีรies์"
+    ],
+    "Sousei no Onmyouji (Twin Star Exorcists)": [
+      "โซเซโนโอมจิ"
     ],
     "speed": [
       "speีed",
@@ -2522,10 +2533,14 @@
       "steม"
     ],
     "Steam Deck": [
+      "Steีม Dex",
       "สตีม Dex"
     ],
     "Steel Ball Run": [
       "ซีวรัน"
+    ],
+    "Steins;Gate": [
+      "ไ Gate"
     ],
     "Still Silver (ลูกศรเงิน)": [
       "ไทcrอเซล"
@@ -2552,6 +2567,9 @@
     "Streaming": [
       "สamมing",
       "สมมing"
+    ],
+    "Strike Witches: Road to Berlin": [
+      "Strad to Berlin"
     ],
     "subconscious": [
       "ซับคอชus"
@@ -2587,6 +2605,9 @@
     "Super Chat": [
       "superช"
     ],
+    "Super Hero Time": [
+      "Time แบบ Mas Rider M"
+    ],
     "Super Mario Kart": [
       "Super Mario Class"
     ],
@@ -2599,6 +2620,9 @@
     ],
     "Swedish": [
       "swีedish"
+    ],
+    "sweet (หวานเจี๊ยบ)": [
+      "sweท"
     ],
     "Swiss cheese": [
       "switวิตชีท"
@@ -2638,15 +2662,14 @@
     "Tezcatlipoca": [
       "พี่วู"
     ],
-    "Thai AI": [
-      "Thi"
-    ],
     "Thailand Game Show": [
       "ไilandเกมโชว์"
     ],
+    "Thailand Toy Expo": [
+      "ไiland toy X Pro"
+    ],
     "The Almighty": [
-      "อmตี้",
-      "อy"
+      "อmตี้"
     ],
     "The Antithesis": [
       "antiทest"
@@ -2656,6 +2679,9 @@
     ],
     "The Blood of Dawnwalker": [
       "The blood of Walker"
+    ],
+    "The Eminence in Shadow": [
+      "Shadowinent"
     ],
     "The Fool": [
       "theฟood"
@@ -2696,8 +2722,8 @@
     "The Witcher Remaster": [
       "The Wal rem"
     ],
-    "think": [
-      "Thai AInk"
+    "The World's Finest Assassin Gets Reincarnated in Another World as an Aristocrat": [
+      "Assassin for World"
     ],
     "TikTok": [
       "ติtอก",
@@ -2724,6 +2750,15 @@
     ],
     "Toji no Miko": [
       "โทยิโกะ"
+    ],
+    "Toku Today": [
+      "โทกุเด"
+    ],
+    "Tokyo Godfathers": [
+      "โต Godfather"
+    ],
+    "Tokyo Toy Show": [
+      "โตเกียวtoอยโชว์"
     ],
     "Tondemo Skill de Isekai Hourou Meshi": [
       "ซากะโท สกิล"
@@ -2755,6 +2790,10 @@
     "True": [
       "trูชั",
       "trู"
+    ],
+    "True Vision": [
+      "NTE (Neverness to Everness)rue Vision",
+      "แบบูion"
     ],
     "Truly": [
       "trูี่"
@@ -2798,6 +2837,9 @@
       "ตัวูีen",
       "ยูกen"
     ],
+    "Ultraman Arc (Omega Arm)": [
+      "Omegaฮ Horn"
+    ],
     "Undo": [
       "undู"
     ],
@@ -2807,9 +2849,6 @@
     "Unicorn Overlord (ยูนิคอร์น โอเวอร์ลอร์ด)": [
       "ยูิornอวload"
     ],
-    "Unity": [
-      "Yuri on Icety"
-    ],
     "Universal": [
       "Universรซั"
     ],
@@ -2818,9 +2857,6 @@
     ],
     "Unreal": [
       "unียว"
-    ],
-    "Unreal Engine": [
-      "Yuri on IceA"
     ],
     "Unreal Engine 5": [
       "Ali Engine 5"
@@ -2859,6 +2895,9 @@
     "Victorian": [
       "แวctoria"
     ],
+    "Vintage Henshin": [
+      "Vintage เchin"
+    ],
     "Virtual Card": [
       "virtuual การด"
     ],
@@ -2874,9 +2913,6 @@
     "Volond (โวลุนด์)": [
       "โวลอน"
     ],
-    "VRAINS": [
-      "vน"
-    ],
     "VRZO": [
       "VRโซ"
     ],
@@ -2885,6 +2921,9 @@
     ],
     "Warlock: Dungeons & Dragons": [
       "Dung Dragon Warlock"
+    ],
+    "watashi wa taikoku no": [
+      "วตาชingาไทโกเนาะ"
     ],
     "WeChat": [
       "Vcชat",
@@ -2895,6 +2934,9 @@
     ],
     "Weiss Schwarz": [
       "Watch Wars"
+    ],
+    "Welcome to the N.H.K.": [
+      "Welcome to HK"
     ],
     "Wes Ball": [
       "Westบn"
@@ -2909,8 +2951,7 @@
       "วินmeท",
       "แวม me",
       "เin me",
-      "วินมี",
-      "แี"
+      "วินมี"
     ],
     "White": [
       "Whiteท"
@@ -2928,6 +2969,9 @@
     ],
     "wireless": [
       "wirส"
+    ],
+    "wonderkid": [
+      "er kิ"
     ],
     "workshop": [
       "workวิรชop"
@@ -3019,13 +3063,11 @@
     "Yugituber": [
       "yยukiทูer"
     ],
-    "Yuri on Ice": [
-      "UNI"
-    ],
     "Yuru Camp": [
       "ยูแคม"
     ],
     "Zelda": [
+      "Zeldด้า",
       "Zดda",
       "เuda",
       "เda"
@@ -3079,6 +3121,9 @@
     "กงเล็บ Lizalfos": [
       "กงเล็บrั force"
     ],
+    "กอร์ไนท์แมร์": [
+      "กอไอแมว"
+    ],
     "กาน้ำชา (Tea Pot)": [
       "การน้ำชา"
     ],
@@ -3117,7 +3162,11 @@
     "ครีเอทีฟ": [
       "ครีทtiีve"
     ],
+    "คลองถม": [
+      "บองถentน"
+    ],
     "คลองถมเซ็นเตอร์": [
+      "คลองเซentเตอร์",
       "ฟังแม่ครองถent"
     ],
     "คลาสสกอร์ (Class Score)": [
@@ -3159,6 +3208,13 @@
     "คาซูมิ": [
       "คาซumี่"
     ],
+    "คาทาสตรอม": [
+      "คาสop"
+    ],
+    "คาทาสตรอม (Catastrom)": [
+      "คastrom",
+      "ซตom"
+    ],
     "คาลิเบอร์": [
       "คalบอร์"
     ],
@@ -3170,6 +3226,9 @@
     ],
     "คาเมนไรเดอร์": [
       "คมrเดอร์"
+    ],
+    "คาเมนไรเดอร์กาบุ (Kamen Rider Gavv)": [
+      "Gabบุu"
     ],
     "คิงโพรเทีย": [
       "คิพiaอต้า"
@@ -3208,6 +3267,9 @@
     "ชัยโสโล": [
       "ชโซโล"
     ],
+    "ชา Audrey": [
+      "ชา allอ day"
+    ],
     "ชาร์จ": [
       "ชารกate"
     ],
@@ -3243,9 +3305,6 @@
     ],
     "ชูเท็น": [
       "ชูen"
-    ],
-    "ช่วยไกด์": [
-      "ช่วยAltergeist"
     ],
     "ซองจินอู": [
       "ซนจินอูบี"
@@ -3293,14 +3352,17 @@
     "ซึนเดเระ": [
       "ซินเดเละ"
     ],
+    "ซูซูมุ คุโรเบะ (Susumu Kurobe)": [
+      "คุณซุซumุ"
+    ],
     "ซูเปอร์คอนดักต์ (Superconduct)": [
       "เซคดัก"
     ],
     "ดร.มัลลิกา": [
       "ดร.มาิก"
     ],
-    "ดาบสนิม": [
-      "ดาบChaos Zero Nightmare"
+    "ดราก้อนบอล": [
+      "Drag้อนบอล"
     ],
     "ดาวน์": [
       "ูดาวน"
@@ -3318,7 +3380,8 @@
       "deen นี้"
     ],
     "ดีเลย์": [
-      "delดีเลย"
+      "delดีเลย",
+      "ดีลay"
     ],
     "ดีไซน์คาแรกเตอร์": [
       "ดีไซน์คาคตa"
@@ -3335,14 +3398,14 @@
     "ตอกกลางไลฟ์": [
       "ต่อคาล"
     ],
+    "ตอนซานติก้า": [
+      "ตอซิก้า"
+    ],
     "ตะวันออกกลาง": [
       "ตอดอกกลาง"
     ],
     "ตัว Client": [
       "ตัวไent"
-    ],
-    "ตายมั้ย": [
-      "ตะChaos Zero Nightmareั้ย"
     ],
     "ติ๊กต็อก": [
       "tiิTok"
@@ -3374,9 +3437,6 @@
     ],
     "นอสทัลเจีย (Nostalgia)": [
       "นอสalาเจีย"
-    ],
-    "นัตถิง": [
-      "noThai AIng"
     ],
     "นินจาไกเดน": [
       "นินจาไกเด้en",
@@ -3455,6 +3515,13 @@
     "พิสตาชิโอ": [
       "พิาชิชio"
     ],
+    "พี่จอร์จ": [
+      "พี่จอแี้จม"
+    ],
+    "พูนนิช (Punish)": [
+      "punishิ",
+      "punิช"
+    ],
     "ฟันมิราเคิล": [
       "ฟันmirคิle"
     ],
@@ -3481,6 +3548,9 @@
     "ฟูจิโมโตะ (Tatsuki Fujimoto)": [
       "ฟูim"
     ],
+    "มนุษย์ดาวเคมูร์ (Kemur Man)": [
+      "ดาวเคมู"
+    ],
     "มอนจายากิ (Monjayaki)": [
       "มงใจิ"
     ],
@@ -3505,6 +3575,9 @@
     "มิชชัน": [
       "มิชion"
     ],
+    "มิลเลเนียม อีลิท (Millennium / Elite)": [
+      "เนียiมอelิ"
+    ],
     "มี Minimap": [
       "มีิap"
     ],
@@ -3514,17 +3587,14 @@
     "ม็อด": [
       "Modม"
     ],
-    "ม็อบ": [
-      "m็"
+    "ยักษ์วัดแจ้งพบจัมโบ้เอ": [
+      "ยักษ์มาแจ้พบจัมโบ้ A"
     ],
     "ยานิเนโกะ": [
       "ยันิแน่นโกะ"
     ],
     "ยามานามิ เคสุเกะ": [
       "YanิKสกเก๋ยูริ"
-    ],
-    "ยาเคมี": [
-      "ยาChaos Zero Nightmareี"
     ],
     "ยุควิกตอเรียน (Victorian)": [
       "ดิViตorีย"
@@ -3578,8 +3648,14 @@
     "ลูเซีย": [
       "Luชีย"
     ],
+    "ลูแปงเรนเจอร์ VS แพทเรนเจอร์ (Lupinranger VS Patranger)": [
+      "รูแปลงVPค"
+    ],
     "วงทศกัณฐ์": [
-      "วงทศกรร"
+      "วงทศการ",
+      "วงทศกรร",
+      "วทศการ",
+      "วงทศกร"
     ],
     "วอลคาโรนา": [
       "โกarona"
@@ -3596,6 +3672,9 @@
     ],
     "วิกตอเรียน": [
       "วิกตori"
+    ],
+    "ศึกกุมภกรรณ": [
+      "ศึกกุมพันธ์"
     ],
     "สคิดโด": [
       "สิidี้"
@@ -3623,6 +3702,9 @@
     "สตีเวน สปีลเบิร์ก (Steven Spielberg)": [
       "สีเวนสิเบิg"
     ],
+    "สปินออฟ (Spin-off)": [
+      "สวินออก"
+    ],
     "สปิริต": [
       "สปริit"
     ],
@@ -3639,9 +3721,6 @@
     ],
     "สับเด็ค": [
       "subด"
-    ],
-    "สารเคมี": [
-      "สารChaos Zero Nightmareี"
     ],
     "สึกิชิมะ (Tsukishima)": [
       "สกิชimะ"
@@ -3774,6 +3853,9 @@
     "อเวนเจอร": [
       "Avengอร"
     ],
+    "อ็อบลิเวียน (Oblivion)": [
+      "obliเียน"
+    ],
     "อ่อนต่อโลก": [
       "อocน"
     ],
@@ -3819,24 +3901,11 @@
     "เกมเซลด้า": [
       "เกมSegunda Etapaย"
     ],
-    "เคนปาจิ": [
-      "Chaos Zero Nightmareาจิ"
-    ],
-    "เคมปาจิ": [
-      "Chaos Zero Nightmareาจิ"
-    ],
-    "เคมปาจิ (Kenpachi)": [
-      "Chaos Zero Nightmareปาจิ",
-      "Chaos Zero Nightmareาจิ"
-    ],
     "เคย์จัง": [
       "เคang"
     ],
     "เคอร์ฟิว (curfew)": [
       "เคฟีลด์"
-    ],
-    "เค็นปาจิ": [
-      "Chaos Zero Nightmareาจิ"
     ],
     "เงิน donation": [
       "เงินโดนชั"
@@ -3970,9 +4039,6 @@
     "เพรสเชอร์": [
       "prชเชอร์"
     ],
-    "เพลงอินาสึมะ (Inazuma) หรือ ซึบาซะ (Tsubasa)": [
-      "เพลงซumะ"
-    ],
     "เพอร์เฟกต์": [
       "เพเfect",
       "เพฟect"
@@ -4022,6 +4088,9 @@
     ],
     "เสิร์ชคีย์เวิร์ด": [
       "เสิร์ชคyี่"
+    ],
+    "เหรียญ Leonard": [
+      "เหรียญเร็วหนาด"
     ],
     "เหล็กไฟ": [
       "เล็กไform"
@@ -4118,9 +4187,6 @@
     "แรนดอม (random)": [
       "แรนom"
     ],
-    "แรร์มาก": [
-      "MAPPAre"
-    ],
     "แอคเคาท์": [
       "accเคาที่"
     ],
@@ -4178,6 +4244,9 @@
       "ประดวกเข้าเรชal",
       "สะดวกเข้าสเปชal"
     ],
+    "โดน tamper (ดัดแปลง)": [
+      "โดนtempอ"
+    ],
     "โดนบูลลี่": [
       "โดนบullี่"
     ],
@@ -4199,6 +4268,9 @@
     ],
     "โทวะสึไก (Towa Tsugai)": [
       "ทรumิโกะ"
+    ],
+    "โทโอรุ นาริตะ (Toru Narita)": [
+      "โทunarิตะ"
     ],
     "โนซาราชิ": [
       "โนซาจิ"
@@ -4265,30 +4337,7 @@
       "โอาวa"
     ],
     "โอฮาน่า": [
-      "โอChaos Zero Nightmareา",
       "โอฮan่า"
-    ],
-    "โอเค": [
-      "โอChaos Zero Nightmareา"
-    ],
-    "โอเค มัน": [
-      "โอChaos Zero Nightmareัน"
-    ],
-    "โอเคครับ": [
-      "โอChaos Zero Nightmareาครับ"
-    ],
-    "โอเคปะ": [
-      "โอChaos Zero Nightmareา"
-    ],
-    "โอเคมั้ย": [
-      "โอChaos Zero Nightmareั้",
-      "โอChaos Zero Nightmareย"
-    ],
-    "โอเคมาก": [
-      "โอChaos Zero Nightmareาก"
-    ],
-    "โอเคอะทีนี้นะครับ": [
-      "โอChaos Zero Nightmareาทีนี้นะครับ"
     ],
     "โอเบรอน": [
       "Oberอน"
@@ -4296,21 +4345,14 @@
     "โอเวอร์โหลด": [
       "โอเวอร์โหลAD"
     ],
-    "โอ้โห มีการแต่งองค์ทรงเครื่อง": [
-      "โอChaos Zero Nightmareีการแต่งองค์ทรงเครื่อง"
-    ],
-    "โอ้โหมี": [
-      "โอChaos Zero Nightmareี"
-    ],
-    "โอ้โฮ": [
-      "โอChaos Zero Nightmareัน",
-      "โอChaos Zero Nightmareา"
-    ],
     "โฮชิออนเซ็น (Hoshi Onsen)": [
       "โรงแรมโคชิเซ็น"
     ],
     "โฮมเธียเตอร์": [
       "โมโtheตอร"
+    ],
+    "ไชน่า (China)": [
+      "chชน่า"
     ],
     "ไชน่าทาวน์ (Chinatown)": [
       "ใช้หน้าเท้า"
@@ -4324,6 +4366,9 @@
     "ไดรฟ์": [
       "driดฟ"
     ],
+    "ไดรเวอร์": [
+      "Dวอร"
+    ],
     "ไดอารี่": [
       "daี่"
     ],
@@ -4335,9 +4380,6 @@
     ],
     "ไทยคัฟเวอร์": [
       "ไทCวอร์"
-    ],
-    "ไทยเคลมหรือใครเคลม": [
-      "ไทยChaos Zero Nightmareและใครแครม"
     ],
     "ไนซ์": [
       "เice"
