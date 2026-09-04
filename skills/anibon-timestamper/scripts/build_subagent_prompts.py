@@ -94,8 +94,7 @@ def build_prompts(workspace):
             group_prompt.append(f"DETECTION SIGNALS: {json.dumps(csig, ensure_ascii=False)}")
             group_prompt.append(f"TRANSCRIPT DIALOGUE:\n{chunk_dialogue}\n")
 
-        group_prompt.append("\n" + template_text)
-
+        # template_text is already baked into anibon-chunk-timestamper system prompt!
         out_path = os.path.join(prompts_dir, f"group_{g_idx+1:02d}.txt")
         with open(out_path, 'w', encoding='utf-8') as out_f:
             out_f.write("\n".join(group_prompt))

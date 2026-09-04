@@ -163,24 +163,19 @@ For every valid timestamp event:
 
 ## Step 3.5: Garbled-English + Contextual Safety Gate (Before Writing)
 
-### A. Garbled-English Check
-If you see partially garbled English (half-Thai-half-English words, unrecognisable studio names, game titles that look wrong):
-1. Search web to verify the correct name before writing.
-2. Common garbles: `Kagurabachi` (may be real or hallucinated), studio names with Thai suffixes, Romanised Japanese titles with mixed Thai characters.
-3. **Emit a GARBLED_NOTE for any garbled word you had to decode.** After your timestamp
-   lines, output a `GARBLED_NOTES:` block — one line per garbled word you resolved (or
-   could not resolve) while reading the chunk:
+### A. Garbled-English Spotting (STRICT SPOTTER ONLY — NO GUESSING)
+If you see partially garbled English or Thai-Latin hybrid words (e.g. half-Thai-half-English words, unrecognizable names, game titles that look corrupted):
+
+1. **DO NOT GUESS or hallucinate corrections.** Never invent a replacement target.
+2. **Emit a GARBLED_NOTE for any garbled word you spot.** After your timestamp lines, output a `GARBLED_NOTES:` block — one line per garbled token with its timestamp and chunk:
    ```
    GARBLED_NOTES:
-   "ดองซam" -> <correct Thai form or UNKNOWN> @ <timestamp> (chunk_<NN>)
+   - "ดองซam" @ <timestamp> (chunk_<NN>)
    ```
    Rules:
-   - Only real garbles (Thai-Latin hybrids that survived cleaning), NOT correct loanwords
-     like `FGO` / `NP` / `YouTube`.
-   - `UNKNOWN` if you cannot confidently resolve — never guess a rule.
+   - Spot ONLY real garbles (Thai-Latin hybrids that survived cleaning), NOT standard English loanwords like `FGO`, `NP`, `YouTube`.
+   - FORBIDDEN: Do NOT output `-> <target>` or attempt to guess the correct word. The central `whisper_dispatcher` will automatically slice and transcribe the exact audio via `whisper.cpp` for 100% phonetic ground truth.
    - If no garbles found, omit the block entirely.
-   - A downstream subagent (anibon-garbled-notes) consolidates these into
-     `garbled_notes.json` and appends confirmed ones to `garbled_replacements.json`.
 
 ### B. Contextual Plausibility Check (Prevents Game-Hallucination)
 Every game/anime name you write MUST appear in (or be unambiguously implied by) the transcript text.
