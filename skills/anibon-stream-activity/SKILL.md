@@ -109,3 +109,11 @@ When injecting `ON_SCREEN_ACTIVITY` into `anibon-chunk-timestamper`, subagents M
    - Cross-reference webcam expression (`laughing`, `shocked_facepalm`) with LiveChat `555` bursts to accurately calibrate tone in descriptions.
 5. **Deictic Pronoun Grounding**:
    - Resolve *"ดูนี่ดิ"*, *"เกมนี้"*, *"ตัวนี้"* using the `app_or_game` name and visible UI text in `ON_SCREEN_ACTIVITY`.
+6. **Visual Ground Truth Priority Over Spoken Misspeaks**:
+   - Streamers frequently misspeak numbers, campaign titles, or dates when tired. On-screen graphics, web browser tabs, and game banners take strict precedence over spoken words in ASR.
+7. **Japanese Number Unit Conversion Trap (`万` vs `ล้าน`)**:
+   - Japanese games and wikis use `万` (10,000 / man) and `億` (100,000,000 / oku).
+   - Streamers commonly misread `3500万` as *"3,500 ล้าน"* or *"30,000 กว่าล้าน"*.
+   - Always convert mathematically: `3,500 × 10,000 = 35,000,000` = **35 ล้าน (35M DL)**.
+8. **LiveChat as Real-Time Correction Canary**:
+   - When spoken numbers sound absurd or contradictory, look at the LiveChat comments around that timestamp. Chat listeners are often the first to notice and correct the streamer (e.g. *"35 ล้านพอปู่ 3 หมื่นล้านเยอะกว่าประชากรโลกละ"*).

@@ -37,14 +37,16 @@ Apply the **Gated Trigger Rule** — do not call vision on every chunk:
 4. **GATED TRIGGER 4: Silent / Low-Speech High-Activity Pulses**
    - `MEME_PULSE` or high LiveChat chat burst where transcript has < 5 spoken lines.
 5. **GATED TRIGGER 5: Explicit User Verification Request**
-   - User asks to verify with vision (`/btw i want you to use vision`, `--vision`).
+   - User asks to verify with vision (`/btw i want you to use vision`, `--vision`, `ลองใช้ vision ตรวจเช็คดูสิ`).
+6. **GATED TRIGGER 6: Numerical, Campaign, or Proper Noun Discrepancies**
+   - Streamer stumbles over numbers (e.g. Japanese `万` (10,000) vs "ล้าน", slurring "3,500 ล้าน / 30,000 กว่าล้าน"), or LiveChat shows real-time viewer corrections (e.g. chat teasing *"35 ล้านพอปู่"*).
 
 **BYPASS (Stay Text-Only):**
 - Static podcast/talk segments, opinion sharing, news reading where streamer reads headlines verbatim, or games already 100% confirmed by audio and TF-IDF signals.
 
 ## Frame Extraction
 
-### Option A: High-Resolution YouTube Storyboard (`sb3`/`sb2`/`sb1`/`sb0`) — Preferred for YouTube (No full video download, ~15-40MB total)
+### Option A: High-Resolution YouTube Storyboard (`sb3`/`sb2`/`sb1`/`sb0`) — Preferred for Whole Streams (No full video download, ~15-40MB total)
 
 ```bash
 # 1. Download highest available resolution storyboard mhtml
@@ -71,6 +73,21 @@ ffmpeg -ss HH:MM:SS -i full_video.mp4 -frames:v 1 -q:v 2 frames\frame.jpg
   $ts = "{0:D2}:{1:D2}:{2:D2}" -f [math]::Floor($t/3600),[math]::Floor(($t%3600)/60),($t%60)
   ffmpeg -ss $ts -i full_video.mp4 -frames:v 1 -q:v 2 "frames\frame_$ts.jpg"
 }
+```
+
+### Option C: Targeted High-Res Video Section Slicing (`yt-dlp --download-sections`) — Best for Spot Inspections (~2-3s download)
+
+When inspecting a specific time range (1–10 minutes) for banners, kanji, UI text, or chat overlays, download the exact section directly:
+
+```bash
+# 1. Download targeted 720p clip (instant ~2-3s download, bypassing 403 via Chrome cookies)
+yt-dlp --cookies-from-browser chrome \
+  --download-sections "*00:08:30-00:15:30" \
+  -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
+  -o "target_slice.mp4" "https://www.youtube.com/watch?v=VIDEO_ID"
+
+# 2. Extract crystal-clear frame at exact offset
+ffmpeg -ss 00:01:15 -i target_slice.mp4.webm -frames:v 1 -q:v 2 target_frame.jpg -y
 ```
 
 ## Invoke agy

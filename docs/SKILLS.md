@@ -25,6 +25,8 @@ Specialized handlers loaded by signal triggers or fallback logic:
 - anibon-livechat-analysis — Parses YouTube LiveChat replays for SuperChats, meme peaks, and Q&As.
 - livestream-scene-selection — Selects timeline boundaries for highlight editing.
 - antigravity-vision-proxy — Inspects video frames via ffmpeg + view_file when vision ground truth is needed.
+- anibon-stream-activity — Tracks on-screen game activity and webcam presence for visual grounding during timestamping.
+- verifying-stream-ground-truth — Extracts targeted video frames to verify disputed numbers, campaign banners, and proper nouns that ASR misspeaks.
 - edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, and audio sync fixing.
 - anibon-stream-synthesis-ffmpeg — Advanced FFmpeg editing skill for seamless narrative flows.
 - batching-subagents-concurrency — Rate-limit-safe parallel subagent dispatch (MAX 6 concurrent batches).

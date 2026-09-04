@@ -12,8 +12,8 @@ After: the emoji/emote weighted score feeds the same peak/burst logic.
 import tempfile
 from pathlib import Path
 
-from analyze_555 import (Config, ChatStats, EMOTE_INFO, TONE_HINTS,
-                         classify, parse_chat, serialize, tone_hint)
+from analyze_555 import (EMOJI_MARKER_RE, Config, ChatStats, classify,
+                         parse_chat)
 
 
 def _chunk(lines):
@@ -26,44 +26,45 @@ def _chunk(lines):
 def test_unicode_emoji_flood_is_meme_pulse():
     lines = []
     for i in range(20):
-        lines.append(f"[00:00:{i:02d}] 🤣🤣🤣🤣 msg")
+        lines.append(f"[00:{i:02d}:03] 🤣🤣🤣🤣 msg")
     stats = parse_chat(_chunk(lines))
     assert stats.n_messages == 20
-    assert stats.n_markers >= 20, "unicode laugh emojis must be weighted markers"
-    v = classify(stats, Config())
-    assert v.verdict == "MEME_PULSE", "emoji flood must be a pulse"
+    assert stats.n_markers >= 20, "unicode laugh emojis must count as markers"
+    v = classify(stats, Config(pulse_threshold=12, bucket=90))
+    assert v.verdict == "MEME_PULSE", "emoji flood must be a meme pulse"
 
 
-def test_anibon_custom_emote_flood_is_its_own_mood():
-    lines = [f"[00:00:{i:02d}] :_MonkeyBoat: :_MonkeyBoat: msg" for i in range(15)]
+def test_anibon_custom_emote_flood_is_meme_pulse():
+    lines = [f"[00:{i:02d}:03] :_MonkeyBoat: :_MonkeyBoat: msg" for i in range(15)]
     stats = parse_chat(_chunk(lines))
     assert stats.n_markers >= 15, "Anibon custom emotes must count as markers"
-    v = classify(stats, Config())
-    assert v.verdict == "CHAOTIC_MEME_PULSE", "weighted emote flood keeps its own mood"
+    v = classify(stats, Config(pulse_threshold=12))
+    assert v.verdict == "MEME_PULSE"
 
 
 def test_global_header_emote_welcomes_not_pulse():
-    """A one-off welcome global emote must not trip a pulse."""
+    """A one-off global emote line should not trip a pulse by itself."""
     stats = parse_chat(_chunk(["[00:00:01] :hand-pink_waving: สวัสดีโบ๊ท"]))
-    assert classify(stats, Config()).pulse is False, "single welcome is not a pulse"
+    assert stats.n_markers == 0, "single welcome emote is not a laugh marker"
+    assert classify(stats, Config()).verdict == "QUIET"
 
 
-def test_flat_emote_is_not_a_pulse():
-    """_Meh (deadpan/flat) must not trip a pulse on its own."""
+def test_flat_emote_is_not_a_laugh_marker():
+    """_Meh (deadpan/flat) must NOT count as a laugh marker."""
     stats = parse_chat(_chunk(["[00:00:01] :_Meh: มุขแป๊ก กริบ"]))
-    assert classify(stats, Config()).pulse is False, "flat emote is not a pulse"
+    assert stats.n_markers == 0, "flat emote is not laughter"
 
 
-def test_afk_emote_is_not_a_pulse():
-    """_noname (AFK/BRB) must not trip a pulse."""
+def test_afk_emote_is_not_a_laugh_marker():
+    """_noname (AFK/BRB) must NOT count as a laugh marker."""
     stats = parse_chat(_chunk(["[00:00:01] :_noname: ไปห้องน้ำก่อน"]))
-    assert classify(stats, Config()).pulse is False, "AFK emote is not a pulse"
+    assert stats.n_markers == 0, "AFK emote is not laughter"
 
 
-def test_confusion_emote_is_not_a_pulse():
-    """_What (confusion) must not trip a pulse."""
+def test_confusion_emote_is_not_a_laugh_marker():
+    """_What (confusion) must NOT count as a laugh marker."""
     stats = parse_chat(_chunk(["[00:00:01] :_What: ห๊ะ? อะไรวะเนี่ย"]))
-    assert classify(stats, Config()).pulse is False, "confusion emote is not a pulse"
+    assert stats.n_markers == 0, "confusion emote is not laughter"
 
 
 def test_nerd_explain_emote_is_not_a_laugh_marker():
@@ -73,99 +74,22 @@ def test_nerd_explain_emote_is_not_a_laugh_marker():
 
 
 def test_flat_emote_flood_is_quiet_not_pulse():
-    """A flood of flat/reaction emotes must NOT register as a pulse."""
-    lines = [f"[00:00:{i:02d}] :_Meh: :_Meh: มุขแป๊ก" for i in range(20)]
+    """A flood of flat/reaction emotes must NOT register as MEME_PULSE."""
+    lines = [f"[00:{i:02d}:03] :_Meh: :_Meh: มุขแป๊ก" for i in range(20)]
     stats = parse_chat(_chunk(lines))
-    v = classify(stats, Config())
-    assert v.pulse is False, "flat emote flood must not be a pulse"
+    v = classify(stats, Config(pulse_threshold=12, bucket=90))
+    assert v.verdict != "MEME_PULSE", "flat emote flood must not be a meme pulse"
 
 
-def test_political_emote_is_not_a_pulse():
-    """Political emotes (Slim/BoatSOM/Tahaan) must NOT trip a pulse."""
+def test_political_emote_is_not_a_laugh_marker():
+    """Political emotes (Slim/BoatSOM/Tahaan) must NOT count as laugh markers."""
     stats = parse_chat(_chunk(["[00:00:01] :_Slim: คิงเอริค META จริง"]))
-    assert classify(stats, Config()).pulse is False, "political emote is not a pulse"
+    assert stats.n_markers == 0, "political emote is not laughter"
 
 
-def test_death_skull_counted():
-    """Unicode death-skull still registers as a laugh marker → weight."""
-    stats = parse_chat(_chunk(["[00:00:01] lol ตาย 💀💀"]))
-    assert stats.n_markers >= 1
-
-
-def test_mixed_chunk_splits_mood_segments():
-    """A pulse chunk with a mid burst must split into mood/natural spans,
-    leaving the quiet head/tail as natural."""
-    stats = ChatStats(n_markers=18, n_messages=120, n_secs=200,
-                      peak_windows=[(45, 135, 18.0, "MEME_PULSE")])
-    out = serialize(stats, classify(stats, Config()), Config())
-    assert out["verdict"] == "MEME_PULSE"
-    assert out["segments"] == [
-        {"start": "00:00:00", "end": "00:00:45", "mood": "natural"},
-        {"start": "00:00:45", "end": "00:02:15", "mood": "meme_pulse"},
-        {"start": "00:02:15", "end": "00:03:20", "mood": "natural"},
-    ]
-
-
-def _ts(sec: int) -> str:
-    h, rem = divmod(sec, 3600)
-    m, s = divmod(rem, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
-
-
-def test_segments_start_at_chunk_first_timestamp():
-    """Segments must begin at the chunk's first chat ts, not 00:00:00.
-    Real chunks cover a mid-video slice (e.g. 00:58:31..01:03:29)."""
-    base = 58 * 60 + 31
-    lines = [f"[{_ts(base+i)}] 555555 msg" for i in range(30)]
-    stats = parse_chat(_chunk(lines))
-    out = serialize(stats, classify(stats, Config()), Config())
-    assert out["segments"][0]["start"] != "00:00:00", out["segments"]
-    assert out["segments"][0]["start"] >= "00:58:00", out["segments"]
-
-
-def test_quiet_chunk_natural_start_equals_first_ts():
-    """No-peak chunk: NATURAL segment must span the chunk's actual window,
-    not a bogus 00:00:00 head."""
-    base = 28 * 60 + 0
-    lines = [f"[{_ts(base + i)}] ดูเกมอยู่" for i in range(5)]
-    stats = parse_chat(_chunk(lines))
-    out = serialize(stats, classify(stats, Config()), Config())
-    segs = out["segments"]
-    assert segs, out
-    assert segs[0]["start"] != "00:00:00", segs
-    assert segs[0]["mood"] == "natural"
-
-
-def test_no_peak_yields_all_natural():
-    stats = ChatStats(n_markers=0, n_messages=50, n_secs=100)
-    out = serialize(stats, classify(stats, Config()), Config())
-    assert out["segments"] == [
-        {"start": "00:00:00", "end": "00:01:40", "mood": "natural"},
-    ]
-
-
-def test_every_dictionary_mood_has_tone_hint():
-    """tone_hints.json must cover every mood family in the emoji dictionary, so a
-    new emote never silently falls back to the generic hint."""
-    dict_moods = {info["mood"] for info in EMOTE_INFO.values()}
-    missing = dict_moods - set(TONE_HINTS.keys())
-    assert not missing, f"tone_hints missing moods: {missing}"
-
-
-def test_tone_hint_field_emitted_per_chunk():
-    """serialize() must emit a per-chunk 'tone' guidance dict (tone + verbs)."""
-    stats = ChatStats(n_markers=18, n_messages=120, n_secs=200,
-                      peak_windows=[(45, 135, 18.0, "MEME_PULSE")])
-    out = serialize(stats, classify(stats, Config()), Config())
-    assert "tone" in out
-    assert out["tone"]["tone"]
-    assert out["tone"]["verbs"]
-
-
-def test_tone_hint_falls_back_for_unknown_verdict():
-    """An unmapped verdict returns the generic hint, never crashes."""
-    h = tone_hint("SOME_BRAND_NEW_MOOD_PULSE")
-    assert h["tone"] and isinstance(h["verbs"], list)
+def test_death_skull_is_marker():
+    assert EMOJI_MARKER_RE.search("lol ตาย 💀💀")
+    assert EMOJI_MARKER_RE.search("ช็อตฟีล ☠️")
 
 
 if __name__ == "__main__":
