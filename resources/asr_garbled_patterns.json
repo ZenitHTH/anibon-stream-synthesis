@@ -41,6 +41,10 @@
     {
       "pattern": "(?i)\\borigal\\b",
       "message": "\"origal\" → should be \"original\""
+    },
+    {
+      "pattern": "(?i)\\bpuซ[ิิ]?[นี่วะ]*\\b",
+      "message": "\"puซิ\" → typically YouTube ASR mishearing of \"พัซเซิล\" (Puzzle) in game streams"
     }
   ]
 }

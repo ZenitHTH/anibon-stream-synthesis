@@ -226,17 +226,23 @@ python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 Subagents strictly emit spotter tokens (`- "token" @ HH:MM:SS (chunk_NN)`). The central **`whisper_dispatcher.py`** profiles hardware, deduplicates timestamps into clusters, slices audio via ffmpeg, and executes local parallel `whisper.cpp` inference to produce ground-truth transcriptions without LLM hallucination:
 
 ```bash
-# 0. Download audio track if missing (bypass YouTube HTTP 403 via Chrome browser cookies)
-yt-dlp --cookies-from-browser chrome -f 250 "https://www.youtube.com/watch?v=<VIDEO_ID>" -o "~/youtube_<id>_workspace/audio.opus"
+# 0. Slicing & Audio Resolution:
+# Option A (Recommended): Direct on-the-fly slicing from stream URL (no multi-GB download required)
+python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
 
-# 1. Run Dispatcher to slice audio and transcribe ground truth via whisper.cpp
+# Option B (Local audio stream copy at 150x-300x speed without full video download):
+URL=$(yt-dlp --extractor-args "youtube:player_client=android" -g -f 18 "https://www.youtube.com/watch?v=<VIDEO_ID>")
+ffmpeg -y -i "$URL" -vn -c:a copy ~/youtube_<id>_workspace/audio.m4a
 python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --verbose
 
-# 2. Sync confirmed entries into the master dictionary
+# 1. Sync confirmed entries into the master dictionary
 python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
   --from-notes ~/youtube_<id>_workspace/garbled_notes.json \
   --workspace ~/youtube_<id>_workspace
 ```
+
+> [!WARNING]
+> **Avoid `--cookies-from-browser` on macOS**: Extracting browser cookies triggers a GUI Keychain password authentication prompt which hangs headless/CLI background agent tasks. Use `--extractor-args "youtube:player_client=android"` to cleanly bypass YouTube SABR HTTP 403 errors without credentials.
 
 > [!CAUTION]
 > **Anti-Cascade Ground Truth Check**: Always cross-check candidate garbled notes against `raw_transcript.th-orig.json3`. If a candidate contains a multi-word game/anime title (e.g. `Yuri on Ice`, `Chaos Zero Nightmare`, `Where Winds Meet`, `SLAPP`) embedded inside Thai text, it is an artifact of an aggressive cleaner rule. Never save cleaner artifacts into `garbled_replacements.json`.

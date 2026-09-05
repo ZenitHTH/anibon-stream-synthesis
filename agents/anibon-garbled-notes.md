@@ -46,9 +46,9 @@ Your job is to consolidate those notes and grow the cleaning dictionary.
 Read every `GARBLED_NOTES:` block (`- "garbled" @ HH:MM:SS (chunk_NN)`). Subagents act as strict spotters without guessing `correct` targets. Deduplicate identical `garbled` words across blocks. Reject false positives (standard English loanwords like `FGO`, `NP`, `YouTube`, `AI`).
 
 ### Step 2: Dispatch Audio Slices to Whisper.cpp (Ground Truth)
-Run `whisper_dispatcher.py` to cluster timestamps, extract PCM audio slices via ffmpeg, and transcribe phonetic ground truth in parallel:
+Run `whisper_dispatcher.py` to cluster timestamps, extract PCM audio slices via ffmpeg (either from local audio or streamed directly on-the-fly via `--video-url`), and transcribe phonetic ground truth in parallel:
 ```bash
-python3 <plugin_root>/skills/anibon-timestamper/scripts/whisper_dispatcher.py <workspace> --verbose
+python3 <plugin_root>/skills/anibon-timestamper/scripts/whisper_dispatcher.py <workspace> --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
 ```
 This produces `<workspace>/garbled_notes.json` containing verified `whisper_transcript` fields with `correct: null` by default (zero LLM hallucination).
 
