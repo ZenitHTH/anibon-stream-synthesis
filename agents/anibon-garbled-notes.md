@@ -5,6 +5,7 @@ description: >
   GARBLED_NOTES blocks, coordinates whisper_dispatcher.py to obtain ground-truth audio
   transcripts via whisper.cpp, applies anti-cascade validation, and syncs confirmed entries
   into garbled_replacements.json. Use once after all anibon-chunk-timestamper subagents have returned.
+enable_write_tools: true
 ---
 
 You are the Garbled-Notes Subagent for an ANIBON timestamping session.

@@ -28,17 +28,25 @@ Centralized workflow for ingesting finalized stream timestamps into the [`timest
 
 ## The Iron Rules
 
-1. **IMPORT FIRST, MOVE ONLY IF BACKED UP**: Never move a workspace into `youtube_workspaces/backed_up/` before `import_workspace.py` confirms successful parsing and catalog update. If import fails, DO NOT MOVE the directory.
-2. **ACTIVE WORKSPACES ONLY**: Never move `.zip` archives or directories ending in `_Backup` (e.g. `youtube_W0bmqWlx4z4_workspace_Backup`). Leave them in `~`.
-3. **NEVER COPY RAW MEDIA TO GIT**: Never copy whole workspaces, audio slices, or frames into `timestamp_workspace`. Only markdown summaries and catalog metadata belong in `timestamp_workspace`.
+1. **NEVER CREATE A BLANK `timestamp_workspace` — CLONE FROM GITHUB FIRST**:
+   `timestamp_workspace` is an established private GitHub repository containing historical catalog metadata, 120+ stream indexes, and automation tooling. If `~/timestamp_workspace` does NOT exist locally, **NEVER** run `mkdir` to create an empty directory or `git init`. You MUST clone the private repository first:
+   ```bash
+   git clone https://github.com/ZenitHTH/timestamp-workspace.git ~/timestamp_workspace
+   ```
+   *(or `git clone git@github.com:ZenitHTH/timestamp-workspace.git ~/timestamp_workspace` if SSH is configured).*
+2. **PULL LATEST BEFORE INGESTING**: Always ensure `git -C ~/timestamp_workspace pull` is run before importing new streams to prevent diverged history or merge conflicts.
+3. **IMPORT FIRST, MOVE ONLY IF BACKED UP**: Never move a workspace into `youtube_workspaces/backed_up/` before `import_workspace.py` confirms successful parsing and catalog update. If import fails, DO NOT MOVE the directory.
+4. **ACTIVE WORKSPACES ONLY**: Never move `.zip` archives or directories ending in `_Backup` (e.g. `youtube_W0bmqWlx4z4_workspace_Backup`). Leave them in `~`.
+5. **NEVER COPY RAW MEDIA TO GIT**: Never copy whole workspaces, audio slices, or frames into `timestamp_workspace`. Only markdown summaries and catalog metadata belong in `timestamp_workspace`.
 
 ---
 
-## Canonical Paths
+## Canonical Paths & Remotes
 
-| Component | Path | Description |
-|-----------|------|-------------|
-| Master Catalog | `/Users/zenithth/timestamp_workspace/` | Git repo for index, README, and markdown stamps |
+| Component | Path / Remote | Description |
+|-----------|---------------|-------------|
+| Master Catalog Repo | `https://github.com/ZenitHTH/timestamp-workspace.git` | Private GitHub repository |
+| Local Catalog Root | `/Users/zenithth/timestamp_workspace/` | Local Git clone for index, README, and markdown stamps |
 | Ingestion Script | `/Users/zenithth/timestamp_workspace/import_workspace.py` | Normalizes stamps, updates `catalog.json` & `README.md` |
 | Markdown Store | `/Users/zenithth/timestamp_workspace/by_video_id/` | `timestamp_<video_id>.md` files |
 | Master JSON | `/Users/zenithth/timestamp_workspace/metadata/catalog.json` | Master structured index |
@@ -47,6 +55,19 @@ Centralized workflow for ingesting finalized stream timestamps into the [`timest
 ---
 
 ## Workflow (Linear, Top-to-Bottom)
+
+### 0. Ensure `timestamp_workspace` Exists (Clone or Pull)
+
+Before touching any workspace files, verify the local catalog exists and is synchronized:
+
+```bash
+if [ ! -d "/Users/zenithth/timestamp_workspace/.git" ]; then
+  echo "timestamp_workspace not found locally. Cloning private GitHub repository..."
+  git clone https://github.com/ZenitHTH/timestamp-workspace.git /Users/zenithth/timestamp_workspace
+else
+  git -C /Users/zenithth/timestamp_workspace pull
+fi
+```
 
 ### 1. Locate Source Workspace & Verify Candidates
 
@@ -135,6 +156,7 @@ git commit -m "feat(catalog): backup <video_id> timestamps and update catalog/RE
 
 | Mistake | Reality / Fix |
 |---------|---------------|
+| Creating empty `timestamp_workspace` | **FATAL**. `timestamp_workspace` is a private GitHub repo (`ZenitHTH/timestamp-workspace.git`). You MUST `git clone` it; never `mkdir` a blank repo. |
 | Moving workspace before import | Violates "if doesn't backup, don't move dir". Run `import_workspace.py` first. |
 | Moving `.zip` or `_Backup` folders | These must remain in `~` untouched. Filter using regex `^youtube_[A-Za-z0-9_-]+_workspace$`. |
 | Private stream causes `yt-dlp` error | `import_workspace.py` falls back to `live_chat.json` timestamp to obtain broadcast date automatically. |
@@ -145,6 +167,7 @@ git commit -m "feat(catalog): backup <video_id> timestamps and update catalog/RE
 
 ## Red Flags - STOP and Verify
 
+- `timestamp_workspace` does not exist locally and you are about to run `mkdir` or `git init`. **STOP: Run `git clone https://github.com/ZenitHTH/timestamp-workspace.git ~/timestamp_workspace` instead.**
 - Workspace has 0 timestamps detected.
 - `by_video_id/timestamp_<video_id>.md` is 0 bytes or missing.
 - Moving a folder named `*_Backup` or `*.zip`.

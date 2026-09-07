@@ -91,6 +91,9 @@
     "Agent": [
       "เจent"
     ],
+    "Agree": [
+      "agreี"
+    ],
     "AI slop": [
       "งานSLอ",
       "AI SLอ",
@@ -102,6 +105,9 @@
     ],
     "Akuyaku Reijou Tensei Oji-san": [
       "ลุงเกือบใหม่เป็นนางร้าย"
+    ],
+    "Algorithm": [
+      "alกorิึม"
     ],
     "Alien": [
       "Aliเลียน"
@@ -134,6 +140,9 @@
     "Amsterdam": [
       "อstตดัม"
     ],
+    "Analog": [
+      "analอก"
+    ],
     "Analog Horror": [
       "Analอก\\s+Herror"
     ],
@@ -142,6 +151,10 @@
     ],
     "Andromache": [
       "แom"
+    ],
+    "Angela": [
+      "Angองจล่า",
+      "Angจ"
     ],
     "AniGuesser": [
       "อันนี้เกซ่า",
@@ -205,6 +218,7 @@
       "ArคtipArึ"
     ],
     "Argument": [
+      "argumน",
       "arน"
     ],
     "Arknights": [
@@ -229,11 +243,17 @@
     "Assassin": [
       "assassิน"
     ],
+    "Astra": [
+      "แสตra"
+    ],
     "Astraea: Oratio": [
       "Rชid"
     ],
     "Astral Ship / Hail Maiden": [
       "AsraชipHมดen"
+    ],
+    "AstraZeneca": [
+      "Asตraซica"
     ],
     "attitude": [
       "แิูแก"
@@ -251,6 +271,9 @@
     ],
     "Aura Farming": [
       "Aura Fฟarming"
+    ],
+    "Australian": [
+      "อสเตรเลian"
     ],
     "Avada Kedavra": [
       "เอวค Kra",
@@ -301,6 +324,7 @@
     ],
     "Ben 10": [
       "Bทen",
+      "Benท",
       "Bทน"
     ],
     "Berserker": [
@@ -371,7 +395,8 @@
       "บลีชach",
       "บีach",
       "Bachd",
-      "บิdช"
+      "บิdช",
+      "บit"
     ],
     "Bleach: Brave Souls": [
       "เฟสโซ",
@@ -470,6 +495,9 @@
     "Can you send me 30k": [
       "Kusenty K"
     ],
+    "Canto": [
+      "คตen"
+    ],
     "Capcom": [
       "แคมปหมู",
       "แคปcอ"
@@ -480,6 +508,9 @@
     "Cardfight!! Vanguard": [
       "แวนตูกาโดะ",
       "แวนard"
+    ],
+    "Carl Jung": [
+      "คจung"
     ],
     "Carnival Phantasm": [
       "คอFantasึม"
@@ -640,6 +671,9 @@
     "Community Rider": [
       "Commuนิty RER"
     ],
+    "Company": [
+      "คอมy"
+    ],
     "Complain": [
       "compลน"
     ],
@@ -711,6 +745,9 @@
     ],
     "Cross Dress": [
       "Cross Rส"
+    ],
+    "Crossdresser": [
+      "crอesser"
     ],
     "Crowdfunding": [
       "Cloud Funding"
@@ -812,6 +849,9 @@
     ],
     "Disorder": [
       "disอเดอร์"
+    ],
+    "Distortion": [
+      "distอการ"
     ],
     "DMCA": [
       "\\bDMT\\b"
@@ -1007,6 +1047,9 @@
     ],
     "Extreme": [
       "extrม"
+    ],
+    "Factor": [
+      "faฟcเตอร์"
     ],
     "Fake Out Kingambit": [
       "out kิamิ"
@@ -1520,11 +1563,21 @@
     "Incursion ใน Marvel": [
       "Inclusion ใน Marvel"
     ],
+    "Inferno": [
+      "inferินferno"
+    ],
     "Infinite Stratos": [
       "Infinitาไซวิ"
     ],
     "Infinite Stratos (IS)": [
       "อิสาโต"
+    ],
+    "Influencer": [
+      "inflู"
+    ],
+    "Interior": [
+      "เหรออer",
+      "อิor"
     ],
     "Interlude": [
       "interlute",
@@ -1567,6 +1620,9 @@
     ],
     "Jigoku Sensei Nube": [
       "อาจารย์ดูเบ"
+    ],
+    "Johnny Silverhand": [
+      "Johอนี่"
     ],
     "JoJo no Kimyou na Bouken": [
       "โจโจคีมโบen"
@@ -1837,6 +1893,9 @@
     "Lobby Card (ล็อบบี้การ์ด)": [
       "Roby การด"
     ],
+    "Local": [
+      "โลคal"
+    ],
     "LoM (Lord of Mysteries)": [
       "รถ M"
     ],
@@ -2028,6 +2087,11 @@
       "Metaฟ",
       "Metฟ"
     ],
+    "Meursault": [
+      "Merช้อ",
+      "Merชอ",
+      "Merช"
+    ],
     "Mewgenics": [
       "หมิวจีนิค"
     ],
@@ -2060,6 +2124,9 @@
     ],
     "Mold Breaker": [
       "โมรaker"
+    ],
+    "Monologue": [
+      "monอก"
     ],
     "Monster Hunter Wilds": [
       "Monster Hunter Wend"
@@ -2117,6 +2184,9 @@
     ],
     "My Hero Academia": [
       "ไม่ฮีโร่"
+    ],
+    "My Mini Car": [
+      "Myิ Car"
     ],
     "MyGO!!!!!": [
       "ไมโกะ"
@@ -2237,6 +2307,9 @@
     "omegalul": [
       "omeg้า la"
     ],
+    "One Bangkok": [
+      "วันbงคอก"
+    ],
     "One Piece": [
       "Oneพiece",
       "Oneiece"
@@ -2300,6 +2373,9 @@
     ],
     "Palworld": [
       "Power World"
+    ],
+    "Paradiso": [
+      "พารadิซo"
     ],
     "parry": [
       "parี่"
@@ -2444,6 +2520,9 @@
     "Pretender": [
       "พีender"
     ],
+    "Priestess": [
+      "พซess"
+    ],
     "Prime Video": [
       "primม"
     ],
@@ -2462,6 +2541,9 @@
     "Project": [
       "โปเจect",
       "โปเject"
+    ],
+    "Project Moon": [
+      "Pชum"
     ],
     "Project No.9": [
       "โปรเจคน้ำนาย"
@@ -2489,7 +2571,8 @@
       "puซิle"
     ],
     "PV": [
-      "pีว"
+      "pีว",
+      "pว"
     ],
     "Quantum": [
       "Quวตัม"
@@ -2576,11 +2659,20 @@
     "reference": [
       "refรน"
     ],
+    "Reference": [
+      "Referน"
+    ],
+    "refreshing": [
+      "frisชing"
+    ],
     "Reines": [
       "เรนส"
     ],
     "Release": [
       "โอิลีสึ"
+    ],
+    "Remake": [
+      "รีมake"
     ],
     "Remaster": [
       "remasต"
@@ -2646,6 +2738,9 @@
     "Roscaelifer": [
       "คalิifอร์"
     ],
+    "Ruin Hunter": [
+      "รูนHunเตอร์"
+    ],
     "Ruler": [
       "rูer(?=[\\s,.]|$)"
     ],
@@ -2655,7 +2750,9 @@
     ],
     "Rust Bucket": [
       "buัugกet",
-      "rัbuget"
+      "rัbuget",
+      "Sparกet",
+      "ครับet"
     ],
     "Sacred Sword": [
       "(Se|สิ|ส)?ซอce"
@@ -2723,6 +2820,9 @@
     "Service": [
       "servิ"
     ],
+    "Set Piece": [
+      "เซตพีce"
+    ],
     "Seven Knights Re:Birth (เซเว่นไนท์ รีเบิร์ธ)": [
       "7 Night Reบth"
     ],
@@ -2737,6 +2837,9 @@
     ],
     "sexual": [
       "seกชual"
+    ],
+    "Sexual Harassment": [
+      "Seual harั"
     ],
     "Shaddoll": [
       "Shadด"
@@ -2794,6 +2897,9 @@
     "Sieghart": [
       "ซิฮาร"
     ],
+    "Sigma": [
+      "ซิma"
+    ],
     "Silent Hill f": [
       "Sleep F",
       "Sy QF"
@@ -2813,6 +2919,9 @@
     ],
     "Simulacrum Rudolf": [
       "simulูรีอฟ"
+    ],
+    "Sinclair": [
+      "ตัวcle"
     ],
     "Single Gateway": [
       "SLE Gateway"
@@ -3119,6 +3228,9 @@
     "The Blood of Dawnwalker": [
       "The blood of Walker"
     ],
+    "The City": [
+      "Theซityี้"
+    ],
     "The Eminence in Shadow": [
       "Shadowinent"
     ],
@@ -3141,6 +3253,9 @@
     ],
     "The Miracle": [
       "mirคิล"
+    ],
+    "The One Who Nails": [
+      "the oneฮูเน"
     ],
     "The Phantom Pain": [
       "Phantom Plame"
@@ -3209,6 +3324,9 @@
     ],
     "Tokyo Toy Show": [
       "โตเกียวtoอยโชว์"
+    ],
+    "Tomboy": [
+      "ทอboบอย"
     ],
     "Tondemo Skill de Isekai Hourou Meshi": [
       "ซากะโท สกิล"
@@ -3823,6 +3941,9 @@
     "ดราก้อนบอล": [
       "Drag้อนบอล"
     ],
+    "ดาร์ก": [
+      "darดาร"
+    ],
     "ดาวน์": [
       "ูดาวน"
     ],
@@ -3889,7 +4010,8 @@
       "ถ้ากakกิ"
     ],
     "ทีเซอร์": [
-      "teเซิร"
+      "teเซิร",
+      "teเซอร"
     ],
     "นอสทัลเจีย": [
       "นอสalเจีย"
@@ -4015,6 +4137,9 @@
     ],
     "ฟูจิโมโตะ (Tatsuki Fujimoto)": [
       "ฟูim"
+    ],
+    "ฟูมฟัก": [
+      "ฟูฟu"
     ],
     "มนุษย์ดาวเคมูร์ (Kemur Man)": [
       "ดาวเคมู"
@@ -4198,6 +4323,11 @@
     ],
     "สาย STR": [
       "สายstrน"
+    ],
+    "สายดาร์ก": [
+      "สายdarดาร",
+      "ใส่darดาร",
+      "สายDarด"
     ],
     "สาวแกล (Gyaru)": [
       "เสาแกer"
@@ -4571,6 +4701,7 @@
       "เนเตอร์taน"
     ],
     "เอฟเฟกต์": [
+      "effectฟเคect",
       "เอฟเฟect",
       "เect"
     ],
@@ -4627,7 +4758,8 @@
       "แผ่น C"
     ],
     "แพตช์": [
-      "แผat"
+      "แผat",
+      "pพช"
     ],
     "แพรี่": [
       "แี่"
@@ -4758,7 +4890,8 @@
     ],
     "โปเกมอน": [
       "poเกมอน",
-      "poemอน"
+      "poemอน",
+      "Poกมอน"
     ],
     "โปเกมอน (Pokémon Champions)": [
       "Poมอนแชamp"
