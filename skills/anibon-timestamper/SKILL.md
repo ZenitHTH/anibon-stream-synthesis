@@ -174,10 +174,20 @@ If boundaries look noisy, fall back to manual identification from `signals.json`
 
 Divide chunks into **groups of 4–5** (~20–25 min each). One **`anibon-chunk-timestamper`** per group.
 
+Run `build_subagent_prompts.py` to prepare input files:
+```bash
+python3 -X utf8 scripts/build_subagent_prompts.py <workspace>
+```
+This produces:
+- `<workspace>/prompts_by_chunk/chunk_NN.txt`: per-chunk prompt files (~15–25KB each, guaranteed under `view_file`'s 46KB view limit to prevent mid-chunk truncation).
+- `<workspace>/prompts/group_NN.txt`: group manifests listing chunk file URIs and metadata.
+
 > [!IMPORTANT]
 > **Strict Concurrency Batching (Max 10 Subagents)**: To prevent API 429 `RESOURCE_EXHAUSTED` rate limits, NEVER spawn more than 10 subagents simultaneously. Launch subagents in controlled batches of **up to 10 subagents per turn** (default 8–10), wait for the batch to finish, and ONLY THEN launch the next batch.
 >
 > **Use Flash Model Tier**: Always specify `Model: "flash"` when calling `invoke_subagent` for chunk timestampers to maximize speed and rate-limit headroom.
+>
+> **Per-Chunk Sequential Reading**: Point subagents to sequentially read their assigned `file://<workspace>/prompts_by_chunk/chunk_NN.txt` files via `view_file` to ensure 100% full-text reading without truncation.
 
 **Invoke pattern (one per group):**
 
@@ -185,18 +195,21 @@ Divide chunks into **groups of 4–5** (~20–25 min each). One **`anibon-chunk-
 invoke_subagent(
     "anibon-chunk-timestamper",
     Model="flash",
-    prompt=build_group_prompt(chunks[i:i+5])  # from references/subagent-prompt-template.md
+    prompt=f"""You are processing Group {g} (chunks {start} to {end}).
+PREVIOUS GROUP LAST TOPIC: {prev_topic}
+Read each chunk sequentially via view_file:
+- file://{workspace}/prompts_by_chunk/chunk_00.txt
+- file://{workspace}/prompts_by_chunk/chunk_01.txt
+..."""
 )
 ```
 
-Build each prompt from `references/subagent-prompt-template.md`. For each chunk in the group, inject:
-- Chunk JSON content (agent reads sequentially — do NOT summarize chunks yourself)
-- Per-chunk detection signals from `signals.json` (`best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`)
-- Per-chunk **LiveChat log** content (`livechat/livechat_chunk_NN.txt`) — inject when available, else `"no livechat available"`
-- Per-chunk **on-screen visual activity log** (`activity/activity_chunk_NN.txt`) — inject when Step 3.6 ran, else `"no visual activity data"`
-- Per-chunk **mood verdict + tone guidance** from `mood_555.json` (if Step 3.7 ran) — inject the chunk's `tone`/`verbs` hint; the subagent keeps its own first-verb choice. If no mood file, omit.
-- Knowledge file content for **`best_file` only** (verified against transcript by the subagent), plus lower-ranked files when `confidence` is ambiguous
-- **PREVIOUS GROUP'S LAST TOPIC** — inject the final topic of the previous group so the agent applies continuity across group boundaries
+Each chunk prompt contains:
+- Chunk XML/dialogue lines
+- Detection signals from `signals.json` (`best_file` + `primary_topic` + `confidence` + ranked `weighted_matched_files`)
+- Per-chunk **LiveChat log** (`livechat/livechat_chunk_NN.txt`)
+- Per-chunk **on-screen visual activity log** (`activity/activity_chunk_NN.txt`)
+- Per-chunk **mood verdict + tone guidance** from `mood_555.json`
 
 **CRITICAL:** The agent reads chunks sequentially within its group and skips continuation chunks.
 Do NOT inject your own topic summaries — inject signals data only.
@@ -303,6 +316,12 @@ python3 scripts/validate_mood.py \
   --livechat ~/youtube_<id>_workspace/livechat/ \
   --index ~/youtube_<id>_workspace/livechat/livechat_index.json
 ```
+
+### 12. Catalog & Archive (Recommended)
+
+Once `output.md` is generated and verified, catalog the timestamps into the central index and archive the workspace:
+
+**REQUIRED SUB-SKILL:** Use `backing-up-timestamps` to run `import_workspace.py` into `/Users/zenithth/timestamp_workspace` and move the workspace to `/Users/zenithth/youtube_workspaces/backed_up/`.
 
 ## Output Format
 
