@@ -359,14 +359,28 @@ def dispatch_verification(
 
     cluster_transcripts = {}
     t0 = time.time()
+    failed_slices = []
+    consecutive_fails = 0
+    fail_lock = threading.Lock()
 
     def process_cluster(cl: Dict) -> Tuple[int, str]:
+        nonlocal consecutive_fails
         cid = cl["cluster_id"]
         slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
         if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
             ok = slice_audio(audio_source, cl["start_sec"], cl["duration"], slice_wav)
             if not ok:
+                with fail_lock:
+                    failed_slices.append(cid)
+                    consecutive_fails += 1
+                    if consecutive_fails == 5:
+                        sys.stderr.write(
+                            "\n[!] CRITICAL ALERT: 5 consecutive FFmpeg slicing failures detected!\n"
+                            "    The network connection was severed or the system entered sleep mode.\n"
+                        )
                 return (cid, "")
+        with fail_lock:
+            consecutive_fails = 0
         transcript = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker)
         return (cid, transcript)
 
@@ -377,7 +391,16 @@ def dispatch_verification(
             cluster_transcripts[cid] = text
 
     t1 = time.time()
-    sys.stderr.write(f"[+] All clusters transcribed in {t1 - t0:.2f}s ({len(clusters) / max(1.0, t1 - t0):.1f} clusters/sec)\n")
+    sys.stderr.write(f"[+] All clusters processed in {t1 - t0:.2f}s ({len(clusters) / max(1.0, t1 - t0):.1f} clusters/sec)\n")
+    if failed_slices:
+        sys.stderr.write(
+            f"[!] Warning: {len(failed_slices)}/{len(clusters)} audio clusters failed to slice.\n"
+        )
+        if len(failed_slices) / len(clusters) > 0.2:
+            sys.stderr.write(
+                f"[!] CRITICAL: High failure rate ({(len(failed_slices)/len(clusters))*100:.1f}%). "
+                f"Slices likely dropped due to laptop sleep or network interruption.\n"
+            )
 
     verified_notes = []
     seen_keys = set()
@@ -404,18 +427,22 @@ def dispatch_verification(
             })
 
     out_path = output_json or os.path.join(workspace, "garbled_notes.json")
+    status_str = "PARTIAL_FAILURE_NETWORK_SUSPENDED" if (failed_slices and len(failed_slices) / len(clusters) > 0.2) else "SUCCESS"
     payload = {
         "version": 1,
         "engine": "whisper.cpp",
         "model": os.path.basename(m_bin),
         "backend": profile.backend_name,
+        "status": status_str,
+        "total_clusters": len(clusters),
+        "failed_slices": len(failed_slices),
         "total_requests": len(verified_notes),
         "notes": verified_notes
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    sys.stderr.write(f"[✓] Successfully generated verified notes at: {out_path}\n")
+    sys.stderr.write(f"[✓] Successfully generated verified notes at: {out_path} (Status: {status_str})\n")
     return 0
 
 

@@ -216,6 +216,14 @@ Do NOT inject your own topic summaries — inject signals data only.
 
 Each `anibon-chunk-timestamper` returns plain-text timestamp lines (typically 2–4 per group).
 
+> [!IMPORTANT]
+> **Visual AI & Generative Tool Grounding**:
+> When the streamer tests or reacts to visual AI generators (e.g. text-to-image, video generation, or creative editing tools), distinguish between:
+> 1. The actual prompt requested by the streamer.
+> 2. What the AI model actually rendered on screen (or if it failed/refused).
+> 3. The streamer's comedic, political, or hyperbolic satirical roasts.
+> NEVER take satirical roasts (e.g., *"กลายเป็นคอมมิวนิสต์"*, *"เหมือนสลิ่ม"*, *"หลอนเป็นเปรต"*) as literal descriptions of the generated image. Always use `[Reaction]` and attribute the roast clearly (e.g. `ปู่โบ๊ตเหวอ TH-AI ไม่รู้จัก Jane Doe เจนเป็นสาวไซเบอร์ยืนคู่ ครม. แซวยังกะรัฐบาลจีน`).
+
 ### 8. Merge Timestamps
 
 Write each subagent's output to its own file (e.g., `chunk_001.txt`, `chunk_002.txt`). Then merge + sort chronologically:

@@ -51,6 +51,7 @@
     ],
     "adapt": [
       "ad\\s*[ดดี]apt(?!ation)",
+      "ดิบadapt",
       "adดap"
     ],
     "adaptation": [
@@ -59,6 +60,8 @@
     ],
     "Adblock": [
       "แอบBlockอก",
+      "แอบbl็og",
+      "แอดog",
       "แbox"
     ],
     "addictive": [
@@ -103,6 +106,10 @@
       "ไอคาสึ",
       "อคัสสึ"
     ],
+    "Akibaranger": [
+      "agิบะเรนเจอร์",
+      "อะเรangเจอร์"
+    ],
     "Akuyaku Reijou Tensei Oji-san": [
       "ลุงเกือบใหม่เป็นนางร้าย"
     ],
@@ -120,6 +127,10 @@
     ],
     "Alter": [
       "outทอร์"
+    ],
+    "Amazon": [
+      "amมazon",
+      "amซอน"
     ],
     "Amazon Prime": [
       "amมon prim"
@@ -146,6 +157,9 @@
     "Analog Horror": [
       "Analอก\\s+Herror"
     ],
+    "Analytics": [
+      "anาติก"
+    ],
     "anatomy": [
       "anasตomี่"
     ],
@@ -165,6 +179,9 @@
     "AniList": [
       "analist",
       "analิ"
+    ],
+    "Animation": [
+      "anนิชันิดนึง"
     ],
     "Anime Matsuri": [
       "anนิเมะมัซูริ"
@@ -243,6 +260,9 @@
     "Assassin": [
       "assassิน"
     ],
+    "assume": [
+      "assูม"
+    ],
     "Astra": [
       "แสตra"
     ],
@@ -266,6 +286,10 @@
       "โอunโน่",
       "ดูโo่"
     ],
+    "Audio": [
+      "Audดิโอ",
+      "โอudิโอ"
+    ],
     "Augusta (Wuthering Waves)": [
       "อastต้า"
     ],
@@ -274,6 +298,9 @@
     ],
     "Australian": [
       "อสเตรเลian"
+    ],
+    "Auto skip": [
+      "อut skip"
     ],
     "Avada Kedavra": [
       "เอวค Kra",
@@ -302,6 +329,13 @@
     ],
     "Backer (ผู้สนับสนุน)": [
       "backอั"
+    ],
+    "Background": [
+      "backบrราound์",
+      "backบrground"
+    ],
+    "Background King-Ohger": [
+      "แบกrราkิโอ"
     ],
     "Bakatoria (Summer Castoria)": [
       "บากาทเรีย"
@@ -347,6 +381,9 @@
       "บลี่บีย",
       "บินบรี"
     ],
+    "Biohazard": [
+      "ไโอฮาard"
+    ],
     "Bitcoin": [
       "บitคin"
     ],
@@ -388,11 +425,15 @@
     "Black Widow": [
       "Blackวาย"
     ],
+    "Blackmail": [
+      "Blackม"
+    ],
     "BLACKPINK": [
       "Black Kink"
     ],
     "Bleach": [
       "บลีชach",
+      "Bleachค",
       "บีach",
       "Bachd",
       "บิdช",
@@ -435,6 +476,9 @@
     "Bollywood": [
       "บอลูด"
     ],
+    "Boonboomger": [
+      "บเบอรbบ"
+    ],
     "boost": [
       "บูost"
     ],
@@ -443,6 +487,10 @@
     ],
     "Boss Fight": [
       "บอสไฟight"
+    ],
+    "Bot": [
+      "บotอ่ะ่า",
+      "บot"
     ],
     "boys": [
       "pู boys"
@@ -465,11 +513,17 @@
     "Brown Dust 2": [
       "บดั 2"
     ],
+    "Buckle": [
+      "Buคิle"
+    ],
     "budget บาน": [
       "budบ"
     ],
     "Buffer Zone": [
       "Buffอร์ซone"
+    ],
+    "Bundle": [
+      "Bundิ"
     ],
     "Burn the Witch": [
       "เบอร์theว",
@@ -482,6 +536,9 @@
     "Buster": [
       "butัเตอร",
       "butัต์"
+    ],
+    "Calendar": [
+      "คend"
     ],
     "Call Center": [
       "คซentตอ"
@@ -505,6 +562,9 @@
     "Capcom Fortnite": [
       "มาคap forn"
     ],
+    "Carddass": [
+      "การ์ดูa"
+    ],
     "Cardfight!! Vanguard": [
       "แวนตูกาโดะ",
       "แวนard"
@@ -514,6 +574,9 @@
     ],
     "Carnival Phantasm": [
       "คอFantasึม"
+    ],
+    "Cartoon Club": [
+      "การ์ตูนclลับ"
     ],
     "Cartridge (ตลับเกม)": [
       "การcคat"
@@ -576,6 +639,9 @@
     "Charge Gauge (ชาร์จเกจ)": [
       "ชารเกด"
     ],
+    "Chatbot": [
+      "แชatบot"
+    ],
     "ChatGPT confirm brother": [
       "แชท GVT แบบconfฟิร์m Brother"
     ],
@@ -603,6 +669,10 @@
     "City Camp": [
       "City Cม"
     ],
+    "CITY The Animation": [
+      "Cityี้",
+      "cิี้"
+    ],
     "Clanker (แครงเกอร์)": [
       "แครangเกอร์"
     ],
@@ -611,6 +681,9 @@
       "คักอเซอ",
       "คสกore",
       "คกore"
+    ],
+    "Claude": [
+      "clอเดว่า"
     ],
     "Close Combat": [
       "โ comat",
@@ -628,6 +701,9 @@
     ],
     "Code: Somnia": [
       "โค้ชsomนีย"
+    ],
+    "Collab": [
+      "คอลแลap"
     ],
     "Collab Fortnite": [
       "คแลapไน"
@@ -666,7 +742,8 @@
       "คonซense"
     ],
     "community": [
-      "คอมมิunity"
+      "คอมมิunity",
+      "คมity"
     ],
     "Community Rider": [
       "Commuนิty RER"
@@ -735,7 +812,11 @@
       "Crazy Taxี่"
     ],
     "Creative": [
-      "ครีattive"
+      "ครีattive",
+      "ครีatอที"
+    ],
+    "Creator": [
+      "คreator"
     ],
     "Crimson Desert": [
       "คม deer"
@@ -767,6 +848,9 @@
     ],
     "Cursola": [
       "เซู่า"
+    ],
+    "Custom": [
+      "คตom"
     ],
     "Cuteboy Posting": [
       "คิบอยโพสตินะ"
@@ -806,6 +890,9 @@
     "debate": [
       "ดีบate"
     ],
+    "Decide": [
+      "deไซide"
+    ],
     "DeepSeek": [
       "Deepซ Seek"
     ],
@@ -828,11 +915,17 @@
       "นะฮเดฟไนี่",
       "de spik"
     ],
+    "Digital": [
+      "ดิจิal"
+    ],
     "Digital footprint": [
       "ดิจิal foint"
     ],
     "Dimension W": [
       "diensชion w"
+    ],
+    "Diorama Acrylic": [
+      "ไดโอรamaคิริก"
     ],
     "DirectX 12": [
       "ไดก 12"
@@ -859,14 +952,25 @@
     "Dock": [
       "เdoอก"
     ],
+    "Domino": [
+      "Domมิโน"
+    ],
+    "Donald Trump": [
+      "DonัลเจTrทรัมปี่เ"
+    ],
     "Donate": [
       "บate"
     ],
     "Donation": [
       "Donช."
     ],
+    "Donbrothers": [
+      "Donอร์",
+      "Donอร"
+    ],
     "Donkey Kong Bananza": [
-      "doy คบanซ่า"
+      "doy คบanซ่า",
+      "Dugy คanza"
     ],
     "Donkey Kong Jr. Math": [
       "คองJจูเนียร Match"
@@ -884,8 +988,14 @@
     "Dororo": [
       "โดโรโรป"
     ],
+    "Double": [
+      "douบoอ"
+    ],
     "Double Battle": [
       "DBE Battle"
+    ],
+    "Double Cheese": [
+      "douับเบิลsheีส"
     ],
     "double down": [
       "douบดาว"
@@ -901,6 +1011,10 @@
     ],
     "Draco Beast": [
       "เดโกีส"
+    ],
+    "Dragon Ball": [
+      "Dragonบall",
+      "DR้อนบอล"
     ],
     "Dragon Ball Daima (ดราก้อนบอล ไดมะ)": [
       "drกอนบันไดมา"
@@ -1051,11 +1165,22 @@
     "Factor": [
       "faฟcเตอร์"
     ],
+    "Factory": [
+      "ชาวfacี่",
+      "ชาวfตory",
+      "fตory"
+    ],
     "Fake Out Kingambit": [
       "out kิamิ"
     ],
     "Familiar": [
       "famิ"
+    ],
+    "Fan comic": [
+      "แฟนคอมic"
+    ],
+    "Fan Meet": [
+      "แฟนmeท"
     ],
     "Fantastic Beasts": [
       "Fantastic Beat",
@@ -1097,6 +1222,9 @@
     "Fedfe Doomsday": [
       "เฟเฟ่Doม Day"
     ],
+    "Feeling": [
+      "ฟลing"
+    ],
     "Femboy": [
       "เฟameboอย"
     ],
@@ -1134,11 +1262,28 @@
     "fix mindset": [
       "ิกmindซต"
     ],
+    "Fixer": [
+      "fixอร์",
+      "Fixerร"
+    ],
+    "Flash Deal": [
+      "แฟชdeล"
+    ],
+    "Flash Sale": [
+      "แฟชsalลอ่ะ",
+      "แฟลชale",
+      "แฟชsalล",
+      "แฟชale",
+      "แชale"
+    ],
     "Floodgate": [
       "flั gate"
     ],
     "Florges": [
       "fores"
+    ],
+    "Font": [
+      "ฟont"
     ],
     "Fontaine": [
       "ทางฟิ้น"
@@ -1168,7 +1313,11 @@
       "Fจureที่คี",
       "แฟกจure"
     ],
+    "Frame": [
+      "frฟame"
+    ],
     "Franchise": [
+      "แฟรนไชสdaที่",
       "แฟรนชise"
     ],
     "friendly fire": [
@@ -1183,7 +1332,8 @@
       "ฟิจujุิะ"
     ],
     "Fullbringer (ฟูลบริงเกอร์)": [
-      "fullู pinger"
+      "fullู pinger",
+      "fullingเกอร์"
     ],
     "Fullmetal Alchemist": [
       "ไอ้ภูมตัน"
@@ -1466,6 +1616,9 @@
       "Hell Div",
       "Hill Dวอ"
     ],
+    "Henshin": [
+      "Fชin"
+    ],
     "Hephaestion": [
       "เฟอร์ HON"
     ],
@@ -1473,6 +1626,9 @@
       "Herรมโนีย",
       "Hermelี้",
       "Herนี่"
+    ],
+    "Hero": [
+      "herีโร่"
     ],
     "Hero Shooter": [
       "Herีโร่Shootตอร"
@@ -1491,6 +1647,10 @@
     ],
     "Holo EN Gen 3": [
       "โรใหม่โซen 3"
+    ],
+    "Honey": [
+      "honeนี่",
+      "Honeนี่"
     ],
     "Honkai Impact 3rd Part 1": [
       "ค part one"
@@ -1563,6 +1723,9 @@
     "Incursion ใน Marvel": [
       "Inclusion ใน Marvel"
     ],
+    "Industry": [
+      "อินustry"
+    ],
     "Inferno": [
       "inferินferno"
     ],
@@ -1573,7 +1736,8 @@
       "อิสาโต"
     ],
     "Influencer": [
-      "inflู"
+      "inflู",
+      "infู"
     ],
     "Interior": [
       "เหรออer",
@@ -1587,6 +1751,9 @@
     "Intimidate": [
       "intิidate",
       "กิidate"
+    ],
+    "Intro": [
+      "อินทro"
     ],
     "invite": [
       "invวท"
@@ -1603,6 +1770,9 @@
     ],
     "J.K. Rowling": [
       "JKUing"
+    ],
+    "Jack of all trades": [
+      "All Trด"
     ],
     "James Bond 007": [
       "Jamบ Bond 007"
@@ -1631,7 +1801,8 @@
       "โจโจ้คิมโบคนะฮะ"
     ],
     "Joker": [
-      "Jokกอร์"
+      "Jokกอร์",
+      "Jกเกอร์"
     ],
     "JonTron": [
       "Johจนทรอน",
@@ -1661,6 +1832,10 @@
     ],
     "Kalafina": [
       "คิฟานา"
+    ],
+    "Kamen Rider Gotchard": [
+      "เข็มขาGacha",
+      "Godฉ"
     ],
     "Kamen Rider My-Th": [
       "ไม้สึ"
@@ -1718,6 +1893,9 @@
     ],
     "King's Shield": [
       "Kingชilli"
+    ],
+    "King-Ohger": [
+      "kิโอเจอร์"
     ],
     "Kingambit": [
       "King\\s*Gabิ",
@@ -1870,7 +2048,11 @@
       "Level\\s*อัพเent"
     ],
     "License": [
-      "ไลเซense"
+      "ไลเซense",
+      "ไซens"
+    ],
+    "Licensing": [
+      "ไซensซing"
     ],
     "Lies of P": [
       "Line of P"
@@ -1880,6 +2062,12 @@
     ],
     "Limbus Company": [
       "LBUS Company"
+    ],
+    "Limited": [
+      "ลิมิed"
+    ],
+    "Limited Edition": [
+      "limitิ edition"
     ],
     "Little Buddha": [
       "Little Buudด้า"
@@ -1960,6 +2148,10 @@
     "Lucia": [
       "Luชีย"
     ],
+    "Lunchly": [
+      "ตอรLaunchลี่",
+      "lunchลี่"
+    ],
     "luxury": [
       "luชurี่"
     ],
@@ -1983,6 +2175,9 @@
     ],
     "Makai Ouji: Devils and Realist": [
       "มากิโอมากโอจิ Devil RIS"
+    ],
+    "Make Sense": [
+      "make เซense"
     ],
     "Malenia": [
       "Milli เจ็ก",
@@ -2057,8 +2252,12 @@
     "Melty Blood": [
       "Beauty BL"
     ],
+    "Member": [
+      "เมber"
+    ],
     "meme": [
-      "meมem"
+      "meมem",
+      "มีmeม"
     ],
     "Memory of Londinium": [
       "Memmory of Londinum"
@@ -2078,6 +2277,10 @@
     ],
     "Metal Gear Solid V": [
       "Metar Solidify"
+    ],
+    "Metamorphosis": [
+      "เมาโฟosis",
+      "เมามosis"
     ],
     "Metaphor: ReFantazio": [
       "metฟรีantio",
@@ -2107,11 +2310,25 @@
     "mindset": [
       "mindsซต"
     ],
+    "Mindset": [
+      "mindซต"
+    ],
     "Mini Cooper": [
       "มินิcoปอร"
     ],
+    "Mirror": [
+      "มิrเอร์",
+      "มิror"
+    ],
     "Mixed Media": [
       "miิก Media"
+    ],
+    "Mizuki": [
+      "มิซukิ"
+    ],
+    "Mo-cap": [
+      "โมแคAP",
+      "โมAP"
     ],
     "Modern": [
       "Modิ"
@@ -2127,6 +2344,9 @@
     ],
     "Monologue": [
       "monอก"
+    ],
+    "Monster Hunter": [
+      "Monทendant"
     ],
     "Monster Hunter Wilds": [
       "Monster Hunter Wend"
@@ -2156,6 +2376,9 @@
     ],
     "move on": [
       "ve on"
+    ],
+    "Movie": [
+      "มovี่"
     ],
     "MrBeast Campaign": [
       "mea camเีียน"
@@ -2208,6 +2431,9 @@
     "Neo Armstrong Cyclone Jet Armstrong Cannon": [
       "neโอ Armst"
     ],
+    "nephew": [
+      "เนfฟิว"
+    ],
     "Nero Beast": [
       "ne เนobe"
     ],
@@ -2221,6 +2447,11 @@
     "Nezha": [
       "เนชาเดิอ"
     ],
+    "Nezumi": [
+      "คุณซumิ",
+      "เนสumิ",
+      "เนซumิ"
+    ],
     "Nickelodeon": [
       "นิเดีียน"
     ],
@@ -2229,6 +2460,7 @@
     ],
     "Nintendo Switch": [
       "นิเรอSWวิท",
+      "Nal Switch",
       "Swiชilli",
       "sวิตch"
     ],
@@ -2292,6 +2524,9 @@
     "Oberon": [
       "อชอน"
     ],
+    "Oblivion": [
+      "อliิเวียน"
+    ],
     "Occultic;Nine": [
       "โอคสติกนาย"
     ],
@@ -2303,6 +2538,9 @@
     ],
     "Official": [
       "Officiล"
+    ],
+    "Omega": [
+      "omeg้า"
     ],
     "omegalul": [
       "omeg้า la"
@@ -2357,6 +2595,9 @@
     ],
     "Ousama Ranking": [
       "OSMA Ranking"
+    ],
+    "Overframe": [
+      "overฟame"
     ],
     "Overlord": [
       "โอเดหลอด"
@@ -2430,6 +2671,9 @@
     "Peter Cullen ออปติมัสไพรม์": [
       "ปีเตอร์เenนะครับอtimัสพรา"
     ],
+    "Petit Planet": [
+      "Pิ Planet"
+    ],
     "Phantas-Moon": [
       "fantั\\s*moon"
     ],
@@ -2447,11 +2691,15 @@
       "การprเร",
       "ไอ้พcy"
     ],
+    "Pixel": [
+      "Pคel"
+    ],
     "Play to look Beautiful": [
       "Play toลุ Beautiful"
     ],
     "PlayStation 5": [
-      "Playent 5"
+      "Playent 5",
+      "Pent ไฟ"
     ],
     "Playstyle": [
       "Playอ"
@@ -2471,11 +2719,21 @@
     "Pokecology (โปเกโคโลจี)": [
       "โปกโคologี่"
     ],
+    "Pokopia": [
+      "poโกีย"
+    ],
+    "Pokopia Bundle": [
+      "โปโกปียund"
+    ],
     "Pokémon": [
       "Poโkemอน"
     ],
     "Pokémon (โปเกมอน)": [
-      "Poโกมอน"
+      "Pokemonซ่า",
+      "Pokemonซa",
+      "PokกอนWน",
+      "Poโกมอน",
+      "Poมอน"
     ],
     "Pokémon Champions": [
       "Poon Champion"
@@ -2487,11 +2745,17 @@
       "ตัว poon Pokémon Champions",
       "Poemon แชamp"
     ],
+    "politics": [
+      "poิtic"
+    ],
     "Polychrome": [
       "โพิโคม"
     ],
     "Pony Island 2: Panda Circus": [
       "Tony Island Panda Circus"
+    ],
+    "Pop Culture": [
+      "ป๊อcultเจอร์"
     ],
     "Popular (ป๊อปปูลาร์)": [
       "Poปูล"
@@ -2514,6 +2778,10 @@
     "Praise the Fool": [
       "pleasีtheฟู"
     ],
+    "Premium": [
+      "พรีเมemiม",
+      "prีemium"
+    ],
     "pressure": [
       "prชureมา"
     ],
@@ -2524,6 +2792,7 @@
       "พซess"
     ],
     "Prime Video": [
+      "พราหมณ์ofซี",
       "primม"
     ],
     "Princess Principal": [
@@ -2587,8 +2856,10 @@
       "Ruffle draw"
     ],
     "Rage bait": [
+      "ragebaitคิck",
       "Rage เบส",
-      "RAE เบส"
+      "RAE เบส",
+      "Rage Bส"
     ],
     "ragebait": [
       "เรทเบส"
@@ -2644,6 +2915,9 @@
     "reality": [
       "เรity"
     ],
+    "Reboot": [
+      "reบู"
+    ],
     "Record": [
       "recคคอร์ด",
       "ก Record",
@@ -2656,17 +2930,26 @@
     "Reddit": [
       "เรit 6 k"
     ],
+    "Refer": [
+      "reฟer"
+    ],
     "reference": [
       "refรน"
     ],
     "Reference": [
       "Referน"
     ],
+    "Refresh": [
+      "refรช"
+    ],
     "refreshing": [
       "frisชing"
     ],
     "Reines": [
       "เรนส"
+    ],
+    "Reiwa Rider": [
+      "เลวRเดอร์"
     ],
     "Release": [
       "โอิลีสึ"
@@ -2677,8 +2960,16 @@
     "Remaster": [
       "remasต"
     ],
+    "Reprint": [
+      "รีปริint",
+      "รีint"
+    ],
     "Requiem": [
-      "Requม"
+      "Requม",
+      "รีquม"
+    ],
+    "Reseller": [
+      "รีellerer"
     ],
     "Reset": [
       "resีต",
@@ -2706,7 +2997,11 @@
     ],
     "Rider": [
       "r[เด]อร์(?=[\\s,.]|$)",
+      "ซีรียRเดอร์",
+      "ไอ้rเดอร์",
+      "มาrเดอร์",
       "มาarูer",
+      "Rเดอร์",
       "rดอร์"
     ],
     "Rider Zeztz": [
@@ -2793,6 +3088,9 @@
     "Sean Casey": [
       "ชอเคซี่ทิเมอร์"
     ],
+    "Search": [
+      "sear์ช"
+    ],
     "Seele Leaks": [
       "seele\\s*leaks?"
     ],
@@ -2808,6 +3106,9 @@
     "Senna (เซ็นนะ)": [
       "เซ็นA"
     ],
+    "Sentai": [
+      "เซนไตing"
+    ],
     "Sereniel": [
       "เซรนี"
     ],
@@ -2816,6 +3117,9 @@
     ],
     "Servantverse (เซอร์แวนต์เวิร์ส)": [
       "เซบาจิวส"
+    ],
+    "Server Host": [
+      "เซิร์ฟHโฮost"
     ],
     "Service": [
       "servิ"
@@ -2833,7 +3137,8 @@
       "Snapฟ"
     ],
     "Sex toy": [
-      "เซ toอย"
+      "เซ toอย",
+      "se toอย"
     ],
     "sexual": [
       "seกชual"
@@ -2885,11 +3190,21 @@
     "Shitsurei shimasu": [
       "ชิติมาซen"
     ],
+    "Shopee": [
+      "Shopeปey"
+    ],
+    "ShopeePay": [
+      "Shopeปey"
+    ],
     "shortcut": [
       "ช็อตคut"
     ],
     "Shotgun": [
       "ช็อตUN"
+    ],
+    "Shout! Factory": [
+      "ชาวfacี่",
+      "ชาวfตory"
     ],
     "Siegfried (FGO)": [
       "ไอ้นัสึกฟีด"
@@ -2999,6 +3314,9 @@
     "Solo Leveling": [
       "Soloโo Living"
     ],
+    "Sonic": [
+      "Sonิ"
+    ],
     "Sonny Boy": [
       "Sonyบบอย"
     ],
@@ -3025,13 +3343,20 @@
       "สedิฟต"
     ],
     "Spider-Man": [
-      "สไปเดอร์แman"
+      "สไปเดอร์แman",
+      "Spidอร์Man"
     ],
     "Spider-Man: Brand New Day": [
       "spอร์manbrรand new day"
     ],
     "Spiderman": [
       "SPไดอร์man"
+    ],
+    "Spirit": [
+      "สปirit"
+    ],
+    "Splatoon": [
+      "สปทol"
     ],
     "Square Enix": [
       "Squินะ"
@@ -3098,6 +3423,9 @@
     "Strawberry 100%": [
       "สตวี่อิจิโกะ"
     ],
+    "Streamer": [
+      "สamer"
+    ],
     "Streamer React": [
       "สamerreีact"
     ],
@@ -3129,6 +3457,9 @@
     ],
     "Summer Game Fest": [
       "Sumัมเฟ"
+    ],
+    "Sun's Song": [
+      "Sunซong"
     ],
     "Sunbringer": [
       "ซbingเกอร์"
@@ -3169,6 +3500,12 @@
     "Swiss cheese": [
       "switวิตชีท"
     ],
+    "Switch": [
+      "Swiตch"
+    ],
+    "Switch Bundle": [
+      "SWวิตอ่ะBuundิ"
+    ],
     "Symboli Rudolf": [
       "ซิบรีรูดอล"
     ],
@@ -3177,6 +3514,9 @@
     ],
     "Tanooki Mario (ร่างทานูกิ)": [
       "ทนิบีน"
+    ],
+    "Target": [
+      "ทarเg"
     ],
     "Target Audience": [
       "Target Audiน"
@@ -3193,6 +3533,9 @@
     "Tears of the Kingdom": [
       "เียซingdom",
       "เซingom"
+    ],
+    "Teaser": [
+      "ตัวteซer"
     ],
     "Tech Otakus Save the World": [
       "Tech of the Colus Save the World",
@@ -3300,8 +3643,16 @@
     "timer": [
       "timอร"
     ],
+    "Timestamp": [
+      "Time Stampม",
+      "Time Stม",
+      "Timeม"
+    ],
     "Titan Final Season": [
       "ไตan\\s+final\\s+ซีซั"
+    ],
+    "Title screen theme": [
+      "ไตleสreenีม"
     ],
     "To Be Hero X": [
       "ทบีherีร"
@@ -3315,6 +3666,9 @@
     ],
     "Toji no Miko": [
       "โทยิโกะ"
+    ],
+    "Toku Day": [
+      "โทกu Day"
     ],
     "Toku Today": [
       "โทกุเด"
@@ -3337,6 +3691,14 @@
     "Total War: Warhammer III": [
       "Total War Wer 3"
     ],
+    "touch grass": [
+      "ทั gr"
+    ],
+    "Tourist": [
+      "ทัวรist",
+      "ทourิ",
+      "Tourิ"
+    ],
     "Tourist trap": [
       "urิ trap",
       "Tet TRAP",
@@ -3346,8 +3708,21 @@
     "Tower": [
       "พมer"
     ],
+    "Traffic": [
+      "แบบtrราฟฟิ"
+    ],
+    "Training Arc": [
+      "เทรนนingอาก"
+    ],
     "trans woman": [
       "ทาน woman tr"
+    ],
+    "Transcend": [
+      "transบ"
+    ],
+    "Transformers": [
+      "transฟอรเมอร์",
+      "transformอmer"
     ],
     "Transsexual": [
       "transกual"
@@ -3380,6 +3755,7 @@
       "tวch"
     ],
     "Twitter": [
+      "tวิตเตี้ย",
       "ทwiตเter",
       "twiตter"
     ],
@@ -3389,6 +3765,9 @@
     ],
     "Two Blue Vortex": [
       "true blue อx"
+    ],
+    "Type Change": [
+      "typ เchangeน"
     ],
     "TYPE-MOON Studio BB": [
       "ไทมon BB"
@@ -3461,8 +3840,14 @@
     "Varsapura": [
       "วัสุระ"
     ],
+    "Vegeta": [
+      "ซAveget้า"
+    ],
     "Verdandi": [
       "เundี้"
+    ],
+    "Vibranium": [
+      "viเบเนียม"
     ],
     "Victor Doom": [
       "วิกตor Doom"
@@ -3493,6 +3878,9 @@
     ],
     "Volond (โวลุนด์)": [
       "โวลอน"
+    ],
+    "Voucher": [
+      "ว่ะVoอ"
     ],
     "VRZO": [
       "VRโซ"
@@ -3638,6 +4026,9 @@
     ],
     "Young Warrior": [
       "ยังWarriอร์"
+    ],
+    "YouTuber": [
+      "ทูerออ"
     ],
     "Yu-Gi-Oh!": [
       "ิกกี้โอ"
@@ -3960,7 +4351,10 @@
       "deen นี้"
     ],
     "ดีเลย์": [
+      "delดีเลย์",
+      "delดีเลay",
       "delดีเลย",
+      "delลay",
       "ดีลay"
     ],
     "ดีไซน์คาแรกเตอร์": [
@@ -3998,6 +4392,9 @@
       "tวinta",
       "tวinทล"
     ],
+    "ทอย": [
+      "มtoอย"
+    ],
     "ทาบิบิโตะ (Tabibito)": [
       "ทาไปบิโตะ"
     ],
@@ -4010,6 +4407,7 @@
       "ถ้ากakกิ"
     ],
     "ทีเซอร์": [
+      "ตัวteซer",
       "teเซิร",
       "teเซอร"
     ],
@@ -4124,6 +4522,10 @@
     "ฟีลด์": [
       "ฟield",
       "ฟiel"
+    ],
+    "ฟุคาชิ": [
+      "ฟukashิ",
+      "ฟukาชิ"
     ],
     "ฟุยุคิ": [
       "ฟ[จ]?ukิ",
@@ -4417,7 +4819,9 @@
       "คinน"
     ],
     "อินฟลูเอนเซอร์": [
-      "influenซอร์"
+      "influenซอร์",
+      "เจอinfู",
+      "infู"
     ],
     "อินเตอร์ลูด (Interlude)": [
       "อินเตอร์ูโดะ",
@@ -4425,7 +4829,8 @@
       "อินตูด"
     ],
     "อินโทร": [
-      "อินโทro"
+      "อินโทro",
+      "อินทro"
     ],
     "อิบุกิ": [
       "อิบukิ",
@@ -4605,6 +5010,9 @@
     ],
     "เบอร์รี่": [
       "เบอร์ี่"
+    ],
+    "เบอร์เกอร์": [
+      "Burเกอร์"
     ],
     "เบอร์เซอร์": [
       "เบอร์เซer",
@@ -4946,6 +5354,10 @@
     ],
     "โอเวอร์โหลด": [
       "โอเวอร์โหลAD"
+    ],
+    "โอโตซุมิ": [
+      "โอโตซumิ",
+      "โตซumิ"
     ],
     "โฮชิออนเซ็น (Hoshi Onsen)": [
       "โรงแรมโคชิเซ็น"

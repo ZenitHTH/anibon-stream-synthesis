@@ -37,6 +37,9 @@ flowchart TD
 3. **East Asian Unit Dissonance**: Dialogue references Japanese/Korean game campaigns where `万` (10,000) or `億` (100,000,000) was translated incorrectly.
 4. **Ambiguous Deictic Pronouns**: Streamer says *"ดูอันนี้ดิ"*, *"ตู้ไหนดี"*, *"ตัวนี้เก่งมาก"* without naming the entity within ±30s.
 5. **Explicit User Verification**: User prompts `/btw use vision`, `--vision`, or *"ลองใช้ vision เช็คดู"*.
+6. **Generative AI Outputs vs Hyperbolic Roasting**: Streamer generates images/videos with AI or evaluates creative tools, and uses hyperbolic political/satirical roasts (e.g. *"นี่มันพรรคคอมมิวนิสต์ชนะเลือกตั้งเหรอ"*, *"อย่างกับรัฐบาลจีน"*, *"หลอนเป็นเปรต"*).
+   - **Iron Rule:** NEVER report the streamer's hyperbolic roast as literal image content (e.g., do NOT write *"TH AI เจนภาพ... กลายเป็นคณะรัฐบาลคอมมิวนิสต์"*).
+   - **Action:** Extract the targeted frame via `slice_stream_frame.py` or inspect storyboard frames, ground what is literally depicted (e.g. *"สาวไซเบอร์ผมขาว ยืนคู่บุคคลในชุดสูท"*), and clearly frame the streamer's reaction as a roast under `[Reaction]`.
 
 ### When NOT to Use:
 - Static podcast/radio segments where the streamer merely chats over a static background image or webcam.
