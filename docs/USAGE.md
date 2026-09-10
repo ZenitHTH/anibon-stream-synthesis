@@ -48,11 +48,10 @@ Subagents apply subculture psychology to avoid flattening streamer and chat bant
 
 ### Garbled-Word Feedback Loop
 
-Chunk subagents flag Thai-Latin hybrids that survived cleaning (`GARBLED_NOTES:` blocks, e.g. `"พีender" -> <correct|UNKNOWN> @ HH:MM:SS (chunk_NN)`). After merge, `anibon-garbled-notes`:
-1. Consolidates + dedupes candidates across all chunk groups
-2. Verifies each against the raw transcript context
-3. Writes `garbled_notes.json` (`correct` or `null` for unresolved proper nouns)
-4. Appends only HIGH-confidence rules to the shared `garbled_replacements.json`
+Chunk subagents flag Thai-Latin hybrids that survived cleaning (`GARBLED_NOTES:` blocks, e.g. `"- \"พีender\" @ HH:MM:SS (chunk_NN)"`).
+1. **Orchestrator runs `whisper_dispatcher.py` FIRST**: Slices audio on-the-fly and transcribes acoustic ground truth via local `whisper.cpp` into `garbled_notes.json`.
+2. **`anibon-garbled-notes` subagent is called LATER**: Ingests acoustic transcripts, aligns phonetic targets, validates anti-cascade rules against `raw_transcript.th-orig.json3`, and updates `garbled_notes.json`.
+3. **Master Dictionary Sync**: Executes `update_garbled_dictionary.py` to append confirmed rules to `garbled_replacements.json` across all plugin locations.
 
 The dictionary resolves via `resource_path()` up to plugin root, so every future stream auto-loads new rules. Ambiguous proper nouns stay `correct: null` for human confirmation — never guessed.
 

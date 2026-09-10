@@ -44,5 +44,5 @@ Document creation, CLI tool building, and research utilities:
 First-class subagents that the orchestrator invokes by name — never generic Task/self agents:
 
 - `anibon-chunk-timestamper` — One per chunk-group (4–5 chunks). Reads transcript XML + LiveChat log, writes timestamps, emits `GARBLED_NOTES:` blocks for surviving Thai-Latin hybrids.
-- `anibon-garbled-notes` — One per stream, after merge. Consolidates `GARBLED_NOTES` blocks, writes `garbled_notes.json`, appends confirmed rules to `garbled_replacements.json`.
+- `anibon-garbled-notes` — One per stream, after whisper.cpp audio transcription. Ingests acoustic transcripts, aligns ground-truth proper nouns, validates anti-cascade rules, updates `garbled_notes.json`, and appends confirmed rules to `garbled_replacements.json`.
 - `anibon-summarizer` — One per stream. Deduplicates cross-chunk overlaps, groups by activity period, packs into byte-limited parts, writes the final markdown.

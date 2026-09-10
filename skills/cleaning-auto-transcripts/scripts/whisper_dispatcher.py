@@ -28,6 +28,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from typing import Dict, List, Optional, Tuple
 
@@ -261,6 +262,25 @@ def run_whisper_slice(
         return ""
 
 
+def get_youtube_stream_url(video_url: str) -> Optional[str]:
+    """Retrieve direct HTTPS stream URL via Android client (bypasses SABR 403 without browser cookies)."""
+    cmd = [
+        "yt-dlp",
+        "--extractor-args", "youtube:player_client=android",
+        "-g",
+        "-f", "18/ba/b",
+        video_url
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        url = res.stdout.strip().splitlines()[0].strip()
+        if url.startswith("http"):
+            return url
+    except Exception as e:
+        sys.stderr.write(f"[!] Warning: failed to fetch YouTube stream URL for {video_url}: {e}\n")
+    return None
+
+
 # ==============================================================================
 # 5. Dispatcher Pipeline
 # ==============================================================================
@@ -269,6 +289,8 @@ def dispatch_verification(
     workspace: str,
     raw_notes_dir: str,
     audio_file: Optional[str] = None,
+    video_url: Optional[str] = None,
+    stream_url: Optional[str] = None,
     whisper_bin: Optional[str] = None,
     model_bin: Optional[str] = None,
     output_json: Optional[str] = None,
@@ -289,17 +311,6 @@ def dispatch_verification(
         sys.stderr.write("[!] Error: GGML Whisper model binary not found. Set --model or download ggml-large-v3-turbo.bin.\n")
         return 1
 
-    if not audio_file:
-        for cand_name in ["audio.opus", "audio.m4a", "audio.wav", "audio.mp3"]:
-            p = os.path.join(workspace, cand_name)
-            if os.path.isfile(p):
-                audio_file = p
-                break
-                
-    if not audio_file or not os.path.isfile(audio_file):
-        sys.stderr.write(f"[!] Error: audio track not found in workspace ({workspace}). Ensure audio.opus exists.\n")
-        return 1
-
     candidates = load_raw_candidates(raw_notes_dir)
     if not candidates:
         sys.stderr.write(f"[*] No garbled candidates found in {raw_notes_dir}. Nothing to dispatch.\n")
@@ -309,23 +320,68 @@ def dispatch_verification(
         return 0
 
     clusters = cluster_candidates(candidates)
-    num_workers = workers_override or profile.max_workers
     slices_dir = os.path.join(workspace, "audio_slices")
     os.makedirs(slices_dir, exist_ok=True)
+
+    # Check which clusters need slicing
+    missing_clusters = []
+    for cl in clusters:
+        cid = cl["cluster_id"]
+        slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
+        if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
+            missing_clusters.append(cl)
+
+    # Resolve audio source if slicing is required
+    audio_source = audio_file
+    if missing_clusters and not audio_source:
+        for cand_name in ["audio.opus", "audio.m4a", "audio.wav", "audio.mp3"]:
+            p = os.path.join(workspace, cand_name)
+            if os.path.isfile(p) and os.path.getsize(p) > 0:
+                audio_source = p
+                break
+
+    if missing_clusters and not audio_source:
+        if stream_url:
+            audio_source = stream_url
+        elif video_url:
+            sys.stderr.write(f"[*] Slices needed ({len(missing_clusters)} clusters). Fetching direct stream URL for {video_url}...\n")
+            audio_source = get_youtube_stream_url(video_url)
+
+    if missing_clusters and not audio_source:
+        sys.stderr.write(
+            f"[!] Error: {len(missing_clusters)} audio clusters need slicing, but no audio source found.\n"
+            f"    Provide a local audio track (audio.opus in {workspace}), pass --audio-file, or provide --video-url.\n"
+        )
+        return 1
     
+    num_workers = workers_override or profile.max_workers
     sys.stderr.write(f"[*] Dispatching {len(candidates)} spotter requests across {len(clusters)} audio clusters...\n")
     sys.stderr.write(f"[*] Engine: {w_bin} (Model: {os.path.basename(m_bin)}) via {num_workers} parallel workers\n")
 
     cluster_transcripts = {}
     t0 = time.time()
+    failed_slices = []
+    consecutive_fails = 0
+    fail_lock = threading.Lock()
 
     def process_cluster(cl: Dict) -> Tuple[int, str]:
+        nonlocal consecutive_fails
         cid = cl["cluster_id"]
         slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
-        if not os.path.exists(slice_wav):
-            ok = slice_audio(audio_file, cl["start_sec"], cl["duration"], slice_wav)
+        if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
+            ok = slice_audio(audio_source, cl["start_sec"], cl["duration"], slice_wav)
             if not ok:
+                with fail_lock:
+                    failed_slices.append(cid)
+                    consecutive_fails += 1
+                    if consecutive_fails == 5:
+                        sys.stderr.write(
+                            "\n[!] CRITICAL ALERT: 5 consecutive FFmpeg slicing failures detected!\n"
+                            "    The network connection was severed or the system entered sleep mode.\n"
+                        )
                 return (cid, "")
+        with fail_lock:
+            consecutive_fails = 0
         transcript = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker)
         return (cid, transcript)
 
@@ -336,7 +392,16 @@ def dispatch_verification(
             cluster_transcripts[cid] = text
 
     t1 = time.time()
-    sys.stderr.write(f"[+] All clusters transcribed in {t1 - t0:.2f}s ({len(clusters) / max(1.0, t1 - t0):.1f} clusters/sec)\n")
+    sys.stderr.write(f"[+] All clusters processed in {t1 - t0:.2f}s ({len(clusters) / max(1.0, t1 - t0):.1f} clusters/sec)\n")
+    if failed_slices:
+        sys.stderr.write(
+            f"[!] Warning: {len(failed_slices)}/{len(clusters)} audio clusters failed to slice.\n"
+        )
+        if len(failed_slices) / len(clusters) > 0.2:
+            sys.stderr.write(
+                f"[!] CRITICAL: High failure rate ({(len(failed_slices)/len(clusters))*100:.1f}%). "
+                f"Slices likely dropped due to laptop sleep or network interruption.\n"
+            )
 
     verified_notes = []
     seen_keys = set()
@@ -363,18 +428,22 @@ def dispatch_verification(
             })
 
     out_path = output_json or os.path.join(workspace, "garbled_notes.json")
+    status_str = "PARTIAL_FAILURE_NETWORK_SUSPENDED" if (failed_slices and len(failed_slices) / len(clusters) > 0.2) else "SUCCESS"
     payload = {
         "version": 1,
         "engine": "whisper.cpp",
         "model": os.path.basename(m_bin),
         "backend": profile.backend_name,
+        "status": status_str,
+        "total_clusters": len(clusters),
+        "failed_slices": len(failed_slices),
         "total_requests": len(verified_notes),
         "notes": verified_notes
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    sys.stderr.write(f"[✓] Successfully generated verified notes at: {out_path}\n")
+    sys.stderr.write(f"[✓] Successfully generated verified notes at: {out_path} (Status: {status_str})\n")
     return 0
 
 
@@ -399,6 +468,15 @@ def main():
         "--audio-file",
         "-a",
         help="Path to full audio track (default: <workspace>/audio.opus)"
+    )
+    parser.add_argument(
+        "--video-url",
+        "-u",
+        help="YouTube video URL. If audio track is missing, fetches direct Android stream URL to slice clusters on-the-fly."
+    )
+    parser.add_argument(
+        "--stream-url",
+        help="Direct HTTPS stream URL for on-the-fly slicing without local audio track."
     )
     parser.add_argument(
         "--whisper-bin",
@@ -436,6 +514,8 @@ def main():
         workspace=ws,
         raw_notes_dir=raw_dir,
         audio_file=args.audio_file,
+        video_url=args.video_url,
+        stream_url=args.stream_url,
         whisper_bin=args.whisper_bin,
         model_bin=args.model,
         output_json=args.output,

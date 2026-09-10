@@ -242,12 +242,15 @@ python3 scripts/audit_gaps.py ~/youtube_<id>_workspace/all_timestamps.txt
 # exit 0: no gaps. exit 1: prints e.g. "12m 01:13 -> 01:25 (fill around chunk_26)"
 ```
 
-### 8.6 Dispatch Audio Slices to Whisper.cpp (Hardware-Aware Ground Truth)
+### 8.6 Dispatch Audio Slices to Whisper.cpp & Clean Garbled Notes (Ground Truth)
 
-Subagents strictly emit spotter tokens (`- "token" @ HH:MM:SS (chunk_NN)`). The central **`whisper_dispatcher.py`** profiles hardware, deduplicates timestamps into clusters, slices audio via ffmpeg, and executes local parallel `whisper.cpp` inference to produce ground-truth transcriptions without LLM hallucination:
+Subagents strictly emit spotter tokens (`- "token" @ HH:MM:SS (chunk_NN)`). Execute in two distinct phases:
 
+#### Step 8.6a: Run whisper.cpp First (Orchestrator Audio Ground Truth)
+1. Extract all spotter notes from chunk timestamp outputs into `<workspace>/garbled_notes_raw/candidates.txt`.
+2. Run `whisper_dispatcher.py` to cluster timestamps, slice audio on-the-fly, and transcribe acoustic ground truth via local `whisper.cpp`:
 ```bash
-# 0. Slicing & Audio Resolution:
+# Slicing & Audio Resolution:
 # Option A (Recommended): Direct on-the-fly slicing from stream URL (no multi-GB download required)
 python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
 
@@ -255,8 +258,23 @@ python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --video-url "http
 URL=$(yt-dlp --extractor-args "youtube:player_client=android" -g -f 18 "https://www.youtube.com/watch?v=<VIDEO_ID>")
 ffmpeg -y -i "$URL" -vn -c:a copy ~/youtube_<id>_workspace/audio.m4a
 python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --verbose
+```
+This produces `<workspace>/garbled_notes.json` containing actual acoustic `whisper_transcript` entries.
 
-# 1. Sync confirmed entries into the master dictionary
+#### Step 8.6b: Call anibon-garbled-notes Subagent Later (Ground Truth Alignment & Dictionary Sync)
+Invoke `anibon-garbled-notes` subagent with the acoustic transcripts from `whisper_dispatcher.py`:
+```python
+invoke_subagent(
+    "anibon-garbled-notes",
+    Model="flash",
+    Prompt=f"""Analyze the whisper.cpp transcripts in {workspace}/garbled_notes.json.
+Resolve canonical words, validate anti-cascade rules against raw_transcript.th-orig.json3,
+update {workspace}/garbled_notes.json with confirmed targets, and run update_garbled_dictionary.py."""
+)
+```
+
+The subagent updates `<workspace>/garbled_notes.json` and executes:
+```bash
 python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
   --from-notes ~/youtube_<id>_workspace/garbled_notes.json \
   --workspace ~/youtube_<id>_workspace
@@ -272,9 +290,7 @@ Outputs:
 - `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `whisper_transcript`, `correct`, `chunk`, `ts`, `context`, `cluster_span`)
 - `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
-
-The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream
-auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.
+The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.
 
 ### 9. Final Assembly — `anibon-summarizer` (Replaces wrap + pack)
 
