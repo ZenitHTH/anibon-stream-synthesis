@@ -2547,7 +2547,7 @@
       "หลอด Mystery",
       "หลอดซีerรี่",
       "หลอด Myery",
-      "Lord of My"
+      "\\bLord of My\\b"
     ],
     "Lord of the Mysteries (LOTM)": [
       "ล็อต M"
@@ -4358,7 +4358,7 @@
     "The Legend of Zelda: Breath of the Wild": [
       "Legal Zelda Breath of the Wild",
       "Zelda Breath of the Wid",
-      "Breath of the W"
+      "\\bBreath of the W\\b"
     ],
     "The Legend of Zelda: Ocarina of Time": [
       "คinal"
@@ -4816,7 +4816,7 @@
       "wting wave",
       "Wiing Wave",
       "Wening W",
-      "ing wave",
+      "\\bing wave\\b",
       "\\bVOVA\\b",
       "Wiวave",
       "แว me",
