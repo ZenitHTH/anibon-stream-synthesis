@@ -240,13 +240,82 @@ def slice_audio(audio_file: str, start_sec: int, duration: int, output_wav: str)
         return False
 
 
+def extract_google_context(
+    events: List[Dict],
+    target_sec: int,
+    window_before_sec: int = 5,
+    window_after_sec: int = 5
+) -> str:
+    """Extract surrounding Google ASR sentence words from raw_transcript.th-orig.json3."""
+    target_ms = target_sec * 1000
+    before_ms = window_before_sec * 1000
+    after_ms = window_after_sec * 1000
+    tokens = []
+    for ev in events:
+        t = ev.get("tStartMs", 0)
+        d = ev.get("dDurationMs", 0) or 0
+        if t + d >= target_ms - before_ms and t <= target_ms + after_ms:
+            for s in ev.get("segs", []):
+                txt = s.get("utf8", "")
+                if txt.strip():
+                    tokens.append(txt.strip())
+    return " ".join(tokens)
+
+
+def align_whisper_segments(
+    whisper_segments: List[Dict],
+    rel_sec: float,
+    tolerance_sec: float = 2.5
+) -> str:
+    """Find the specific Whisper segment(s) closest to the candidate relative timestamp."""
+    matched = []
+    for seg in whisper_segments:
+        offsets = seg.get("offsets", {})
+        start_sec = offsets.get("from", 0) / 1000.0
+        end_sec = offsets.get("to", 0) / 1000.0
+        if start_sec - tolerance_sec <= rel_sec <= end_sec + tolerance_sec:
+            matched.append(seg)
+    if not matched and whisper_segments:
+        closest = min(
+            whisper_segments,
+            key=lambda s: abs((s.get("offsets", {}).get("from", 0) + s.get("offsets", {}).get("to", 0)) / 2000.0 - rel_sec)
+        )
+        matched = [closest]
+    texts = [s.get("text", "").strip() for s in matched if s.get("text", "").strip()]
+    return " ".join(texts)
+
+
 def run_whisper_slice(
     whisper_bin: str,
     model_bin: str,
     slice_wav: str,
     threads: int = 4
-) -> str:
+) -> Tuple[str, List[Dict]]:
+    """Run whisper-cli on audio slice and extract both full text and timed segments."""
+    base_no_ext = os.path.splitext(slice_wav)[0]
+    json_out = base_no_ext + ".json"
     cmd = [
+        whisper_bin,
+        "-m", model_bin,
+        "-f", slice_wav,
+        "-l", "th",
+        "-oj",
+        "-of", base_no_ext,
+        "-t", str(threads)
+    ]
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        if os.path.exists(json_out):
+            with open(json_out, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            segments = data.get("transcription", [])
+            full_text = " ".join(s.get("text", "").strip() for s in segments if s.get("text", "").strip())
+            return (full_text, segments)
+    except Exception as e:
+        sys.stderr.write(f"[!] Whisper inference with JSON output failed on {slice_wav}: {e}\n")
+
+    # Fallback to plain text CLI if -oj failed
+    fallback_cmd = [
         whisper_bin,
         "-m", model_bin,
         "-f", slice_wav,
@@ -255,11 +324,11 @@ def run_whisper_slice(
         "-t", str(threads)
     ]
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return res.stdout.strip().replace("\n", " ")
+        res = subprocess.run(fallback_cmd, capture_output=True, text=True, check=True)
+        return (res.stdout.strip().replace("\n", " "), [])
     except Exception as e:
-        sys.stderr.write(f"[!] Whisper inference failed on {slice_wav}: {e}\n")
-        return ""
+        sys.stderr.write(f"[!] Whisper fallback inference failed on {slice_wav}: {e}\n")
+        return ("", [])
 
 
 def get_youtube_stream_url(video_url: str) -> Optional[str]:
@@ -358,13 +427,24 @@ def dispatch_verification(
     sys.stderr.write(f"[*] Dispatching {len(candidates)} spotter requests across {len(clusters)} audio clusters...\n")
     sys.stderr.write(f"[*] Engine: {w_bin} (Model: {os.path.basename(m_bin)}) via {num_workers} parallel workers\n")
 
+    # Load raw Google transcript if available in workspace
+    raw_th_orig = os.path.join(workspace, "raw_transcript.th-orig.json3")
+    google_events = []
+    if os.path.exists(raw_th_orig):
+        try:
+            with open(raw_th_orig, "r", encoding="utf-8") as f:
+                google_events = json.load(f).get("events", [])
+        except Exception as e:
+            sys.stderr.write(f"[*] Note: could not load Google transcript {raw_th_orig}: {e}\n")
+
     cluster_transcripts = {}
+    cluster_segments = {}
     t0 = time.time()
     failed_slices = []
     consecutive_fails = 0
     fail_lock = threading.Lock()
 
-    def process_cluster(cl: Dict) -> Tuple[int, str]:
+    def process_cluster(cl: Dict) -> Tuple[int, str, List[Dict]]:
         nonlocal consecutive_fails
         cid = cl["cluster_id"]
         slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
@@ -379,17 +459,18 @@ def dispatch_verification(
                             "\n[!] CRITICAL ALERT: 5 consecutive FFmpeg slicing failures detected!\n"
                             "    The network connection was severed or the system entered sleep mode.\n"
                         )
-                return (cid, "")
+                return (cid, "", [])
         with fail_lock:
             consecutive_fails = 0
-        transcript = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker)
-        return (cid, transcript)
+        full_text, segments = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker)
+        return (cid, full_text, segments)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
         futures = [executor.submit(process_cluster, cl) for cl in clusters]
         for fut in concurrent.futures.as_completed(futures):
-            cid, text = fut.result()
+            cid, text, segs = fut.result()
             cluster_transcripts[cid] = text
+            cluster_segments[cid] = segs
 
     t1 = time.time()
     sys.stderr.write(f"[+] All clusters processed in {t1 - t0:.2f}s ({len(clusters) / max(1.0, t1 - t0):.1f} clusters/sec)\n")
@@ -409,6 +490,7 @@ def dispatch_verification(
     for cl in clusters:
         cid = cl["cluster_id"]
         raw_text = cluster_transcripts.get(cid, "")
+        segs = cluster_segments.get(cid, [])
         for item in cl["items"]:
             g = item["garbled"]
             ts = item["ts"]
@@ -417,13 +499,26 @@ def dispatch_verification(
                 continue
             seen_keys.add(key)
             
+            cand_sec = item["sec"]
+            rel_sec = max(0.0, cand_sec - cl["start_sec"])
+
+            # Extract surrounding Google ASR sentence words
+            google_sentence = ""
+            if google_events:
+                google_sentence = extract_google_context(google_events, cand_sec)
+
+            # Find matching Whisper segment(s) around the candidate timestamp
+            whisper_seg_text = align_whisper_segments(segs, rel_sec) if segs else raw_text
+
             verified_notes.append({
                 "garbled": g,
+                "google_sentence": google_sentence,
+                "whisper_segment": whisper_seg_text,
                 "whisper_transcript": raw_text,
                 "correct": None,
                 "chunk": item["chunk"],
                 "ts": ts,
-                "context": item["context"],
+                "context": google_sentence or item["context"],
                 "cluster_span": f"{format_time_sec(cl['start_sec'])}-{format_time_sec(cl['end_sec'])}"
             })
 

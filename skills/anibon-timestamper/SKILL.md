@@ -183,7 +183,7 @@ This produces:
 - `<workspace>/prompts/group_NN.txt`: group manifests listing chunk file URIs and metadata.
 
 > [!IMPORTANT]
-> **Strict Concurrency Batching (Max 10 Subagents)**: To prevent API 429 `RESOURCE_EXHAUSTED` rate limits, NEVER spawn more than 10 subagents simultaneously. Launch subagents in controlled batches of **up to 10 subagents per turn** (default 8–10), wait for the batch to finish, and ONLY THEN launch the next batch.
+> **Strict Concurrency Batching (4–6 Subagents Recommended)**: To prevent API 429 `RESOURCE_EXHAUSTED` rate limits (especially rolling TPM exhaustion when group manifests reach ~50–100KB), launch subagents in controlled batches of **4–6 subagents per turn** (max 8). Wait for each batch to finish, and ONLY THEN launch the next batch.
 >
 > **Use Flash Model Tier**: Always specify `Model: "flash"` when calling `invoke_subagent` for chunk timestampers to maximize speed and rate-limit headroom.
 >
@@ -259,7 +259,20 @@ URL=$(yt-dlp --extractor-args "youtube:player_client=android" -g -f 18 "https://
 ffmpeg -y -i "$URL" -vn -c:a copy ~/youtube_<id>_workspace/audio.m4a
 python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --verbose
 ```
-This produces `<workspace>/garbled_notes.json` containing actual acoustic `whisper_transcript` entries.
+This produces `<workspace>/garbled_notes.json` containing:
+- `google_sentence`: Exact surrounding sentence window from `raw_transcript.th-orig.json3`.
+- `whisper_segment`: Time-aligned acoustic sentence segment from `whisper.cpp` (`-oj`).
+- `whisper_transcript`: Full cluster transcript for broader context.
+
+> [!TIP]
+> **Failed Slice Recovery (Single Cluster)**:
+> If any cluster fails to slice (e.g. exit status 187 due to transient stream socket timeout):
+> ```bash
+> URL=$(yt-dlp --extractor-args "youtube:player_client=android" -g -f 18 "https://www.youtube.com/watch?v=<VIDEO_ID>")
+> ffmpeg -y -ss <start_sec> -t <duration_sec> -i "$URL" -ar 16000 -ac 1 -c:a pcm_s16le <workspace>/audio_slices/cluster_XXX_<start_sec>.wav
+> /Users/zenithth/whisper.cpp/build/bin/whisper-cli -m /Users/zenithth/whisper.cpp/models/ggml-large-v3-turbo.bin -f <workspace>/audio_slices/cluster_XXX_<start_sec>.wav -l th --output-txt
+> ```
+> Update `garbled_notes.json` with the transcript text before passing to `anibon-garbled-notes`.
 
 #### Step 8.6b: Call anibon-garbled-notes Subagent Later (Ground Truth Alignment & Dictionary Sync)
 Invoke `anibon-garbled-notes` subagent with the acoustic transcripts from `whisper_dispatcher.py`:
@@ -268,6 +281,7 @@ invoke_subagent(
     "anibon-garbled-notes",
     Model="flash",
     Prompt=f"""Analyze the whisper.cpp transcripts in {workspace}/garbled_notes.json.
+Perform sentence-level word-by-word sequence alignment between google_sentence and whisper_segment to resolve phonetic noise slots.
 Resolve canonical words, validate anti-cascade rules against raw_transcript.th-orig.json3,
 update {workspace}/garbled_notes.json with confirmed targets, and run update_garbled_dictionary.py."""
 )
@@ -278,6 +292,12 @@ The subagent updates `<workspace>/garbled_notes.json` and executes:
 python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
   --from-notes ~/youtube_<id>_workspace/garbled_notes.json \
   --workspace ~/youtube_<id>_workspace
+
+# If /Users/zenithth/abss-dev exists, sync git working copy as well:
+if [ -d "/Users/zenithth/abss-dev" ]; then
+  python3 /Users/zenithth/abss-dev/skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
+    --from-notes ~/youtube_<id>_workspace/garbled_notes.json
+fi
 ```
 
 > [!WARNING]
@@ -310,6 +330,17 @@ The subagent outputs the complete `output.md` directly. Save it to `~/youtube_<i
 
 > [!NOTE]
 > `pack_timestamps.py` is still available for offline/scripted runs or when the subagent cannot be invoked. In interactive orchestrator sessions, always prefer `anibon-summarizer` — it applies semantic deduplication that the script cannot.
+>
+> **Byte-Cap Overflow & Streaming Fallback (pack_timestamps.py)**:
+> If `anibon-summarizer` output has sections exceeding 3,500 bytes (flagged `⚠️ WARN` by `check_sections.py`) or encounters network stream drops:
+> ```bash
+> python3 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
+>   --byte-limit 2900 \
+>   --title "<Stream Title>" \
+>   --output ~/youtube_<id>_workspace/output.md
+> python3 scripts/check_sections.py ~/youtube_<id>_workspace/output.md
+> ```
+> Setting `--byte-limit 2900` guarantees every section stays safely below YouTube's 3,500-byte comment warning threshold with headers included (all sections marked ✅ OK).
 
 ### 10. Validate Sections
 
@@ -394,7 +425,7 @@ HH:MM:SS - [Tag] Description
 ## Iron Rules
 
 - **Use named agents** — Step 7 MUST use `invoke_subagent("anibon-chunk-timestamper")` per chunk. Step 8.6 MUST use `invoke_subagent("anibon-garbled-notes")`. Step 9 MUST use `invoke_subagent("anibon-summarizer")`. Never substitute a generic Task/self agent.
-- **STRICT SUBAGENT BATCHING (MAX 10)** — Never launch more than 10 subagents simultaneously. Process in batches of up to 10 (default 8–10 with `Model: "flash"`), wait for completion, then proceed to the next batch.
+- **STRICT SUBAGENT BATCHING (4–6 RECOMMENDED)** — Process in controlled batches of 4–6 subagents (max 8 with `Model: "flash"`), wait for completion, then proceed to the next batch. Never launch 10+ subagents simultaneously on heavy prompt jobs.
 - **FLASH MODEL TIER FOR CHUNKS** — Use `Model: "flash"` for chunk timestamper subagents to ensure fast execution and avoid API rate limits.
 - **NO HEURISTIC / REGEX FALLBACKS** — Never fall back to heuristic text-generation scripts if subagents hit errors or rate limits. All timestamps MUST be generated by authentic `anibon-chunk-timestamper` subagent runs reading real transcript XML and LiveChat logs.
 - **Use detect_signals.py** — TF-IDF only. No ad-hoc grep/inline scanning.
