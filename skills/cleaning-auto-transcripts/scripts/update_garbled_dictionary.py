@@ -306,6 +306,37 @@ def main():
     final_patterns = sum(len(pats) for pats in mappings.values())
     print(f"[*] Completed! Master dictionary now has {len(mappings)} canonical words, {final_patterns} patterns.")
 
+    # Apply newly confirmed rules directly to workspace chunks and timestamps
+    if args.workspace and args.workspace.is_dir():
+        chunks_dir = args.workspace / "chunks"
+        if chunks_dir.is_dir():
+            cleaner_py = _SCRIPT_DIR / "clean_garbled_english.py"
+            if cleaner_py.is_file():
+                try:
+                    import subprocess
+                    res = subprocess.run(
+                        [sys.executable, str(cleaner_py), "--chunks", str(chunks_dir)],
+                        capture_output=True, text=True, check=True
+                    )
+                    cleaned_lines = [l for l in res.stdout.strip().splitlines() if "→" in l]
+                    print(f"[+] Applied updated dictionary to workspace chunks: {len(cleaned_lines)} replacements made.")
+                except Exception as e:
+                    print(f"[!] Warning: failed to re-clean workspace chunks: {e}", file=sys.stderr)
+
+        all_ts = args.workspace / "all_timestamps.txt"
+        if all_ts.is_file():
+            try:
+                sys.path.insert(0, str(_SCRIPT_DIR))
+                import clean_garbled_english
+                clean_garbled_english._COMPILED = clean_garbled_english.load_replacements()
+                orig_text = all_ts.read_text(encoding="utf-8")
+                cleaned_text = clean_garbled_english.clean_text(orig_text)
+                if cleaned_text != orig_text:
+                    all_ts.write_text(cleaned_text, encoding="utf-8")
+                    print(f"[+] Cleaned garbled tokens in {all_ts}")
+            except Exception as e:
+                print(f"[!] Warning: failed to clean all_timestamps.txt: {e}", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

@@ -2544,10 +2544,10 @@
       "หลอมซรี่"
     ],
     "Lord of the Mysteries": [
+      "\\bLord of My\\b",
       "หลอด Mystery",
       "หลอดซีerรี่",
-      "หลอด Myery",
-      "\\bLord of My\\b"
+      "หลอด Myery"
     ],
     "Lord of the Mysteries (LOTM)": [
       "ล็อต M"
@@ -4812,11 +4812,11 @@
     "Wuthering Waves": [
       "Wuthering\\s*Wave\\b",
       "wherein meat",
+      "\\bing wave\\b",
       "wing\\s*wave",
       "wting wave",
       "Wiing Wave",
       "Wening W",
-      "\\bing wave\\b",
       "\\bVOVA\\b",
       "Wiวave",
       "แว me",

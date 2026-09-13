@@ -262,7 +262,7 @@ python3 scripts/whisper_dispatcher.py ~/youtube_<id>_workspace --verbose
 This produces `<workspace>/garbled_notes.json` containing:
 - `google_sentence`: Exact surrounding sentence window from `raw_transcript.th-orig.json3`.
 - `whisper_segment`: Time-aligned acoustic sentence segment from `whisper.cpp` (`-oj`).
-- `whisper_transcript`: Full cluster transcript for broader context.
+- `correct`: Canonical target (auto-resolved from dictionary or set by subagent).
 
 > [!TIP]
 > **Failed Slice Recovery (Single Cluster)**:
@@ -307,7 +307,7 @@ fi
 > **Anti-Cascade Ground Truth Check**: Always cross-check candidate garbled notes against `raw_transcript.th-orig.json3`. If a candidate contains a multi-word game/anime title (e.g. `Yuri on Ice`, `Chaos Zero Nightmare`, `Where Winds Meet`, `SLAPP`) embedded inside Thai text, it is an artifact of an aggressive cleaner rule. Never save cleaner artifacts into `garbled_replacements.json`.
 
 Outputs:
-- `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `whisper_transcript`, `correct`, `chunk`, `ts`, `context`, `cluster_span`)
+- `~/youtube_<id>_workspace/garbled_notes.json` — all candidates (`garbled`, `google_sentence`, `whisper_segment`, `correct`, `chunk`, `ts`, `cluster_span`)
 - `resources/garbled_replacements.json` — auto-synced across root and skill resources with canonical grouped mappings (`TargetWord: [patterns...]`)
 
 The dictionary is shared (`resource_path()` walks up to plugin root), so every future stream auto-loads the new rules. Truly unresolved proper nouns are left `correct: null` for human confirmation.

@@ -115,6 +115,40 @@ def find_whisper_model(custom_path: Optional[str] = None) -> Optional[str]:
     return None
 
 
+def load_master_dictionary_matcher() -> List[Tuple[re.Pattern, str]]:
+    """Load compiled patterns from garbled_replacements.json to pre-resolve known tokens."""
+    home = os.path.expanduser("~")
+    search_paths = [
+        os.path.join(home, ".gemini/config/plugins/anibon-stream-synthesis/resources/garbled_replacements.json"),
+        os.path.join(home, "abss-dev/resources/garbled_replacements.json"),
+    ]
+    compiled = []
+    for sp in search_paths:
+        if os.path.isfile(sp):
+            try:
+                with open(sp, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                mappings = data.get("mappings", {})
+                pairs = []
+                for target, patterns in mappings.items():
+                    pats = patterns if isinstance(patterns, list) else [patterns]
+                    for p in pats:
+                        p_str = str(p).strip()
+                        if p_str:
+                            pairs.append((p_str, str(target).strip()))
+                pairs.sort(key=lambda x: len(x[0]), reverse=True)
+                for pat, rep in pairs:
+                    try:
+                        compiled.append((re.compile(pat, re.IGNORECASE), rep))
+                    except re.error:
+                        pass
+                if compiled:
+                    break
+            except Exception:
+                pass
+    return compiled
+
+
 # ==============================================================================
 # 3. Candidate Ingestion & Timestamp Clustering
 # ==============================================================================
@@ -149,7 +183,7 @@ def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
                         "sec": parse_time_str(it["ts"]),
                         "garbled": it.get("garbled", ""),
                         "chunk": it.get("chunk", ""),
-                        "context": it.get("context", "")
+                        "correct": it.get("correct", None)
                     })
         return candidates
 
@@ -165,11 +199,14 @@ def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                m = re.search(r'"([^"]+)"(?:\s*->\s*.+?)?\s*@\s*(\d{1,2}:\d{2}:\d{2})\s*(?:\((chunk_\d+)\))?', line)
+                m = re.search(r'"([^"]+)"(?:\s*->\s*([^@]+?))?\s*@\s*(\d{1,2}:\d{2}:\d{2})\s*(?:\((chunk_\d+)\))?', line)
                 if m:
                     g = m.group(1).strip()
-                    ts = m.group(2).strip()
-                    ch = m.group(3) or ""
+                    correct_raw = (m.group(2) or "").strip()
+                    is_unknown = not correct_raw or correct_raw.upper() in ["UNKNOWN", "NULL", "NONE"]
+                    correct = None if is_unknown else correct_raw
+                    ts = m.group(3).strip()
+                    ch = m.group(4) or ""
                     if len(ts.split(":")[0]) == 1:
                         ts = "0" + ts
                     sec = parse_time_str(ts)
@@ -178,7 +215,7 @@ def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
                         "sec": sec,
                         "garbled": g,
                         "chunk": ch,
-                        "context": f"Candidate from {ch} ({ts})" if ch else f"Candidate @ {ts}"
+                        "correct": correct
                     })
 
     return candidates
@@ -494,6 +531,7 @@ def dispatch_verification(
                 f"Slices likely dropped due to laptop sleep or network interruption.\n"
             )
 
+    dict_matchers = load_master_dictionary_matcher()
     verified_notes = []
     seen_keys = set()
 
@@ -519,16 +557,24 @@ def dispatch_verification(
 
             # Find matching Whisper segment(s) around the candidate timestamp
             whisper_seg_text = align_whisper_segments(segs, rel_sec) if segs else raw_text
+            if not whisper_seg_text:
+                whisper_seg_text = raw_text
+
+            # Check if candidate has existing correct value or matches master dictionary
+            resolved = item.get("correct")
+            if not resolved and dict_matchers:
+                for pat, rep in dict_matchers:
+                    if pat.search(g):
+                        resolved = rep
+                        break
 
             verified_notes.append({
                 "garbled": g,
                 "google_sentence": google_sentence,
                 "whisper_segment": whisper_seg_text,
-                "whisper_transcript": raw_text,
-                "correct": None,
+                "correct": resolved,
                 "chunk": item["chunk"],
                 "ts": ts,
-                "context": google_sentence or item["context"],
                 "cluster_span": f"{format_time_sec(cl['start_sec'])}-{format_time_sec(cl['end_sec'])}"
             })
 
