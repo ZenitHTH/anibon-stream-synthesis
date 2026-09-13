@@ -303,10 +303,20 @@ def run_whisper_slice(
         "-of", base_no_ext,
         "-t", str(threads)
     ]
+    if os.path.exists(json_out) and os.path.getsize(json_out) > 0:
+        try:
+            with open(json_out, "r", encoding="utf-8", errors="replace") as f:
+                data = json.load(f)
+            segments = data.get("transcription", [])
+            full_text = " ".join(s.get("text", "").strip() for s in segments if s.get("text", "").strip())
+            return (full_text, segments)
+        except Exception:
+            pass
+
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         if os.path.exists(json_out):
-            with open(json_out, "r", encoding="utf-8") as f:
+            with open(json_out, "r", encoding="utf-8", errors="replace") as f:
                 data = json.load(f)
             segments = data.get("transcription", [])
             full_text = " ".join(s.get("text", "").strip() for s in segments if s.get("text", "").strip())

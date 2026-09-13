@@ -16,6 +16,9 @@
       "\\b2SKO\\b",
       "2 SKO"
     ],
+    "4chan": [
+      "forช"
+    ],
     "5-toubun no Hanayome (The Quintessential Quintuplets)": [
       "โกโตบุญโกโตบุญนกฮาโยมิ"
     ],
@@ -407,6 +410,9 @@
     "Baldur's Gate": [
       "บดgกด"
     ],
+    "Ball": [
+      "Bอ"
+    ],
     "Bambietta": [
       "Bambตa"
     ],
@@ -511,6 +517,7 @@
       "Black Kink"
     ],
     "Bleach": [
+      "เป็นBleachdใน",
       "บลีชach",
       "Bleachค",
       "ไบีach",
@@ -551,6 +558,7 @@
       "blัchน"
     ],
     "Blue Archive": [
+      "Blue Archive้",
       "มั่ววัวใคร",
       "ล้อบัวใคร",
       "บัวไคร้",
@@ -560,6 +568,9 @@
     ],
     "Blue Box": [
       "บูบox"
+    ],
+    "Boldon": [
+      "โบดon"
     ],
     "Bollywood": [
       "บอลูด"
@@ -601,6 +612,9 @@
       "of theวนี่",
       "Bวนี่"
     ],
+    "Brotherhood": [
+      "Choฮู"
+    ],
     "Brown Dust": [
       "บundดัมั้ย",
       "Brownดั",
@@ -635,6 +649,9 @@
       "เบอร์theว",
       "เบอร์วิว",
       "เบอร์วิท"
+    ],
+    "Burning Down the House": [
+      "ทnดาว"
     ],
     "Burnt": [
       "burบ"
@@ -789,6 +806,9 @@
     "Cinderella Eliza": [
       "เอิซ่า"
     ],
+    "Cinema": [
+      "cซิเน"
+    ],
     "Cinemassacre": [
       "Cemซcker"
     ],
@@ -923,7 +943,8 @@
       "คact creator"
     ],
     "Control": [
-      "คrol"
+      "คrol",
+      "คol"
     ],
     "Control May Cry": [
       "คolเมคาย"
@@ -1016,6 +1037,9 @@
     "CZN Meta Deck": [
       "K man dex"
     ],
+    "D4": [
+      "Dบอ"
+    ],
     "Dark Souls": [
       "Dark Souซ"
     ],
@@ -1059,6 +1083,10 @@
     ],
     "DeepSeek": [
       "Deepซ Seek"
+    ],
+    "Defense": [
+      "defน",
+      "defฟ"
     ],
     "degenerate": [
       "deerate"
@@ -1279,7 +1307,11 @@
     ],
     "Elden Ring": [
       "Nasั Gen Ring",
-      "Everลิง"
+      "Everลิง",
+      "เentลิง"
+    ],
+    "Eldin": [
+      "แดนAวี"
     ],
     "Elena": [
       "เเลน่า"
@@ -1458,6 +1490,9 @@
     "Fedfe Doomsday": [
       "เฟเฟ่Doม Day"
     ],
+    "Feedback": [
+      "เพฟed"
+    ],
     "Feeling": [
       "ฟลing"
     ],
@@ -1537,6 +1572,9 @@
     "Fontaine": [
       "ทางฟิ้น"
     ],
+    "Foo Fighters": [
+      "fighตอร"
+    ],
     "footage": [
       "ฟ[ุู]ตเท[จก]",
       "foทage",
@@ -1571,6 +1609,9 @@
     "Franchise": [
       "แฟรนไชสdaที่",
       "แฟรนชise"
+    ],
+    "friend": [
+      "friendี่"
     ],
     "friendly fire": [
       "fer ไวเลยมอ่ะ"
@@ -1632,8 +1673,11 @@
       "เกมไ Sen"
     ],
     "Gameplay": [
+      "GamePlaystyle่ะ",
       "เกมplayย",
-      "G Play"
+      "playbัะ",
+      "G Play",
+      "playย"
     ],
     "Gameplay style": [
       "GamePlaystyle่ะ"
@@ -1846,6 +1890,9 @@
     "handheld": [
       "handล"
     ],
+    "Handheld": [
+      "handล"
+    ],
     "Handheld console": [
       "Handhil คอนโซล"
     ],
@@ -1952,6 +1999,9 @@
       "ฮิริโอโคจim",
       "ฮิโคจima"
     ],
+    "hole in one": [
+      "ต้องู inone"
+    ],
     "Hollow Zero": [
       "Holl Zero"
     ],
@@ -2019,6 +2069,9 @@
     "hypersexualize": [
       "hyฮปอรxualiz"
     ],
+    "hypersexualized": [
+      "hyฮปอรxualiz"
+    ],
     "Hyundai Cup": [
       "คุณไดคup"
     ],
@@ -2069,6 +2122,10 @@
       "อิตลูด"
     ],
     "Intervallo": [
+      "อvalโรัส",
+      "อval"
+    ],
+    "Intervalo": [
       "อvalโรัส",
       "อval"
     ],
@@ -2133,8 +2190,12 @@
     "Johnny Silverhand": [
       "Johอนี่"
     ],
+    "JoJo": [
+      "jจร"
+    ],
     "JoJo no Kimyou na Bouken": [
-      "โจโจคีมโบen"
+      "โจโจคีมโบen",
+      "คิมen"
     ],
     "JoJo no Kimyou na Bouken (JoJo's Bizarre Adventure)": [
       "โจโจ้คิมโบคนะฮะ"
@@ -2526,7 +2587,8 @@
       "lowไล"
     ],
     "Loyalty": [
-      "Royalี้"
+      "Royalี้",
+      "แoyalty"
     ],
     "Lucario": [
       "Luคarิ"
@@ -2907,7 +2969,8 @@
     ],
     "Nintendo Direct": [
       "N dirก",
-      "Dirกมา"
+      "Dirกมา",
+      "Dก"
     ],
     "Nintendo Switch": [
       "นิเรอSWวิท",
@@ -2968,6 +3031,9 @@
     "Noragami": [
       "โนราamiิบก"
     ],
+    "Notebook": [
+      "noบ"
+    ],
     "November Rain": [
       "November Rน"
     ],
@@ -2988,6 +3054,9 @@
     ],
     "Ocarina": [
       "คinal"
+    ],
+    "Ocarina of Time": [
+      "เป็นinal"
     ],
     "Occultic;Nine": [
       "โอคสติกนาย"
@@ -3230,6 +3299,9 @@
     "Playstyle": [
       "Playอ"
     ],
+    "Please": [
+      "PEสการ"
+    ],
     "Pleasure": [
       "Pressชเอร"
     ],
@@ -3282,6 +3354,7 @@
       "poิtic"
     ],
     "Polnareff": [
+      "Harฟฟึเธอ",
       "PARฟ",
       "PFฟ"
     ],
@@ -3391,11 +3464,15 @@
       "punish gวน"
     ],
     "Puzzle": [
+      "แบบPuzzleลไป",
+      "Puzzleล",
       "puซิle",
       "puเซle",
       "บัเซle",
       "puเซิ",
-      "พซle"
+      "พซle",
+      "ซle",
+      "คle"
     ],
     "PV": [
       "พีวเpีว",
@@ -3541,6 +3618,9 @@
       "รีปริint",
       "รีint"
     ],
+    "Request": [
+      "รีquส"
+    ],
     "Requiem": [
       "Requม",
       "รีquม",
@@ -3660,6 +3740,9 @@
     ],
     "Saul Goodman": [
       "ซอกูMan่ะ"
+    ],
+    "save": [
+      "saฟ"
     ],
     "Sayonara, Zetsubou-Sensei": [
       "เซenซ"
@@ -3946,6 +4029,9 @@
     "Sono Bisque Doll wa Koi wo Suru (หนุ่มเย็บผ้ากับสาวคอสเพลย์)": [
       "โซนิสเกะดวโคยซึ"
     ],
+    "SOO": [
+      "คุณโซโoอใช่"
+    ],
     "Soul Society": [
       "sociy"
     ],
@@ -3965,6 +4051,9 @@
       "speedฟต",
       "สedิฟต"
     ],
+    "Speedwagon": [
+      "speedอน"
+    ],
     "Spider-Man": [
       "สไปเดอร์แman",
       "Spidอร์Man"
@@ -3980,6 +4069,9 @@
     ],
     "Splatoon": [
       "สปทol"
+    ],
+    "spooky": [
+      "สooky"
     ],
     "Sports Resort": [
       "สปอรresีอร์"
@@ -4038,7 +4130,8 @@
     "Steel Ball Run": [
       "Steีลโบรูรัน",
       "steีน run",
-      "ซีวรัน"
+      "ซีวรัน",
+      "steีบน"
     ],
     "Steins;Gate": [
       "ไ Gate"
@@ -4179,6 +4272,9 @@
     ],
     "TB": [
       "เทB"
+    ],
+    "team": [
+      "teม"
     ],
     "Team Liquid": [
       "ลิquิด"
@@ -4728,6 +4824,9 @@
       "วูa",
       "บูa"
     ],
+    "WuWa": [
+      "Wiวave"
+    ],
     "WWE ดูฟรีใน YouTube แมตช์อำลา John Cena": [
       "เ W ดูฟรีใน YouTube แบบแมทอำราจซีน่า"
     ],
@@ -4804,7 +4903,9 @@
       "เuda",
       "ZLดA",
       "zด้า",
-      "เda"
+      "เda",
+      "เet",
+      "เET"
     ],
     "Zelda Live Action": [
       "Zelda Ltion"
@@ -5078,6 +5179,9 @@
     "ซีรีส์แอนิเมชัน": [
       "ซีรียส์anิช"
     ],
+    "ซีโร่": [
+      "zีรนะฮะ"
+    ],
     "ซึนเดเระ": [
       "ซินเดเละ"
     ],
@@ -5126,6 +5230,9 @@
     ],
     "ด่าน Challenge": [
       "ด่าchallน"
+    ],
+    "ด้อม": [
+      "ดom"
     ],
     "ตงหัว (Donghua)": [
       "ตรงหัว"
@@ -5479,6 +5586,9 @@
     "สร้าง Branding": [
       "สร้างbrรนing"
     ],
+    "สลิ่ม": [
+      "slลิม"
+    ],
     "สล็อตแอนด์คาสิโน": [
       "สotแอนคาสิโน"
     ],
@@ -5517,6 +5627,7 @@
       "สamิ่า"
     ],
     "สโลว์": [
+      "SLโลว",
       "slลว"
     ],
     "หลานหลิงหวาง (Prince of Lanling)": [
@@ -5705,7 +5816,8 @@
     ],
     "เซอร์": [
       "เซer(?=[\\s,.]|$)",
-      "ซer(?=[\\s,.]|$)"
+      "ซer(?=[\\s,.]|$)",
+      "เซer"
     ],
     "เซอร์เกอร์": [
       "เซerกอร",
@@ -5942,6 +6054,8 @@
     ],
     "แพตช์": [
       "แผat",
+      "patช",
+      "PATพ",
       "pพช"
     ],
     "แพรี่": [
@@ -6185,6 +6299,9 @@
     ],
     "ไลฟ์แอ็กชัน (Live Action)": [
       "Reชั"
+    ],
+    "ไวเบรเนียม": [
+      "ไbเนียม"
     ],
     "ไอซ์ (รักชนก)": [
       "อีอซ์eีอซ์",
