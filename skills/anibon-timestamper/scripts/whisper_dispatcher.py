@@ -338,7 +338,10 @@ def run_whisper_slice(
         "-l", "th",
         "-oj",
         "-of", base_no_ext,
-        "-t", str(threads)
+        "-t", str(threads),
+        "-nf",
+        "-bo", "1",
+        "-bs", "1"
     ]
     if os.path.exists(json_out) and os.path.getsize(json_out) > 0:
         try:
@@ -368,7 +371,10 @@ def run_whisper_slice(
         "-f", slice_wav,
         "-l", "th",
         "-nt",
-        "-t", str(threads)
+        "-t", str(threads),
+        "-nf",
+        "-bo", "1",
+        "-bs", "1"
     ]
     try:
         res = subprocess.run(fallback_cmd, capture_output=True, text=True, check=True)
@@ -379,7 +385,8 @@ def run_whisper_slice(
 
 
 def get_youtube_stream_url(video_url: str) -> Optional[str]:
-    """Retrieve direct HTTPS stream URL via Android client (bypasses SABR 403 without browser cookies)."""
+    """Retrieve direct HTTPS stream URL via Android client or browser cookies."""
+    # 1. Try Android client first
     cmd = [
         "yt-dlp",
         "--extractor-args", "youtube:player_client=android",
@@ -391,10 +398,197 @@ def get_youtube_stream_url(video_url: str) -> Optional[str]:
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         url = res.stdout.strip().splitlines()[0].strip()
         if url.startswith("http"):
-            return url
-    except Exception as e:
-        sys.stderr.write(f"[!] Warning: failed to fetch YouTube stream URL for {video_url}: {e}\n")
+            # Verify stream URL is playable
+            check = subprocess.run(["ffmpeg", "-y", "-ss", "0", "-t", "1", "-i", url, "-f", "null", "-"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if check.returncode == 0:
+                return url
+    except Exception:
+        pass
+
+    # 2. Fallback to browser cookies (Chrome, Brave, Firefox, Edge, Safari)
+    for b in ["chrome", "brave", "firefox", "edge", "safari"]:
+        try:
+            cmd = ["yt-dlp", "--cookies-from-browser", b, "-g", "-f", "140/ba/b", video_url]
+            res = subprocess.run(cmd, capture_output=True, text=True)
+            if res.returncode == 0 and res.stdout.strip().startswith("http"):
+                url = res.stdout.strip().splitlines()[0].strip()
+                return url
+        except Exception:
+            continue
+
+    sys.stderr.write(f"[!] Warning: failed to fetch playable YouTube stream URL for {video_url}\n")
     return None
+
+
+def detect_audio_transcript_offset(
+    audio_source: str,
+    raw_th_orig_path: str,
+    whisper_bin: str,
+    model_bin: str,
+    threads: int = 4
+) -> float:
+    """Detect standby/intro time offset between raw Google transcript and actual audio stream.
+    
+    Uses multi-anchor longest-substring matching to robustly distinguish actual speech
+    from false matches during background standby or pre-stream countdowns.
+    Returns offset in seconds (audio_time = transcript_time + offset).
+    """
+    import difflib
+    if not os.path.isfile(raw_th_orig_path):
+        return 0.0
+
+    try:
+        with open(raw_th_orig_path, "r", encoding="utf-8") as f:
+            events = json.load(f).get("events", [])
+    except Exception:
+        return 0.0
+
+    # Build reference text from opening 30 seconds of transcript
+    speech_ref = ""
+    first_speech_sec = 0.0
+    for ev in events:
+        t = ev.get("tStartMs", 0) / 1000.0
+        if t <= 30.0:
+            for s in ev.get("segs", []):
+                txt = s.get("utf8", "")
+                if txt.strip() and not first_speech_sec and not txt.strip().startswith("["):
+                    first_speech_sec = t
+                speech_ref += txt
+    ref_clean = "".join(c for c in speech_ref if c.isalnum())
+    if not ref_clean:
+        return 0.0
+
+    # 1. Quick probe 0s (verify if video audio and transcript start in sync)
+    test_wav0 = "/tmp/_sync_probe_0.wav"
+    for ext in [".wav", ".json"]:
+        p = f"/tmp/_sync_probe_0{ext}"
+        if os.path.exists(p):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+    if slice_audio(audio_source, 0, 20, test_wav0):
+        txt0, _ = run_whisper_slice(whisper_bin, model_bin, test_wav0, threads=threads)
+        t0_c = "".join(c for c in txt0 if c.isalnum())
+        m0 = difflib.SequenceMatcher(None, t0_c, ref_clean).find_longest_match(0, len(t0_c), 0, len(ref_clean)).size
+        for ext in [".wav", ".json"]:
+            p = f"/tmp/_sync_probe_0{ext}"
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+        if m0 >= 15:
+            return 0.0
+
+    # 2. Fast silence detection to identify candidate standby exits
+    silence_ends = []
+    try:
+        res = subprocess.run(
+            ["ffmpeg", "-t", "900", "-i", audio_source, "-af", "silencedetect=noise=-30dB:d=3", "-f", "null", "-"],
+            capture_output=True, text=True
+        )
+        for line in res.stderr.splitlines():
+            if "silence_end:" in line:
+                s_end = float(line.split("silence_end:")[1].split("|")[0].strip())
+                silence_ends.append(s_end)
+    except Exception:
+        pass
+
+    # Jump candidates: detected silence boundaries + fallback 120s grid
+    candidates = sorted(list(set([int(s) for s in silence_ends] + list(range(120, 900, 120)))))
+
+    best_sec = 0
+    best_len = 0
+    for cand in candidates:
+        wav = f"/tmp/_cand_probe_{cand}.wav"
+        for ext in [".wav", ".json"]:
+            p = f"/tmp/_cand_probe_{cand}{ext}"
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+        if not slice_audio(audio_source, cand, 25, wav):
+            continue
+        txt, _ = run_whisper_slice(whisper_bin, model_bin, wav, threads=threads)
+        for ext in [".wav", ".json"]:
+            p = f"/tmp/_cand_probe_{cand}{ext}"
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+        tc = "".join(c for c in txt if c.isalnum())
+        m = difflib.SequenceMatcher(None, tc, ref_clean, autojunk=False).find_longest_match(0, len(tc), 0, len(ref_clean)).size
+        if m > best_len:
+            best_len = m
+            best_sec = cand
+        if m >= 12:
+            break
+
+    if best_len < 4:
+        return 0.0
+
+    # 3. Fine alignment via single JSON slice around best_sec
+    fine_start = max(0, best_sec - 10)
+    fine_wav = "/tmp/_fine_align_slice.wav"
+    for ext in [".wav", ".json"]:
+        p = f"/tmp/_fine_align_slice{ext}"
+        if os.path.exists(p):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+    if not slice_audio(audio_source, fine_start, 45, fine_wav):
+        return float(best_sec)
+
+    _, segments = run_whisper_slice(whisper_bin, model_bin, fine_wav, threads=threads)
+    for ext in [".wav", ".json"]:
+        p = f"/tmp/_fine_align_slice{ext}"
+        if os.path.exists(p):
+            try:
+                os.remove(p)
+            except OSError:
+                pass
+
+    if not segments:
+        return float(best_sec)
+
+    best_seg = None
+    best_seg_len = 0
+    best_match_b = 0
+    for seg in segments:
+        tc = "".join(c for c in seg.get("text", "") if c.isalnum())
+        m = difflib.SequenceMatcher(None, tc, ref_clean, autojunk=False).find_longest_match(0, len(tc), 0, len(ref_clean))
+        if m.size > best_seg_len:
+            best_seg_len = m.size
+            best_seg = seg
+            best_match_b = m.b
+
+    if best_seg and best_seg_len >= 5:
+        # Find the transcript timestamp corresponding to match index m.b
+        matched_t = first_speech_sec
+        curr_chars = 0
+        for ev in events:
+            t = ev.get("tStartMs", 0) / 1000.0
+            found = False
+            for s in ev.get("segs", []):
+                w_c = "".join(c for c in s.get("utf8", "") if c.isalnum())
+                if curr_chars + len(w_c) >= best_match_b:
+                    matched_t = t
+                    found = True
+                    break
+                curr_chars += len(w_c)
+            if found:
+                break
+
+        rel_from = best_seg.get("offsets", {}).get("from", 0) / 1000.0
+        audio_event_time = fine_start + rel_from
+        offset = max(0.0, audio_event_time - matched_t)
+        return round(offset, 1)
+
+    return float(best_sec)
 
 
 # ==============================================================================
@@ -411,6 +605,7 @@ def dispatch_verification(
     model_bin: Optional[str] = None,
     output_json: Optional[str] = None,
     workers_override: Optional[int] = None,
+    offset_sec: Optional[float] = None,
     verbose: bool = False
 ) -> int:
     profile = HardwareProfile()
@@ -439,28 +634,53 @@ def dispatch_verification(
     slices_dir = os.path.join(workspace, "audio_slices")
     os.makedirs(slices_dir, exist_ok=True)
 
-    # Check which clusters need slicing
-    missing_clusters = []
-    for cl in clusters:
-        cid = cl["cluster_id"]
-        slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
-        if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
-            missing_clusters.append(cl)
-
-    # Resolve audio source if slicing is required
+    # Resolve audio source if needed
     audio_source = audio_file
-    if missing_clusters and not audio_source:
+    if not audio_source:
         for cand_name in ["audio.opus", "audio.m4a", "audio.wav", "audio.mp3"]:
             p = os.path.join(workspace, cand_name)
             if os.path.isfile(p) and os.path.getsize(p) > 0:
                 audio_source = p
                 break
 
-    if missing_clusters and not audio_source:
+    if not audio_source:
         if stream_url:
             audio_source = stream_url
         elif video_url:
-            sys.stderr.write(f"[*] Slices needed ({len(missing_clusters)} clusters). Fetching direct stream URL for {video_url}...\n")
+            audio_source = get_youtube_stream_url(video_url)
+
+    # Auto-calibrate or apply audio-to-transcript timeline offset
+    raw_th_orig = os.path.join(workspace, "raw_transcript.th-orig.json3")
+    if not os.path.exists(raw_th_orig):
+        for cand in ["raw_transcript.json", "raw_transcript.th.json3"]:
+            p = os.path.join(workspace, cand)
+            if os.path.exists(p):
+                raw_th_orig = p
+                break
+
+    if offset_sec is None:
+        sys.stderr.write("[*] Calibrating audio-to-transcript timeline offset...\n")
+        offset_sec = detect_audio_transcript_offset(audio_source, raw_th_orig, w_bin, m_bin, profile.threads_per_worker)
+        if offset_sec > 0:
+            sys.stderr.write(f"[*] Detected audio-to-transcript standby offset: +{offset_sec:.1f}s (auto-aligned)\n")
+        else:
+            sys.stderr.write("[*] Timeline offset: 0.0s (direct sync)\n")
+            offset_sec = 0.0
+    else:
+        sys.stderr.write(f"[*] Using timeline offset: +{offset_sec:.1f}s\n")
+
+    # Check which clusters need slicing
+    missing_clusters = []
+    for cl in clusters:
+        cid = cl["cluster_id"]
+        slice_name = f"cluster_{cid:03d}_{cl['start_sec']}_off{int(offset_sec)}.wav" if offset_sec else f"cluster_{cid:03d}_{cl['start_sec']}.wav"
+        slice_wav = os.path.join(slices_dir, slice_name)
+        if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
+            missing_clusters.append(cl)
+
+    if missing_clusters and not audio_source:
+        if video_url:
+            sys.stderr.write(f"[*] Slices needed ({len(missing_clusters)} clusters). Fetching stream URL for {video_url}...\n")
             audio_source = get_youtube_stream_url(video_url)
 
     if missing_clusters and not audio_source:
@@ -475,7 +695,6 @@ def dispatch_verification(
     sys.stderr.write(f"[*] Engine: {w_bin} (Model: {os.path.basename(m_bin)}) via {num_workers} parallel workers\n")
 
     # Load raw Google transcript if available in workspace
-    raw_th_orig = os.path.join(workspace, "raw_transcript.th-orig.json3")
     google_events = []
     if os.path.exists(raw_th_orig):
         try:
@@ -494,9 +713,11 @@ def dispatch_verification(
     def process_cluster(cl: Dict) -> Tuple[int, str, List[Dict]]:
         nonlocal consecutive_fails
         cid = cl["cluster_id"]
-        slice_wav = os.path.join(slices_dir, f"cluster_{cid:03d}_{cl['start_sec']}.wav")
+        slice_name = f"cluster_{cid:03d}_{cl['start_sec']}_off{int(offset_sec)}.wav" if offset_sec else f"cluster_{cid:03d}_{cl['start_sec']}.wav"
+        slice_wav = os.path.join(slices_dir, slice_name)
+        slice_start = max(0, int(cl["start_sec"] + offset_sec))
         if not (os.path.exists(slice_wav) and os.path.getsize(slice_wav) > 0):
-            ok = slice_audio(audio_source, cl["start_sec"], cl["duration"], slice_wav)
+            ok = slice_audio(audio_source, slice_start, cl["duration"], slice_wav)
             if not ok:
                 with fail_lock:
                     failed_slices.append(cid)
@@ -539,6 +760,7 @@ def dispatch_verification(
         cid = cl["cluster_id"]
         raw_text = cluster_transcripts.get(cid, "")
         segs = cluster_segments.get(cid, [])
+        slice_start = max(0, int(cl["start_sec"] + offset_sec))
         for item in cl["items"]:
             g = item["garbled"]
             ts = item["ts"]
@@ -548,7 +770,7 @@ def dispatch_verification(
             seen_keys.add(key)
             
             cand_sec = item["sec"]
-            rel_sec = max(0.0, cand_sec - cl["start_sec"])
+            rel_sec = max(0.0, (cand_sec + offset_sec) - slice_start)
 
             # Extract surrounding Google ASR sentence words
             google_sentence = ""
@@ -585,6 +807,7 @@ def dispatch_verification(
         "engine": "whisper.cpp",
         "model": os.path.basename(m_bin),
         "backend": profile.backend_name,
+        "audio_offset_sec": offset_sec,
         "status": status_str,
         "total_clusters": len(clusters),
         "failed_slices": len(failed_slices),
@@ -599,7 +822,7 @@ def dispatch_verification(
 
 
 # ==============================================================================
-# 6. CLI Entry Point
+# 6. CLI Entrypoint
 # ==============================================================================
 
 def main():
@@ -611,18 +834,15 @@ def main():
         help="Workspace directory containing audio.opus and garbled_notes_raw/"
     )
     parser.add_argument(
-        "--raw-notes-dir",
-        "-r",
+        "--raw-notes-dir", "-r",
         help="Directory or text file containing raw garbled spotter notes (default: <workspace>/garbled_notes_raw)"
     )
     parser.add_argument(
-        "--audio-file",
-        "-a",
+        "--audio-file", "-a",
         help="Path to full audio track (default: <workspace>/audio.opus)"
     )
     parser.add_argument(
-        "--video-url",
-        "-u",
+        "--video-url", "-u",
         help="YouTube video URL. If audio track is missing, fetches direct Android stream URL to slice clusters on-the-fly."
     )
     parser.add_argument(
@@ -634,24 +854,26 @@ def main():
         help="Path to whisper-cli executable (auto-discovered if omitted)"
     )
     parser.add_argument(
-        "--model",
-        "-m",
+        "--model", "-m",
         help="Path to GGML Whisper model binary (auto-discovered if omitted)"
     )
     parser.add_argument(
-        "--workers",
-        "-w",
+        "--workers", "-w",
         type=int,
         help="Override worker concurrency (default: auto-tuned by hardware profiler)"
     )
     parser.add_argument(
-        "--output",
-        "-o",
+        "--offset-sec",
+        type=float,
+        default=None,
+        help="Audio-to-transcript time offset in seconds (auto-detected if omitted)"
+    )
+    parser.add_argument(
+        "--output", "-o",
         help="Output JSON path (default: <workspace>/garbled_notes.json)"
     )
     parser.add_argument(
-        "--verbose",
-        "-v",
+        "--verbose", "-v",
         action="store_true",
         help="Print verbose hardware profiling details to stderr"
     )
@@ -671,6 +893,7 @@ def main():
         model_bin=args.model,
         output_json=args.output,
         workers_override=args.workers,
+        offset_sec=args.offset_sec,
         verbose=args.verbose
     )
     sys.exit(ret)
