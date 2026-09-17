@@ -85,3 +85,24 @@ def test_align_writes_per_chunk_logs_and_index(tmp_path):
 def json_load(p):
     import json
     return json.loads(p.read_text(encoding="utf-8"))
+
+
+def test_align_with_visual_livechat_format(tmp_path):
+    feed = tmp_path / "visual_events.txt"
+    feed.write_text(
+        "600\t[00:10:00] @nekoalter4231: ไปคุมให้หมดก็ยึดได้แล้ว\n"
+        "600\t[00:10:00] @infinity8078: :_Nerd: :_Nerd:\n"
+        "610\t[00:10:10] @infinity8078: the almighty\n",
+        encoding="utf-8",
+    )
+    chunks = tmp_path / "chunks"
+    chunks.mkdir()
+    (chunks / "chunk_02.json").write_text(
+        '{"start_sec": 600, "end_sec": 900, "text": "bleach talk"}', encoding="utf-8"
+    )
+    out = tmp_path / "out"
+    align(feed, chunks, out)
+    assert (out / "livechat_chunk_02.txt").exists()
+    lines = (out / "livechat_chunk_02.txt").read_text(encoding="utf-8").strip().splitlines()
+    assert len(lines) == 3
+    assert "@infinity8078: :_Nerd: :_Nerd:" in lines[1]
