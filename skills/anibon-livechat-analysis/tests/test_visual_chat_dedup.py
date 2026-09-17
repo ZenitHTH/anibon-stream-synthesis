@@ -84,3 +84,46 @@ def test_deduplicate_superchat():
     events = deduplicate_frames_messages(frames)
     assert len(events) == 1
     assert events[0] == (200, "200\t[00:03:20] 💰 SUPERCHAT (THB 500.00) from @donor: รักปู่ครับ")
+
+
+def test_deduplicate_sliding_window_60s():
+    frames = [
+        {
+            "sec": 10,
+            "messages": [
+                {"author": "@user1", "text": "555"},
+            ],
+        },
+        {
+            "sec": 50,  # 50 - 10 = 40 <= 60 -> suppressed
+            "messages": [
+                {"author": "@user1", "text": "555"},
+            ],
+        },
+        {
+            "sec": 75,  # 75 - 10 = 65 > 60 -> allowed again
+            "messages": [
+                {"author": "@user1", "text": "555"},
+                {"author": "@user2", "text": "GG"},
+            ],
+        },
+        {
+            "sec": 100,  # 100 - 75 = 25 <= 60 -> suppressed
+            "messages": [
+                {"author": "@user1", "text": "555"},
+            ],
+        },
+    ]
+    # Default / None: global set deduplication (only first occurrence)
+    global_events = deduplicate_frames_messages(frames, window_sec=None)
+    assert len(global_events) == 2
+    assert global_events[0] == (10, "10\t[00:00:10] @user1: 555")
+    assert global_events[1] == (75, "75\t[00:01:15] @user2: GG")
+
+    # window_sec=60: allows repeat after 60s
+    window_events = deduplicate_frames_messages(frames, window_sec=60)
+    assert len(window_events) == 3
+    assert window_events[0] == (10, "10\t[00:00:10] @user1: 555")
+    assert window_events[1] == (75, "75\t[00:01:15] @user1: 555")
+    assert window_events[2] == (75, "75\t[00:01:15] @user2: GG")
+

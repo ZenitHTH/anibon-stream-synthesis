@@ -23,6 +23,7 @@ def format_raw_event(
 
 def deduplicate_frames_messages(
     frames_data: list[dict[str, Any]],
+    window_sec: int | None = None,
 ) -> list[tuple[int, str]]:
     """Deduplicate scrolling messages across sampled frames and format into raw event lines.
 
@@ -30,11 +31,16 @@ def deduplicate_frames_messages(
         frames_data: List of frame dictionaries containing:
             - 'sec': Timestamp in seconds for the sampled frame
             - 'messages': List of parsed message dicts with 'author', 'text', and optional 'superchat'
+        window_sec: Optional time window in seconds for deduplication. If None,
+            retains global set behavior across all frames. If specified, tracks
+            the last seen timestamp per message and allows the message again if
+            sec - last_sec > window_sec.
 
     Returns:
         Sorted list of tuples (sec, formatted_event_string)
     """
-    seen = set()
+    seen_set: set[tuple[str, str]] = set()
+    seen_map: dict[tuple[str, str], int] = {}
     events: list[tuple[int, str]] = []
 
     for frame in frames_data:
@@ -46,11 +52,18 @@ def deduplicate_frames_messages(
             key = (author.lower(), text)
             if not key[0] or not key[1]:
                 continue
-            if key in seen:
-                continue
-            seen.add(key)
+            if window_sec is None:
+                if key in seen_set:
+                    continue
+                seen_set.add(key)
+            else:
+                last_sec = seen_map.get(key)
+                if last_sec is not None and (sec - last_sec) <= window_sec:
+                    continue
+                seen_map[key] = sec
             formatted = format_raw_event(sec, author, text, superchat=sc)
             events.append((sec, formatted))
 
     events.sort(key=lambda x: x[0])
     return events
+
