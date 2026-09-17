@@ -21,7 +21,7 @@ Loaded by signal (add to prompt when needed):
 - `anibon-stream-activity` — high-res storyboard sampling for on-screen gameplay, webcam presence/AFK, and visual grounding
 - `anibon-local-transcription` — whisper.cpp fallback if YouTube has no captions
 - `whisper-corruption-recovery` — recover transcript if repetition loops / corruption detected in Whisper output
-- `anibon-livechat-analysis` — parse LiveChat replay so subagents can read the live from both sides (talker + chat)
+- `anibon-livechat-analysis` — parse LiveChat replay (or visual on-screen chat fallback via `extract_visual_livechat.py`) so subagents can read the live from both sides (talker + chat)
 - `antigravity-vision-proxy` — storyboard (sb0) frame inspection for ambiguous pronouns, game title verification, or unresolved garbled notes
 
 ## Pipeline (Linear, Top-to-Bottom)
@@ -76,6 +76,28 @@ python3 -X utf8 scripts/align_live_chat.py --events <workspace>/livechat_events.
 ```
 
 Output: `livechat/livechat_chunk_NN.txt` (per transcript chunk) + `livechat/livechat_index.json`. If `yt-dlp` reports no `live_chat` subtitles, continue — the subagent falls back to transcript-only.
+
+#### Fallback for Edited Livestreams / Missing `.live_chat.json` (Visual Chat Extraction)
+
+When a livestream has been trimmed or edited in YouTube Studio, YouTube permanently deletes the `.live_chat.json` chat replay track, and `yt-dlp` will report no chat subtitles available.
+
+Instead of losing watcher context on high-interest moments, run [`extract_visual_livechat.py`](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-livechat-analysis/scripts/extract_visual_livechat.py) from `anibon-livechat-analysis` to OCR the burned-in chat overlay for specific peak chunks (e.g. meme bursts, high SuperChat donations, viewer Q&As, or climax reactions):
+
+```bash
+# 1. Spot-extract visual livechat for target chunk time range
+python3 -X utf8 ../anibon-livechat-analysis/scripts/extract_visual_livechat.py \
+  --video-id <VIDEO_ID> \
+  --range HH:MM:SS-HH:MM:SS \
+  -o <workspace>/visual_livechat_events.txt
+
+# 2. Align visual raw event feed directly to chunk windows
+python3 -X utf8 scripts/align_live_chat.py \
+  --events <workspace>/visual_livechat_events.txt \
+  --chunks <workspace>/chunks/ \
+  -o <workspace>/livechat/
+```
+
+This populates `<workspace>/livechat/livechat_chunk_NN.txt` for the targeted chunk windows, feeding directly into `analyze_555.py` (Step 3.7) and subagent prompt generation without requiring a full-length video download.
 
 ### 3.6 Extract Activity & Webcam Timeline (Optional but preferred)
 
@@ -424,6 +446,7 @@ HH:MM:SS - [Tag] Description
 | `scripts/analyze_555.py` | Detect Thai-laugh/meme pulses from aligned LiveChat → per-chunk mood verdict (Step 3.7) |
 | `scripts/validate_mood.py` | Verify mood-bearing timestamps honour mood_555 verdicts (Step 11.5) |
 | `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
+| `../anibon-livechat-analysis/scripts/extract_visual_livechat.py` | Extract burned-in on-screen LiveChat via Gemini vision proxy when `.live_chat.json` is missing (Step 3.5) |
 | `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
 | `scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
 | `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
