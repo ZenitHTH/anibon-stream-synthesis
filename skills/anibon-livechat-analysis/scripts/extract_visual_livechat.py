@@ -163,19 +163,30 @@ def probe_chat_layout_from_image(image: Image.Image) -> str:
 
 
 def probe_chat_layout(video_path: str | Path, sample_sec: int = 0) -> str:
-    """Probe candidate chat overlay layout from video at sample_sec."""
+    """Probe candidate chat overlay layout from video at sample_sec.
+
+    If the video file is a trimmed slice (duration <= sample_sec), uses relative
+    offset 0s to avoid seeking past EOF.
+    """
     path = Path(video_path)
     if not path.exists():
         return "bottom-right"
 
     temp_frame = None
     try:
+        duration = get_video_duration(path)
+        # When working with a sliced clip or when sample_sec >= duration, use relative offset 0s
+        if duration > 0 and sample_sec >= duration:
+            probe_offset = 0
+        else:
+            probe_offset = sample_sec
+
         with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
             temp_frame = Path(f.name)
 
         cmd = [
             "ffmpeg",
-            "-ss", str(sample_sec),
+            "-ss", str(probe_offset),
             "-i", str(path),
             "-frames:v", "1",
             "-q:v", "2",
@@ -299,13 +310,16 @@ def extract_chat_frames(
     crop_str = build_crop_filter(roi)
     duration = get_video_duration(video_path)
 
-    # If duration is shorter than end_sec, video is already sliced to target range
-    is_pre_sliced = 0 < duration < end_sec
+    # If duration matches slice length (duration <= target_duration + 5) or duration < end_sec
+    target_duration = end_sec - start_sec
+    is_pre_sliced = duration > 0 and (duration <= target_duration + 5 or duration < end_sec)
 
     out_pattern = str(frames_dir / "chat_%03d.jpg")
     if is_pre_sliced:
         cmd = [
             "ffmpeg",
+            "-ss", "00:00:00",
+            "-to", sec_to_hhmmss(target_duration),
             "-i", str(video_path),
             "-vf", f"fps=1/{interval},{crop_str}",
             "-q:v", "2",
@@ -440,7 +454,11 @@ def main() -> int:
         print(f"Using video: {video_file}")
 
         # 2. Detect layout
-        layout = detect_chat_layout(video_file, sample_sec=start_sec, force_pos=args.force_pos)
+        duration = get_video_duration(video_file)
+        target_duration = end_sec - start_sec
+        is_pre_sliced = duration > 0 and (duration <= target_duration + 5 or duration < start_sec)
+        probe_sec = 0 if is_pre_sliced else start_sec
+        layout = detect_chat_layout(video_file, sample_sec=probe_sec, force_pos=args.force_pos)
         print(f"Chat overlay layout: {layout}")
 
         # 3. Extract and crop frames

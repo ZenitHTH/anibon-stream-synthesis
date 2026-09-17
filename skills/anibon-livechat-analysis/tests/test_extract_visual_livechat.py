@@ -6,8 +6,10 @@ from skills.anibon_livechat_analysis.scripts.extract_visual_livechat import (
     parse_time_range,
     parse_gemini_chat_json,
     detect_chat_layout,
+    probe_chat_layout,
     probe_chat_layout_from_image,
     acquire_video_slice,
+    extract_chat_frames,
     convert_to_frames_data,
     build_arg_parser,
 )
@@ -152,3 +154,115 @@ def test_build_arg_parser():
     assert args.video_id == "test12345"
     assert args.range == "00:10:00-00:10:10"
     assert args.force_pos == "bottom-right"
+
+
+def test_probe_chat_layout_pre_sliced_offset(monkeypatch, tmp_path):
+    dummy_video = tmp_path / "slice.mp4"
+    dummy_video.write_text("fake video")
+
+    import skills.anibon_livechat_analysis.scripts.extract_visual_livechat as evl
+
+    # Mock duration to 120s (slice) while sample_sec is 600s
+    monkeypatch.setattr(evl, "get_video_duration", lambda path: 120.0)
+
+    captured_cmds = []
+
+    def mock_run(cmd, *args, **kwargs):
+        captured_cmds.append(cmd)
+        class Res:
+            returncode = 1
+            stdout = b""
+            stderr = b""
+        return Res()
+
+    monkeypatch.setattr("subprocess.run", mock_run)
+
+    # Calling with sample_sec=600 on a 120s slice must seek at relative offset 0
+    layout = probe_chat_layout(dummy_video, sample_sec=600)
+    assert layout == "bottom-right"
+    assert len(captured_cmds) == 1
+    cmd = captured_cmds[0]
+    ss_idx = cmd.index("-ss")
+    assert cmd[ss_idx + 1] == "0"
+
+
+def test_extract_chat_frames_pre_sliced_offset(monkeypatch, tmp_path):
+    dummy_video = tmp_path / "slice.mp4"
+    dummy_video.write_text("fake video")
+    frames_dir = tmp_path / "frames"
+
+    import skills.anibon_livechat_analysis.scripts.extract_visual_livechat as evl
+
+    # Mock duration to 120s (slice of 600s to 720s)
+    monkeypatch.setattr(evl, "get_video_duration", lambda path: 120.0)
+    monkeypatch.setattr(evl, "get_video_resolution", lambda path: (1280, 720))
+
+    captured_cmds = []
+
+    def mock_run(cmd, *args, **kwargs):
+        captured_cmds.append(cmd)
+        class Res:
+            returncode = 0
+            stdout = b""
+            stderr = b""
+        return Res()
+
+    monkeypatch.setattr("subprocess.run", mock_run)
+
+    extract_chat_frames(
+        video_path=dummy_video,
+        start_sec=600,
+        end_sec=720,
+        layout="bottom-right",
+        interval=4.0,
+        frames_dir=frames_dir,
+    )
+
+    assert len(captured_cmds) == 1
+    cmd = captured_cmds[0]
+    # For a pre-sliced video, it should seek relative from 00:00:00 to 00:02:00
+    ss_idx = cmd.index("-ss")
+    to_idx = cmd.index("-to")
+    assert cmd[ss_idx + 1] == "00:00:00"
+    assert cmd[to_idx + 1] == "00:02:00"
+
+
+def test_extract_chat_frames_full_video_offset(monkeypatch, tmp_path):
+    dummy_video = tmp_path / "full.mp4"
+    dummy_video.write_text("fake video")
+    frames_dir = tmp_path / "frames"
+
+    import skills.anibon_livechat_analysis.scripts.extract_visual_livechat as evl
+
+    # Mock duration to 7200s (full stream)
+    monkeypatch.setattr(evl, "get_video_duration", lambda path: 7200.0)
+    monkeypatch.setattr(evl, "get_video_resolution", lambda path: (1280, 720))
+
+    captured_cmds = []
+
+    def mock_run(cmd, *args, **kwargs):
+        captured_cmds.append(cmd)
+        class Res:
+            returncode = 0
+            stdout = b""
+            stderr = b""
+        return Res()
+
+    monkeypatch.setattr("subprocess.run", mock_run)
+
+    extract_chat_frames(
+        video_path=dummy_video,
+        start_sec=600,
+        end_sec=720,
+        layout="bottom-right",
+        interval=4.0,
+        frames_dir=frames_dir,
+    )
+
+    assert len(captured_cmds) == 1
+    cmd = captured_cmds[0]
+    # For a full video, it should seek absolute from 00:10:00 to 00:12:00
+    ss_idx = cmd.index("-ss")
+    to_idx = cmd.index("-to")
+    assert cmd[ss_idx + 1] == "00:10:00"
+    assert cmd[to_idx + 1] == "00:12:00"
