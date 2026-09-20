@@ -90,6 +90,13 @@ YouTube comment hard cap = 4,500 UTF-8 bytes.
 Target ceiling = 3,500 bytes per pasted block (leaves margin for header).
 Thai chars = 3 bytes. ASCII/English chars = 1 byte.
 
+**TIMESTAMP COUNT RULE (CRITICAL FOR THAI UTF-8)**:
+- In Thai, each character takes 3 bytes. A single timestamp line averages ~180–220 UTF-8 bytes.
+- To stay strictly below the 3,500-byte target ceiling, **never exceed 14 timestamps per part**.
+- Typical target: **8–13 timestamps per part**.
+- If an activity period has 15+ timestamps, you MUST split it at a logical sub-topic break into Part A / Part B.
+
+
 ## CAVEMAN SUMMARY RULES
 
 Write each part heading like a caveman:

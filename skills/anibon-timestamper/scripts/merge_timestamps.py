@@ -8,9 +8,21 @@ def parse_time(ts_str):
     return parts[0]*3600 + parts[1]*60 + parts[2] if len(parts) == 3 else 0
 
 def merge_logic(file_paths):
+    import glob
+    expanded_paths = []
+    for fp in file_paths:
+        if any(c in fp for c in ["*", "?", "["]):
+            matched = glob.glob(fp)
+            if matched:
+                expanded_paths.extend(matched)
+            else:
+                expanded_paths.append(fp)
+        else:
+            expanded_paths.append(fp)
+
     merged = []
     pattern = re.compile(r'^(\d{2}:\d{2}:\d{2})\s*(?:-\s*)?(?:\[(.*?)\])?\s*(.*)$')
-    for fp in file_paths:
+    for fp in expanded_paths:
         try:
             with open(fp, "r", encoding="utf-8") as f:
                 for line in f:

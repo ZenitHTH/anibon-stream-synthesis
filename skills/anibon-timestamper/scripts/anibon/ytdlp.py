@@ -10,6 +10,7 @@ Consumers (before extraction):
 import sys
 import subprocess
 import json
+import shutil
 from pathlib import Path
 from anibon.time import fmt_ts
 
@@ -26,15 +27,15 @@ def download_transcript(url: str, workspace: Path) -> None:
         return
 
     print("[*] Downloading transcript via yt-dlp...", file=sys.stderr)
-    subprocess.run(
-        [
-            sys.executable, "-m", "yt_dlp", "-P", str(workspace),
-            "--write-auto-subs", "--sub-lang", "th-orig,th",
-            "--sub-format", "json3", "--skip-download",
-            "--ignore-no-formats-error", "-o", "raw_transcript", url,
-        ],
-        check=False,
-    )
+    ytdlp_cmd = shutil.which("yt-dlp") or [sys.executable, "-m", "yt_dlp"]
+    cmd = [ytdlp_cmd] if isinstance(ytdlp_cmd, str) else list(ytdlp_cmd)
+    cmd += [
+        "-P", str(workspace),
+        "--write-auto-subs", "--sub-lang", "th-orig,th",
+        "--sub-format", "json3", "--skip-download",
+        "--ignore-no-formats-error", "-o", "raw_transcript", url,
+    ]
+    subprocess.run(cmd, check=False)
 
     # Rename yt-dlp output (e.g. raw_transcript.th.json3) → raw_transcript.json
     for f in workspace.glob("raw_transcript*.json3"):
@@ -58,12 +59,11 @@ def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<
         return output
 
     print(f"[*] Downloading video via yt-dlp...", file=sys.stderr)
+    ytdlp_cmd = shutil.which("yt-dlp") or [sys.executable, "-m", "yt_dlp"]
+    cmd = [ytdlp_cmd] if isinstance(ytdlp_cmd, str) else list(ytdlp_cmd)
+    cmd += ["-f", format_spec, "-o", str(output), url]
     try:
-        subprocess.run(
-            [sys.executable, "-m", "yt_dlp", "-f", format_spec, "-o", str(output), url],
-            capture_output=False,
-            check=True,
-        )
+        subprocess.run(cmd, capture_output=False, check=True)
         return output
     except subprocess.CalledProcessError as e:
         print(f"[!] Failed to download video: {e}", file=sys.stderr)

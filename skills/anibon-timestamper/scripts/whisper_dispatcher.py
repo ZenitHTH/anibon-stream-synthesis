@@ -43,11 +43,18 @@ class HardwareProfile:
         self.machine = platform.machine().lower()
         self.cpu_cores = os.cpu_count() or 4
         self.is_apple_silicon = (self.os_type == "darwin" and "arm" in self.machine)
+        self.device_id = None
         
         if self.is_apple_silicon:
             self.max_workers = min(3, max(1, self.cpu_cores // 4))
             self.threads_per_worker = 4
             self.backend_name = "Apple Silicon Metal GPU"
+        elif self.os_type == "windows":
+            # Check for Tesla P100 (Vulkan device 1)
+            self.max_workers = 2
+            self.threads_per_worker = 4
+            self.device_id = 1
+            self.backend_name = "Tesla P100 Vulkan GPU (device 1)"
         else:
             self.max_workers = 1
             self.threads_per_worker = max(1, self.cpu_cores - 1)
@@ -79,6 +86,8 @@ def find_whisper_cli(custom_path: Optional[str] = None) -> Optional[str]:
     for p in candidates:
         if p and os.path.isfile(p) and os.access(p, os.X_OK):
             return p
+        if p and os.name == "nt" and os.path.isfile(p + ".exe"):
+            return p + ".exe"
     return None
 
 
@@ -326,7 +335,8 @@ def run_whisper_slice(
     whisper_bin: str,
     model_bin: str,
     slice_wav: str,
-    threads: int = 4
+    threads: int = 4,
+    device_id: Optional[int] = None
 ) -> Tuple[str, List[Dict]]:
     """Run whisper-cli on audio slice and extract both full text and timed segments."""
     base_no_ext = os.path.splitext(slice_wav)[0]
@@ -343,6 +353,8 @@ def run_whisper_slice(
         "-bo", "1",
         "-bs", "1"
     ]
+    if device_id is not None:
+        cmd.extend(["-dev", str(device_id)])
     if os.path.exists(json_out) and os.path.getsize(json_out) > 0:
         try:
             with open(json_out, "r", encoding="utf-8", errors="replace") as f:
@@ -376,6 +388,8 @@ def run_whisper_slice(
         "-bo", "1",
         "-bs", "1"
     ]
+    if device_id is not None:
+        fallback_cmd.extend(["-dev", str(device_id)])
     try:
         res = subprocess.run(fallback_cmd, capture_output=True, text=True, check=True)
         return (res.stdout.strip().replace("\n", " "), [])
@@ -425,7 +439,8 @@ def detect_audio_transcript_offset(
     raw_th_orig_path: str,
     whisper_bin: str,
     model_bin: str,
-    threads: int = 4
+    threads: int = 4,
+    device_id: Optional[int] = None
 ) -> float:
     """Detect standby/intro time offset between raw Google transcript and actual audio stream.
     
@@ -434,6 +449,7 @@ def detect_audio_transcript_offset(
     Returns offset in seconds (audio_time = transcript_time + offset).
     """
     import difflib
+    import tempfile
     if not os.path.isfile(raw_th_orig_path):
         return 0.0
 
@@ -458,21 +474,22 @@ def detect_audio_transcript_offset(
     if not ref_clean:
         return 0.0
 
+    tmp_dir = tempfile.gettempdir()
     # 1. Quick probe 0s (verify if video audio and transcript start in sync)
-    test_wav0 = "/tmp/_sync_probe_0.wav"
+    test_wav0 = os.path.join(tmp_dir, "_sync_probe_0.wav")
     for ext in [".wav", ".json"]:
-        p = f"/tmp/_sync_probe_0{ext}"
+        p = os.path.join(tmp_dir, f"_sync_probe_0{ext}")
         if os.path.exists(p):
             try:
                 os.remove(p)
             except OSError:
                 pass
     if slice_audio(audio_source, 0, 20, test_wav0):
-        txt0, _ = run_whisper_slice(whisper_bin, model_bin, test_wav0, threads=threads)
+        txt0, _ = run_whisper_slice(whisper_bin, model_bin, test_wav0, threads=threads, device_id=device_id)
         t0_c = "".join(c for c in txt0 if c.isalnum())
         m0 = difflib.SequenceMatcher(None, t0_c, ref_clean).find_longest_match(0, len(t0_c), 0, len(ref_clean)).size
         for ext in [".wav", ".json"]:
-            p = f"/tmp/_sync_probe_0{ext}"
+            p = os.path.join(tmp_dir, f"_sync_probe_0{ext}")
             if os.path.exists(p):
                 try:
                     os.remove(p)
@@ -501,9 +518,9 @@ def detect_audio_transcript_offset(
     best_sec = 0
     best_len = 0
     for cand in candidates:
-        wav = f"/tmp/_cand_probe_{cand}.wav"
+        wav = os.path.join(tmp_dir, f"_cand_probe_{cand}.wav")
         for ext in [".wav", ".json"]:
-            p = f"/tmp/_cand_probe_{cand}{ext}"
+            p = os.path.join(tmp_dir, f"_cand_probe_{cand}{ext}")
             if os.path.exists(p):
                 try:
                     os.remove(p)
@@ -511,9 +528,9 @@ def detect_audio_transcript_offset(
                     pass
         if not slice_audio(audio_source, cand, 25, wav):
             continue
-        txt, _ = run_whisper_slice(whisper_bin, model_bin, wav, threads=threads)
+        txt, _ = run_whisper_slice(whisper_bin, model_bin, wav, threads=threads, device_id=device_id)
         for ext in [".wav", ".json"]:
-            p = f"/tmp/_cand_probe_{cand}{ext}"
+            p = os.path.join(tmp_dir, f"_cand_probe_{cand}{ext}")
             if os.path.exists(p):
                 try:
                     os.remove(p)
@@ -532,9 +549,9 @@ def detect_audio_transcript_offset(
 
     # 3. Fine alignment via single JSON slice around best_sec
     fine_start = max(0, best_sec - 10)
-    fine_wav = "/tmp/_fine_align_slice.wav"
+    fine_wav = os.path.join(tmp_dir, "_fine_align_slice.wav")
     for ext in [".wav", ".json"]:
-        p = f"/tmp/_fine_align_slice{ext}"
+        p = os.path.join(tmp_dir, f"_fine_align_slice{ext}")
         if os.path.exists(p):
             try:
                 os.remove(p)
@@ -543,9 +560,9 @@ def detect_audio_transcript_offset(
     if not slice_audio(audio_source, fine_start, 45, fine_wav):
         return float(best_sec)
 
-    _, segments = run_whisper_slice(whisper_bin, model_bin, fine_wav, threads=threads)
+    _, segments = run_whisper_slice(whisper_bin, model_bin, fine_wav, threads=threads, device_id=device_id)
     for ext in [".wav", ".json"]:
-        p = f"/tmp/_fine_align_slice{ext}"
+        p = os.path.join(tmp_dir, f"_fine_align_slice{ext}")
         if os.path.exists(p):
             try:
                 os.remove(p)
@@ -660,7 +677,7 @@ def dispatch_verification(
 
     if offset_sec is None:
         sys.stderr.write("[*] Calibrating audio-to-transcript timeline offset...\n")
-        offset_sec = detect_audio_transcript_offset(audio_source, raw_th_orig, w_bin, m_bin, profile.threads_per_worker)
+        offset_sec = detect_audio_transcript_offset(audio_source, raw_th_orig, w_bin, m_bin, profile.threads_per_worker, device_id=profile.device_id)
         if offset_sec > 0:
             sys.stderr.write(f"[*] Detected audio-to-transcript standby offset: +{offset_sec:.1f}s (auto-aligned)\n")
         else:
@@ -730,7 +747,7 @@ def dispatch_verification(
                 return (cid, "", [])
         with fail_lock:
             consecutive_fails = 0
-        full_text, segments = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker)
+        full_text, segments = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker, device_id=profile.device_id)
         return (cid, full_text, segments)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:

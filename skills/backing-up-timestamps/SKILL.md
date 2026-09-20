@@ -37,7 +37,7 @@ Centralized workflow for ingesting finalized stream timestamps into the [`timest
 2. **PULL LATEST BEFORE INGESTING**: Always ensure `git -C ~/timestamp_workspace pull` is run before importing new streams to prevent diverged history or merge conflicts.
 3. **IMPORT FIRST, MOVE ONLY IF BACKED UP**: Never move a workspace into `youtube_workspaces/backed_up/` before `import_workspace.py` confirms successful parsing and catalog update. If import fails, DO NOT MOVE the directory.
 4. **ACTIVE WORKSPACES ONLY**: Never move `.zip` archives or directories ending in `_Backup` (e.g. `youtube_W0bmqWlx4z4_workspace_Backup`). Leave them in `~`.
-5. **NEVER COPY RAW MEDIA TO GIT**: Never copy whole workspaces, audio slices, or frames into `timestamp_workspace`. Only markdown summaries and catalog metadata belong in `timestamp_workspace`.
+5. **NEVER COPY RAW MEDIA TO GIT**: Never copy whole workspaces, audio slices, video files, or raw frame directories into `timestamp_workspace`. Only markdown summaries, catalog metadata, and lightweight text/JSON transcripts (under `transcripts/transcript_<video_id>.*` for streams lacking YouTube auto-captions) belong in `timestamp_workspace`.
 
 ---
 
@@ -87,7 +87,8 @@ ls -lh ~/youtube_<video_id>_workspace/output.md
 Always verify candidate discovery, title resolution, and timestamp count before modifying files:
 
 ```bash
-python3 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_<video_id>_workspace   --dry-run
+# Note: Use -X utf8 (especially on Windows) to avoid cp1252/charmap UnicodeEncodeError
+python3 -X utf8 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_<video_id>_workspace   --dry-run
 ```
 
 ### 3. Execute Ingestion
@@ -102,12 +103,13 @@ Run the ingestion tool. It automatically:
 - Re-renders the catalog table in `README.md`.
 
 ```bash
-python3 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_<video_id>_workspace
+# Windows: python -X utf8 C:/Users/.../timestamp_workspace/import_workspace.py
+python3 -X utf8 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_<video_id>_workspace
 ```
 
 *For batch imports across multiple workspaces:*
 ```bash
-python3 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_*_workspace
+python3 -X utf8 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_*_workspace
 ```
 
 ### 4. Verify Catalog Success BEFORE Moving
@@ -133,22 +135,27 @@ mv ~/youtube_<video_id>_workspace /Users/zenithth/youtube_workspaces/backed_up/
 
 *Update `workspace_path` in `catalog.json` to match the new location:*
 ```bash
-python3 -c "
+python3 -X utf8 -c "
 import json
-cat = json.load(open('/Users/zenithth/timestamp_workspace/metadata/catalog.json'))
+cat = json.load(open('/Users/zenithth/timestamp_workspace/metadata/catalog.json', encoding='utf-8'))
 for e in cat:
     if e['video_id'] == '<video_id>':
         e['workspace_path'] = '/Users/zenithth/youtube_workspaces/backed_up/youtube_<video_id>_workspace'
-json.dump(cat, open('/Users/zenithth/timestamp_workspace/metadata/catalog.json', 'w'), ensure_ascii=False, indent=2)
+json.dump(cat, open('/Users/zenithth/timestamp_workspace/metadata/catalog.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
 "
 ```
 
-### 6. Commit Catalog Changes
+### 6. Commit & Push Catalog Changes
 
 ```bash
 cd /Users/zenithth/timestamp_workspace
+# Stage markdown index, metadata, catalog readme, and transcripts (if generated)
 git add by_video_id/timestamp_<video_id>.md metadata/catalog.json README.md
+if [ -d "transcripts" ]; then
+  git add transcripts/transcript_<video_id>.* 2>/dev/null || true
+fi
 git commit -m "feat(catalog): backup <video_id> timestamps and update catalog/README"
+git push origin main
 ```
 
 ---

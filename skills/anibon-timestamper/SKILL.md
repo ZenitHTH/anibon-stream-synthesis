@@ -372,11 +372,25 @@ python3 scripts/validate_mood.py \
   --index ~/youtube_<id>_workspace/livechat/livechat_index.json
 ```
 
-### 12. Catalog & Archive (Recommended)
+### 12. Catalog, Archive & Dictionary Synchronization (End-of-Series Protocol)
 
-Once `output.md` is generated and verified, catalog the timestamps into the central index and archive the workspace:
+Once `output.md` is generated and verified (or after a multi-part series run finishes):
 
-**REQUIRED SUB-SKILL:** Use `backing-up-timestamps` to run `import_workspace.py` into `/Users/zenithth/timestamp_workspace` and move the workspace to `/Users/zenithth/youtube_workspaces/backed_up/`.
+1. **Synchronize Garbled Notes**:
+   - Collect and harvest all spotted `GARBLED_NOTES:` from chunk timestamper subagents across all parts.
+   - Ingest into `resources/garbled_replacements.json` under the `"mappings"` key (`data["mappings"]`, preserving header metadata keys `version`, `description`, `note`).
+   - Synchronize across both plugin root and vendored copies (`resources/garbled_replacements.json` and `skills/anibon-timestamper/resources/garbled_replacements.json`).
+   - Commit and push updated dictionary to GitHub (`anibon-stream-synthesis.git`).
+
+2. **Ingest into `timestamp_workspace`**:
+   - **REQUIRED SUB-SKILL:** Use `backing-up-timestamps`.
+   - Run `python3 -X utf8 import_workspace.py ~/youtube_<id>_workspace` (or batch across `~/youtube_*_workspace`).
+   - Automatically archives structured transcripts (`transcripts/transcript_<id>.json` & `.txt`) when YouTube auto-captions were absent, linking them in `by_video_id/timestamp_<id>.md` and `README.md`.
+   - Commit and push `timestamp_workspace` to GitHub (`ZenitHTH/timestamp-workspace.git`).
+
+3. **Archive Raw Workspaces**:
+   - Move verified directories into `~/youtube_workspaces/backed_up/`.
+   - Update `workspace_path` in `metadata/catalog.json`.
 
 ## Output Format
 
