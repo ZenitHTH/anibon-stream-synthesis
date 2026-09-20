@@ -95,6 +95,7 @@ python3 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/youtube_<vid
 Run the ingestion tool. It automatically:
 - Extracts title and upload date (via `video_info.json`, `yt-dlp`, or `*.live_chat.json` fallback).
 - Injects standard header metadata (`# Title`, `YouTube Video ID`, `Workspace Directory`, `Total Timestamps`).
+- Detects local Whisper ASR (`whisper_output.json` / `raw_transcript.json`) when YouTube auto-captions were unavailable, automatically archiving structured transcripts to `transcripts/transcript_<video_id>.json` & `.txt` and linking them in the markdown header and catalog.
 - Preserves `═════` part divider blocks and tag formatting.
 - Writes `by_video_id/timestamp_<video_id>.md`.
 - Appends/updates `metadata/catalog.json` sorted chronologically descending.
