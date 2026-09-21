@@ -161,5 +161,20 @@ def main():
         else:
             print("✅ No ASR garbled patterns found.")
 
+    # ── Header truncation scan ─────────────────────────────────────────
+    header_warnings = []
+    header_re = re.compile(r"ส่วนที่\s*\d+:\s*(.*?)(?:\s*\(⏱.*?\))?$", re.MULTILINE)
+    for m in header_re.finditer(text):
+        title = m.group(1).strip()
+        if re.search(r"(\s(และ|หรือ|กับ|เรื่อง|ใน|ที่)|[เแโใไ็์]|และ[ก-ฮ]|แล)$", title):
+            header_warnings.append(f"  ⚠️  Header appears truncated/cut-off: '{title}'")
+    if header_warnings:
+        print("\n⚠️  Truncated Section Headers Detected:")
+        for hw in header_warnings:
+            print(hw)
+        print()
+    else:
+        print("✅ All section headers are complete and clean.")
+
 if __name__ == "__main__":
     main()

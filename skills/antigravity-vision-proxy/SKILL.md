@@ -77,17 +77,17 @@ ffmpeg -ss HH:MM:SS -i full_video.mp4 -frames:v 1 -q:v 2 frames\frame.jpg
 
 ### Option C: Targeted High-Res Video Section Slicing (`yt-dlp --download-sections`) — Best for Spot Inspections (~2-3s download)
 
-When inspecting a specific time range (1–10 minutes) for banners, kanji, UI text, or chat overlays, download the exact section directly:
+When inspecting a specific time range (1–10 minutes) for banners, donation popups, kanji, UI text, or when `PIL` is missing for storyboard unpacking:
 
 ```bash
-# 1. Download targeted 720p clip (instant ~2-3s download, bypassing 403 via Chrome cookies)
-yt-dlp --cookies-from-browser chrome \
+# 1. Download targeted clip (bypasses SABR HTTP 403 via android player client without cookies)
+yt-dlp --extractor-args "youtube:player_client=android" \
   --download-sections "*00:08:30-00:15:30" \
-  -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
+  -f "18/best[height<=720]/worst" \
   -o "target_slice.mp4" "https://www.youtube.com/watch?v=VIDEO_ID"
 
 # 2. Extract crystal-clear frame at exact offset
-ffmpeg -ss 00:01:15 -i target_slice.mp4.webm -frames:v 1 -q:v 2 target_frame.jpg -y
+ffmpeg -y -ss 00:01:15 -i target_slice.mp4 -frames:v 1 -q:v 2 target_frame.jpg
 ```
 
 ## Invoke agy

@@ -454,8 +454,25 @@ def balanced_pack(timestamps: list[dict], byte_limit: int,
 # Formatting
 # ─────────────────────────────────────────────────────────────
 
+def _clean_thai_phrase(phrase: str, max_len: int = 40) -> str:
+    phrase = phrase.strip()
+    if len(phrase) <= max_len:
+        return phrase
+    for delim in [" (", " - ", " / ", " & ", " และ ", " กับ ", " เรื่อง ", " ใน ", " ที่ ", " เพื่อ "]:
+        idx = phrase[:max_len + 8].rfind(delim)
+        if 12 < idx <= max_len:
+            return phrase[:idx].strip()
+    sp_idx = phrase[:max_len].rfind(" ")
+    if sp_idx > 15:
+        return phrase[:sp_idx].strip()
+    cut = phrase[:max_len]
+    while cut and cut[-1] in "เแโใไัิีึืุู็่้๊๋์":
+        cut = cut[:-1]
+    return cut.strip()
+
+
 def _generate_group_title(group: list[dict]) -> str:
-    """Synthesize a section title that captures the overall topic group of entries in the part."""
+    """Generate a readable, balanced section title from entries in the group."""
     if not group:
         return "ANIBON Stream"
     
@@ -474,9 +491,8 @@ def _generate_group_title(group: list[dict]) -> str:
         if not clean:
             clean = desc
         
-        # Truncate clean phrase if too long
-        if len(clean) > 35:
-            clean = clean[:35].rsplit(" ", 1)[0]
+        # Truncate clean phrase safely if too long
+        clean = _clean_thai_phrase(clean, max_len=40)
 
         key = clean.lower()
         if key not in seen:
