@@ -7,8 +7,12 @@ description: Use when generating timestamps for Anibon Official streams on a loc
 
 ## Overview & Triggers
 
-Optimized for local LLMs with limited context windows (Gemma 4, Qwen 2.5, etc.).
-Sequential chunk loop — no parallel subagents, no cloud.
+Optimized for local LLMs with limited context windows running sequential chunk loops (no parallel subagents, $0 cloud cost).
+
+> [!IMPORTANT]
+> **Model Selection Baseline (12B Recommended)**:
+> Use **12B-tier models** (e.g. `google/gemma-4-12b-qat` or `qwen/qwen3.5-9b-q6` / `14b`).
+> **Avoid 4B models (`gemma-4-e4b`)** for full transcript timestamping: 4B lacks the parameter density to comprehend Thai livestream subculture, viewer banter, and donation reads, often misclassifying topics or hallucinating proper nouns. 12B fits comfortably in 16GB VRAM (e.g. Tesla P100 @ ~7.2 GB) with ample headroom for 8k–16k context.
 
 ---
 
