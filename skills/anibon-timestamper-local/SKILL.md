@@ -67,6 +67,18 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 6. **No `<think>` tags**: Never wrap reasoning in `<think>`.
 7. **Handoff trigger**: User says "handoff", "stuck", or context > 15k tokens $\to$ IMMEDIATELY write state file and halt.
 
+### 🚨 The "Operation Timed Out" Death Loop (CRITICAL)
+
+If you see `The operation timed out.` in your chat session:
+- **WHY IT HAPPENS**: The chat history accumulated past chunk transcripts and exceeded 30k–120k tokens. On a local GPU (e.g. Tesla P100), prompt evaluation for 100k tokens takes >7 minutes. The IDE's HTTP client (Cline/Roo) aborts after 4 minutes.
+- **NEVER CLICK "AUTO CONTINUE"**: Retrying in a bloated chat session sends the same 120k tokens again and will **TIMEOUT 100% OF THE TIME**.
+- **MANDATORY RECOVERY**:
+  1. Abandon or reset the bloated chat session immediately.
+  2. Do NOT run chunk loops inside conversational chat turns.
+  3. Run the Option A CLI runner (`process_chunks_local.py`) via terminal command.
+     - `process_chunks_local.py` runs outside chat context, sending only ~1,500 tokens per chunk.
+     - Prompt prefill takes **<1 second**, zero timeouts, and resumes automatically from existing chunk outputs.
+
 ---
 
 ## 🗺️ Plugin Directory Map (Do NOT use `ls`)
@@ -180,6 +192,16 @@ Windows (PowerShell):
 python -X utf8 "[SKILL_ROOT]/scripts/process_chunks_local.py" "[WORKSPACE]" `
     --model "google/gemma-4-12b-qat" --lang th
 ```
+
+**Ready-to-run copy-paste commands (PowerShell)**:
+```powershell
+# If using .agents format (Cline / Roo / Claude Code):
+python -X utf8 "C:/Users/<username>/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/<username>/youtube_<video_id>_workspace" --model "google/gemma-4-12b-qat" --lang th
+
+# If using .gemini plugin format (Antigravity):
+python -X utf8 "C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/<username>/youtube_<video_id>_workspace" --model "google/gemma-4-12b-qat" --lang th
+```
+
 Flags:
 - `--endpoint`: defaults to `http://127.0.0.1:1234/v1/chat/completions`
 - `--model`: defaults to `google/gemma-4-12b-qat`
