@@ -444,9 +444,9 @@ def sanitize_timestamp_line(line: str) -> str:
     line = re.sub(r"\s*\.?\s*Wait,\s*.*$", "", line, flags=re.IGNORECASE)
     line = re.sub(r"\s*(?:Or just describe|Note:|Remark:).*$", "", line, flags=re.IGNORECASE)
     # Strip parenthetical English translations/explanations: (Analyze ...) or (Requesting ...) or (Too long? ...)
-    line = re.sub(r"\s*\([A-Za-z\s\?\,\.\-\:\'\"]{8,}\).*$", "", line)
+    line = re.sub(r"\s*\([A-Za-z\s\?\,\.\-\:\'\/]{8,}\).*$", "", line)
     # Strip trailing English thoughts in parentheses
-    line = re.sub(r"\s*\([A-Za-z0-9\s\?\,\.\-\:\'\"]+\)\.?$", "", line)
+    line = re.sub(r"\s*\([A-Za-z0-9\s\?\,\.\-\:\'\/]+\)\.?$", "", line)
     # Strip surrounding quotes, backticks, stray markdown
     line = re.sub(r"^[`'\"]+|[`'\"\\.]+$", "", line.strip())
     return line.strip()

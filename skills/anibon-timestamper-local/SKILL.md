@@ -70,7 +70,8 @@ When `[WORKSPACE]/anibon_timestamps.md` is generated, provide the path to the us
    In Cline, `run_commands` has a 30-second timeout. Always launch the timestamper using `launch_local.ps1` (Step 3). It launches the process detached in the background in under 1 second, logs output to `[WORKSPACE]/timestamper.log`, and never times out.
 6. **Model Architecture on P100 (16GB VRAM) & Zero-Conflict Rule**:
    - On 16GB GPUs (Tesla P100), loading multiple models simultaneously exceeds VRAM during active generation due to KV cache allocations, causing LM Studio to evict models.
-   - **Recommended Setup**: Use a **Single Unified Model** (`qwen/qwen3.5-9b`) in LM Studio for both Cline chat and the timestamper. Static weights require only ~6.55 GB, leaving ~9.5 GB headroom for KV cache and parallel prediction slots.
+   - **Recommended Primary Model**: **`google/gemma-4-12b-qat`** (7.15 GB). It provides vastly superior natural language understanding and semantic nuance (Google DeepMind lineage), accurately capturing subtle topic boundaries and specific entities (e.g. AI, ปลาหมอคางดำ) without hyper-generalizing or over-skipping like surface keyword matchers.
+   - **VRAM Headroom**: Loading `google/gemma-4-12b-qat` as the single unified model leaves **~8.85 GB free VRAM** for large context KV cache and parallel slot allocations without any VRAM eviction.
    - **NEVER** run `lms unload all` or `lms unload`! The runner uses `--model auto`, which automatically queries and uses whichever model is active in LM Studio without triggering reload or eviction.
 
 ---

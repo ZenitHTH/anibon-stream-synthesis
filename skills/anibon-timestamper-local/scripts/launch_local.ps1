@@ -2,7 +2,9 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Workspace,
     [string]$Model = "auto",
-    [string]$Lang = "th"
+    [string]$Lang = "th",
+    [switch]$NoResume,
+    [string]$AdditionalArgs = ""
 )
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -15,8 +17,12 @@ if (-not (Test-Path $Workspace)) {
     exit 1
 }
 
+$Extra = ""
+if ($NoResume) { $Extra += " --no-resume" }
+if ($AdditionalArgs) { $Extra += " $AdditionalArgs" }
+
 # Launch python runner detached in background
-$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --model $Model --lang $Lang"
+$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --model $Model --lang $Lang$Extra"
 Start-Process -FilePath "python" -ArgumentList $ArgList -RedirectStandardOutput $LogFile -RedirectStandardError $ErrFile -WindowStyle Hidden
 
 Write-Host "✅ Timestamper launched in background."
