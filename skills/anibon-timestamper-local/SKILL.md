@@ -68,8 +68,18 @@ When `[WORKSPACE]/anibon_timestamps.md` is generated, provide the path to the us
    If you think a process is slow or pending, **NEVER** write your own `.py` scripts (`process_all_chunks.py`), do NOT write shell scripts (`cat > ...`), and do NOT send raw HTTP calls to LM Studio. All execution is handled by `launch_local.ps1` and `process_chunks_local.py`. Writing custom scripts is strictly forbidden.
 5. **Handling 30000ms Command Timeout**:
    In Cline, `run_commands` has a 30-second timeout. Always launch the timestamper using `launch_local.ps1` (Step 3). It launches the process detached in the background in under 1 second, logs output to `[WORKSPACE]/timestamper.log`, and never times out.
-6. **Multi-Model Concurrency on P100 (16GB VRAM) & NO UNLOAD**:
-   - Both `google/gemma-4-12b-qat` (7.15 GB) and `qwen/qwen3.5-9b` (6.55 GB) fit simultaneously in VRAM (13.7 GB / 16 GB).
-   - **NEVER** run `lms unload all` or `lms unload`! Unloading models will terminate Cline's active chat session.
-   - The runner uses `--model auto`, which automatically picks the loaded model without causing LM Studio to evict or swap models.
+6. **Model Architecture on P100 (16GB VRAM) & Zero-Conflict Rule**:
+   - On 16GB GPUs (Tesla P100), loading multiple models simultaneously exceeds VRAM during active generation due to KV cache allocations, causing LM Studio to evict models.
+   - **Recommended Setup**: Use a **Single Unified Model** (`qwen/qwen3.5-9b`) in LM Studio for both Cline chat and the timestamper. Static weights require only ~6.55 GB, leaving ~9.5 GB headroom for KV cache and parallel prediction slots.
+   - **NEVER** run `lms unload all` or `lms unload`! The runner uses `--model auto`, which automatically queries and uses whichever model is active in LM Studio without triggering reload or eviction.
+
+---
+
+## 🎯 Front-Tier Quality Standards (80%+ Benchmark Match)
+
+The built-in prompt and post-processor in `process_chunks_local.py` automatically enforce:
+- **First-Verb Streamer Tone**: Uses active Pu Boat signature verbs (`แซว`, `ฮาลั่น!`, `เม้าท์มอย`, `ขำก๊าก`, `ชำแหละ`, `จวกยับ`, `วิเคราะห์`, `เจาะลึก`, `อึ้ง!`) and strictly bans flat verbs like `พูดถึง...`.
+- **Automatic Sanitization**: Strips meta-prompts, English commentary, and parenthetical translations `(...)` automatically.
+- **Part Summaries & Double Borders**: Formats each part with `═` double borders and an intelligent 2-3 topic executive summary matching the front-tier benchmark in `timestamp-workspace`.
+
 

@@ -39,7 +39,7 @@ import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -99,25 +99,34 @@ def build_prompt(chunk: dict, prev_tail: str, lang: str) -> str:
     tags_list = "  ".join(TAGS)
 
     prompt = f"""\
-You are timestamping chunk {chunk.get('_idx', '??')} of a Thai livestream VOD.
+You are timestamping chunk {chunk.get('_idx', '??')} of a Thai livestream VOD by Pu Boat (Anibon Official).
 Chunk time range: {start_ts} - {end_ts}
 
 {prev_section}
 ## YOUR TASK
 
-Read the transcript. Output ONE timestamp line for the most notable moment in this chunk.
+Read the transcript. Output ONE timestamp line for the most notable moment or topic in this chunk.
 
 Format: HH:MM:SS - [Tag] Description
 
 Rules:
-- HH:MM:SS MUST be a timestamp that literally appears in the transcript below.
+- HH:MM:SS MUST be a timestamp that literally appears in the transcript ({start_ts} - {end_ts}).
 - Description in {lang_note}. Max 12 words. One phrase. Active voice.
 - Tags: {tags_list}
-- Output ONLY the single timestamp line. No extra text, no explanation.
+- FIRST-VERB GUIDANCE (Reflect Pu Boat's vibe and emotion):
+  * Funny / Meme / Roast: แซว, ฮาลั่น!, เม้าท์มอย, ขำก๊าก, ขยี้, ปั่น, ล้อ
+  * Rant / Drama / Politics: ชำแหละ, จวกยับ, สับเละ, บ่นอุบ, โวยวาย, สาวไส้
+  * News / Serious Talk: วิเคราะห์, เจาะลึก, กางตัวเลข, เตือน, ชี้จุดสังเกต
+  * Shock / Hype: อึ้ง!, เหวอ, ช็อกตาค้าง, โคตรเดือด, ตะโกนลั่น
+  * Do NOT use flat verbs like "พูดถึง..." or "พูดคุยเรื่อง..." if there is a specific action or emotion.
+- STRICT CLEANLINESS:
+  * Output ONLY in Thai (or specified language).
+  * NEVER append English translations, meta-notes, or self-corrections in parentheses (e.g. NO '(Too long?)', NO '(Criticizing...)').
+  * Output ONLY the single timestamp line. No preamble, no explanation, no markdown backticks.
 
 Output SKIP (and nothing else) ONLY when:
 - Transcript is empty or silent gap
-- Chunk is mid-sentence continuation with zero new information vs previous
+- Chunk is a mid-sentence continuation of the exact same talking point with zero new development
 
 When NOT to output SKIP (stamp these):
 - New sub-topic in same conversation → stamp it
@@ -428,13 +437,26 @@ def load_chunk_file(path: Path) -> dict:
 # ── Output parsing ────────────────────────────────────────────────────────────
 
 
+def sanitize_timestamp_line(line: str) -> str:
+    """Strip English reasoning, self-correction comments, and prompt leaks from timestamp line."""
+    # Strip trailing English thoughts in parentheses: (Too long? 10 words). or (Criticizing ...)
+    line = re.sub(r"\s*\([A-Za-z0-9\s\?\,\.\-\:\'\"]+\)\.?$", "", line)
+    # Strip prompt leaks like "Or just describe..." or "Note: ..."
+    line = re.sub(r"\s*(?:Or just describe|Note:|Remark:).*$", "", line, flags=re.IGNORECASE)
+    # Remove surrounding quotes if model wrapped output in quotes
+    line = re.sub(r'^["\']|["\']$', '', line.strip())
+    return line.strip()
+
+
 def parse_timestamps(raw: str) -> list[str]:
-    """Extract valid HH:MM:SS - [Tag] ... lines from model output."""
+    """Extract and sanitize valid HH:MM:SS - [Tag] ... lines from model output."""
     lines = []
     for line in raw.splitlines():
         line = line.strip()
         if re.match(r"\d{2}:\d{2}:\d{2}\s*-\s*\[", line):
-            lines.append(line)
+            cleaned = sanitize_timestamp_line(line)
+            if cleaned:
+                lines.append(cleaned)
     return lines
 
 
@@ -476,7 +498,7 @@ def load_state(workspace: Path) -> dict:
 
 def save_state(workspace: Path, state: dict) -> None:
     state_path = workspace / "anibon_timestamper_state.json"
-    state["last_updated"] = datetime.utcnow().isoformat() + "Z"
+    state["last_updated"] = datetime.now(timezone.utc).isoformat()
     with open(state_path, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
 
@@ -487,6 +509,29 @@ def save_state(workspace: Path, state: dict) -> None:
 def ts_to_sec(ts: str) -> int:
     h, m, s = ts.split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def generate_part_summary(stamps: list[str]) -> str:
+    """Generate a punchy 2-3 topic summary sentence from stamps in this part."""
+    topics = []
+    for s in stamps:
+        desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", s).strip()
+        if desc and desc not in topics:
+            topics.append(desc)
+
+    if not topics:
+        return "สรุปเนื้อหาและบรรยากาศในไลฟ์สตรีม."
+
+    if len(topics) <= 3:
+        chosen = topics
+    else:
+        mid_idx = len(topics) // 2
+        chosen = [topics[0], topics[mid_idx], topics[-1]]
+
+    summary = ". ".join(chosen)
+    if not summary.endswith("."):
+        summary += "."
+    return summary
 
 
 def assemble_parts(
@@ -517,24 +562,24 @@ def assemble_parts(
     if curr:
         blocks.append(curr)
 
-    # Render
+    # Extract Video ID from workspace name
+    m = re.search(r"youtube_([a-zA-Z0-9_-]+)_workspace", workspace.name)
+    video_id = m.group(1) if m else workspace.name
+
+    divider = "═" * 57
+
+    # Render parts
     parts: list[str] = []
     for i, block in enumerate(blocks, 1):
         start = block[0][:8]
-        # Extract tags used in this part to build summary hint
-        tags_in = re.findall(r"\[(\w+)\]", " ".join(block))
-        tag_counts = {}
-        for t in tags_in:
-            tag_counts[t] = tag_counts.get(t, 0) + 1
-        dominant = max(tag_counts, key=tag_counts.get) if tag_counts else "Talk"
-        header = f"📌 ตอนที่ {i}: (เริ่ม: {start})"
-        parts.append(f"{'='*40}\n{header}\n{'='*40}\n" + "\n".join(block))
+        summary = generate_part_summary(block)
+        header = f"{divider}\n ส่วนที่ {i}: {summary} (⏱ เริ่ม: {start})\n{divider}"
+        parts.append(f"{header}\n" + "\n".join(block))
 
     # Check byte budget (YouTube comment ≤4500 bytes per part)
     final_parts: list[str] = []
     for part in parts:
         if len(part.encode("utf-8")) > 4500:
-            # Split at midpoint
             lines = part.splitlines()
             mid = len(lines) // 2
             final_parts.append("\n".join(lines[:mid]))
@@ -542,7 +587,16 @@ def assemble_parts(
         else:
             final_parts.append(part)
 
-    return "\n\n".join(final_parts)
+    # Document Header matching front-tier benchmarks
+    doc_header = f"""# ไทม์สแตมป์ไลฟ์สตรีม | ANIBON
+
+- **YouTube Video ID**: [{video_id}](https://www.youtube.com/watch?v={video_id})
+- **Workspace Directory**: `{workspace.name}`
+- **Total Timestamps**: {len(all_stamps)}
+
+---
+"""
+    return doc_header + "\n" + "\n\n".join(final_parts) + "\n"
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
