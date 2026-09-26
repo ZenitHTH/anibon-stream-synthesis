@@ -94,11 +94,14 @@ You already know where everything is. Resolve `[SKILL_ROOT]` in Step 0.
 
 **Find `[SKILL_ROOT]`**:
 1. If `<skill location="...">` tag exists in prompt: strip `SKILL.md`, replace `\` with `/`.
-2. **Canonical fallback (Cline / Roo / Claude Code / other IDEs)**:
-   - Windows: `C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local` (e.g. `C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`)
-   - Mac/Linux: `~/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`
+2. **Canonical fallbacks by environment**:
+   - **`.agents` format (Cline / Roo / Claude Code / Cursor / `npx skills`)**:
+     - Global: `~/.agents/skills/anibon-timestamper-local` (Windows: `C:/Users/<username>/.agents/skills/anibon-timestamper-local`)
+     - Project: `<project_root>/.agents/skills/anibon-timestamper-local`
+   - **`.gemini` plugin format (Google Antigravity)**:
+     - Global: `~/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local` (Windows: `C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`)
 
-🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper-local` (HYPHENS). NEVER use underscores. Copy paths directly; do not retype from memory.
+🚨 **ANTI-TYPO**: Skill folder = `anibon-timestamper-local` (HYPHENS). NEVER use underscores. Copy paths directly; do not retype from memory.
 
 **Verify Python**:
 
@@ -111,11 +114,13 @@ Windows (PowerShell):
 python --version
 ```
 
-**Set `[WORKSPACE]` (ALWAYS Global/Absolute Path)**:
-NEVER create workspace inside agent's temporary chat directory (e.g. `.cline/...` is FORBIDDEN).
-Always default to:
-- Mac/Linux: `~/youtube_<video_id>_workspace`
-- Windows: Use forward slashes — `C:/Users/<username>/youtube_<video_id>_workspace`
+**Set `[WORKSPACE]`**:
+- **Default (Standard Global)**:
+  - Mac/Linux: `~/youtube_<video_id>_workspace`
+  - Windows: Use forward slashes — `C:/Users/<username>/youtube_<video_id>_workspace`
+- **When running inside a project in `.agents` format**:
+  You can set `[WORKSPACE]` to an absolute path or pass `--workspace "[WORKSPACE]"` to `prepare_video.py`.
+- ⚠️ **FORBIDDEN**: NEVER create workspace inside agent's temporary chat session directory (e.g. `.cline/...` is strictly prohibited).
 
 ### Step 1: Initialization
 
@@ -140,11 +145,20 @@ Always default to:
 
 Mac/Linux:
 ```bash
-python3 "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python3 "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
 ```
 Windows (PowerShell):
 ```powershell
-python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 300 --overlap 30
+python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
+```
+
+**Ready-to-run copy-paste commands (PowerShell)**:
+```powershell
+# If using .agents format (Cline / Roo / Claude Code):
+python "C:/Users/<username>/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "VIDEO_URL" --workspace "C:/Users/<username>/youtube_<video_id>_workspace" --format txt --block 300 --overlap 30
+
+# If using .gemini plugin format (Antigravity):
+python "C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local/scripts/prepare_video.py" "VIDEO_URL" --workspace "C:/Users/<username>/youtube_<video_id>_workspace" --format txt --block 300 --overlap 30
 ```
 
 > **Local LLM Note**: Always use `--format txt`. Do NOT use `--vision` — local models cannot process images.

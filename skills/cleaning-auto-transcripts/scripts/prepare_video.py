@@ -33,7 +33,7 @@ def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int
         elif fmt == "xml":
             write_chunk_xml(path, idx, start, end, items)
         else:
-            write_chunk_json(path, idx, start, end, items)
+            write_chunk_json(path, start, end, items)
         idx += 1
     return idx
 
@@ -51,14 +51,19 @@ def main():
                     help="Chunk overlap in seconds (default: 30)")
     ap.add_argument("--vision", action="store_true",
                     help="Extract and annotate visual frames for ambiguous pronoun cues")
+    ap.add_argument("--workspace", "-o", default=None,
+                    help="Target workspace directory (default: ~/youtube_<video_id>_workspace)")
     args = ap.parse_args()
 
     # Extract video_id from URL or use as-is
     url = args.url
     vid = url.split("v=")[-1].split("&")[0].split("/")[-1].split("?")[0]
 
-    workspace = Path.home() / f"youtube_{vid}_workspace"
-    workspace.mkdir(exist_ok=True)
+    if args.workspace:
+        workspace = Path(args.workspace).expanduser().resolve()
+    else:
+        workspace = Path.home() / f"youtube_{vid}_workspace"
+    workspace.mkdir(parents=True, exist_ok=True)
     print(f"[*] Workspace: {workspace}", file=sys.stderr)
 
     ytdlp.download_transcript(url, workspace)
