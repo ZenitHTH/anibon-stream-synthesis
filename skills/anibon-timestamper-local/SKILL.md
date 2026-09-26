@@ -35,24 +35,27 @@ python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPA
 
 > ⚠️ **NO WEB SCRAPERS**: Never use `fetch_web_content`, browser, or `curl` on YouTube. Always run `prepare_video.py` in shell. Never download raw video files.
 
-### Step 3: Run Local Timestamper Runner
-Execute the automated local timestamper via shell tool (`run_commands` / `run_command`):
+### Step 3: Launch Local Timestamper Runner
+Execute via shell tool (`run_commands` / `run_command`):
 
 ```powershell
-# In Cline (runs detached in background so Cline's 30s tool timeout does not kill it):
-Start-Process python -ArgumentList @('-X', 'utf8', 'C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py', 'C:/Users/peter/youtube_<VIDEO_ID>_workspace', '--model', 'auto', '--lang', 'th')
+# PRIMARY METHOD (runs launch_local.ps1 detached; returns in 0.5s so Cline 30s timeout NEVER triggers):
+powershell -ExecutionPolicy Bypass -File "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/launch_local.ps1" -Workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace"
 
-# Or in standard interactive terminal:
+# Interactive terminal execution:
 python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "[WORKSPACE]" --model auto --lang th
 ```
 
-*(For English output, use `--lang en`)*
+*(For English output, pass `-Lang en` or `--lang en`)*
+
+### Step 3b: Check Progress
+Check the background runner's progress anytime:
+```powershell
+Get-Content "C:/Users/peter/youtube_<VIDEO_ID>_workspace/timestamper.log" -Tail 10
+```
 
 ### Step 4: Completion
-The runner processes all chunks, tracks topic continuity, validates timestamp ranges, and writes the assembled markdown to:
-`[WORKSPACE]/anibon_timestamps.md`
-
-Output the path to the user when finished.
+When `[WORKSPACE]/anibon_timestamps.md` is generated, provide the path to the user.
 
 ---
 
@@ -62,9 +65,9 @@ Output the path to the user when finished.
 2. **Never Process Chunks in Chat**: Do NOT manually read chunks or generate timestamps turn-by-turn in chat. Chat context will bloat past 100k tokens and cause HTTP timeouts on local GPUs.
 3. **Stay Inside `[WORKSPACE]`**: Never search or scan files in home root (`C:/Users/peter/anibon*`). All files belong strictly inside `[WORKSPACE]`.
 4. **NEVER Write or Invent Scripts**:
-   If a command times out (`Command timed out after 30000ms`) or exits with an error, **NEVER** write your own `.py` scripts, do NOT write startup scripts, and do NOT write custom transcript parsers. All required scripts exist. Writing custom scripts is strictly forbidden.
+   If you think a process is slow or pending, **NEVER** write your own `.py` scripts (`process_all_chunks.py`), do NOT write shell scripts (`cat > ...`), and do NOT send raw HTTP calls to LM Studio. All execution is handled by `launch_local.ps1` and `process_chunks_local.py`. Writing custom scripts is strictly forbidden.
 5. **Handling 30000ms Command Timeout**:
-   In Cline, `run_commands` has a 30-second timeout. Processing 30 chunks takes ~2–4 minutes. Always launch via `Start-Process` with array argument list (Step 3) or instruct the user to run the command in their own PowerShell terminal outside Cline.
+   In Cline, `run_commands` has a 30-second timeout. Always launch the timestamper using `launch_local.ps1` (Step 3). It launches the process detached in the background in under 1 second, logs output to `[WORKSPACE]/timestamper.log`, and never times out.
 6. **Multi-Model Concurrency on P100 (16GB VRAM) & NO UNLOAD**:
    - Both `google/gemma-4-12b-qat` (7.15 GB) and `qwen/qwen3.5-9b` (6.55 GB) fit simultaneously in VRAM (13.7 GB / 16 GB).
    - **NEVER** run `lms unload all` or `lms unload`! Unloading models will terminate Cline's active chat session.

@@ -564,6 +564,8 @@ def main() -> None:
                     help="Send entire transcript in one call (recommended for 32k+ context models)")
     ap.add_argument("--no-resume", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--max-chunks", type=int, default=None,
+                    help="Max new chunks to process in this run (e.g. 1 for quick step)")
     ap.add_argument("--block-size", type=int, default=5400, help="Seconds per YouTube part block")
     args = ap.parse_args()
 
@@ -624,6 +626,7 @@ def main() -> None:
     if not args.no_resume and all_timestamps:
         print(f"[resume] {len(all_timestamps)} timestamps already in state")
 
+    processed_count = 0
     for i, chunk_path in enumerate(chunk_files):
         chunk_idx = f"chunk_{i:02d}"
         out_path = output_dir / f"{chunk_idx}_output.md"
@@ -711,6 +714,13 @@ def main() -> None:
             "prev_tail": prev_tail,
             "phase": "chunk_loop",
         })
+
+        processed_count += 1
+        if args.max_chunks and processed_count >= args.max_chunks:
+            print(f"\n[pause] Processed {processed_count} chunk(s) (reached --max-chunks {args.max_chunks}).")
+            if i + 1 < total:
+                print(f"[pause] {total - (i + 1)} chunks remaining. Re-run or use launch_local.ps1 to finish.")
+            break
 
     # ── Assembly ──────────────────────────────────────────────────────────────
     print(f"\n[assemble] {len(all_timestamps)} total timestamps → building parts ...")
