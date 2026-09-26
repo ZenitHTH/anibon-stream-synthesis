@@ -1,6 +1,6 @@
 ---
 name: anibon-timestamper-local
-description: Use when generating timestamps for Anibon Official streams on a local LLM (Ollama, Gemma, Qwen) on any OS — when cloud context window is unavailable or too costly.
+description: Use when generating timestamps for Anibon Official streams on a local LLM via LM Studio (default), llama-server, or Ollama on any OS — when cloud context window is unavailable or too costly.
 ---
 
 # Anibon Timestamper (Local LLM Edition)
@@ -10,6 +10,11 @@ description: Use when generating timestamps for Anibon Official streams on a loc
 Optimized for local LLMs with limited context windows running sequential chunk loops (no parallel subagents, $0 cloud cost).
 
 > [!IMPORTANT]
+> **Supported Backends (LM Studio is Default)**:
+> - **LM Studio**: Default endpoint `http://127.0.0.1:1234/v1/chat/completions`. Natively supported out of the box with zero extra setup.
+> - **llama-server / llama.cpp**: Compatible with standard OpenAI API flags.
+> - **Ollama**: Supported via OpenAI-compatible endpoint `http://127.0.0.1:11434/v1/chat/completions`.
+>
 > **Model Selection Baseline (12B Recommended)**:
 > Use **12B-tier models** (e.g. `google/gemma-4-12b-qat` or `qwen/qwen3.5-9b-q6` / `14b`).
 > **Avoid 4B models (`gemma-4-e4b`)** for full transcript timestamping: 4B lacks the parameter density to comprehend Thai livestream subculture, viewer banter, and donation reads, often misclassifying topics or hallucinating proper nouns. 12B fits comfortably in 16GB VRAM (e.g. Tesla P100 @ ~7.2 GB) with ample headroom for 8k–16k context.
@@ -23,6 +28,9 @@ Optimized for local LLMs with limited context windows running sequential chunk l
 ### Red Flags — STOP and Call a Tool
 If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL A TOOL:
 - Generating "Wait", "Actually", or "Hold on" (infinite reasoning loop).
+- Thinking "This skill does not support LM Studio" (ABORT. LM Studio IS the primary default backend via port 1234).
+- Thinking "I will run prepare_video.py with a relative path" (ABORT. Use the full absolute path from Step 0).
+- Thinking "I will download the video file with yt-dlp" (ABORT. NEVER download video MP4/MKV. Run `prepare_video.py` which only downloads subtitles).
 - Thinking "I will fetch the YouTube page using fetch_web_content or curl." (ABORT. YouTube blocks web scrapers. Use `prepare_video.py` in shell).
 - Thinking "I will ask the user for a sample transcript." (ABORT. Run `prepare_video.py` via shell tool).
 - Thinking "I will do both chunks now to be efficient."
@@ -33,6 +41,10 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 ### Anti-Rationalization Table
 | Your Excuse | The Reality |
 |---|---|
+| "Skill only works with Ollama, not LM Studio" | **FALSE**. LM Studio is the primary default backend at `http://127.0.0.1:1234/v1/chat/completions`. |
+| "I'll run python prepare_video.py directly" | **FAIL**. Script is not in CWD. You MUST use absolute path `[SKILL_ROOT]/scripts/prepare_video.py`. |
+| "I'll download the video with yt-dlp" | **NEVER**. Only subtitles are needed. Run `prepare_video.py` (passes `--skip-download`). |
+| "Workspace already has chunks, I'll re-download" | **SKIP**. If `[WORKSPACE]/chunks/` exists, proceed straight to Step 3. |
 | "I'll fetch YouTube via fetch_web_content/curl" | **FAIL**. YouTube blocks raw scrapers. ALWAYS run `prepare_video.py` via terminal tool. |
 | "Captions failed, I'll ask for sample transcript" | **NO**. Did you actually run `prepare_video.py` in shell? Run it. yt-dlp gets it. |
 | "I'll create workspace in my current directory" | **NO**. Workspace is ALWAYS `C:/Users/<username>/youtube_<id>_workspace` (absolute path). |
@@ -118,9 +130,13 @@ Always default to:
 
 ### Step 2: Download & Chunk (Terminal Shell ONLY)
 
-> 🚨 **ABSOLUTE RULE — NO WEB SCRAPERS**:
-> NEVER use `fetch_web_content`, `read_url_content`, `curl`, or browser tools to fetch the YouTube URL. YouTube blocks raw web requests and will return generic HTML without subtitles, wasting tokens and causing hallucinated failures.
-> ALWAYS execute `prepare_video.py` in shell via terminal execution (`run_commands` in Cline / `run_command` in Antigravity).
+> ⚡ **CHECK EXISTING WORKSPACE FIRST**:
+> If `[WORKSPACE]/chunks/chunk_00.txt` already exists, **SKIP STEP 2 COMPLETELY**. Proceed directly to Step 3. Do not re-download.
+
+> 🚨 **ABSOLUTE RULE — NO WEB SCRAPERS & NO RAW VIDEO DOWNLOADS**:
+> - NEVER use `fetch_web_content`, `read_url_content`, `curl`, or browser tools to fetch the YouTube URL. YouTube blocks raw web requests and will return generic HTML without subtitles.
+> - NEVER run raw `yt-dlp "URL"` without `--skip-download` (do not download multi-gigabyte video files!).
+> - ALWAYS execute `prepare_video.py` using its full absolute path `"[SKILL_ROOT]/scripts/prepare_video.py"` in shell via terminal execution (`run_commands` in Cline / `run_command` in Antigravity).
 
 Mac/Linux:
 ```bash
