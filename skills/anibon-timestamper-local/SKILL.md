@@ -26,6 +26,10 @@ Test if `[WORKSPACE]/chunks/chunk_00.txt` exists.
 - If it **does not exist**, run via shell tool (`run_commands` / `run_command`):
 
 ```powershell
+# Direct Windows execution (works in any directory):
+python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
+
+# Cross-platform fallback:
 python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
 ```
 
@@ -35,6 +39,10 @@ python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPA
 Execute the automated local timestamper via shell tool (`run_commands` / `run_command`):
 
 ```powershell
+# Direct Windows execution (works in any directory):
+python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "[WORKSPACE]" --model "google/gemma-4-12b-qat" --lang th
+
+# Cross-platform fallback:
 python -X utf8 "[SKILL_ROOT]/scripts/process_chunks_local.py" "[WORKSPACE]" --model "google/gemma-4-12b-qat" --lang th
 ```
 
