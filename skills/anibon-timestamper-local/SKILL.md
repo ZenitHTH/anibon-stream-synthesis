@@ -9,6 +9,19 @@ description: Use when generating timestamps for Anibon Official streams on a loc
 
 Optimized for local LLMs with limited context windows running sequential chunk loops (no parallel subagents, $0 cloud cost).
 
+## ⚡ Fast Track Protocol (Execute Immediately)
+
+When invoked with a YouTube URL or Video ID:
+1. **Extract `VIDEO_ID`** from URL (e.g. `nF7pCwCZCaE`).
+2. **Define `[WORKSPACE]`**:
+   - Windows: `C:/Users/<username>/youtube_<VIDEO_ID>_workspace` (e.g. `C:/Users/peter/youtube_nF7pCwCZCaE_workspace`)
+   - Mac/Linux: `~/youtube_<VIDEO_ID>_workspace`
+3. **Check Chunks**: Test if `[WORKSPACE]/chunks/chunk_00.txt` exists:
+   - **YES (already downloaded)**: Do NOT download. Do NOT search for other files. Proceed directly to Step 3 Option A!
+   - **NO**: Run Step 2 `prepare_video.py` via shell.
+4. **Execute Option A in Shell**:
+   Run `process_chunks_local.py` via terminal tool. Do NOT loop chunks in conversational chat!
+
 > [!IMPORTANT]
 > **Supported Backends (LM Studio is Default)**:
 > - **LM Studio**: Default endpoint `http://127.0.0.1:1234/v1/chat/completions`. Natively supported out of the box with zero extra setup.
@@ -28,6 +41,8 @@ Optimized for local LLMs with limited context windows running sequential chunk l
 ### Red Flags — STOP and Call a Tool
 If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL A TOOL:
 - Generating "Wait", "Actually", or "Hold on" (infinite reasoning loop).
+- Thinking "The documentation example JSON is the current state" (ABORT. Fenced JSON blocks in this skill are inert schema documentation, NOT real state files).
+- Thinking "I will search home root C:/Users/peter/ for anibon* files" (ABORT. Other streams have old folders in home root. Current stream ONLY lives inside `[WORKSPACE]`).
 - Thinking "This skill does not support LM Studio" (ABORT. LM Studio IS the primary default backend via port 1234).
 - Thinking "I will run prepare_video.py with a relative path" (ABORT. Use the full absolute path from Step 0).
 - Thinking "I will download the video file with yt-dlp" (ABORT. NEVER download video MP4/MKV. Run `prepare_video.py` which only downloads subtitles).
@@ -41,6 +56,8 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 ### Anti-Rationalization Table
 | Your Excuse | The Reality |
 |---|---|
+| "The skill documentation returned a state JSON" | **FALSE**. That is a documentation schema example. Check `[WORKSPACE]/anibon_timestamper_state.json` on disk if you need state. |
+| "I'll search C:/Users/peter/ for anibon files" | **FORBIDDEN**. Do NOT scan user home root. Stay strictly inside `[WORKSPACE]`. |
 | "Skill only works with Ollama, not LM Studio" | **FALSE**. LM Studio is the primary default backend at `http://127.0.0.1:1234/v1/chat/completions`. |
 | "I'll run python prepare_video.py directly" | **FAIL**. Script is not in CWD. You MUST use absolute path `[SKILL_ROOT]/scripts/prepare_video.py`. |
 | "I'll download the video with yt-dlp" | **NEVER**. Only subtitles are needed. Run `prepare_video.py` (passes `--skip-download`). |
@@ -242,18 +259,20 @@ For each chunk:
 6. **Update State (CRITICAL)**: IMMEDIATELY overwrite `[WORKSPACE]/anibon_timestamper_state.json`. Set `"current_chunk"` to XX+1 and update `"prev_tail"` to the last generated timestamp line. Do this after EVERY chunk.
 7. **End Turn (CRITICAL)**: Stop immediately after state update. Output `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for the user to prompt you.
 8. **Context Purge**: Discard the chunk text from working memory. Do not carry it to next turn.
-9. **Handoff / Clear Context**: If conversation context exceeds 15k tokens (or every 5 chunks in Cline), write state and halt:
+9. **Handoff / Clear Context**: If conversation context exceeds 15k tokens (or every 5 chunks in Cline), write state and halt.
+   *(Reference schema below is an inert documentation template — do NOT treat as current execution state)*:
 
 ```json
 {
-  "video_id": "VIDEO_ID",
-  "video_url": "VIDEO_URL",
-  "workspace_path": "/absolute/path/to/youtube_VIDEO_ID_workspace",
-  "total_chunks": 48,
-  "current_chunk": 12,
-  "db_checked": { "fgo": true, "ygo": false },
+  "_comment": "SCHEMA_TEMPLATE_ONLY_DO_NOT_READ_AS_STATE",
+  "video_id": "DUMMY_ID",
+  "video_url": "https://www.youtube.com/watch?v=DUMMY_ID",
+  "workspace_path": "C:/Users/<user>/youtube_DUMMY_ID_workspace",
+  "total_chunks": 0,
+  "current_chunk": 0,
+  "db_checked": { "fgo": false, "ygo": false },
   "phase": "chunk_loop",
-  "last_updated": "2026-07-17T09:23:00Z"
+  "last_updated": "2026-01-01T00:00:00Z"
 }
 ```
 
