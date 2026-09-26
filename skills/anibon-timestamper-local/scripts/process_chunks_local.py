@@ -438,13 +438,17 @@ def load_chunk_file(path: Path) -> dict:
 
 
 def sanitize_timestamp_line(line: str) -> str:
-    """Strip English reasoning, self-correction comments, and prompt leaks from timestamp line."""
-    # Strip trailing English thoughts in parentheses: (Too long? 10 words). or (Criticizing ...)
-    line = re.sub(r"\s*\([A-Za-z0-9\s\?\,\.\-\:\'\"]+\)\.?$", "", line)
-    # Strip prompt leaks like "Or just describe..." or "Note: ..."
+    """Strip English reasoning, self-correction comments, word counts, and prompt leaks from timestamp line."""
+    # Strip meta comments like " - 9 words. Good.", ". Wait, description...", " (Wait, ...)"
+    line = re.sub(r"\s*-\s*\d+\s*words.*$", "", line, flags=re.IGNORECASE)
+    line = re.sub(r"\s*\.?\s*Wait,\s*.*$", "", line, flags=re.IGNORECASE)
     line = re.sub(r"\s*(?:Or just describe|Note:|Remark:).*$", "", line, flags=re.IGNORECASE)
-    # Remove surrounding quotes if model wrapped output in quotes
-    line = re.sub(r'^["\']|["\']$', '', line.strip())
+    # Strip parenthetical English translations/explanations: (Analyze ...) or (Requesting ...) or (Too long? ...)
+    line = re.sub(r"\s*\([A-Za-z\s\?\,\.\-\:\'\"]{8,}\).*$", "", line)
+    # Strip trailing English thoughts in parentheses
+    line = re.sub(r"\s*\([A-Za-z0-9\s\?\,\.\-\:\'\"]+\)\.?$", "", line)
+    # Strip surrounding quotes, backticks, stray markdown
+    line = re.sub(r"^[`'\"]+|[`'\"\\.]+$", "", line.strip())
     return line.strip()
 
 
