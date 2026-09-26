@@ -448,6 +448,7 @@ HH:MM:SS - [Tag] Description
 | `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
 | `../anibon-livechat-analysis/scripts/extract_visual_livechat.py` | Extract burned-in on-screen LiveChat via Gemini vision proxy when `.live_chat.json` is missing (Step 3.5) |
 | `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
+| `scripts/process_chunks_local.py` | Local LLM sequential chunk runner via LM Studio / llama.cpp OpenAI endpoint |
 | `scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
 | `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
 | `scripts/check_sections.py` | Validate byte cap + ASR garbles |

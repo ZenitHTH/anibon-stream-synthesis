@@ -23,6 +23,8 @@ Optimized for local LLMs with limited context windows running sequential chunk l
 ### Red Flags — STOP and Call a Tool
 If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL A TOOL:
 - Generating "Wait", "Actually", or "Hold on" (infinite reasoning loop).
+- Thinking "I will fetch the YouTube page using fetch_web_content or curl." (ABORT. YouTube blocks web scrapers. Use `prepare_video.py` in shell).
+- Thinking "I will ask the user for a sample transcript." (ABORT. Run `prepare_video.py` via shell tool).
 - Thinking "I will do both chunks now to be efficient."
 - Thinking "I don't remember the prompt format, I'll just guess."
 - Running `ls` to check if a file exists.
@@ -31,6 +33,9 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 ### Anti-Rationalization Table
 | Your Excuse | The Reality |
 |---|---|
+| "I'll fetch YouTube via fetch_web_content/curl" | **FAIL**. YouTube blocks raw scrapers. ALWAYS run `prepare_video.py` via terminal tool. |
+| "Captions failed, I'll ask for sample transcript" | **NO**. Did you actually run `prepare_video.py` in shell? Run it. yt-dlp gets it. |
+| "I'll create workspace in my current directory" | **NO**. Workspace is ALWAYS `C:/Users/<username>/youtube_<id>_workspace` (absolute path). |
 | "I'll do chunks 18 and 19 in one turn" | You will crash. **ONE chunk per turn. No exceptions.** |
 | "I need to check the folder first" | Curiosity wastes context. Blindly use the paths provided. |
 | "I'll narrate my tool call" | No dry-running. If you say "I will read", CALL the tool. |
@@ -38,12 +43,17 @@ If you catch yourself doing any of the following, STOP GENERATING TEXT AND CALL 
 | "I successfully generated the markdown" | Did you call the write tool? If not, you failed. NEVER skip the write call. |
 | "I must continue reading the next chunk" | NO. Stop after state update. Wait for user prompt. |
 | "I'll update state at the end of the batch" | No. Update state after EACH chunk. No batching ever. |
+| "I'll remember all previous transcripts in chat" | NO. Treat each chunk like an isolated subagent. Forget past chunk texts. |
+| "I'll use 'auto continue' in Cline for all 30 chunks" | **TIMEOUT TRAP**. 30 chunks in one chat = 120k tokens. P100 takes 7 min to prefill $\to$ Cline HTTP client times out. Use Option A script. |
 
 ### Core Constraints
-1. **One tool per turn**: Never batch tool calls across chunks.
-2. **Process inline**: Read `.txt`, write timestamps yourself. No subagents.
-3. **No `<think>` tags**: Never wrap reasoning in `<think>`.
-4. **Handoff trigger**: User says "handoff", "stuck", or "context > 10%" → IMMEDIATELY write state file and halt.
+1. **Shell execution only for download**: NEVER use web fetch / curl / browser tools on YouTube URLs. Run `prepare_video.py` via shell (`run_commands` / `run_command`).
+2. **Subagent-style context isolation (CRITICAL)**: Treat each chunk like an ephemeral subagent worker. Read ONLY current `chunk_XX.txt` and previous stamp tail from `anibon_timestamper_state.json`. NEVER carry over or summarize previous chunks' raw transcripts in conversation context.
+3. **Context bloat cap (Max 15k tokens)**: If agent conversation history exceeds 15k tokens (or after every 5 chunks in interactive chat), write state, halt, and ask user to clear/compact context or open a fresh chat.
+4. **One tool per turn**: Never batch tool calls across chunks.
+5. **Process inline**: Read `.txt`, write timestamps yourself. No subagents.
+6. **No `<think>` tags**: Never wrap reasoning in `<think>`.
+7. **Handoff trigger**: User says "handoff", "stuck", or context > 15k tokens $\to$ IMMEDIATELY write state file and halt.
 
 ---
 
@@ -70,11 +80,13 @@ You already know where everything is. Resolve `[SKILL_ROOT]` in Step 0.
 
 ### Step 0: Resolve Plugin Root & Workspace (Cross-Platform)
 
-**Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` tag at the top of your prompt.
-- Strip the filename `SKILL.md` (or with backslashes `\` on Windows).
-- Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
+**Find `[SKILL_ROOT]`**:
+1. If `<skill location="...">` tag exists in prompt: strip `SKILL.md`, replace `\` with `/`.
+2. **Canonical fallback (Cline / Roo / Claude Code / other IDEs)**:
+   - Windows: `C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local` (e.g. `C:/Users/peter/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`)
+   - Mac/Linux: `~/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`
 
-🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper` (HYPHENS). NEVER use underscores. Copy paths directly; do not retype from memory.
+🚨 **ANTI-TYPO**: Plugin repo = `anibon-stream-synthesis` (HYPHENS). Skill folder = `anibon-timestamper-local` (HYPHENS). NEVER use underscores. Copy paths directly; do not retype from memory.
 
 **Verify Python**:
 
@@ -87,7 +99,9 @@ Windows (PowerShell):
 python --version
 ```
 
-**Set `[WORKSPACE]`**: Unless user specifies a path, default to:
+**Set `[WORKSPACE]` (ALWAYS Global/Absolute Path)**:
+NEVER create workspace inside agent's temporary chat directory (e.g. `.cline/...` is FORBIDDEN).
+Always default to:
 - Mac/Linux: `~/youtube_<video_id>_workspace`
 - Windows: Use forward slashes — `C:/Users/<username>/youtube_<video_id>_workspace`
 
@@ -102,7 +116,11 @@ python --version
 3. **Royal/political content**: If transcript mentions Thai royalty, royal succession, or sensitive political topics → use metaphor-based masking.
    **REQUIRED SUB-SKILL:** `masking-royal-news`
 
-### Step 2: Download & Chunk
+### Step 2: Download & Chunk (Terminal Shell ONLY)
+
+> 🚨 **ABSOLUTE RULE — NO WEB SCRAPERS**:
+> NEVER use `fetch_web_content`, `read_url_content`, `curl`, or browser tools to fetch the YouTube URL. YouTube blocks raw web requests and will return generic HTML without subtitles, wasting tokens and causing hallucinated failures.
+> ALWAYS execute `prepare_video.py` in shell via terminal execution (`run_commands` in Cline / `run_command` in Antigravity).
 
 Mac/Linux:
 ```bash
@@ -119,16 +137,47 @@ python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --format txt --block 
 
 ### Step 3: Sequential Chunk Loop
 
+#### Option A: Automated CLI Runner (Recommended via LM Studio / P100)
+Run the decoupled runner to process all chunks sequentially, handle continuity, and write `all_timestamps.txt`:
+
+Mac/Linux:
+```bash
+python3 -X utf8 "[SKILL_ROOT]/scripts/process_chunks_local.py" "[WORKSPACE]" \
+    --model "google/gemma-4-12b-qat" --lang th
+```
+Windows (PowerShell):
+```powershell
+python -X utf8 "[SKILL_ROOT]/scripts/process_chunks_local.py" "[WORKSPACE]" `
+    --model "google/gemma-4-12b-qat" --lang th
+```
+Flags:
+- `--endpoint`: defaults to `http://127.0.0.1:1234/v1/chat/completions`
+- `--model`: defaults to `google/gemma-4-12b-qat`
+- `--lang`: `th` (Thai, default) or `en` (English)
+- `--max-tokens`: per-call budget (default 800; set 1200+ for reasoning models)
+- `--temperature`: sampling temperature (default 0.1)
+- `--block-size`: seconds per YouTube comment part (default 5400 = 90 min)
+- `--no-resume`: force overwrite already processed chunks
+- `--dry-run`: check chunk discovery without calling model
+
+> **Output contract (matches front-tier):** 1 timestamp per chunk by default, 2 MAX, 0 (CONTINUATION) allowed. Tags used: `[Greeting]` `[Talk]` `[News]` `[Chat]` `[Donation]` `[Gameplay]` `[Gacha]` `[Boss]` `[Death]` `[Victory]` `[WatchParty]` `[Reaction]`. Descriptions max 12 words in output language.
+
+> **Reasoning model token trap:** If using `gemma-4-12b-qat` or other thinking models, set `--max-tokens 1200`. Script auto-extracts from `reasoning_content` if `content` is empty.
+
+#### Option B: Manual Inline Chunk Processing (Interactive)
 Process `chunk_00.txt`, `chunk_01.txt`, ... one at a time.
 
 > **CRITICAL**: Chunk numbers are ALWAYS zero-padded to two digits (`chunk_02.txt`, NOT `chunk_2.txt`).
+>
+> ⚠️ **AUTO-CONTINUE / CLINE TIMEOUT WARNING**:
+> Never let an interactive agent (Cline, Claude Code) loop all 30 chunks inside one long chat thread with "auto continue". Chat history retains every read chunk, bloating to >100k tokens. Local GPUs (Tesla P100) will take >6 minutes to evaluate the prompt, triggering HTTP timeout (`The operation timed out`).
+> **Rule**: Treat each chunk like an isolated subagent worker. Do NOT remember or re-quote past transcripts. If context > 15k tokens, halt and clear context or switch to Option A runner.
 
 For each chunk:
 
-1. **Read**: `[WORKSPACE]/chunks/chunk_XX.txt`
+1. **Read**: `[WORKSPACE]/chunks/chunk_XX.txt` ONLY. Do NOT re-read or hold previous chunks in memory.
 2. **Topic detection** — keyword-scan chunk text for game/royal/tokusatsu signals:
    ```bash
-   # Scan keywords directly (no dedicated script — detect_topics.py deprecated)
    grep -iE "FGO|Fate|Arknights|ไรเดอร์|Rider|เซนไต|Sentai|royal|imu|112" "[WORKSPACE]/chunks/chunk_XX.txt"
    ```
    Use grep for speed; only install `detect_signals.py` pipeline for bulk analysis.
@@ -137,10 +186,11 @@ For each chunk:
    - `python3 "[SKILL_ROOT]/scripts/fetch_ygo_db.py" --check`
    - Exit code 1 → re-run without `--check` to build DB. Exit code 0 → skip.
 4. **Generate timestamps**: follow the Prompt Template below. **DO NOT output the markdown into chat.**
-4. **Write** to `[WORKSPACE]/chunk_outputs/chunk_XX_output.md` using the write tool.
-5. **Update State (CRITICAL)**: IMMEDIATELY overwrite `[WORKSPACE]/anibon_timestamper_state.json`. Set `"current_chunk"` to XX+1. Do this after EVERY chunk.
-6. **End Turn (CRITICAL)**: Stop immediately after state update. Output `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for the user to prompt you.
-7. **Handoff** — if overwhelmed, write state file and stop:
+5. **Write** to `[WORKSPACE]/chunk_outputs/chunk_XX_output.md` using the write tool.
+6. **Update State (CRITICAL)**: IMMEDIATELY overwrite `[WORKSPACE]/anibon_timestamper_state.json`. Set `"current_chunk"` to XX+1 and update `"prev_tail"` to the last generated timestamp line. Do this after EVERY chunk.
+7. **End Turn (CRITICAL)**: Stop immediately after state update. Output `[CHUNK COMPLETE. READY FOR NEXT.]` and wait for the user to prompt you.
+8. **Context Purge**: Discard the chunk text from working memory. Do not carry it to next turn.
+9. **Handoff / Clear Context**: If conversation context exceeds 15k tokens (or every 5 chunks in Cline), write state and halt:
 
 ```json
 {
@@ -159,36 +209,34 @@ For each chunk:
 
 ---
 
-### 📄 Prompt Template
+### 📄 Prompt Template (front-tier quality)
 
-Read the chunk. Group consecutive lines that discuss the **same topic** into one block. Write a **short header title** (in the output language confirmed in Step 1), then list timestamps below.
+> **Option A handles this automatically.** Use this section only for Option B (manual inline).
 
-**Rules:**
-- **SUMMARIZE, DO NOT TRANSCRIBE.** Combine multiple dialogue lines into one summary sentence.
-- **MAX 10 LINES** per chunk. Outputting 30 lines = failure.
-- Use `HH:MM:SS` directly from the file. Do NOT recalculate timestamps.
-- Skip any line whose timestamp > the cutoff in the chunk header.
-- Same topic within 1–2 minutes → one block, one header.
-- New topic → new header. That is the only decision you need to make.
-- Description: what was actually said/done (in chosen language). No internal feelings.
-- If nothing notable: one line → `HH:MM:SS ไม่มีเหตุการณ์สำคัญ`
+**Density contract (CRITICAL — same as front-tier cloud model):**
+- 1 timestamp per chunk by default. **2 MAX. 0 allowed (output `CONTINUATION`).**
+- New timestamp only when: game switches title, speaker joins/leaves, completely different activity, completely new topic.
+- Same topic continuing from previous chunk → `CONTINUATION` (0 stamps).
+- Multiple sub-topics within one talk → MERGE into 1 stamp.
 
-**Output format for each chunk file:**
+**Tags (pick exactly one):**
+`[Greeting]` `[Talk]` `[News]` `[Chat]` `[Donation]` `[Gameplay]` `[Gacha]` `[Boss]` `[Death]` `[Victory]` `[WatchParty]` `[Reaction]`
+
+**Output format per chunk file:**
 ```
 <!-- chunk_00 | 00:00:00 – 00:05:00 -->
-
-### ทักทาย
-00:03:52 -  บ๊อตทักทายผู้ชม เริ่มสตรีม
-00:04:01 -  พูดถึงช่วงเว้นว่างจากข่าวการเมือง
-
-### หัวข้อถัดไป
-HH:MM:SS -  description
+HH:MM:SS - [Tag] Description in Thai max 12 words
 ```
 
-- First line: HTML comment (required for assembly merge).
-- `### Title` on its own line before each topic block.
-- `HH:MM:SS -  description` — timestamp, dash, TWO spaces, text.
-- No meta-commentary or apologies in the output file.
+Or if continuing:
+```
+<!-- chunk_00 | 00:00:00 – 00:05:00 | CONTINUATION -->
+```
+
+Rules:
+- `HH:MM:SS` directly from the transcript. Do NOT recalculate.
+- Description: Thai, max 12 words, one phrase, no quotes, no headers.
+- No meta-commentary, no apologies, no prose in output file.
 
 **Edge cases:**
 - Trust `item.start` from the file — timestamps come from YouTube captions.
@@ -239,9 +287,12 @@ Any ❌ or ⚠️ → adjust `--byte-limit` or split timestamps → re-run `pack
 ## Iron Rules (Local Edition)
 
 - **ONE chunk per turn**: No batch processing. Ever.
+- **Subagent-style isolation**: Never retain raw transcripts from past chunks in chat context. Memory belongs on disk (`chunk_outputs/` and `anibon_timestamper_state.json`), not in conversation tokens.
+- **Anti-hoarding / Cline auto-continue guard**: Do NOT run 30 chunks in a single chat session with auto-continue. Context accumulates to >100k tokens $\to$ P100 prompt prefill exceeds 6 minutes $\to$ HTTP timeout error. Clear context every 5 chunks or run Option A CLI runner.
 - **Write tool, not chat**: Never paste markdown into the conversation.
 - **State after every chunk**: If you crash, state file is your recovery.
 - **No `ls`**: You know the paths. Use them.
 - **No vision**: Local models use `--format txt`, not `--vision`.
-- **Handoff over crash**: If context > 10%, save state and hand off. Do not power through.
+- **Handoff over crash**: If context > 15k tokens, save state and hand off/clear context. Do not power through.
 - **Use grep for topic scan**: `detect_topics.py` deprecated/deleted. Use `grep -iE` on chunk text instead.
+
