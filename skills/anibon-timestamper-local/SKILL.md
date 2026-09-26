@@ -40,10 +40,10 @@ Execute the automated local timestamper via shell tool (`run_commands` / `run_co
 
 ```powershell
 # In Cline (runs detached in background so Cline's 30s tool timeout does not kill it):
-Start-Process python -ArgumentList '-X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --model "google/gemma-4-12b-qat" --lang th'
+Start-Process python -ArgumentList @('-X', 'utf8', 'C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py', 'C:/Users/peter/youtube_<VIDEO_ID>_workspace', '--model', 'auto', '--lang', 'th')
 
 # Or in standard interactive terminal:
-python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "[WORKSPACE]" --model "google/gemma-4-12b-qat" --lang th
+python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "[WORKSPACE]" --model auto --lang th
 ```
 
 *(For English output, use `--lang en`)*
@@ -64,5 +64,9 @@ Output the path to the user when finished.
 4. **NEVER Write or Invent Scripts**:
    If a command times out (`Command timed out after 30000ms`) or exits with an error, **NEVER** write your own `.py` scripts, do NOT write startup scripts, and do NOT write custom transcript parsers. All required scripts exist. Writing custom scripts is strictly forbidden.
 5. **Handling 30000ms Command Timeout**:
-   In Cline, `run_commands` has a 30-second timeout. Processing 30 chunks takes ~2–4 minutes. Always launch via `Start-Process` (Step 3) or instruct the user to run the command in their own PowerShell terminal outside Cline.
+   In Cline, `run_commands` has a 30-second timeout. Processing 30 chunks takes ~2–4 minutes. Always launch via `Start-Process` with array argument list (Step 3) or instruct the user to run the command in their own PowerShell terminal outside Cline.
+6. **Multi-Model Concurrency on P100 (16GB VRAM) & NO UNLOAD**:
+   - Both `google/gemma-4-12b-qat` (7.15 GB) and `qwen/qwen3.5-9b` (6.55 GB) fit simultaneously in VRAM (13.7 GB / 16 GB).
+   - **NEVER** run `lms unload all` or `lms unload`! Unloading models will terminate Cline's active chat session.
+   - The runner uses `--model auto`, which automatically picks the loaded model without causing LM Studio to evict or swap models.
 

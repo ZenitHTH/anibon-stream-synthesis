@@ -17,7 +17,8 @@ Two modes:
 
 Flags:
     --endpoint      LM Studio API base  (default: http://127.0.0.1:1234/v1/chat/completions)
-    --model         Model identifier    (default: google/gemma-4-12b-qat)
+    --model         Model identifier    (default: auto; picks loaded model, Gemma -> Qwen)
+    --force-model   Force requested model even if not currently loaded in LM Studio
     --lang          Output language     th|en (default: th)
     --max-tokens    max_tokens per call (default: 4000 full-ctx, 1200 sequential)
     --temperature   sampling temp       (default: 0.1)
@@ -33,6 +34,7 @@ import glob
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -240,6 +242,78 @@ def run_full_context(
     print(f"[done] {out_md}")
     print(f"\n✅ Complete. {len(stamps)} timestamps (full-context mode).")
     print(f"   Output: {out_md}")
+
+
+# ── LM Studio model detection & resolution ───────────────────────────────────
+
+
+def get_loaded_models() -> list[str]:
+    """Query LM Studio CLI for currently loaded models in memory."""
+    try:
+        res = subprocess.run(
+            ["lms", "ps", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            shell=True,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            data = json.loads(res.stdout)
+            return [m.get("identifier") for m in data if m.get("identifier")]
+    except Exception:
+        pass
+    return []
+
+
+def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> str:
+    """Resolve which model to use, preventing eviction of active models.
+
+    On a 16GB Tesla P100 GPU, both google/gemma-4-12b-qat (7.15 GB) and
+    qwen/qwen3.5-9b (6.55 GB) fit simultaneously in VRAM (13.7 GB total).
+    If a model is requested that isn't loaded, falling back to what's loaded
+    prevents LM Studio from JIT-evicting the user's active Cline chat session.
+    """
+    loaded = get_loaded_models()
+    if loaded:
+        print(f"[init] LM Studio loaded model(s): {', '.join(loaded)}")
+
+        # Auto selection or no model specified
+        if not requested_model or requested_model.lower() == "auto":
+            # Priority 1: google/gemma-4-12b-qat, Priority 2: qwen/qwen3.5-9b
+            for preferred in ("google/gemma-4-12b-qat", "qwen/qwen3.5-9b"):
+                if preferred in loaded:
+                    print(f"[init] Auto-selected loaded model: {preferred}")
+                    return preferred
+            selected = loaded[0]
+            print(f"[init] Auto-selected loaded model: {selected}")
+            return selected
+
+        # User gave explicit model name
+        if requested_model in loaded:
+            print(f"[init] Using requested loaded model: {requested_model}")
+            return requested_model
+
+        if force:
+            print(f"[warn] Model '{requested_model}' not in LM Studio loaded list, but --force-model was set.", file=sys.stderr)
+            return requested_model
+
+        # Requested model is NOT loaded, but other models are loaded
+        fallback = None
+        for preferred in ("google/gemma-4-12b-qat", "qwen/qwen3.5-9b"):
+            if preferred in loaded:
+                fallback = preferred
+                break
+        if not fallback:
+            fallback = loaded[0]
+
+        print(f"[warn] Requested model '{requested_model}' is not currently loaded in LM Studio!", file=sys.stderr)
+        print(f"[warn] Falling back to already-loaded '{fallback}' to prevent LM Studio model conflict/eviction.", file=sys.stderr)
+        return fallback
+
+    # Fallback if lms ps is unavailable
+    if not requested_model or requested_model.lower() == "auto":
+        return "google/gemma-4-12b-qat"
+    return requested_model
 
 
 # ── API call ─────────────────────────────────────────────────────────────────
@@ -478,7 +552,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Local LLM timestamper (full-context or sequential).")
     ap.add_argument("workspace", help="Path to youtube_VIDEOID_workspace directory")
     ap.add_argument("--endpoint", default="http://127.0.0.1:1234/v1/chat/completions")
-    ap.add_argument("--model", default="google/gemma-4-12b-qat")
+    ap.add_argument("--model", default="auto",
+                    help="Model identifier or 'auto' to use loaded model (default: auto)")
+    ap.add_argument("--force-model", action="store_true",
+                    help="Force using requested model even if not loaded in LM Studio")
     ap.add_argument("--lang", default="th", choices=["th", "en"])
     ap.add_argument("--max-tokens", type=int, default=None,
                     help="Max tokens per call (default: 4000 full-ctx, 1200 sequential)")
@@ -494,11 +571,12 @@ def main() -> None:
     if args.max_tokens is None:
         args.max_tokens = 4000 if args.full_context else 1200
 
-
     workspace = Path(args.workspace)
     if not workspace.exists():
         print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
         sys.exit(1)
+
+    model = resolve_model(args.model, args.endpoint, force=args.force_model)
 
     output_dir = workspace / "chunk_outputs"
     output_dir.mkdir(exist_ok=True)
@@ -512,7 +590,7 @@ def main() -> None:
     total = len(chunk_files)
     mode = "full-context" if args.full_context else "sequential"
     print(f"[init] workspace : {workspace}")
-    print(f"[init] model     : {args.model}")
+    print(f"[init] model     : {model}")
     print(f"[init] endpoint  : {args.endpoint}")
     print(f"[init] chunks    : {total}")
     print(f"[init] lang      : {args.lang}")
@@ -531,7 +609,7 @@ def main() -> None:
             workspace=workspace,
             chunk_files=chunk_files,
             endpoint=args.endpoint,
-            model=args.model,
+            model=model,
             lang=args.lang,
             max_tokens=args.max_tokens,
             temperature=args.temperature,
@@ -579,7 +657,7 @@ def main() -> None:
 
         # Call model
         try:
-            raw = call_local(args.endpoint, args.model, prompt, args.max_tokens, args.temperature)
+            raw = call_local(args.endpoint, model, prompt, args.max_tokens, args.temperature)
         except urllib.error.URLError as e:
             print(f"\n[error] endpoint unreachable: {e}", file=sys.stderr)
             print("[error] Is LM Studio running? Start it and retry.", file=sys.stderr)
