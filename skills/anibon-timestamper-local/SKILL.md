@@ -1,99 +1,106 @@
 ---
 name: anibon-timestamper-local
-description: Generate timestamps for Anibon Official streams via local LLM (LM Studio / llama.cpp / Ollama).
+description: Use when generating YouTube timestamps and topic summaries for long livestreams locally on a single GPU (such as NVIDIA Tesla P100 16GB) without cloud API costs.
 ---
 
-# Anibon Timestamper (Local LLM Edition)
+# Anibon Timestamper (Local P100 Edition)
 
-Generates front-tier quality timestamps for long livestreams using a local LLM (LM Studio default on port 1234). Runs fully automated via CLI runner.
+## Overview
 
-## 🚀 Execution Workflow (3 Steps Only)
+A fully local, zero-cloud-cost pipeline for generating front-tier quality YouTube timestamps from long livestreams on a single 16GB GPU (NVIDIA Tesla P100). Emulates the cloud multi-agent workflow via Group-based chunking (~16–20 min windows), multi-modal context fusion, tag normalization, and a two-pass local summarizer.
 
-When invoked with a YouTube video URL or ID:
+## When to Use
 
-### Step 1: Set Paths
-1. Extract `VIDEO_ID` from URL (e.g., `https://www.youtube.com/watch?v=nF7pCwCZCaE` → `nF7pCwCZCaE`).
-2. Set `[WORKSPACE]`:
-   - Windows: `C:/Users/<username>/youtube_<VIDEO_ID>_workspace` (e.g. `C:/Users/peter/youtube_nF7pCwCZCaE_workspace`)
-   - Mac/Linux: `~/youtube_<VIDEO_ID>_workspace`
-3. Resolve `[SKILL_ROOT]`:
-   - **`.agents` format (Cline / Roo / Claude Code / Cursor)**: `C:/Users/<username>/.agents/skills/anibon-timestamper-local` (or `~/.agents/skills/anibon-timestamper-local`)
-   - **`.gemini` format (Antigravity)**: `C:/Users/<username>/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local`
-
-### Step 2: Download & Chunk (Skip If Already Done)
-Test if `[WORKSPACE]/chunks/chunk_00.txt` exists.
-- If it **already exists**: **SKIP THIS STEP COMPLETELY**.
-- If it **does not exist**, run via shell tool (`run_commands` / `run_command`):
-
-```powershell
-# Direct Windows execution (works in any directory):
-python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
-
-# Cross-platform fallback:
-python "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL" --workspace "[WORKSPACE]" --format txt --block 300 --overlap 30
+```mermaid
+flowchart TD
+    Start["New Livestream to Timestamp"] --> Q1{"Cloud API Available<br/>or Budget Allowed?"}
+    Q1 -->|Yes| Orchestrator["Use anibon-timestamper<br/>(Cloud Flash Multi-Agent)"]
+    Q1 -->|No / Zero-Cost| Q2{"Hardware Available?"}
+    Q2 -->|Tesla P100 16GB or Local GPU| LocalSkill["Use anibon-timestamper-local<br/>(Group Mode + P100 Pipeline)"]
+    Q2 -->|CPU Only / Insufficient RAM| Fallback["Use pack_timestamps or wait for cloud"]
 ```
 
-> ⚠️ **NO WEB SCRAPERS**: Never use `fetch_web_content`, browser, or `curl` on YouTube. Always run `prepare_video.py` in shell. Never download raw video files.
+### Apply When:
+- Generating timestamps for Anibon Official livestreams or long talk/gaming streams with **zero API expense**.
+- Running local LLM inference on a dedicated workstation GPU (e.g. NVIDIA Tesla P100 16GB Pascal).
+- Processing VODs where high topic coherence, banter emotion, and YouTube-ready comment parts are required.
 
-### Step 3: Launch Local Timestamper Runner
-Execute via shell tool (`run_commands` / `run_command`):
+### Do NOT Use When:
+- Cloud API credits are available and maximum parallel speed (< 2 minutes runtime) is prioritized over zero cost (use `anibon-timestamper`).
+- Processing short clips (< 10 minutes) where manual timestamping or simple heuristics suffice.
+
+---
+
+## Single-GPU Architecture (Tesla P100 16GB Envelope)
+
+All operations run on a single machine, constrained strictly within 16GB VRAM (15.2 GB usable under Windows WDDM):
+
+| Stage | Process / Model | Hardware Footprint | Purpose |
+| :--- | :--- | :--- | :--- |
+| **0. Pre-computation** | Python (yt-dlp, cv2, TF-IDF) | System RAM (0 MB VRAM) | Captions, LiveChat alignment, Storyboard activity, Domain signal detection. |
+| **1. Pass 1: Group Stamping** | `google/gemma-4-12b-qat` (LM Studio) | ~7.2 GB VRAM + ~1.2 GB KV Cache | Processes 4 chunks per group (~16–20m), yielding 2–4 macro timestamps. |
+| **2. Pass 2: Summarizer** | `google/gemma-4-12b-qat` (LM Studio) | Same instance (reused) | Clusters stamps into YouTube parts (< 3,500 bytes) with Caveman headers. |
+| **3. Ground Truth (Opt)** | `whisper-cli.exe` (Large-v3-Turbo) | ~1.5 GB VRAM (Vulkan) / CPU | Transcribes short audio slices for garbled proper nouns on demand. |
+
+**VRAM Safety Margin:** Peak allocation ~8.5–10.0 GB, leaving **5+ GB headroom** to prevent CUDA OOM or LM Studio model eviction.
+
+---
+
+## Core Pipeline & Quick Reference
+
+### Quick Commands
 
 ```powershell
-# PRIMARY METHOD (runs launch_local.ps1 detached; returns in 0.5s so Cline 30s timeout NEVER triggers):
+# 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
+python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
+
+# 2. Run All-in-One Local Timestamper (Group Mode + Summarizer Pass)
+python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --group-size 4 --lang th
+
+# 3. Detached Background Launch (for Cline / agent sessions with 30s timeout)
 powershell -ExecutionPolicy Bypass -File "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/launch_local.ps1" -Workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace"
-
-# Interactive terminal execution:
-python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "[WORKSPACE]" --model auto --lang th
 ```
 
-*(For English output, pass `-Lang en` or `--lang en`)*
+---
 
-### Step 3b: Check Progress
-Check the background runner's progress anytime:
-```powershell
-Get-Content "C:/Users/peter/youtube_<VIDEO_ID>_workspace/timestamper.log" -Tail 10
+## Discipline & Anti-Rationalization
+
+### The Iron Rule of Local Processing
+
+```
+NEVER PROCESS 1 CHUNK IN ISOLATION WITHOUT GROUP CONTINUITY
 ```
 
-### Step 4: Completion
-When `[WORKSPACE]/anibon_timestamps.md` is generated, provide the path to the user.
+Running single-chunk loops forces the model to generate a timestamp every 4 minutes, causing massive micro-stamping (37 stamps for 37 chunks) and fragmented topics.
+
+### Rationalization Table
+
+| Rationalization | Reality | Counter-Measure |
+| :--- | :--- | :--- |
+| *"Single chunk is faster to run."* | Fast but produces 30+ noisy, low-value stamps that fail benchmark review. | Use `--group-size 4` (~16–20m window). |
+| *"I can invent tags like [วิเคราะห์] because it fits the content."* | Front-tier benchmarks reject non-standard tags; breaks comment parsers. | Normalizer automatically remaps `[วิเคราะห์]` → `[Talk]`. |
+| *"I'll just summarize the whole 3-hour transcript in 1 prompt."* | Exceeds context and degrades entity recall on 12B models. | Group-based 4-chunk window keeps prompt under 4k tokens. |
+| *"Let's write a custom Python script to speed this up."* | Ad-hoc scripts break state tracking, resume logic, and encoding. | Strictly use `process_chunks_local.py` flags. |
+
+### Red Flags — STOP and Reset
+- Output file contains 35+ timestamps for a 2-hour stream (micro-stamping symptom).
+- Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).
+- Sections exceed 3,500 bytes (YouTube comment limit violation).
+- Script crashes with `UnicodeEncodeError: 'charmap'` (forgot `-X utf8`).
 
 ---
 
-## 🛑 Strict Rules
+## Common Mistakes & Troubleshooting
 
-1. **Shell Execution Only**: Always execute Python scripts via the shell tool (`run_commands` in Cline / `run_command` in Antigravity).
-2. **Never Process Chunks in Chat**: Do NOT manually read chunks or generate timestamps turn-by-turn in chat. Chat context will bloat past 100k tokens and cause HTTP timeouts on local GPUs.
-3. **Stay Inside `[WORKSPACE]`**: Never search or scan files in home root (`C:/Users/peter/anibon*`). All files belong strictly inside `[WORKSPACE]`.
-4. **NEVER Write or Invent Scripts**:
-   If you think a process is slow or pending, **NEVER** write your own `.py` scripts (`process_all_chunks.py`), do NOT write shell scripts (`cat > ...`), and do NOT send raw HTTP calls to LM Studio. All execution is handled by `launch_local.ps1` and `process_chunks_local.py`. Writing custom scripts is strictly forbidden.
-5. **Handling 30000ms Command Timeout**:
-   In Cline, `run_commands` has a 30-second timeout. Always launch the timestamper using `launch_local.ps1` (Step 3). It launches the process detached in the background in under 1 second, logs output to `[WORKSPACE]/timestamper.log`, and never times out.
-6. **Model Architecture on P100 (16GB VRAM) & Zero-Conflict Rule**:
-   - On 16GB GPUs (Tesla P100), loading multiple models simultaneously exceeds VRAM during active generation due to KV cache allocations, causing LM Studio to evict models.
-   - **Recommended Primary Model**: **`google/gemma-4-12b-qat`** (7.15 GB). It provides vastly superior natural language understanding and semantic nuance (Google DeepMind lineage), accurately capturing subtle topic boundaries and specific entities (e.g. AI, ปลาหมอคางดำ) without hyper-generalizing or over-skipping like surface keyword matchers.
-   - **VRAM Headroom**: Loading `google/gemma-4-12b-qat` as the single unified model leaves **~8.85 GB free VRAM** for large context KV cache and parallel slot allocations without any VRAM eviction.
-   - **NEVER** run `lms unload all` or `lms unload`! The runner uses `--model auto`, which automatically queries and uses whichever model is active in LM Studio without triggering reload or eviction.
+1. **LM Studio Model Eviction**:
+   - *Symptom*: LM Studio unloads Gemma 4 and reloads another model, causing 60-second stalls.
+   - *Fix*: Keep `--model auto`. `resolve_model` automatically latches onto the active in-memory model.
 
----
+2. **Gemma 4 Thinking Token Trap**:
+   - *Symptom*: Output timestamp is blank or truncated.
+   - *Cause*: Model used token budget in `reasoning_content`.
+   - *Fix*: Built-in system prompt limits thinking to <2 sentences; client extracts timestamp directly from reasoning if content is blank.
 
-## 🎯 Front-Tier Quality Standards (80%+ Benchmark Match)
-
-The built-in prompt and post-processor in `process_chunks_local.py` automatically enforce:
-- **First-Verb Streamer Tone**: Uses active Pu Boat signature verbs (`แซว`, `ฮาลั่น!`, `เม้าท์มอย`, `ขำก๊าก`, `ชำแหละ`, `จวกยับ`, `วิเคราะห์`, `เจาะลึก`, `อึ้ง!`) and strictly bans flat verbs like `พูดถึง...`.
-- **Automatic Sanitization**: Strips meta-prompts, English commentary, and parenthetical translations `(...)` automatically.
-- **Part Summaries & Double Borders**: Formats each part with `═` double borders and an intelligent 2-3 topic executive summary matching the front-tier benchmark in `timestamp-workspace`.
-
----
-
-## 🧠 Domain Knowledge & Signal Detection System
-
-`process_chunks_local.py` automatically detects and adapts to specialized stream topics (Tokusatsu, Gaming/Gacha, Anime, Politics):
-1. **Corpus-Level Signal Detection**: Automatically scans transcript chunks against `resources/knowledge.json` using TF-IDF rarity scoring (`weight = log(N / df)`). Saves detected signals to `[WORKSPACE]/signals.json`.
-2. **Dynamic Domain Prompt Injection**:
-   - **Tokusatsu (มาสค์ไรเดอร์ / ขบวนการเซนไต / อุลตร้าแมน)**: Automatically enables `[WatchParty]`, `[Reaction]`, `[Lore]`, `[Review]`, `[Tierlist]` tags, canonical name mapping (Gavv, Gotchard, Geats, Boonboomger, Henshin, DX Toys), and watch-party reaction verbs (`กรี๊ดลั่น!`, `เหวอ!`, `อึ้งฟอร์มใหม่`, `ชำแหละเนื้อเรื่อง`, `จัดอันดับสูท`).
-   - **Gaming & Gacha**: Enables `[Gameplay]`, `[Gacha]`, `[Boss]`, `[Story]`, `[Tierlist]` tags and gacha/battle verbs (`เปิดกาชา`, `ลุ้นตัวทอง`, `สู้บอส`, `ช็อกกาชาเกลือ`, `ผ่านด่าน`).
-   - **Anime & Manga**: Enables anime review tags and recommendation verbs (`ป้ายยา`, `สับเละ`, `อวยยับ`, `วิเคราะห์อนิเมชั่น`).
-3. **Phonetic Entity Normalization**: Auto-corrects garbled ASR spellings (e.g. "กาวบ์/กัฟ" → "Kamen Rider Gavv", "ริมบัส" → "Limbus Company") using `resources/default_mappings.json` before prompting the LLM.
-
-
-
+3. **ASR Phonetic Drift**:
+   - *Symptom*: Names like "นครโตะ" appear instead of "Naucrate (นอคราเต้)".
+   - *Fix*: `process_chunks_local.py` loads `resources/default_mappings.json` and runs TF-IDF signal detection before prompt generation.
