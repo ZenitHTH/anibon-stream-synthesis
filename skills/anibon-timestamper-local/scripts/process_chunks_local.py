@@ -1,12 +1,17 @@
 """
 process_chunks_local.py — Local LLM chunk runner for Anibon timestamping on Tesla P100 (16GB).
 
-Emulates the front-tier multi-agent orchestrator pipeline locally on a single GPU:
-1. Group-based chunk processing (--group-size 4, ~16-20 min window) with continuity tracking.
-2. Multi-modal context fusion (LiveChat messages, 555 laugh pulses, Storyboard visual activity).
-3. Corpus-level signal detection & dynamic domain prompt injection.
-4. Tag whitelist enforcement & auto-normalization (prevents model inventing tags like [วิเคราะห์]).
-5. Two-pass architecture: Pass 1 (Group Timestamper) -> Pass 2 (Local Summarizer for parts & Caveman headers).
+Two execution modes:
+1. --mode recursive (RECOMMENDED): Dynamic rolling summary state-machine.
+   Tracks topic flow across chunks organically (not locked to arbitrary minutes).
+   Accumulates rolling context when topics continue, flushes summary when topics pivot.
+2. --mode group: Batched processing across groups of chunks (~16-20 min windows).
+
+Includes:
+- Multi-modal context fusion (LiveChat messages, 555 laugh pulses, Storyboard visual activity).
+- Corpus-level signal detection & dynamic domain prompt injection.
+- Tag whitelist enforcement & auto-normalization.
+- Two-pass architecture: Pass 1 (Topic Segmentation) -> Pass 2 (Local Summarizer for parts & Caveman headers).
 """
 
 import argparse
@@ -42,7 +47,7 @@ except ImportError:
 TAGS = (
     "[Greeting]", "[Talk]", "[News]", "[Chat]", "[Donation]",
     "[Gameplay]", "[Gacha]", "[Boss]", "[Death]", "[Victory]",
-    "[WatchParty]", "[Reaction]",
+    "[WatchParty]", "[Reaction]", "[Story]", "[Lore]", "[Review]",
 )
 
 TAG_REMAP = {
@@ -61,6 +66,7 @@ TAG_REMAP = {
     "เปิดตัว": "News",
     "อัปเดต": "News",
     "ข่าว": "News",
+    "Game News": "News",
     "ตอบแชท": "Chat",
     "ถามตอบ": "Chat",
     "ขอบคุณ": "Donation",
@@ -73,7 +79,7 @@ TAG_REMAP = {
 }
 
 SYSTEM_PROMPT = """\
-You are a timestamper for Thai livestream VODs by Pu Boat (Anibon Official).
+You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
 CRITICAL INSTRUCTION: Keep your internal thinking under 2 sentences. \
 Do NOT list items or transcribe text in your thinking. \
 Proceed immediately to outputting the final decision."""
@@ -177,12 +183,10 @@ def parse_timestamps(raw: str, max_stamps: int = 4) -> List[str]:
             sec = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
 
             # 1. Chronological Loop Breaker:
-            # If the timestamp resets backwards or repeats, the model has entered a repetition loop.
             if prev_sec is not None and sec <= prev_sec:
                 break
 
-            # 2. Collision Guard:
-            # If next timestamp is < 60s from previous, it's a micro-stamp within the same discussion.
+            # 2. Collision Guard (< 60s):
             if prev_sec is not None and (sec - prev_sec) < 60:
                 continue
 
@@ -220,16 +224,17 @@ def is_continuation(raw: str) -> bool:
 
 # ── Prompt Building ──────────────────────────────────────────────────────────
 
-def build_single_chunk_prompt(
+def build_recursive_prompt(
     chunk: dict,
-    prev_tail: str,
+    current_topic: str,
+    rolling_summary: str,
     lang: str,
     signal: Optional[dict] = None,
     livechat: str = "",
     activity: str = "",
     mood: str = ""
 ) -> str:
-    """Build prompt for a single chunk."""
+    """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
     start_ts, end_ts = _chunk_range(items)
     lang_note = "Thai (ภาษาไทย)" if lang == "th" else "English"
@@ -237,12 +242,6 @@ def build_single_chunk_prompt(
     lines = [f"({it.get('timestamp', _fmt_ts(it.get('start', 0)))}) {it.get('text', '').strip()}"
              for it in items if it.get("text", "").strip()]
     transcript_block = "\n".join(lines) if lines else "(no transcript data)"
-
-    if prev_tail:
-        masked = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*", "", prev_tail).strip()
-        prev_section = f"Previous topic (context only — do NOT use this timestamp):\n[context] {masked}\n"
-    else:
-        prev_section = "(First chunk — no previous context.)\n"
 
     extra_tags, domain_block = get_domain_guidance(signal)
     all_tags = list(TAGS)
@@ -261,27 +260,46 @@ def build_single_chunk_prompt(
         context_extras.append(f"LiveChat Highlights:\n{livechat}")
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
+    if current_topic:
+        topic_section = f"""## ONGOING TOPIC STATE
+Current Topic: {current_topic}
+Rolling Summary: {rolling_summary}
+"""
+    else:
+        topic_section = "## ONGOING TOPIC STATE\n(No ongoing topic — livestream is starting)\n"
+
     prompt = f"""\
-You are timestamping chunk {chunk.get('_idx', '??')} of a Thai livestream VOD by Pu Boat (Anibon Official).
-Chunk time range: {start_ts} - {end_ts}
+You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
 
-{prev_section}{context_block}
+{topic_section}{context_block}{domain_section}
 ## YOUR TASK
-
-{domain_section}Read the transcript and context. Output ONE timestamp line for the most notable moment or topic in this chunk.
-
-Format: HH:MM:SS - [Tag] Description
+Read the transcript below. Decide if this chunk is discussing/continuing the ongoing topic, or starting a new topic.
 
 Rules:
-- HH:MM:SS MUST be a timestamp that literally appears in the transcript ({start_ts} - {end_ts}).
-- Description in {lang_note}. Max 12 words. One phrase. Active voice.
-- Tags: {tags_list} (Do NOT invent new tags).
-- First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
-- Output ONLY the single timestamp line. No markdown backticks.
+1. is_continuation:
+   - true: The speaker is still on the same subject, continuing the discussion, rant, gameplay, or related details.
+   - false: The speaker has clearly shifted to a new topic, new game, or new news piece (or stream start).
+2. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
+3. If is_continuation is true:
+   - updated_summary: 1-2 sentences combining the ongoing topic with this chunk's progress.
+   - new_timestamp: null
+4. If is_continuation is false (NEW TOPIC):
+   - new_topic_title: Short Thai title (5-8 words).
+   - updated_summary: 1-2 sentences summarizing this new topic.
+   - new_timestamp: Format "HH:MM:SS - [Tag] Description" where HH:MM:SS literally appears in this chunk ({start_ts} - {end_ts}).
+     Tags: {tags_list} (Strictly use allowed tags; do NOT invent new tags).
+     First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
 
-Output SKIP ONLY if this chunk is a pure mid-sentence continuation of the previous topic with no new information.
+OUTPUT STRICTLY AS JSON:
+{{
+  "is_continuation": false,
+  "chunk_summary": "...",
+  "updated_summary": "...",
+  "new_topic_title": "...",
+  "new_timestamp": "HH:MM:SS - [Tag] Description"
+}}
 
-## TRANSCRIPT ({start_ts} - {end_ts})
+## CHUNK TRANSCRIPT ({start_ts} - {end_ts})
 {transcript_block}
 """
     return prompt.strip()
@@ -308,7 +326,6 @@ def build_group_prompt(
     else:
         prev_section = "(First group — starting livestream.)\n"
 
-    # Gather chunk transcripts and multi-modal signals
     transcript_blocks = []
     collected_domain_blocks = []
     extra_tags_collected = set()
@@ -318,7 +335,6 @@ def build_group_prompt(
         c_items = ch.get("items", [])
         c_start, c_end = _chunk_range(c_items)
         
-        # Signals
         sig = signals_map.get(idx_str)
         if sig:
             ex_tags, d_block = get_domain_guidance(sig)
@@ -326,7 +342,6 @@ def build_group_prompt(
             if d_block and d_block not in collected_domain_blocks:
                 collected_domain_blocks.append(d_block)
 
-        # Multi-modal
         lc = load_chunk_livechat(workspace, idx_str)
         act = load_chunk_activity(workspace, idx_str)
         mood = load_chunk_mood(workspace, idx_str)
@@ -472,6 +487,8 @@ def call_local(
                 content = "\n".join(m)
             elif "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
                 content = "CONTINUATION"
+            else:
+                content = rc
 
     return content
 
@@ -588,7 +605,6 @@ TIMESTAMPS:
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
         content = call_local(endpoint, model, prompt, max_tokens, temperature)
-        # Parse matches from content or reasoning
         matches = re.findall(r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+([^\n\r]+)", content, flags=re.DOTALL)
         if matches:
             border = "═" * 57
@@ -662,7 +678,6 @@ def assemble_parts(
         header = f" ส่วนที่ {i}: {summary} (⏱ เริ่ม: {start})"
         part_text = f"{border}\n{header}\n{border}\n" + "\n".join(block)
 
-        # Check YouTube byte limit (≤4500 bytes per comment, target 3500)
         if len(part_text.encode("utf-8")) > 3500 and len(block) > 4:
             mid = len(block) // 2
             b1, b2 = block[:mid], block[mid:]
@@ -676,26 +691,350 @@ def assemble_parts(
 
     return "\n\n".join(parts)
 
+# ── Execution Engines ────────────────────────────────────────────────────────
+
+def run_recursive_mode(
+    workspace: Path,
+    chunk_files: List[Path],
+    endpoint: str,
+    model: str,
+    lang: str,
+    max_tokens: int,
+    temperature: float,
+    signals_map: dict,
+    mappings: Optional[list],
+    no_resume: bool,
+    max_chunks: Optional[int],
+    no_summarizer_pass: bool,
+    block_size: int,
+) -> None:
+    """Dynamic rolling summary state-machine execution."""
+    output_dir = workspace / "recursive_outputs"
+    output_dir.mkdir(exist_ok=True)
+
+    state = load_state(workspace)
+    all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
+    current_topic_title: str = state.get("current_topic_title", "") if not no_resume else ""
+    rolling_summary: str = state.get("rolling_summary", "") if not no_resume else ""
+
+    total = len(chunk_files)
+    print(f"[recursive] Starting recursive rolling topic state-machine across {total} chunks...")
+    if not no_resume and all_timestamps:
+        print(f"[resume] Loaded {len(all_timestamps)} timestamps from state (Ongoing Topic: '{current_topic_title}')")
+
+    processed_count = 0
+    for i, chunk_path in enumerate(chunk_files):
+        chunk_idx = f"chunk_{i:02d}"
+        out_path = output_dir / f"{chunk_idx}.json"
+
+        if not no_resume and out_path.exists():
+            try:
+                saved_res = json.loads(out_path.read_text(encoding="utf-8"))
+                current_topic_title = saved_res.get("current_topic_title", current_topic_title)
+                rolling_summary = saved_res.get("rolling_summary", rolling_summary)
+                print(f"[skip] {chunk_idx} (already processed)")
+                continue
+            except Exception:
+                pass
+
+        try:
+            chunk = load_chunk_file(chunk_path, mappings=mappings)
+        except Exception as e:
+            print(f"[warn] failed to load {chunk_path.name}: {e}", file=sys.stderr)
+            continue
+
+        chunk["_idx"] = i
+        sig = signals_map.get(chunk_idx)
+        lc = load_chunk_livechat(workspace, chunk_idx)
+        act = load_chunk_activity(workspace, chunk_idx)
+        mood = load_chunk_mood(workspace, chunk_idx)
+
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic=current_topic_title,
+            rolling_summary=rolling_summary,
+            lang=lang,
+            signal=sig,
+            livechat=lc,
+            activity=act,
+            mood=mood,
+        )
+        prompt_tokens = len(prompt) // 4
+        print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
+
+        try:
+            raw = call_local(endpoint, model, prompt, max_tokens, temperature)
+            text = raw
+            jm = re.search(r'(\{[^{}]*"is_continuation"[^{}]*\})', text, re.DOTALL)
+            if not jm:
+                jm = re.search(r"(\{.*\})", text, re.DOTALL)
+
+            if jm:
+                res = json.loads(jm.group(1))
+                is_cont = res.get("is_continuation", False)
+                ch_sum = res.get("chunk_summary", "")
+                up_sum = res.get("updated_summary", "")
+                new_ts = res.get("new_timestamp")
+                new_title = res.get("new_topic_title", "")
+
+                if not is_cont:
+                    # TOPIC SHIFT / FLUSH OLD
+                    cleaned_ts = sanitize_timestamp_line(new_ts) if new_ts else None
+                    if cleaned_ts:
+                        c_start, c_end = chunk.get("start_sec", 0), chunk.get("end_sec", 0)
+                        v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+                        if v_ts:
+                            all_timestamps.append(v_ts[0])
+                            print(f"👉 TOPIC SHIFT: {v_ts[0]} ('{new_title}')")
+                        else:
+                            print(f"👉 TOPIC SHIFT (stamp out-of-range, kept topic: '{new_title}')")
+                    else:
+                        print(f"👉 TOPIC SHIFT (no stamp, topic: '{new_title}')")
+
+                    current_topic_title = new_title or ch_sum
+                    rolling_summary = up_sum or ch_sum
+                else:
+                    # CONTINUATION
+                    print(f"🔄 CONTINUATION (Topic: '{current_topic_title}')")
+                    rolling_summary = up_sum or rolling_summary
+
+                out_path.write_text(json.dumps({
+                    "chunk": chunk_idx,
+                    "is_continuation": is_cont,
+                    "chunk_summary": ch_sum,
+                    "rolling_summary": rolling_summary,
+                    "current_topic_title": current_topic_title,
+                }, ensure_ascii=False, indent=2), encoding="utf-8")
+            else:
+                print(f"[warn] JSON parse failed, raw: {text[:100]}")
+
+        except Exception as e:
+            print(f"[error] {chunk_idx}: {e}", file=sys.stderr)
+
+        save_state(workspace, {
+            "current_chunk": i + 1,
+            "total_chunks": total,
+            "all_timestamps": all_timestamps,
+            "current_topic_title": current_topic_title,
+            "rolling_summary": rolling_summary,
+            "phase": "recursive_loop",
+        })
+
+        processed_count += 1
+        if max_chunks and processed_count >= max_chunks:
+            print(f"[pause] Reached --max-chunks {max_chunks}.")
+            break
+
+    # Assembly
+    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
+
+    deduped = []
+    seen = set()
+    for s in all_timestamps:
+        if s not in seen:
+            seen.add(s)
+            deduped.append(s)
+
+    raw_ts = workspace / "all_timestamps.txt"
+    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
+    print(f"[done] Raw timestamps: {raw_ts}")
+
+    assembled = None
+    if not no_summarizer_pass:
+        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
+
+    if not assembled:
+        print("[assemble] Using heuristic double-border part assembly.")
+        assembled = assemble_parts(deduped, workspace, block_size)
+
+    out_md = workspace / "anibon_timestamps.md"
+    out_md.write_text(assembled, encoding="utf-8")
+    print(f"[done] Final timestamps: {out_md}")
+
+    save_state(workspace, {
+        "current_chunk": total,
+        "total_chunks": total,
+        "all_timestamps": deduped,
+        "phase": "complete",
+    })
+    print(f"\n✅ Recursive run complete: {out_md}")
+
+
+def run_group_mode(
+    workspace: Path,
+    chunk_files: List[Path],
+    endpoint: str,
+    model: str,
+    lang: str,
+    max_tokens: int,
+    temperature: float,
+    group_size: int,
+    signals_map: dict,
+    mappings: Optional[list],
+    no_resume: bool,
+    max_groups: Optional[int],
+    no_summarizer_pass: bool,
+    block_size: int,
+) -> None:
+    """Group-based execution across fixed windows of chunks."""
+    output_dir = workspace / "group_outputs"
+    output_dir.mkdir(exist_ok=True)
+
+    state = load_state(workspace)
+    all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
+    prev_tail: str = state.get("prev_tail", "") if not no_resume else ""
+
+    total_chunks = len(chunk_files)
+    num_groups = (total_chunks + group_size - 1) // group_size
+
+    if not no_resume and all_timestamps:
+        print(f"[resume] {len(all_timestamps)} timestamps already recorded")
+
+    groups_processed = 0
+    for g in range(num_groups):
+        group_idx = f"group_{g:02d}"
+        out_path = output_dir / f"{group_idx}_output.md"
+
+        if not no_resume and out_path.exists():
+            existing = out_path.read_text(encoding="utf-8")
+            for line in reversed(existing.splitlines()):
+                line = line.strip()
+                if re.match(r"\d{2}:\d{2}:\d{2}\s*-\s*\[", line):
+                    prev_tail = line
+                    break
+            print(f"[skip] {group_idx} (output exists)")
+            continue
+
+        g_files = chunk_files[g * group_size : (g + 1) * group_size]
+        g_chunks = []
+        for cf in g_files:
+            try:
+                ch = load_chunk_file(cf, mappings=mappings)
+                m = re.search(r"chunk_(\d+)", cf.stem)
+                ch["_idx"] = int(m.group(1)) if m else 0
+                g_chunks.append(ch)
+            except Exception as e:
+                print(f"[warn] failed to load {cf.name}: {e}", file=sys.stderr)
+
+        if not g_chunks:
+            continue
+
+        g_start_sec = g_chunks[0].get("start_sec", 0)
+        g_end_sec = g_chunks[-1].get("end_sec", 0)
+
+        prompt = build_group_prompt(g_chunks, g, prev_tail, lang, signals_map, workspace)
+        prompt_tokens = len(prompt) // 4
+        print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
+
+        try:
+            raw = call_local(endpoint, model, prompt, max_tokens, temperature)
+        except urllib.error.URLError as e:
+            print(f"\n[error] endpoint unreachable: {e}", file=sys.stderr)
+            save_state(workspace, {
+                "current_group": g,
+                "all_timestamps": all_timestamps,
+                "prev_tail": prev_tail,
+                "phase": "group_loop",
+            })
+            sys.exit(1)
+        except Exception as e:
+            print(f"\n[error] {group_idx}: {e}", file=sys.stderr)
+            continue
+
+        if is_continuation(raw):
+            stamps = []
+            result_label = "CONTINUATION"
+        else:
+            stamps = parse_timestamps(raw, max_stamps=4)
+            stamps = validate_timestamps(stamps, g_start_sec, g_end_sec)
+            result_label = f"{len(stamps)} stamp(s)" if stamps else "0 stamps (continuity)"
+
+        print(result_label)
+
+        if stamps:
+            md_lines = [f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} -->", ""]
+            md_lines.extend(stamps)
+            md_content = "\n".join(md_lines)
+            prev_tail = stamps[-1]
+            all_timestamps.extend(stamps)
+        else:
+            md_content = f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} | CONTINUATION -->"
+
+        out_path.write_text(md_content + "\n", encoding="utf-8")
+
+        save_state(workspace, {
+            "current_group": g + 1,
+            "total_groups": num_groups,
+            "all_timestamps": all_timestamps,
+            "prev_tail": prev_tail,
+            "phase": "group_loop",
+        })
+
+        groups_processed += 1
+        if max_groups and groups_processed >= max_groups:
+            print(f"[pause] Reached --max-groups {max_groups}.")
+            break
+
+    # Assembly
+    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
+
+    deduped = []
+    seen = set()
+    for s in all_timestamps:
+        if s not in seen:
+            seen.add(s)
+            deduped.append(s)
+
+    raw_ts = workspace / "all_timestamps.txt"
+    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
+    print(f"[done] Raw timestamps: {raw_ts}")
+
+    assembled = None
+    if not no_summarizer_pass:
+        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
+
+    if not assembled:
+        print("[assemble] Using heuristic double-border part assembly.")
+        assembled = assemble_parts(deduped, workspace, block_size)
+
+    out_md = workspace / "anibon_timestamps.md"
+    out_md.write_text(assembled, encoding="utf-8")
+    print(f"[done] Final timestamps: {out_md}")
+
+    save_state(workspace, {
+        "current_group": num_groups,
+        "total_groups": num_groups,
+        "all_timestamps": deduped,
+        "prev_tail": prev_tail,
+        "phase": "complete",
+    })
+    print(f"\n✅ Group run complete: {out_md}")
+
 # ── Main Controller ──────────────────────────────────────────────────────────
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="P100 Single-GPU Timestamper (Group & Summarizer Pass).")
+    ap = argparse.ArgumentParser(description="P100 Single-GPU Timestamper (Recursive & Group Modes).")
     ap.add_argument("workspace", help="Path to youtube_VIDEOID_workspace directory")
+    ap.add_argument("--mode", default="recursive", choices=["recursive", "group"],
+                    help="Execution mode: recursive (dynamic topic state-machine) or group (fixed 4-chunk groups)")
     ap.add_argument("--endpoint", default="http://127.0.0.1:1234/v1/chat/completions")
     ap.add_argument("--model", default="auto")
     ap.add_argument("--force-model", action="store_true")
     ap.add_argument("--lang", default="th", choices=["th", "en"])
-    ap.add_argument("--max-tokens", type=int, default=1500)
+    ap.add_argument("--max-tokens", type=int, default=1200)
     ap.add_argument("--temperature", type=float, default=0.1)
     ap.add_argument("--group-size", type=int, default=4,
-                    help="Number of chunks per group window (default 4 = ~16-20 min)")
+                    help="Chunks per group in --mode group (default 4 = ~16-20 min)")
     ap.add_argument("--no-summarizer-pass", action="store_true",
                     help="Disable LLM summarizer pass; use heuristic assembly")
     ap.add_argument("--summarize-only", action="store_true",
                     help="Skip chunk loop and run summarizer pass on all_timestamps.txt")
     ap.add_argument("--no-resume", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--max-groups", type=int, default=None)
+    ap.add_argument("--max-chunks", type=int, default=None,
+                    help="Max chunks to process in recursive mode")
+    ap.add_argument("--max-groups", type=int, default=None,
+                    help="Max groups to process in group mode")
     ap.add_argument("--block-size", type=int, default=5400)
     args = ap.parse_args()
 
@@ -731,21 +1070,15 @@ def main() -> None:
         sys.exit(1)
 
     total_chunks = len(chunk_files)
-    group_size = max(1, args.group_size)
-    num_groups = (total_chunks + group_size - 1) // group_size
-
-    print(f"[init] workspace  : {workspace}")
-    print(f"[init] model      : {model}")
-    print(f"[init] endpoint   : {args.endpoint}")
-    print(f"[init] total chunks: {total_chunks} ({num_groups} groups of ~{group_size} chunks)")
-    print(f"[init] group-size : {group_size}")
-    print(f"[init] lang       : {args.lang}")
+    print(f"[init] workspace   : {workspace}")
+    print(f"[init] model       : {model}")
+    print(f"[init] endpoint    : {args.endpoint}")
+    print(f"[init] mode        : {args.mode}")
+    print(f"[init] total chunks: {total_chunks}")
+    print(f"[init] lang        : {args.lang}")
 
     if args.dry_run:
-        for g in range(num_groups):
-            g_files = chunk_files[g * group_size : (g + 1) * group_size]
-            print(f"  Group {g:02d}: {[f.name for f in g_files]}")
-        print("[dry-run] done")
+        print(f"[dry-run] Discovered {total_chunks} chunks.")
         return
 
     # ── Signal & Knowledge Detection ─────────────────────────────────────────
@@ -764,140 +1097,40 @@ def main() -> None:
     if mappings:
         print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings")
 
-    output_dir = workspace / "group_outputs"
-    output_dir.mkdir(exist_ok=True)
-
-    state = load_state(workspace)
-    all_timestamps: List[str] = state.get("all_timestamps", [])
-    prev_tail: str = state.get("prev_tail", "")
-
-    if not args.no_resume and all_timestamps:
-        print(f"[resume] {len(all_timestamps)} timestamps already recorded")
-
-    groups_processed = 0
-    for g in range(num_groups):
-        group_idx = f"group_{g:02d}"
-        out_path = output_dir / f"{group_idx}_output.md"
-
-        if not args.no_resume and out_path.exists():
-            existing = out_path.read_text(encoding="utf-8")
-            for line in reversed(existing.splitlines()):
-                line = line.strip()
-                if re.match(r"\d{2}:\d{2}:\d{2}\s*-\s*\[", line):
-                    prev_tail = line
-                    break
-            print(f"[skip] {group_idx} (output exists)")
-            continue
-
-        g_files = chunk_files[g * group_size : (g + 1) * group_size]
-        g_chunks = []
-        for cf in g_files:
-            try:
-                ch = load_chunk_file(cf, mappings=mappings)
-                m = re.search(r"chunk_(\d+)", cf.stem)
-                ch["_idx"] = int(m.group(1)) if m else 0
-                g_chunks.append(ch)
-            except Exception as e:
-                print(f"[warn] failed to load {cf.name}: {e}", file=sys.stderr)
-
-        if not g_chunks:
-            continue
-
-        # Group Window
-        g_start_sec = g_chunks[0].get("start_sec", 0)
-        g_end_sec = g_chunks[-1].get("end_sec", 0)
-
-        # Build prompt
-        prompt = build_group_prompt(g_chunks, g, prev_tail, args.lang, signals_map, workspace)
-        prompt_tokens = len(prompt) // 4
-        print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
-
-        try:
-            raw = call_local(args.endpoint, model, prompt, args.max_tokens, args.temperature)
-        except urllib.error.URLError as e:
-            print(f"\n[error] endpoint unreachable: {e}", file=sys.stderr)
-            save_state(workspace, {
-                "current_group": g,
-                "all_timestamps": all_timestamps,
-                "prev_tail": prev_tail,
-                "phase": "group_loop",
-            })
-            sys.exit(1)
-        except Exception as e:
-            print(f"\n[error] {group_idx}: {e}", file=sys.stderr)
-            continue
-
-        if is_continuation(raw):
-            stamps = []
-            result_label = "CONTINUATION"
-        else:
-            stamps = parse_timestamps(raw)
-            stamps = validate_timestamps(stamps, g_start_sec, g_end_sec)
-            result_label = f"{len(stamps)} stamp(s)" if stamps else "0 stamps (continuity)"
-
-        print(result_label)
-
-        if stamps:
-            md_lines = [f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} -->", ""]
-            md_lines.extend(stamps)
-            md_content = "\n".join(md_lines)
-            prev_tail = stamps[-1]
-            all_timestamps.extend(stamps)
-        else:
-            md_content = f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} | CONTINUATION -->"
-
-        out_path.write_text(md_content + "\n", encoding="utf-8")
-
-        save_state(workspace, {
-            "current_group": g + 1,
-            "total_groups": num_groups,
-            "all_timestamps": all_timestamps,
-            "prev_tail": prev_tail,
-            "phase": "group_loop",
-        })
-
-        groups_processed += 1
-        if args.max_groups and groups_processed >= args.max_groups:
-            print(f"[pause] Reached --max-groups {args.max_groups}.")
-            break
-
-    # ── Final Assembly Pass (Summarizer) ─────────────────────────────────────
-    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
-
-    # Deduplicate while preserving order
-    deduped = []
-    seen = set()
-    for s in all_timestamps:
-        if s not in seen:
-            seen.add(s)
-            deduped.append(s)
-
-    raw_ts = workspace / "all_timestamps.txt"
-    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    print(f"[done] Raw timestamps: {raw_ts}")
-
-    assembled = None
-    if not args.no_summarizer_pass:
-        assembled = run_local_summarizer_pass(args.endpoint, model, deduped, workspace, args.temperature)
-
-    if not assembled:
-        print("[assemble] Using heuristic double-border part assembly.")
-        assembled = assemble_parts(deduped, workspace, args.block_size)
-
-    out_md = workspace / "anibon_timestamps.md"
-    out_md.write_text(assembled, encoding="utf-8")
-    print(f"[done] Final timestamps: {out_md}")
-
-    save_state(workspace, {
-        "current_group": num_groups,
-        "total_groups": num_groups,
-        "all_timestamps": deduped,
-        "prev_tail": prev_tail,
-        "phase": "complete",
-    })
-
-    print(f"\n✅ All-in-One local run finished successfully.")
-    print(f"   Output: {out_md}")
+    # ── Execution Branching ──────────────────────────────────────────────────
+    if args.mode == "recursive":
+        run_recursive_mode(
+            workspace=workspace,
+            chunk_files=chunk_files,
+            endpoint=args.endpoint,
+            model=model,
+            lang=args.lang,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            signals_map=signals_map,
+            mappings=mappings,
+            no_resume=args.no_resume,
+            max_chunks=args.max_chunks,
+            no_summarizer_pass=args.no_summarizer_pass,
+            block_size=args.block_size,
+        )
+    else:
+        run_group_mode(
+            workspace=workspace,
+            chunk_files=chunk_files,
+            endpoint=args.endpoint,
+            model=model,
+            lang=args.lang,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            group_size=args.group_size,
+            signals_map=signals_map,
+            mappings=mappings,
+            no_resume=args.no_resume,
+            max_groups=args.max_groups,
+            no_summarizer_pass=args.no_summarizer_pass,
+            block_size=args.block_size,
+        )
 
 
 if __name__ == "__main__":
