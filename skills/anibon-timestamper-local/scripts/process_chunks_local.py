@@ -579,12 +579,13 @@ def run_local_summarizer_pass(
         return None
 
     raw_list = "\n".join(all_stamps)
+    expected_parts = max(1, (len(all_stamps) + 9) // 10)
     prompt = f"""\
 You are an expert livestream editor for Anibon Official.
 Below are {len(all_stamps)} timestamps from a livestream by Pu Boat.
 
 ## YOUR TASK:
-Divide these timestamps into 3 to 4 logical Parts for YouTube comments (each part roughly 40-50 minutes).
+Divide these timestamps into roughly {expected_parts} logical Parts for YouTube comments (each part 8 to 12 timestamps, roughly 40-50 minutes).
 For each part, specify:
 1. The start timestamp where this part begins.
 2. A punchy Thai summary header (2-3 short sentences in Thai, highlighting major drama, news, or gameplay).
@@ -596,17 +597,26 @@ Summary: [Thai Summary 2-3 sentences]
 Part 2: HH:MM:SS
 Summary: [Thai Summary 2-3 sentences]
 
-Part 3: HH:MM:SS
-Summary: [Thai Summary 2-3 sentences]
-
 TIMESTAMPS:
 {raw_list}
 """
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
         content = call_local(endpoint, model, prompt, max_tokens, temperature)
-        matches = re.findall(r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+([^\n\r]+)", content, flags=re.DOTALL)
-        if matches:
+        raw_matches = re.findall(r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+([^\n\r]+)", content, flags=re.DOTALL)
+        # Chronological deduplication guard against model repetition loops
+        seen_nums = set()
+        prev_sec = -1
+        matches = []
+        for p_num, p_start, p_sum in raw_matches:
+            sec = ts_to_sec(p_start)
+            if p_num in seen_nums or sec <= prev_sec:
+                continue
+            seen_nums.add(p_num)
+            prev_sec = sec
+            matches.append((p_num, p_start, p_sum))
+
+        if len(matches) >= 2:
             border = "═" * 57
             rendered_parts = []
             for idx, (p_num, p_start, p_summary) in enumerate(matches):
@@ -616,6 +626,9 @@ TIMESTAMPS:
                 if part_stamps:
                     header = f" ส่วนที่ {p_num}: {p_summary.strip()} (⏱ เริ่ม: {p_start})"
                     part_text = f"{border}\n{header}\n{border}\n" + "\n".join(part_stamps)
+                    if len(part_text.encode("utf-8")) > 3500:
+                        # Exceeds YouTube comment limit: fallback to assemble_parts
+                        return None
                     rendered_parts.append(part_text)
             if rendered_parts:
                 return "\n\n".join(rendered_parts)
