@@ -40,6 +40,23 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Optional
+
+try:
+    from signal_detector import (
+        load_mappings,
+        normalize_transcript,
+        detect_signals_for_chunks,
+        get_domain_guidance,
+    )
+except ImportError:
+    # Fallback if imported from elsewhere
+    from scripts.signal_detector import (
+        load_mappings,
+        normalize_transcript,
+        detect_signals_for_chunks,
+        get_domain_guidance,
+    )
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -72,8 +89,8 @@ def _chunk_range(items: list) -> tuple[str, str]:
     return _fmt_ts(start), _fmt_ts(end)
 
 
-def build_prompt(chunk: dict, prev_tail: str, lang: str) -> str:
-    """Build front-tier quality prompt for a single chunk."""
+def build_prompt(chunk: dict, prev_tail: str, lang: str, signal: Optional[dict] = None) -> str:
+    """Build front-tier quality prompt for a single chunk with domain guidance."""
     items = chunk.get("items", [])
     start_ts, end_ts = _chunk_range(items)
 
@@ -96,7 +113,15 @@ def build_prompt(chunk: dict, prev_tail: str, lang: str) -> str:
     else:
         prev_section = "(First chunk — no previous context.)\n"
 
-    tags_list = "  ".join(TAGS)
+    # Domain adaptation: tags & instructions
+    extra_tags, domain_block = get_domain_guidance(signal)
+    all_tags = list(TAGS)
+    for t in extra_tags:
+        if t not in all_tags:
+            all_tags.append(t)
+    tags_list = "  ".join(all_tags)
+
+    domain_section = f"{domain_block}\n" if domain_block else ""
 
     prompt = f"""\
 You are timestamping chunk {chunk.get('_idx', '??')} of a Thai livestream VOD by Pu Boat (Anibon Official).
@@ -105,7 +130,7 @@ Chunk time range: {start_ts} - {end_ts}
 {prev_section}
 ## YOUR TASK
 
-Read the transcript. Output ONE timestamp line for the most notable moment or topic in this chunk.
+{domain_section}Read the transcript. Output ONE timestamp line for the most notable moment or topic in this chunk.
 
 Format: HH:MM:SS - [Tag] Description
 
@@ -390,11 +415,15 @@ def discover_chunks(workspace: Path) -> list[Path]:
     return files
 
 
-def load_chunk_file(path: Path) -> dict:
+def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
     """Load chunk file; returns unified dict with 'items', 'start_sec', 'end_sec'."""
     if path.suffix == ".json":
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
+        if mappings:
+            for it in data.get("items", []):
+                if it.get("text"):
+                    it["text"] = normalize_transcript(it["text"], mappings)
         return data
 
     # .txt format: parse header + lines
@@ -429,7 +458,9 @@ def load_chunk_file(path: Path) -> dict:
                 # Skip lines past cutoff
                 if cutoff and sec > cutoff:
                     continue
-                items.append({"start": float(sec), "timestamp": ts, "text": lm.group(2)})
+                raw_text = lm.group(2)
+                clean_text = normalize_transcript(raw_text, mappings) if mappings else raw_text
+                items.append({"start": float(sec), "timestamp": ts, "text": clean_text})
 
     return {"start_sec": start_sec, "end_sec": end_sec, "items": items}
 
@@ -681,6 +712,23 @@ def main() -> None:
     all_timestamps: list[str] = state.get("all_timestamps", [])
     prev_tail: str = state.get("prev_tail", "")
 
+    # ── Signal & Domain Knowledge Detection ──────────────────────────────────
+    signals_file = workspace / "signals.json"
+    if not signals_file.exists():
+        print("[signals] Detecting domain knowledge signals...")
+        signals_map = detect_signals_for_chunks(workspace)
+    else:
+        try:
+            with open(signals_file, encoding="utf-8") as f:
+                signals_map = json.load(f)
+        except Exception:
+            signals_map = detect_signals_for_chunks(workspace)
+
+    # Phonetic entity mappings (ASR corrections)
+    mappings = load_mappings()
+    if mappings:
+        print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings")
+
     if not args.no_resume and all_timestamps:
         print(f"[resume] {len(all_timestamps)} timestamps already in state")
 
@@ -702,19 +750,23 @@ def main() -> None:
             print(f"[skip] {chunk_idx} (output exists)")
             continue
 
-        # Load chunk
+        # Load chunk with phonetic normalization
         try:
-            chunk = load_chunk_file(chunk_path)
+            chunk = load_chunk_file(chunk_path, mappings=mappings)
         except Exception as e:
             print(f"[warn] failed to load {chunk_path.name}: {e}", file=sys.stderr)
             continue
 
         chunk["_idx"] = i
 
-        # Build prompt
-        prompt = build_prompt(chunk, prev_tail, args.lang)
+        # Retrieve domain signal
+        sig = signals_map.get(chunk_idx)
+        domain_tag_info = f" ({sig['primary_topic']})" if sig and sig.get("primary_topic") != "General Livestream" else ""
+
+        # Build prompt with domain signal
+        prompt = build_prompt(chunk, prev_tail, args.lang, signal=sig)
         prompt_tokens = len(prompt) // 4
-        print(f"[chunk {i:02d}/{total-1}] ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
+        print(f"[chunk {i:02d}/{total-1}]{domain_tag_info} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
 
         # Call model
         try:

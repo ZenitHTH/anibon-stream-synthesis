@@ -83,4 +83,17 @@ The built-in prompt and post-processor in `process_chunks_local.py` automaticall
 - **Automatic Sanitization**: Strips meta-prompts, English commentary, and parenthetical translations `(...)` automatically.
 - **Part Summaries & Double Borders**: Formats each part with `═` double borders and an intelligent 2-3 topic executive summary matching the front-tier benchmark in `timestamp-workspace`.
 
+---
+
+## 🧠 Domain Knowledge & Signal Detection System
+
+`process_chunks_local.py` automatically detects and adapts to specialized stream topics (Tokusatsu, Gaming/Gacha, Anime, Politics):
+1. **Corpus-Level Signal Detection**: Automatically scans transcript chunks against `resources/knowledge.json` using TF-IDF rarity scoring (`weight = log(N / df)`). Saves detected signals to `[WORKSPACE]/signals.json`.
+2. **Dynamic Domain Prompt Injection**:
+   - **Tokusatsu (มาสค์ไรเดอร์ / ขบวนการเซนไต / อุลตร้าแมน)**: Automatically enables `[WatchParty]`, `[Reaction]`, `[Lore]`, `[Review]`, `[Tierlist]` tags, canonical name mapping (Gavv, Gotchard, Geats, Boonboomger, Henshin, DX Toys), and watch-party reaction verbs (`กรี๊ดลั่น!`, `เหวอ!`, `อึ้งฟอร์มใหม่`, `ชำแหละเนื้อเรื่อง`, `จัดอันดับสูท`).
+   - **Gaming & Gacha**: Enables `[Gameplay]`, `[Gacha]`, `[Boss]`, `[Story]`, `[Tierlist]` tags and gacha/battle verbs (`เปิดกาชา`, `ลุ้นตัวทอง`, `สู้บอส`, `ช็อกกาชาเกลือ`, `ผ่านด่าน`).
+   - **Anime & Manga**: Enables anime review tags and recommendation verbs (`ป้ายยา`, `สับเละ`, `อวยยับ`, `วิเคราะห์อนิเมชั่น`).
+3. **Phonetic Entity Normalization**: Auto-corrects garbled ASR spellings (e.g. "กาวบ์/กัฟ" → "Kamen Rider Gavv", "ริมบัส" → "Limbus Company") using `resources/default_mappings.json` before prompting the LLM.
+
+
 
