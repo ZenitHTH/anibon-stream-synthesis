@@ -3,6 +3,7 @@ param(
     [string]$Workspace,
     [string]$Model = "auto",
     [string]$Lang = "th",
+    [string]$Mode = "recursive",
     [switch]$NoResume,
     [string]$AdditionalArgs = ""
 )
@@ -22,7 +23,7 @@ if ($NoResume) { $Extra += " --no-resume" }
 if ($AdditionalArgs) { $Extra += " $AdditionalArgs" }
 
 # Launch python runner detached in background
-$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --model $Model --lang $Lang$Extra"
+$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --mode $Mode --model $Model --lang $Lang$Extra"
 Start-Process -FilePath "python" -ArgumentList $ArgList -RedirectStandardOutput $LogFile -RedirectStandardError $ErrFile -WindowStyle Hidden
 
 Write-Host "✅ Timestamper launched in background."

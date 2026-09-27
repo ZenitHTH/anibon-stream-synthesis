@@ -261,32 +261,36 @@ def build_recursive_prompt(
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
     if current_topic:
-        topic_section = f"""## ONGOING TOPIC STATE
-Current Topic: {current_topic}
-Rolling Summary: {rolling_summary}
+        topic_section = f"""## PREVIOUS TOPIC STATE (Chunk {chunk.get('_idx', 0) - 1:02d})
+Active Topic: {current_topic}
+Recent Focus: {rolling_summary}
 """
     else:
-        topic_section = "## ONGOING TOPIC STATE\n(No ongoing topic — livestream is starting)\n"
+        topic_section = "## PREVIOUS TOPIC STATE\n(No previous topic — livestream is starting)\n"
 
     prompt = f"""\
 You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
 
 {topic_section}{context_block}{domain_section}
 ## YOUR TASK
-Read the transcript below. Decide if this chunk is discussing/continuing the ongoing topic, or starting a new topic.
+Compare the main subject discussed in Chunk {chunk.get('_idx', 0):02d} with the Active Topic and Recent Focus above.
+Decide if this chunk continues the exact same subject, or shifts to a new topic (or different focus).
 
 Rules:
 1. is_continuation:
-   - true: The speaker is still on the same subject, continuing the discussion, rant, gameplay, or related details.
-   - false: The speaker has clearly shifted to a new topic, new game, or new news piece (or stream start).
+   - true: The speaker is directly continuing the EXACT same subject or activity (e.g. still discussing the same game event, still in the same boss battle, still on the same drama).
+   - false: The speaker shifts to a DIFFERENT subject, game, event, review, news item, or activity (e.g., from game news to card game drama, from general chatter to FGO event farming, from talk to gameplay).
+   NOTE: Merely being in the same livestream or general gaming category is NOT continuation. If the specific subject or focus changed, mark is_continuation: false!
+
 2. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
 3. If is_continuation is true:
-   - updated_summary: 1-2 sentences combining the ongoing topic with this chunk's progress.
+   - updated_summary: 1-2 concise sentences (under 50 words) summarizing current progress. Do NOT concatenate long paragraphs.
+   - new_topic_title: null
    - new_timestamp: null
-4. If is_continuation is false (NEW TOPIC):
-   - new_topic_title: Short Thai title (5-8 words).
+4. If is_continuation is false (TOPIC SHIFT):
+   - new_topic_title: Specific Thai title (5-8 words). NEVER create broad compound titles like "เกมใหม่และดราม่า...".
    - updated_summary: 1-2 sentences summarizing this new topic.
-   - new_timestamp: Format "HH:MM:SS - [Tag] Description" where HH:MM:SS literally appears in this chunk ({start_ts} - {end_ts}).
+   - new_timestamp: Format "HH:MM:SS - [Tag] Description" where HH:MM:SS is an exact timestamp appearing in the transcript ({start_ts} - {end_ts}).
      Tags: {tags_list} (Strictly use allowed tags; do NOT invent new tags).
      First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
 
@@ -732,6 +736,9 @@ def run_recursive_mode(
                 saved_res = json.loads(out_path.read_text(encoding="utf-8"))
                 current_topic_title = saved_res.get("current_topic_title", current_topic_title)
                 rolling_summary = saved_res.get("rolling_summary", rolling_summary)
+                saved_ts = saved_res.get("new_timestamp")
+                if saved_ts and saved_ts not in all_timestamps:
+                    all_timestamps.append(saved_ts)
                 print(f"[skip] {chunk_idx} (already processed)")
                 continue
             except Exception:
@@ -777,30 +784,33 @@ def run_recursive_mode(
                 new_ts = res.get("new_timestamp")
                 new_title = res.get("new_topic_title", "")
 
+                v_ts = []
                 if not is_cont:
                     # TOPIC SHIFT / FLUSH OLD
                     cleaned_ts = sanitize_timestamp_line(new_ts) if new_ts else None
-                    if cleaned_ts:
-                        c_start, c_end = chunk.get("start_sec", 0), chunk.get("end_sec", 0)
-                        v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
-                        if v_ts:
-                            all_timestamps.append(v_ts[0])
-                            print(f"👉 TOPIC SHIFT: {v_ts[0]} ('{new_title}')")
-                        else:
-                            print(f"👉 TOPIC SHIFT (stamp out-of-range, kept topic: '{new_title}')")
+                    c_start = chunk.get("start_sec", 0)
+                    c_end = chunk.get("end_sec", 0)
+                    if not cleaned_ts:
+                        cleaned_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
+
+                    v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+                    if v_ts:
+                        all_timestamps.append(v_ts[0])
+                        print(f"👉 TOPIC SHIFT: {v_ts[0]} ('{new_title}')", flush=True)
                     else:
-                        print(f"👉 TOPIC SHIFT (no stamp, topic: '{new_title}')")
+                        print(f"👉 TOPIC SHIFT (stamp out-of-range, kept topic: '{new_title}')", flush=True)
 
                     current_topic_title = new_title or ch_sum
                     rolling_summary = up_sum or ch_sum
                 else:
                     # CONTINUATION
-                    print(f"🔄 CONTINUATION (Topic: '{current_topic_title}')")
-                    rolling_summary = up_sum or rolling_summary
+                    print(f"🔄 CONTINUATION (Topic: '{current_topic_title}')", flush=True)
+                    rolling_summary = up_sum or ch_sum or rolling_summary
 
                 out_path.write_text(json.dumps({
                     "chunk": chunk_idx,
                     "is_continuation": is_cont,
+                    "new_timestamp": (v_ts[0] if v_ts else None) if not is_cont else None,
                     "chunk_summary": ch_sum,
                     "rolling_summary": rolling_summary,
                     "current_topic_title": current_topic_title,
@@ -851,11 +861,14 @@ def run_recursive_mode(
     out_md.write_text(assembled, encoding="utf-8")
     print(f"[done] Final timestamps: {out_md}")
 
+    is_finished = (not max_chunks or processed_count >= total)
     save_state(workspace, {
-        "current_chunk": total,
+        "current_chunk": total if is_finished else (processed_count),
         "total_chunks": total,
         "all_timestamps": deduped,
-        "phase": "complete",
+        "current_topic_title": current_topic_title,
+        "rolling_summary": rolling_summary,
+        "phase": "complete" if is_finished else "paused",
     })
     print(f"\n✅ Recursive run complete: {out_md}")
 
