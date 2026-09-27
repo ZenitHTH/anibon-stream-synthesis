@@ -162,15 +162,38 @@ def sanitize_timestamp_line(line: str) -> str:
     return line.strip()
 
 
-def parse_timestamps(raw: str) -> List[str]:
-    """Extract and sanitize valid HH:MM:SS - [Tag] lines from model output."""
+def parse_timestamps(raw: str, max_stamps: int = 4) -> List[str]:
+    """Extract and sanitize valid HH:MM:SS - [Tag] lines from model output.
+
+    Guards against LLM repetition loops (where the model restarts from the first timestamp)
+    and timestamp collisions (where multiple timestamps have identical seconds or are <60s apart).
+    """
     lines = []
+    prev_sec = None
     for line in raw.splitlines():
         line = line.strip()
-        if re.match(r"\d{2}:\d{2}:\d{2}\s*-\s*\[", line):
+        m = re.match(r"^(\d{2}):(\d{2}):(\d{2})\s*-\s*\[", line)
+        if m:
+            sec = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+
+            # 1. Chronological Loop Breaker:
+            # If the timestamp resets backwards or repeats, the model has entered a repetition loop.
+            if prev_sec is not None and sec <= prev_sec:
+                break
+
+            # 2. Collision Guard:
+            # If next timestamp is < 60s from previous, it's a micro-stamp within the same discussion.
+            if prev_sec is not None and (sec - prev_sec) < 60:
+                continue
+
             cleaned = sanitize_timestamp_line(line)
             if cleaned:
                 lines.append(cleaned)
+                prev_sec = sec
+
+            if len(lines) >= max_stamps:
+                break
+
     return lines
 
 
@@ -354,7 +377,7 @@ Rules:
   * Do NOT emit micro-stamps for minor conversational pauses within the same topic.
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
 - First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
-- Output ONLY timestamp lines in chronological order. No preamble, no explanation.
+- Output ONLY 2 to 4 timestamp lines in chronological order. Immediately STOP after the last timestamp. Do NOT repeat or output a second list. No preamble, no explanation.
 
 ## GROUP TRANSCRIPT ({group_start} - {group_end})
 {full_group_transcript}
@@ -441,11 +464,14 @@ def call_local(
 
     if not content and msg.get("reasoning_content"):
         rc = msg["reasoning_content"]
-        m = re.findall(r"(\d{2}:\d{2}:\d{2}\s*-\s*\[[\w]+\]\s*[^\n]+)", rc)
-        if m:
-            content = "\n".join(m)
-        elif "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
-            content = "CONTINUATION"
+        if "ส่วนที่" in rc or "════" in rc:
+            content = rc
+        else:
+            m = re.findall(r"(\d{2}:\d{2}:\d{2}\s*-\s*\[[\w]+\]\s*[^\n]+)", rc)
+            if m:
+                content = "\n".join(m)
+            elif "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
+                content = "CONTINUATION"
 
     return content
 
@@ -529,39 +555,54 @@ def run_local_summarizer_pass(
     all_stamps: List[str],
     workspace: Path,
     temperature: float = 0.1,
-    max_tokens: int = 3000,
+    max_tokens: int = 1500,
 ) -> Optional[str]:
-    """Call Gemma 4 locally to assemble timestamps into YouTube comment parts with Caveman summaries."""
+    """Call Gemma 4 locally to partition timestamps into Parts with Caveman summaries."""
     if not all_stamps:
         return None
 
     raw_list = "\n".join(all_stamps)
     prompt = f"""\
-You are an expert livestream summarizer for Anibon Official.
-Below is the list of chronological timestamps extracted from the livestream.
+You are an expert livestream editor for Anibon Official.
+Below are {len(all_stamps)} timestamps from a livestream by Pu Boat.
 
 ## YOUR TASK:
-1. Organize all timestamps into logical "Parts" (ส่วนที่ 1, ส่วนที่ 2, ส่วนที่ 3, ...) based on topic shifts.
-   - Each part should cover roughly 45 to 60 minutes.
-   - Each part MUST NOT exceed 3,500 bytes for YouTube comment limits.
-2. For EACH part, write a punchy executive summary header in "Caveman" style (2-3 short, impactful sentences highlighting the main drama, news, or gameplay).
-3. Strictly format each part as:
-═════════════════════════════════════════════════════════
- ส่วนที่ X: [Caveman Header Summary] (⏱ เริ่ม: HH:MM:SS)
-═════════════════════════════════════════════════════════
-HH:MM:SS - [Tag] Description
-...
+Divide these timestamps into 3 to 4 logical Parts for YouTube comments (each part roughly 40-50 minutes).
+For each part, specify:
+1. The start timestamp where this part begins.
+2. A punchy Thai summary header (2-3 short sentences in Thai, highlighting major drama, news, or gameplay).
 
-4. Output ONLY the assembled markdown document. No extra conversational comments.
+Format strictly as:
+Part 1: 00:00:00
+Summary: [Thai Summary 2-3 sentences]
 
-## CANDIDATE TIMESTAMPS:
+Part 2: HH:MM:SS
+Summary: [Thai Summary 2-3 sentences]
+
+Part 3: HH:MM:SS
+Summary: [Thai Summary 2-3 sentences]
+
+TIMESTAMPS:
 {raw_list}
 """
-    print("[summarizer] Calling local model for final assembly pass...")
+    print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
         content = call_local(endpoint, model, prompt, max_tokens, temperature)
-        if "════" in content and "ส่วนที่" in content:
-            return content.strip()
+        # Parse matches from content or reasoning
+        matches = re.findall(r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+([^\n\r]+)", content, flags=re.DOTALL)
+        if matches:
+            border = "═" * 57
+            rendered_parts = []
+            for idx, (p_num, p_start, p_summary) in enumerate(matches):
+                start_sec = ts_to_sec(p_start)
+                next_start_sec = ts_to_sec(matches[idx+1][1]) if idx + 1 < len(matches) else 999999
+                part_stamps = [s for s in all_stamps if start_sec <= ts_to_sec(s[:8]) < next_start_sec]
+                if part_stamps:
+                    header = f" ส่วนที่ {p_num}: {p_summary.strip()} (⏱ เริ่ม: {p_start})"
+                    part_text = f"{border}\n{header}\n{border}\n" + "\n".join(part_stamps)
+                    rendered_parts.append(part_text)
+            if rendered_parts:
+                return "\n\n".join(rendered_parts)
     except Exception as e:
         print(f"[summarizer] Warning: local summarizer call failed ({e}). Falling back to heuristic assembly.")
     return None
