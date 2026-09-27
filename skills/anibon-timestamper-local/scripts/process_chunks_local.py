@@ -273,34 +273,30 @@ You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} (
 
 {topic_section}{context_block}{domain_section}
 ## YOUR TASK
-Compare the main subject discussed in Chunk {chunk.get('_idx', 0):02d} with the Active Topic and Recent Focus above.
-Decide if this chunk continues the exact same subject, or shifts to a new topic (or different focus).
+Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to the Previous Topic State above.
 
 Rules:
 1. is_continuation:
-   - true: The speaker is directly continuing the EXACT same subject or activity (e.g. still discussing the same game event, still in the same boss battle, still on the same drama).
-   - false: The speaker shifts to a DIFFERENT subject, game, event, review, news item, or activity (e.g., from game news to card game drama, from general chatter to FGO event farming, from talk to gameplay).
-   NOTE: Merely being in the same livestream or general gaming category is NOT continuation. If the specific subject or focus changed, mark is_continuation: false!
+   - true: The speaker is still on the same broader subject, activity, or discussion thread.
+   - false: The speaker has completely shifted to a brand new subject, different game, or major pivot.
 
-2. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
-3. If is_continuation is true:
-   - updated_summary: 1-2 concise sentences (under 50 words) summarizing current progress. Do NOT concatenate long paragraphs.
-   - new_topic_title: null
-   - new_timestamp: null
-4. If is_continuation is false (TOPIC SHIFT):
-   - new_topic_title: Specific Thai title (5-8 words). NEVER create broad compound titles like "เกมใหม่และดราม่า...".
-   - updated_summary: 1-2 sentences summarizing this new topic.
-   - new_timestamp: Format "HH:MM:SS - [Tag] Description" where HH:MM:SS is an exact timestamp appearing in the transcript ({start_ts} - {end_ts}).
-     Tags: {tags_list} (Strictly use allowed tags; do NOT invent new tags).
+2. timestamp:
+   - Provide an exact timestamp "HH:MM:SS - [Tag] Description" for the key event, character/skin review, gacha roll, skill analysis, gameplay climax, reaction, or topic moment in this chunk ({start_ts} - {end_ts}).
+     Tags: {tags_list} (Strictly use allowed tags).
      First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
+   - ONLY set timestamp to null if this chunk is purely continuing the exact same 2-minute sentence/thought from the previous chunk with NO new character, review, reaction, or distinct sub-point.
+
+3. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
+4. updated_summary: 1-2 concise sentences (under 50 words) updating the rolling summary context.
+5. new_topic_title: Specific Thai title (5-8 words) if this chunk starts a new topic, or null if continuing.
 
 OUTPUT STRICTLY AS JSON:
 {{
   "is_continuation": false,
+  "timestamp": "HH:MM:SS - [Tag] Description",
   "chunk_summary": "...",
   "updated_summary": "...",
-  "new_topic_title": "...",
-  "new_timestamp": "HH:MM:SS - [Tag] Description"
+  "new_topic_title": "..."
 }}
 
 ## CHUNK TRANSCRIPT ({start_ts} - {end_ts})
@@ -651,28 +647,20 @@ def generate_part_summary(stamps: List[str]) -> str:
 def assemble_parts(
     all_stamps: List[str],
     workspace: Path,
-    block_size: int = 5400,
+    block_size: int = 2400,
 ) -> str:
-    """Heuristic fallback to group timestamps into YouTube parts with double borders."""
+    """Group timestamps into YouTube parts (<3500 bytes) with double borders."""
     if not all_stamps:
         return ""
 
     all_stamps = sorted(list(dict.fromkeys(all_stamps)), key=lambda l: ts_to_sec(l[:8]))
 
+    # Target 8 to 11 timestamps per part (YouTube comment readability, ~1500-2200 bytes)
+    n_parts = max(1, (len(all_stamps) + 9) // 10)
+    chunk_size = (len(all_stamps) + n_parts - 1) // n_parts
     blocks: List[List[str]] = []
-    curr: List[str] = []
-    block_start = ts_to_sec(all_stamps[0][:8])
-
-    for stamp in all_stamps:
-        t = ts_to_sec(stamp[:8])
-        if t - block_start >= block_size and curr:
-            blocks.append(curr)
-            curr = [stamp]
-            block_start = t
-        else:
-            curr.append(stamp)
-    if curr:
-        blocks.append(curr)
+    for i in range(0, len(all_stamps), chunk_size):
+        blocks.append(all_stamps[i:i + chunk_size])
 
     border = "═" * 57
     parts: List[str] = []
@@ -736,10 +724,10 @@ def run_recursive_mode(
                 saved_res = json.loads(out_path.read_text(encoding="utf-8"))
                 current_topic_title = saved_res.get("current_topic_title", current_topic_title)
                 rolling_summary = saved_res.get("rolling_summary", rolling_summary)
-                saved_ts = saved_res.get("new_timestamp")
+                saved_ts = saved_res.get("timestamp") or saved_res.get("new_timestamp")
                 if saved_ts and saved_ts not in all_timestamps:
                     all_timestamps.append(saved_ts)
-                print(f"[skip] {chunk_idx} (already processed)")
+                print(f"[skip] {chunk_idx} (already processed)", flush=True)
                 continue
             except Exception:
                 pass
@@ -781,36 +769,45 @@ def run_recursive_mode(
                 is_cont = res.get("is_continuation", False)
                 ch_sum = res.get("chunk_summary", "")
                 up_sum = res.get("updated_summary", "")
-                new_ts = res.get("new_timestamp")
+                raw_ts = res.get("timestamp") or res.get("new_timestamp")
                 new_title = res.get("new_topic_title", "")
 
                 v_ts = []
-                if not is_cont:
-                    # TOPIC SHIFT / FLUSH OLD
-                    cleaned_ts = sanitize_timestamp_line(new_ts) if new_ts else None
-                    c_start = chunk.get("start_sec", 0)
-                    c_end = chunk.get("end_sec", 0)
-                    if not cleaned_ts:
-                        cleaned_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
+                cleaned_ts = sanitize_timestamp_line(raw_ts) if raw_ts else None
+                c_start = chunk.get("start_sec", 0)
+                c_end = chunk.get("end_sec", 0)
 
+                if cleaned_ts:
                     v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+
+                if not is_cont:
+                    # MAJOR TOPIC SHIFT / FLUSH OLD
+                    if not v_ts:
+                        cleaned_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
+                        v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+
                     if v_ts:
                         all_timestamps.append(v_ts[0])
-                        print(f"👉 TOPIC SHIFT: {v_ts[0]} ('{new_title}')", flush=True)
+                        print(f"👉 MAJOR SHIFT: {v_ts[0]} ('{new_title or ch_sum}')", flush=True)
                     else:
-                        print(f"👉 TOPIC SHIFT (stamp out-of-range, kept topic: '{new_title}')", flush=True)
+                        print(f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')", flush=True)
 
                     current_topic_title = new_title or ch_sum
                     rolling_summary = up_sum or ch_sum
                 else:
-                    # CONTINUATION
-                    print(f"🔄 CONTINUATION (Topic: '{current_topic_title}')", flush=True)
+                    # CONTINUATION (with optional sub-topic stamp)
+                    if v_ts:
+                        all_timestamps.append(v_ts[0])
+                        print(f"📌 SUB-TOPIC:   {v_ts[0]}", flush=True)
+                    else:
+                        print(f"🔄 CONTINUATION (no stamp)", flush=True)
+
                     rolling_summary = up_sum or ch_sum or rolling_summary
 
                 out_path.write_text(json.dumps({
                     "chunk": chunk_idx,
                     "is_continuation": is_cont,
-                    "new_timestamp": (v_ts[0] if v_ts else None) if not is_cont else None,
+                    "timestamp": (v_ts[0] if v_ts else None),
                     "chunk_summary": ch_sum,
                     "rolling_summary": rolling_summary,
                     "current_topic_title": current_topic_title,
@@ -1048,7 +1045,7 @@ def main() -> None:
                     help="Max chunks to process in recursive mode")
     ap.add_argument("--max-groups", type=int, default=None,
                     help="Max groups to process in group mode")
-    ap.add_argument("--block-size", type=int, default=5400)
+    ap.add_argument("--block-size", type=int, default=2400)
     args = ap.parse_args()
 
     workspace = Path(args.workspace)
