@@ -30,6 +30,7 @@ from typing import Optional, List, Dict, Tuple
 try:
     from signal_detector import (
         load_mappings,
+        load_garbled_replacements,
         normalize_transcript,
         detect_signals_for_chunks,
         get_domain_guidance,
@@ -37,6 +38,7 @@ try:
 except ImportError:
     from scripts.signal_detector import (
         load_mappings,
+        load_garbled_replacements,
         normalize_transcript,
         detect_signals_for_chunks,
         get_domain_guidance,
@@ -1212,9 +1214,16 @@ def main() -> None:
         except Exception:
             signals_map = detect_signals_for_chunks(workspace)
 
+    # ── Phonetic & Garbled Correction Mappings ───────────────────────────────
+    # garbled_replacements.json: confirmed Whisper ground-truth corrections (2000+ entries).
+    # Loaded FIRST so confirmed corrections take priority over heuristic phonetic matches.
+    garbled = load_garbled_replacements()
     mappings = load_mappings()
+    if garbled:
+        print(f"[knowledge] Loaded {len(garbled)} garbled replacement entries (garbled_replacements.json)")
     if mappings:
-        print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings")
+        print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings (default_mappings.json)")
+    mappings = garbled + mappings  # garbled first = higher priority
 
     # ── Execution Branching ──────────────────────────────────────────────────
     if args.mode == "recursive":

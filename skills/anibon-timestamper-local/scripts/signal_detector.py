@@ -55,6 +55,47 @@ def load_mappings(mappings_path: Optional[Path] = None) -> list[dict]:
     return data.get("mappings", [])
 
 
+def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
+    """Load confirmed ground-truth corrections from garbled_replacements.json.
+
+    garbled_replacements.json format (inverse of default_mappings):
+        { "correct_name": ["garbled_variant1", "garbled_variant2", ...], ... }
+
+    Returns a list[dict] in the same shape as load_mappings() output so that
+    normalize_transcript() can consume both sources with a single call:
+        [{"correct": "...", "patterns": ["...", ...]}, ...]
+    """
+    if path and path.exists():
+        p = path
+    else:
+        script_dir = Path(__file__).resolve().parent
+        home = Path.home()
+        candidates = [
+            # master plugin resources (most up-to-date)
+            script_dir.parent.parent.parent / "resources" / "garbled_replacements.json",
+            script_dir.parent.parent / "anibon-timestamper" / "resources" / "garbled_replacements.json",
+            # common local paths used by whisper_dispatcher
+            home / ".gemini" / "config" / "plugins" / "anibon-stream-synthesis" / "resources" / "garbled_replacements.json",
+        ]
+        p = next((c for c in candidates if c.exists()), None)
+
+    if not p or not p.exists():
+        return []
+
+    with open(p, encoding="utf-8") as f:
+        data = json.load(f)
+
+    mappings_dict = data.get("mappings", {})
+    if not isinstance(mappings_dict, dict):
+        return []
+
+    result = []
+    for correct, garbled_variants in mappings_dict.items():
+        if isinstance(garbled_variants, list) and garbled_variants:
+            result.append({"correct": correct, "patterns": garbled_variants})
+    return result
+
+
 def normalize_transcript(text: str, mappings: list[dict]) -> str:
     """Normalize phonetically garbled names in transcript text using default_mappings."""
     if not mappings or not text:

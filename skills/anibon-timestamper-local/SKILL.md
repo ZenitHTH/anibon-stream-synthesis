@@ -63,6 +63,13 @@ Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and 
 ### Quick Commands
 
 ```powershell
+# 0. (AUTO) Pre-normalization — garbled_replacements.json is loaded automatically by
+#    process_chunks_local.py before any chunk is read. No manual step needed.
+#    Priority order applied inside load_chunk_file():
+#      1. garbled_replacements.json  (2000+ confirmed Whisper ground-truth corrections)
+#      2. default_mappings.json      (phonetic entity heuristics)
+#    If garbled_replacements.json is missing, pipeline continues with default_mappings only.
+
 # 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
 python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
 
