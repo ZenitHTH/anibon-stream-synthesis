@@ -1,0 +1,1 @@
+../../anibon-timestamper/scripts/validate_tags.py
