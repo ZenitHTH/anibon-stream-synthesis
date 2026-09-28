@@ -7,42 +7,17 @@ description: Use when generating YouTube timestamps and topic summaries for long
 
 ## Overview
 
-A fully local, zero-cloud-cost pipeline for generating front-tier quality YouTube timestamps from long livestreams on a single 16GB GPU (NVIDIA Tesla P100). Emulates the cloud multi-agent workflow via Dynamic Recursive Rolling Summary state-machines (`--mode recursive`), group-based batching (`--mode group`), multi-modal context fusion, tag normalization, and a two-pass local summarizer.
+Local processing pipeline for generating YouTube timestamps and summaries from long livestreams via Dynamic Recursive Rolling Summary state-machines (`--mode recursive`) or group batching (`--mode group`), multi-modal context fusion, automatic tag normalization, and two-pass YouTube comment formatting.
 
-## When to Use
+## Pipeline Architecture
 
-```mermaid
-flowchart TD
-    Start["New Livestream to Timestamp"] --> Q1{"Cloud API Available<br/>or Budget Allowed?"}
-    Q1 -->|Yes| Orchestrator["Use anibon-timestamper<br/>(Cloud Flash Multi-Agent)"]
-    Q1 -->|No / Zero-Cost| Q2{"Hardware Available?"}
-    Q2 -->|Tesla P100 16GB or Local GPU| LocalSkill["Use anibon-timestamper-local<br/>(Recursive State-Machine / P100 Pipeline)"]
-    Q2 -->|CPU Only / Insufficient RAM| Fallback["Use pack_timestamps or wait for cloud"]
-```
-
-### Apply When:
-- Generating timestamps for Anibon Official livestreams or long talk/gaming streams with **zero API expense**.
-- Running local LLM inference on a dedicated workstation GPU (e.g. NVIDIA Tesla P100 16GB Pascal).
-- Processing VODs where conversational flow dictates topic duration (not arbitrary fixed clock minutes).
-
-### Do NOT Use When:
-- Cloud API credits are available and maximum parallel speed (< 2 minutes runtime) is prioritized over zero cost (use `anibon-timestamper`).
-- Processing short clips (< 10 minutes) where manual timestamping or simple heuristics suffice.
-
----
-
-## Single-GPU Architecture (Tesla P100 16GB Envelope)
-
-All operations run on a single machine, constrained strictly within 16GB VRAM (15.2 GB usable under Windows WDDM):
-
-| Stage | Process / Model | Hardware Footprint | Purpose |
+| Stage | Tool / Script | Input / Output | Function |
 | :--- | :--- | :--- | :--- |
-| **0. Pre-computation** | Python (yt-dlp, cv2, TF-IDF) | System RAM (0 MB VRAM) | Captions, LiveChat alignment, Storyboard activity, Domain signal detection. |
-| **1. Pass 1: Topic Segmentation** | `google/gemma-4-12b-qat` (LM Studio) | ~7.2 GB VRAM + ~1.2 GB KV Cache | Recursive rolling summary state-machine tracking topic continuation and shifts. |
-| **2. Pass 2: Summarizer** | `google/gemma-4-12b-qat` (LM Studio) | Same instance (reused) | Clusters stamps into YouTube parts (< 3,500 bytes) with Caveman headers. |
-| **3. Ground Truth (Opt)** | `whisper-cli.exe` (Large-v3-Turbo) | ~1.5 GB VRAM (Vulkan) / CPU | Transcribes short audio slices for garbled proper nouns on demand. |
+| **0. Transcript Pre-normalization** | `process_chunks_local.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Clean phonetic drift and known ASR noise before loading chunks. |
+| **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
+| **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
+| **3. Summarizer & Assembly (Pass 2)** | `process_chunks_local.py` | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
 
-**VRAM Safety Margin:** Peak allocation ~8.5–10.0 GB, leaving **5+ GB headroom** to prevent CUDA OOM or LM Studio model eviction.
 
 ---
 
@@ -76,8 +51,17 @@ python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_v
 # 2. Run All-in-One Local Timestamper (Recursive Mode + Summarizer Pass)
 python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
 
-# 3. Detached Background Launch (for Cline / agent sessions with 30s timeout)
-powershell -ExecutionPolicy Bypass -File "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/launch_local.ps1" -Workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace"
+# 3. Detached Background Launch (supports custom IP/endpoint, default: 100.115.25.30)
+# PowerShell (Windows):
+powershell -ExecutionPolicy Bypass -File "scripts/launch_local.ps1" -Workspace "youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
+
+# Batch (Windows cmd):
+scripts\launch_local.bat "youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
+
+# Bash / Zsh (Linux / macOS):
+./scripts/launch_local.sh "youtube_<VIDEO_ID>_workspace" 100.115.25.30
+# or
+./scripts/launch_local.zsh "youtube_<VIDEO_ID>_workspace" 100.115.25.30
 ```
 
 ---

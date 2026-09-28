@@ -1126,7 +1126,7 @@ def main() -> None:
     ap.add_argument("workspace", help="Path to youtube_VIDEOID_workspace directory")
     ap.add_argument("--mode", default="recursive", choices=["recursive", "group"],
                     help="Execution mode: recursive (dynamic topic state-machine) or group (fixed 4-chunk groups)")
-    ap.add_argument("--endpoint", default="http://127.0.0.1:1234/v1/chat/completions")
+    ap.add_argument("--endpoint", default="http://100.115.25.30:1234/v1/chat/completions")
     ap.add_argument("--model", default="auto")
     ap.add_argument("--force-model", action="store_true")
     ap.add_argument("--lang", default="th", choices=["th", "en"])

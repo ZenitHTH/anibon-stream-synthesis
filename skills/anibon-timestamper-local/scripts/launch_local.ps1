@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$Workspace,
+    [string]$Endpoint = "http://100.115.25.30:1234/v1/chat/completions",
     [string]$Model = "auto",
     [string]$Lang = "th",
     [string]$Mode = "recursive",
@@ -22,8 +23,12 @@ $Extra = ""
 if ($NoResume) { $Extra += " --no-resume" }
 if ($AdditionalArgs) { $Extra += " $AdditionalArgs" }
 
+if (-not ($Endpoint -match "^https?://")) {
+    $Endpoint = "http://${Endpoint}:1234/v1/chat/completions"
+}
+
 # Launch python runner detached in background
-$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --mode $Mode --model $Model --lang $Lang$Extra"
+$ArgList = "-X utf8 `"$RunnerScript`" `"$Workspace`" --endpoint `"$Endpoint`" --mode $Mode --model $Model --lang $Lang$Extra"
 Start-Process -FilePath "python" -ArgumentList $ArgList -RedirectStandardOutput $LogFile -RedirectStandardError $ErrFile -WindowStyle Hidden
 
 Write-Host "✅ Timestamper launched in background."
