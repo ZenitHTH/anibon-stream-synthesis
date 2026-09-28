@@ -44,6 +44,14 @@ except ImportError:
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
+# Auto-discover anibon-world-identity references directory.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_WI_CANDIDATES = [
+    _SCRIPT_DIR.parent.parent / "anibon-world-identity" / "references",
+    _SCRIPT_DIR.parent.parent.parent / "anibon-world-identity" / "references",
+]
+WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir()), None)
+
 TAGS = (
     "[Greeting]", "[Talk]", "[News]", "[Chat]", "[Donation]",
     "[Gameplay]", "[Gacha]", "[Boss]", "[Death]", "[Victory]",
@@ -83,6 +91,65 @@ You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Offi
 CRITICAL INSTRUCTION: Keep your internal thinking under 2 sentences. \
 Do NOT list items or transcribe text in your thinking. \
 Proceed immediately to outputting the final decision."""
+
+# ── World Identity Context ───────────────────────────────────────────────────
+
+_WI_SNIPPET_LIMIT = 1500  # max chars injected per chunk to stay under token budget
+
+def load_world_identity_context(
+    signal: Optional[dict],
+    world_identity_dir: Optional[Path] = None,
+) -> str:
+    """Return a World Identity reference snippet for the detected game domain.
+
+    Reads the matching .md from anibon-world-identity/references/ (filename
+    comes from signal["best_file"]).  Returns at most _WI_SNIPPET_LIMIT chars
+    so prompts stay within the P100 token envelope.
+
+    Pokemon special-case: appends a DB path note when the pokemon.db exists.
+    Returns empty string when no reference is found or signal is absent.
+    """
+    ref_dir = world_identity_dir or WORLD_IDENTITY_DIR
+    if not ref_dir or not signal:
+        return ""
+
+    best_file = signal.get("best_file") or ""
+    if not best_file:
+        return ""
+
+    # best_file may be a relative path like "Honkai_Star_Rail.md" or
+    # "skills/anibon-world-identity/references/Honkai_Star_Rail.md"
+    candidate = ref_dir / Path(best_file).name
+    if not candidate.exists():
+        # Try stem match (ignore extension differences)
+        stem = Path(best_file).stem.lower()
+        matches = [p for p in ref_dir.glob("*.md") if p.stem.lower() == stem]
+        candidate = matches[0] if matches else None
+
+    if not candidate or not candidate.exists():
+        return ""
+
+    try:
+        text = candidate.read_text(encoding="utf-8")
+    except Exception:
+        return ""
+
+    snippet = text[:_WI_SNIPPET_LIMIT]
+    if len(text) > _WI_SNIPPET_LIMIT:
+        snippet += "\n... (truncated)"
+
+    extra = ""
+    # Pokemon: note DB location for Pokémon naming rules
+    if "pokemon" in candidate.stem.lower():
+        pokemon_db = ref_dir / "Pokemon DATA" / "pokemon.db"
+        if pokemon_db.exists():
+            extra = (
+                f"\n> **Pokémon DB**: `{pokemon_db}` — cross-check Thai/EN names before writing.\n"
+                "> Thai name MUST come first: แบกซ์แคลิเบอร์ (Baxcalibur), not bare English.\n"
+            )
+
+    return f"## WORLD IDENTITY REFERENCE: {candidate.stem}\n{snippet}{extra}"
+
 
 # ── Formatting & Time Helpers ────────────────────────────────────────────────
 
@@ -232,7 +299,8 @@ def build_recursive_prompt(
     signal: Optional[dict] = None,
     livechat: str = "",
     activity: str = "",
-    mood: str = ""
+    mood: str = "",
+    world_identity_ref: str = "",
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
@@ -251,6 +319,7 @@ def build_recursive_prompt(
     tags_list = "  ".join(all_tags)
 
     domain_section = f"{domain_block}\n" if domain_block else ""
+    world_identity_section = f"{world_identity_ref}\n" if world_identity_ref else ""
     context_extras = []
     if mood:
         context_extras.append(f"Viewer Reaction: {mood}")
@@ -271,7 +340,7 @@ Recent Focus: {rolling_summary}
     prompt = f"""\
 You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
 
-{topic_section}{context_block}{domain_section}
+{topic_section}{context_block}{domain_section}{world_identity_section}
 ## YOUR TASK
 Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to the Previous Topic State above.
 
@@ -312,6 +381,7 @@ def build_group_prompt(
     lang: str,
     signals_map: dict,
     workspace: Path,
+    world_identity_dir: Optional[Path] = None,
 ) -> str:
     """Build group prompt combining 3-5 chunks (~15-25 min) with continuity awareness."""
     first_items = chunks[0].get("items", [])
@@ -329,18 +399,25 @@ def build_group_prompt(
     transcript_blocks = []
     collected_domain_blocks = []
     extra_tags_collected = set()
+    best_group_signal: Optional[dict] = None
+    best_group_score: float = 0.0
 
     for ch in chunks:
         idx_str = f"chunk_{ch.get('_idx', 0):02d}"
         c_items = ch.get("items", [])
         c_start, c_end = _chunk_range(c_items)
-        
+
         sig = signals_map.get(idx_str)
         if sig:
             ex_tags, d_block = get_domain_guidance(sig)
             extra_tags_collected.update(ex_tags)
             if d_block and d_block not in collected_domain_blocks:
                 collected_domain_blocks.append(d_block)
+            # Track highest-confidence signal for world identity lookup
+            score = sig.get("confidence", 0.0)
+            if score > best_group_score and sig.get("best_file"):
+                best_group_score = score
+                best_group_signal = sig
 
         lc = load_chunk_livechat(workspace, idx_str)
         act = load_chunk_activity(workspace, idx_str)
@@ -371,11 +448,14 @@ def build_group_prompt(
     if domain_guidance:
         domain_guidance = f"\n## DOMAIN LORE GUIDANCE\n{domain_guidance}\n"
 
+    wi_ref = load_world_identity_context(best_group_signal, world_identity_dir)
+    world_identity_section = f"{wi_ref}\n" if wi_ref else ""
+
     prompt = f"""\
 You are an expert timestamper processing Group {group_idx} (chunks {chunks[0].get('_idx', 0):02d} to {chunks[-1].get('_idx', 0):02d}) of a Thai livestream by Pu Boat (Anibon Official).
 Group Time Range: {group_start} - {group_end} (~{len(chunks)*4} minutes)
 
-{prev_section}{domain_guidance}
+{prev_section}{domain_guidance}{world_identity_section}
 ## YOUR TASK
 
 Read the entire group transcript. Output 2 to 4 notable timestamps for major topics or moments in this group.
@@ -712,6 +792,7 @@ def run_recursive_mode(
     max_chunks: Optional[int],
     no_summarizer_pass: bool,
     block_size: int,
+    world_identity_dir: Optional[Path] = None,
 ) -> None:
     """Dynamic rolling summary state-machine execution."""
     output_dir = workspace / "recursive_outputs"
@@ -756,6 +837,7 @@ def run_recursive_mode(
         lc = load_chunk_livechat(workspace, chunk_idx)
         act = load_chunk_activity(workspace, chunk_idx)
         mood = load_chunk_mood(workspace, chunk_idx)
+        wi_ref = load_world_identity_context(sig, world_identity_dir)
 
         prompt = build_recursive_prompt(
             chunk=chunk,
@@ -766,6 +848,7 @@ def run_recursive_mode(
             livechat=lc,
             activity=act,
             mood=mood,
+            world_identity_ref=wi_ref,
         )
         prompt_tokens = len(prompt) // 4
         print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
@@ -898,6 +981,7 @@ def run_group_mode(
     max_groups: Optional[int],
     no_summarizer_pass: bool,
     block_size: int,
+    world_identity_dir: Optional[Path] = None,
 ) -> None:
     """Group-based execution across fixed windows of chunks."""
     output_dir = workspace / "group_outputs"
@@ -945,7 +1029,7 @@ def run_group_mode(
         g_start_sec = g_chunks[0].get("start_sec", 0)
         g_end_sec = g_chunks[-1].get("end_sec", 0)
 
-        prompt = build_group_prompt(g_chunks, g, prev_tail, lang, signals_map, workspace)
+        prompt = build_group_prompt(g_chunks, g, prev_tail, lang, signals_map, workspace, world_identity_dir)
         prompt_tokens = len(prompt) // 4
         print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
 
@@ -1059,6 +1143,8 @@ def main() -> None:
     ap.add_argument("--max-groups", type=int, default=None,
                     help="Max groups to process in group mode")
     ap.add_argument("--block-size", type=int, default=2400)
+    ap.add_argument("--world-identity-dir", default=None,
+                    help="Path to anibon-world-identity/references/ (auto-discovered if omitted)")
     args = ap.parse_args()
 
     workspace = Path(args.workspace)
@@ -1100,6 +1186,16 @@ def main() -> None:
     print(f"[init] total chunks: {total_chunks}")
     print(f"[init] lang        : {args.lang}")
 
+    # Resolve world identity references directory
+    world_identity_dir: Optional[Path] = (
+        Path(args.world_identity_dir) if args.world_identity_dir else WORLD_IDENTITY_DIR
+    )
+    if world_identity_dir and world_identity_dir.is_dir():
+        print(f"[init] world-id    : {world_identity_dir}")
+    else:
+        world_identity_dir = None
+        print("[init] world-id    : not found (world identity context disabled)")
+
     if args.dry_run:
         print(f"[dry-run] Discovered {total_chunks} chunks.")
         return
@@ -1136,6 +1232,7 @@ def main() -> None:
             max_chunks=args.max_chunks,
             no_summarizer_pass=args.no_summarizer_pass,
             block_size=args.block_size,
+            world_identity_dir=world_identity_dir,
         )
     else:
         run_group_mode(
@@ -1153,6 +1250,7 @@ def main() -> None:
             max_groups=args.max_groups,
             no_summarizer_pass=args.no_summarizer_pass,
             block_size=args.block_size,
+            world_identity_dir=world_identity_dir,
         )
 
 
