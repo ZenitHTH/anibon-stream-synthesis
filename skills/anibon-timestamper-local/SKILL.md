@@ -37,32 +37,57 @@ Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and 
 
 ### Quick Commands
 
-```powershell
-# 0. (AUTO) Pre-normalization — garbled_replacements.json is loaded automatically by
-#    process_chunks_local.py before any chunk is read. No manual step needed.
-#    Priority order applied inside load_chunk_file():
-#      1. garbled_replacements.json  (2000+ confirmed Whisper ground-truth corrections)
-#      2. default_mappings.json      (phonetic entity heuristics)
-#    If garbled_replacements.json is missing, pipeline continues with default_mappings only.
+#### 0. Pre-normalization (Automatic)
+`garbled_replacements.json` (2000+ Whisper ground truth) and `default_mappings.json` are auto-loaded by `process_chunks_local.py` before chunk processing. No manual invocation needed.
 
-# 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
-python "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/prepare_video.py" "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
-
-# 2. Run All-in-One Local Timestamper (Recursive Mode + Summarizer Pass)
-python -X utf8 "C:/Users/peter/.agents/skills/anibon-timestamper-local/scripts/process_chunks_local.py" "C:/Users/peter/youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
-
-# 3. Detached Background Launch (supports custom IP/endpoint, default: 100.115.25.30)
-# PowerShell (Windows):
-powershell -ExecutionPolicy Bypass -File "scripts/launch_local.ps1" -Workspace "youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
-
-# Batch (Windows cmd):
-scripts\launch_local.bat "youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
-
-# Bash / Zsh (Linux / macOS):
-./scripts/launch_local.sh "youtube_<VIDEO_ID>_workspace" 100.115.25.30
-# or
-./scripts/launch_local.zsh "youtube_<VIDEO_ID>_workspace" 100.115.25.30
+#### 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
+**macOS / Linux:**
+```bash
+python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
+    --workspace "~/youtube_<VIDEO_ID>_workspace" \
+    --format txt --block 300 --overlap 30
 ```
+
+**Windows (PowerShell / Command Prompt):**
+```powershell
+python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
+```
+
+#### 2. Run Timestamper Directly (Foreground)
+**macOS / Linux:**
+```bash
+python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" \
+    --mode recursive --lang th
+```
+
+**Windows (PowerShell):**
+```powershell
+python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
+```
+
+#### 3. Detached Background Launch (3 OS Families)
+Runs inference detached in background so agent sessions or timeouts do not kill the run.
+
+**macOS (Zsh / Bash):**
+```zsh
+./scripts/launch_local.zsh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
+```
+
+**Linux (Bash):**
+```bash
+./scripts/launch_local.sh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File "scripts\launch_local.ps1" -Workspace "$HOME\youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
+```
+
+**Windows (CMD Batch):**
+```cmd
+scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
+```
+
 
 ---
 
