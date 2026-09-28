@@ -35,7 +35,7 @@ RUNNER_SCRIPT="${SCRIPT_DIR}/process_chunks_local.py"
 LOG_FILE="${WORKSPACE}/timestamper.log"
 ERR_FILE="${WORKSPACE}/timestamper_err.log"
 
-nohup python3 -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
+nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \
     --model "$MODEL" \
     --lang "$LANG" \

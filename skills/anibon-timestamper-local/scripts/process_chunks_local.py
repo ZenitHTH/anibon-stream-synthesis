@@ -16,6 +16,7 @@ Includes:
 
 import argparse
 import glob
+import io
 import json
 import os
 import re
@@ -26,6 +27,12 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Tuple
+
+# Enforce UTF-8 encoding on standard streams to prevent Thai character truncation/corruption
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
 try:
     from signal_detector import (
