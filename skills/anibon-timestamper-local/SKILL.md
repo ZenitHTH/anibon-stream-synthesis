@@ -13,11 +13,21 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 | Stage | Tool / Script | Input / Output | Function |
 | :--- | :--- | :--- | :--- |
-| **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `process_chunks_local.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
+| **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `anibon/` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
-| **3. Summarizer & Assembly (Pass 2)** | `process_chunks_local.py` | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
+| **3. Summarizer & Assembly (Pass 2)** | `anibon/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
 | **4. Garbled Collector & Whisper Ground Truth** | `whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
+
+### Modular Library Architecture (`scripts/anibon/`)
+
+`process_chunks_local.py` is decomposed into single-responsibility, unit-tested modules:
+- `anibon/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
+- `anibon/lmstudio.py`: LM Studio client, model resolution, text completions, and multi-modal Vision API (`image_url` data URIs for Gemma 3/4 12B Vision, Qwen-VL).
+- `anibon/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
+- `anibon/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
+- `anibon/summarizer.py`: Pass 2 local summarizer and YouTube comment block assembly (<3,500 bytes).
+- `anibon/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
 
 
 ---
