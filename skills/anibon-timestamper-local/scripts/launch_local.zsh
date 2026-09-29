@@ -34,6 +34,16 @@ SCRIPT_DIR="${0:A:h}"
 RUNNER_SCRIPT="${SCRIPT_DIR}/process_chunks_local.py"
 LOG_FILE="${WORKSPACE}/timestamper.log"
 ERR_FILE="${WORKSPACE}/timestamper_err.log"
+PID_FILE="${WORKSPACE}/timestamper.pid"
+
+if [[ -f "$PID_FILE" ]]; then
+    EXISTING_PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
+    if [[ -n "$EXISTING_PID" ]] && kill -0 "$EXISTING_PID" 2>/dev/null; then
+        echo "⚠️ Timestamper is already running for this workspace (PID: $EXISTING_PID)."
+        echo "   To stop it first: kill $EXISTING_PID"
+        exit 0
+    fi
+fi
 
 nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \
@@ -42,6 +52,7 @@ nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X u
     --mode "$MODE" > "$LOG_FILE" 2> "$ERR_FILE" &!
 
 PID=$!
+echo "$PID" > "$PID_FILE"
 echo "✅ Timestamper launched in background (PID: $PID)."
 echo "   Endpoint    : $ENDPOINT"
 echo "   Monitor log : $LOG_FILE"
