@@ -1126,6 +1126,60 @@ def run_group_mode(
     })
     print(f"\n✅ Group run complete: {out_md}")
 
+# ── Garbled Collector & Whisper Audio Ground Truth ───────────────────────────
+
+def run_garbled_collector(
+    workspace: Path,
+    video_url: Optional[str] = None,
+    whisper_bin: Optional[str] = None,
+    model: Optional[str] = None,
+) -> None:
+    """Run whisper_dispatcher.py to transcribe phonetic ground truth and sync dictionary."""
+    print("\n[garbled] Checking for garbled notes to collect...")
+    raw_dir = workspace / "garbled_notes_raw"
+    notes_json = workspace / "garbled_notes.json"
+
+    # Only run if raw candidates or notes exist
+    has_raw = raw_dir.is_dir() and any(raw_dir.glob("*.txt"))
+    has_notes = notes_json.is_file()
+
+    if not has_raw and not has_notes:
+        print("[garbled] No garbled candidates found in workspace. Skipping whisper.cpp verification.")
+        return
+
+    try:
+        try:
+            from whisper_dispatcher import dispatch_verification
+        except ImportError:
+            from scripts.whisper_dispatcher import dispatch_verification
+
+        print("[garbled] Running whisper_dispatcher.py with local whisper.cpp...")
+        ret = dispatch_verification(
+            workspace=str(workspace),
+            raw_notes_dir=str(raw_dir),
+            video_url=video_url,
+            whisper_bin=whisper_bin,
+            model_bin=model,
+            output_json=str(notes_json),
+            verbose=False,
+        )
+
+        if ret == 0 and notes_json.is_file():
+            print("[garbled] Synchronizing resolved entries to garbled_replacements.json...")
+            dict_script = _SCRIPT_DIR.parent.parent / "cleaning-auto-transcripts" / "scripts" / "update_garbled_dictionary.py"
+            if dict_script.is_file():
+                subprocess.run([
+                    sys.executable,
+                    str(dict_script),
+                    "--from-notes", str(notes_json),
+                    "--workspace", str(workspace),
+                ], check=False)
+            print("✅ Garbled collection & dictionary sync complete.")
+        else:
+            print(f"[garbled] whisper_dispatcher returned status code {ret}.")
+    except Exception as e:
+        print(f"[garbled] Warning: Garbled collector encountered error ({e}).")
+
 # ── Main Controller ──────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -1154,6 +1208,14 @@ def main() -> None:
     ap.add_argument("--block-size", type=int, default=2400)
     ap.add_argument("--world-identity-dir", default=None,
                     help="Path to anibon-world-identity/references/ (auto-discovered if omitted)")
+    ap.add_argument("--video-url", default=None,
+                    help="YouTube URL for on-the-fly audio stream slicing in whisper_dispatcher")
+    ap.add_argument("--whisper-bin", default=None,
+                    help="Path to whisper-cli executable (auto-discovered if omitted)")
+    ap.add_argument("--whisper-model", default=None,
+                    help="Path to whisper GGML model binary (auto-discovered if omitted)")
+    ap.add_argument("--no-garbled-collector", action="store_true",
+                    help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
     args = ap.parse_args()
 
     workspace = Path(args.workspace)
@@ -1179,6 +1241,14 @@ def main() -> None:
         out_md = workspace / "anibon_timestamps.md"
         out_md.write_text(assembled, encoding="utf-8")
         print(f"✅ Assembly complete: {out_md}")
+
+        if not args.no_garbled_collector:
+            run_garbled_collector(
+                workspace=workspace,
+                video_url=args.video_url,
+                whisper_bin=args.whisper_bin,
+                model=args.whisper_model,
+            )
         return
 
     try:
@@ -1267,6 +1337,14 @@ def main() -> None:
             no_summarizer_pass=args.no_summarizer_pass,
             block_size=args.block_size,
             world_identity_dir=world_identity_dir,
+        )
+
+    if not args.no_garbled_collector:
+        run_garbled_collector(
+            workspace=workspace,
+            video_url=args.video_url,
+            whisper_bin=args.whisper_bin,
+            model=args.whisper_model,
         )
 
 

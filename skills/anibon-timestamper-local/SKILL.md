@@ -16,8 +16,8 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 | **0. Transcript Pre-normalization** | `process_chunks_local.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Clean phonetic drift and known ASR noise before loading chunks. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
-| **2.5. Garbled Collector & Whisper Audio Ground Truth** | `whisper_dispatcher.py` + `update_garbled_dictionary.py` | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
 | **3. Summarizer & Assembly (Pass 2)** | `process_chunks_local.py` | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
+| **4. Garbled Collector & Whisper Ground Truth** | `whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
 
 
 ---
@@ -89,24 +89,27 @@ powershell -ExecutionPolicy Bypass -File "scripts\launch_local.ps1" -Workspace "
 scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
 ```
 
-#### 4. Garbled Collector & Whisper Audio Ground Truth (Optional Post-Pass)
-When chunk processing flags surviving phonetic errors or hybrid words in `<workspace>/garbled_notes_raw/`:
+#### 4. Garbled Collector & Whisper Ground Truth (Automatic Post-Pass)
+After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio and update `garbled_replacements.json`.
 
-**1. Run `whisper_dispatcher.py` to slice and transcribe acoustic ground truth via local whisper.cpp:**
-```bash
-# macOS / Linux (slices audio on-the-fly from YouTube stream URL or local audio.opus/audio.m4a):
-python3 scripts/whisper_dispatcher.py ~/youtube_<VIDEO_ID>_workspace --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
-
-# Windows (PowerShell):
-python scripts\whisper_dispatcher.py "$HOME\youtube_<VIDEO_ID>_workspace" --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
-```
-
-**2. Synchronize resolved canonical rules to master dictionary:**
-```bash
-python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
-  --from-notes ~/youtube_<VIDEO_ID>_workspace/garbled_notes.json \
-  --workspace ~/youtube_<VIDEO_ID>_workspace
-```
+- To pass video URL for on-the-fly stream slicing without full audio downloads:
+  ```bash
+  python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" \
+      --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>"
+  ```
+- To disable automatic garbled collection pass:
+  ```bash
+  python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" \
+      --no-garbled-collector
+  ```
+- To run garbled collection manually at any time:
+  ```bash
+  python3 scripts/whisper_dispatcher.py ~/youtube_<VIDEO_ID>_workspace \
+      --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
+  python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
+      --from-notes ~/youtube_<VIDEO_ID>_workspace/garbled_notes.json \
+      --workspace ~/youtube_<VIDEO_ID>_workspace
+  ```
 
 
 ---
