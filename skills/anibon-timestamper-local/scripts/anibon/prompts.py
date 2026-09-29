@@ -138,25 +138,36 @@ Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to
 
 Rules:
 1. is_continuation:
-   - true: The speaker is still on the same broader subject, activity, or discussion thread.
-   - false: The speaker has completely shifted to a brand new subject, different game, or major pivot.
+   - true: Speaker is still on the same broader subject, activity, or ongoing thread.
+   - false: Speaker completely shifted to a brand new subject, different game, or major pivot.
+   - Exception: Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic shifts.
 
 2. timestamps:
-   - Provide 1 to 3 exact timestamps ["HH:MM:SS - [Tag] Description", ...] for the key events, character/skin reviews, gacha rolls, skill analyses, gameplay climaxes, reactions, or topic moments in this chunk ({start_ts} - {end_ts}).
+   - Provide 1 to 3 exact timestamps ["HH:MM:SS - [Tag] Description", ...] for key events, character/skin reviews, gacha rolls, skill analyses, gameplay climaxes, reactions, or topic moments in this chunk ({start_ts} - {end_ts}).
      Tags: {tags_list} (Strictly use allowed tags).
      First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
+   - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
+   - ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names.
+   - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
    - If multiple distinct highlights, topic shifts, or reactions occur within this chunk, include up to 3 chronological timestamps (separated by at least 60s).
-   - ONLY return an empty list [] if this chunk is purely continuing the exact same sentence/thought from the previous chunk with NO new character, review, reaction, or distinct sub-point.
+   - ONLY return an empty list [] if this chunk purely continues the previous thought with NO new character, review, reaction, or distinct sub-point.
 
-3. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
-4. updated_summary: 1-2 concise sentences (under 50 words) updating the rolling summary context.
-5. new_topic_title: Specific Thai title (5-8 words) if this chunk starts a new topic, or null if continuing.
+3. garbled_notes:
+   - Array of phonetic hybrids / garbled words spotted in transcript that survived cleaning (e.g. Thai-Latin hybrids like "ดองซam", "โinaa" or phonetically mutilated proper nouns) with timestamp: ["word @ HH:MM:SS", ...].
+   - Spot ONLY real phonetic garbles, NOT standard loanwords (FGO, NP, YouTube, AI). Do NOT guess replacement; audio ground truth will be resolved automatically. Return [] if none.
+
+4. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
+5. updated_summary: 1-2 concise sentences (under 50 words) updating the rolling summary context.
+6. new_topic_title: Specific Thai title (5-8 words) if this chunk starts a new topic, or null if continuing.
 
 OUTPUT STRICTLY AS JSON:
 {{
   "is_continuation": false,
   "timestamps": [
     "HH:MM:SS - [Tag] Description"
+  ],
+  "garbled_notes": [
+    "garbled_token @ HH:MM:SS"
   ],
   "chunk_summary": "...",
   "updated_summary": "...",
@@ -268,6 +279,10 @@ Rules:
   * If consecutive chunks discuss the same topic or review the same game/subject, emit ONLY ONE timestamp when the topic starts.
   * Do NOT emit micro-stamps for minor conversational pauses within the same topic.
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
+  * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.
+- FULL LIST REVEAL RULE: If streamer reveals a multi-character list/banner across chunks, do not prematurely truncate count; describe accurate ongoing list.
+- ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names.
+- THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally ("เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration; 1-star hype = meme banter).
 - First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
 - Output ONLY 2 to 4 timestamp lines in chronological order. Immediately STOP after the last timestamp. Do NOT repeat or output a second list. No preamble, no explanation.
 

@@ -50,11 +50,23 @@ def run_local_summarizer_pass(
 You are an expert livestream editor for Anibon Official.
 Below are {len(all_stamps)} timestamps from a livestream by Pu Boat.
 
-## YOUR TASK:
-Divide these timestamps into roughly {expected_parts} logical Parts for YouTube comments (each part 8 to 12 timestamps, roughly 40-50 minutes).
+Divide these timestamps into roughly {expected_parts} logical Parts for YouTube comments.
+
+CRITICAL GROUPING & CONSOLIDATION RULES (from anibon-summarizer):
+1. GROUP BY ACTIVITY PERIOD:
+   - Primary grouping unit is continuous activity (one watchparty screening, sustained discussion block of one game/topic, gameplay segment, closing).
+   - Do NOT split on single-tag flickers or passing micro-topics inside the same activity.
+   - Hard breaks that require new parts: Stream opening -> first watchparty/talk; Game -> news/donation segment; Talk -> gacha; Last content -> signing-off.
+2. BYTE & STAMP CEILINGS:
+   - YouTube comment limit is 3,500 bytes (Thai chars = 3 bytes).
+   - Target size: 8 to 13 timestamps per part. NEVER exceed 14 timestamps per part.
+   - Consolidation: Do NOT create parts containing only 1-3 timestamps (unless standalone closing/donation). Merge same activity parts if under 3,500 bytes.
+3. CAVEMAN SUMMARY HEADERS:
+   - Punchy Thai summary header (2-3 short, dense sentences in Thai, active voice, zero fluff, highlighting major drama, news, or gameplay).
+
 For each part, specify:
 1. The start timestamp where this part begins.
-2. A punchy Thai summary header (2-3 short sentences in Thai, highlighting major drama, news, or gameplay).
+2. A punchy Caveman-style Thai summary header.
 
 Format strictly as:
 Part 1: 00:00:00

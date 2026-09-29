@@ -272,11 +272,23 @@ def run_recursive_mode(
 
                     rolling_summary = up_sum or ch_sum or rolling_summary
 
+                garbled_notes = res.get("garbled_notes", [])
+                if isinstance(garbled_notes, list) and garbled_notes:
+                    raw_notes_dir = workspace / "garbled_notes_raw"
+                    raw_notes_dir.mkdir(exist_ok=True)
+                    gn_lines = [f"- {gn.strip()}" for gn in garbled_notes if isinstance(gn, str) and gn.strip()]
+                    if gn_lines:
+                        (raw_notes_dir / f"{chunk_idx}.txt").write_text(
+                            "GARBLED_NOTES:\n" + "\n".join(gn_lines) + "\n",
+                            encoding="utf-8",
+                        )
+
                 out_path.write_text(json.dumps({
                     "chunk": chunk_idx,
                     "is_continuation": is_cont,
                     "timestamps": v_ts_sorted,
                     "timestamp": (v_ts_sorted[0] if v_ts_sorted else None),
+                    "garbled_notes": garbled_notes,
                     "chunk_summary": ch_sum,
                     "rolling_summary": rolling_summary,
                     "current_topic_title": current_topic_title,
