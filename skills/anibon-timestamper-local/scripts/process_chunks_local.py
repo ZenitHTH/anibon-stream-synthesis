@@ -38,6 +38,7 @@ try:
     from signal_detector import (
         load_mappings,
         load_garbled_replacements,
+        clean_transcript_noise,
         normalize_transcript,
         detect_signals_for_chunks,
         get_domain_guidance,
@@ -46,6 +47,7 @@ except ImportError:
     from scripts.signal_detector import (
         load_mappings,
         load_garbled_replacements,
+        clean_transcript_noise,
         normalize_transcript,
         detect_signals_for_chunks,
         get_domain_guidance,
@@ -601,10 +603,9 @@ def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
     if path.suffix == ".json":
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        if mappings:
-            for it in data.get("items", []):
-                if it.get("text"):
-                    it["text"] = normalize_transcript(it["text"], mappings)
+        for it in data.get("items", []):
+            if it.get("text"):
+                it["text"] = normalize_transcript(it["text"], mappings or [])
         return data
 
     text = path.read_text(encoding="utf-8")
@@ -632,7 +633,7 @@ def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
                 if cutoff and sec > cutoff:
                     continue
                 raw_text = lm.group(2)
-                clean_text = normalize_transcript(raw_text, mappings) if mappings else raw_text
+                clean_text = normalize_transcript(raw_text, mappings or [])
                 items.append({"start": float(sec), "timestamp": ts, "text": clean_text})
 
     return {"start_sec": start_sec, "end_sec": end_sec, "items": items}

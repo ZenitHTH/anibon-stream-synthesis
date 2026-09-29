@@ -13,7 +13,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 | Stage | Tool / Script | Input / Output | Function |
 | :--- | :--- | :--- | :--- |
-| **0. Transcript Pre-normalization** | `process_chunks_local.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Clean phonetic drift and known ASR noise before loading chunks. |
+| **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `process_chunks_local.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
 | **3. Summarizer & Assembly (Pass 2)** | `process_chunks_local.py` | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
@@ -38,8 +38,8 @@ Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and 
 
 ### Quick Commands
 
-#### 0. Pre-normalization (Automatic)
-`garbled_replacements.json` (2000+ Whisper ground truth) and `default_mappings.json` are auto-loaded by `process_chunks_local.py` before chunk processing. No manual invocation needed.
+#### 0. Denoising & Pre-normalization (Automatic)
+Before any signal detection or LLM analysis, `clean_transcript_noise()` automatically cleans ASR artifacts (`>>`, `[เพลง]`, `♪`, character repetitions), and applies 2000+ Whisper ground truths from `garbled_replacements.json` and `default_mappings.json`. No manual invocation needed.
 
 #### 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
 **macOS / Linux:**

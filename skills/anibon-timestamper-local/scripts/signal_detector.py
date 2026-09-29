@@ -96,12 +96,58 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
     return result
 
 
-def normalize_transcript(text: str, mappings: list[dict]) -> str:
-    """Normalize phonetically garbled names in transcript text using default_mappings."""
-    if not mappings or not text:
-        return text
+# Non-speech sound brackets and filler tokens commonly injected by YouTube ASR
+_NOISE_BRACKET_RE = re.compile(
+    r"\[(?:เพลง|ดนตรี|เสียงดนตรี|เสียงปรบมือ|เสียงหัวเราะ|หัวเราะ|เสียงเอฟเฟกต์|Music|Applause|Laughter|Cheering)\]|"
+    r"\((?:เพลง|ดนตรี|เสียงดนตรี|เสียงปรบมือ|เสียงหัวเราะ|หัวเราะ|เสียงเอฟเฟกต์|Music|Applause|Laughter|Cheering)\)",
+    flags=re.IGNORECASE,
+)
+_SPEAKER_MARKER_RE = re.compile(r"(?:^|\s)(?:>>+|>>>+)\s*")
+_MUSIC_NOTES_RE = re.compile(r"[♪♫♬♩]+")
+_MULTI_SPACE_RE = re.compile(r"\s+")
+_EXTENDED_CHAR_REPEAT_RE = re.compile(r"(.)\1{7,}")
 
-    normalized = text
+
+def clean_transcript_noise(text: str) -> str:
+    """Clean ASR artifacts, non-speech sound tags, speaker markers, and character loops.
+
+    Removes:
+    - YouTube ASR speaker change markers (>>, >>>)
+    - Bracketed non-speech sound descriptions ([เพลง], [ดนตรี], [เสียงปรบมือ], [Applause], etc.)
+    - Music note symbols (♪, ♫, etc.)
+    - Runaway character repetitions (e.g. 55555555555555 -> 555)
+    - Extra whitespace
+    """
+    if not text:
+        return ""
+
+    # 1. Strip speaker markers
+    cleaned = _SPEAKER_MARKER_RE.sub(" ", text)
+
+    # 2. Strip non-speech brackets
+    cleaned = _NOISE_BRACKET_RE.sub(" ", cleaned)
+
+    # 3. Strip music notes
+    cleaned = _MUSIC_NOTES_RE.sub(" ", cleaned)
+
+    # 4. Collapse extreme character stutter/loops (>7 repeats down to 3)
+    cleaned = _EXTENDED_CHAR_REPEAT_RE.sub(r"\1\1\1", cleaned)
+
+    # 5. Normalize whitespace
+    return _MULTI_SPACE_RE.sub(" ", cleaned).strip()
+
+
+def normalize_transcript(text: str, mappings: list[dict]) -> str:
+    """Normalize phonetically garbled names and clean noise in transcript text."""
+    if not text:
+        return ""
+
+    # Denoise before applying entity replacements
+    normalized = clean_transcript_noise(text)
+
+    if not mappings:
+        return normalized
+
     for item in mappings:
         correct = item.get("correct")
         patterns = item.get("patterns", [])
@@ -143,7 +189,9 @@ def extract_chunk_text(path: Path) -> tuple[int, str]:
         start_sec = int(root.get("start_sec", 0))
         text = " ".join((it.text or "").strip() for it in root.iter("item") if it.text)
 
-    return start_sec, text.strip()
+    # Denoise text before signal detection
+    clean_text = clean_transcript_noise(text)
+    return start_sec, clean_text
 
 
 def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = None) -> dict:
