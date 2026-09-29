@@ -360,11 +360,12 @@ Rules:
    - true: The speaker is still on the same broader subject, activity, or discussion thread.
    - false: The speaker has completely shifted to a brand new subject, different game, or major pivot.
 
-2. timestamp:
-   - Provide an exact timestamp "HH:MM:SS - [Tag] Description" for the key event, character/skin review, gacha roll, skill analysis, gameplay climax, reaction, or topic moment in this chunk ({start_ts} - {end_ts}).
+2. timestamps:
+   - Provide 1 to 3 exact timestamps ["HH:MM:SS - [Tag] Description", ...] for the key events, character/skin reviews, gacha rolls, skill analyses, gameplay climaxes, reactions, or topic moments in this chunk ({start_ts} - {end_ts}).
      Tags: {tags_list} (Strictly use allowed tags).
      First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
-   - ONLY set timestamp to null if this chunk is purely continuing the exact same 2-minute sentence/thought from the previous chunk with NO new character, review, reaction, or distinct sub-point.
+   - If multiple distinct highlights, topic shifts, or reactions occur within this chunk, include up to 3 chronological timestamps (separated by at least 60s).
+   - ONLY return an empty list [] if this chunk is purely continuing the exact same sentence/thought from the previous chunk with NO new character, review, reaction, or distinct sub-point.
 
 3. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
 4. updated_summary: 1-2 concise sentences (under 50 words) updating the rolling summary context.
@@ -373,7 +374,9 @@ Rules:
 OUTPUT STRICTLY AS JSON:
 {{
   "is_continuation": false,
-  "timestamp": "HH:MM:SS - [Tag] Description",
+  "timestamps": [
+    "HH:MM:SS - [Tag] Description"
+  ],
   "chunk_summary": "...",
   "updated_summary": "...",
   "new_topic_title": "..."
@@ -875,37 +878,60 @@ def run_recursive_mode(
                 is_cont = res.get("is_continuation", False)
                 ch_sum = res.get("chunk_summary", "")
                 up_sum = res.get("updated_summary", "")
-                raw_ts = res.get("timestamp") or res.get("new_timestamp")
+                raw_ts = res.get("timestamps") or res.get("timestamp") or res.get("new_timestamp")
                 new_title = res.get("new_topic_title", "")
 
-                v_ts = []
-                cleaned_ts = sanitize_timestamp_line(raw_ts) if raw_ts else None
+                candidate_stamps: List[str] = []
+                if isinstance(raw_ts, list):
+                    for st in raw_ts:
+                        if st and isinstance(st, str):
+                            san = sanitize_timestamp_line(st)
+                            if san:
+                                candidate_stamps.append(san)
+                elif isinstance(raw_ts, str) and raw_ts.strip():
+                    san = sanitize_timestamp_line(raw_ts)
+                    if san:
+                        candidate_stamps.append(san)
+
                 c_start = chunk.get("start_sec", 0)
                 c_end = chunk.get("end_sec", 0)
+                v_ts = validate_timestamps(candidate_stamps, c_start, c_end)
 
-                if cleaned_ts:
-                    v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+                # Deduplicate and sort chronologically within chunk
+                def _sec(s: str) -> int:
+                    m = re.match(r"(\d{2}):(\d{2}):(\d{2})", s)
+                    return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3)) if m else 0
+
+                v_ts_sorted: List[str] = []
+                prev_s = -1
+                for s in sorted(v_ts, key=_sec):
+                    sec_val = _sec(s)
+                    if prev_s == -1 or (sec_val - prev_s) >= 45:
+                        v_ts_sorted.append(s)
+                        prev_s = sec_val
 
                 if not is_cont:
                     # MAJOR TOPIC SHIFT / FLUSH OLD
-                    if not v_ts:
-                        cleaned_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
-                        v_ts = validate_timestamps([cleaned_ts], c_start, c_end)
+                    if not v_ts_sorted:
+                        fallback_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
+                        v_ts_sorted = validate_timestamps([fallback_ts], c_start, c_end)
 
-                    if v_ts:
-                        all_timestamps.append(v_ts[0])
-                        print(f"👉 MAJOR SHIFT: {v_ts[0]} ('{new_title or ch_sum}')", flush=True)
-                    else:
+                    for stamp in v_ts_sorted:
+                        all_timestamps.append(stamp)
+                        print(f"👉 MAJOR SHIFT: {stamp} ('{new_title or ch_sum}')", flush=True)
+
+                    if not v_ts_sorted:
                         print(f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')", flush=True)
 
                     current_topic_title = new_title or ch_sum
                     rolling_summary = up_sum or ch_sum
                 else:
-                    # CONTINUATION (with optional sub-topic stamp)
-                    if v_ts:
-                        all_timestamps.append(v_ts[0])
-                        print(f"📌 SUB-TOPIC:   {v_ts[0]}", flush=True)
-                    else:
+                    # CONTINUATION (with optional sub-topic stamps)
+                    for stamp in v_ts_sorted:
+                        all_timestamps.append(stamp)
+                        print(f"📌 SUB-TOPIC:   {stamp}", flush=True)
+
+                    if not v_ts_sorted:
                         print(f"🔄 CONTINUATION (no stamp)", flush=True)
 
                     rolling_summary = up_sum or ch_sum or rolling_summary
@@ -913,7 +939,8 @@ def run_recursive_mode(
                 out_path.write_text(json.dumps({
                     "chunk": chunk_idx,
                     "is_continuation": is_cont,
-                    "timestamp": (v_ts[0] if v_ts else None),
+                    "timestamps": v_ts_sorted,
+                    "timestamp": (v_ts_sorted[0] if v_ts_sorted else None),
                     "chunk_summary": ch_sum,
                     "rolling_summary": rolling_summary,
                     "current_topic_title": current_topic_title,
