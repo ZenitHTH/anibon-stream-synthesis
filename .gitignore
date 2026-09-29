@@ -43,9 +43,30 @@ raw_transcript.json
 *.json3
 video_meta.json
 
-# Highlight Editor generated files
+# Highlight Editor & Audio generated files
 *.mp4
+*.m4a
+*.opus
+*.wav
+*.mkv
+*.webm
+*.avi
 highlight_plan_*.json
 *_selection.md
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Node / JS
+node_modules/
+package-lock.json
+
+# Scratch & temporary pipeline directories
+.superpowers/
+audio_slices/
+garbled_notes_raw/
 
 
