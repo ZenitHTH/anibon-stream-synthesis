@@ -73,11 +73,13 @@ from anibon.timestamps import (
     is_continuation,
 )
 
-SYSTEM_PROMPT = """\
-You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
-CRITICAL INSTRUCTION: Keep your internal thinking under 2 sentences. \
-Do NOT list items or transcribe text in your thinking. \
-Proceed immediately to outputting the final decision."""
+from anibon.lmstudio import (
+    SYSTEM_PROMPT,
+    get_loaded_models,
+    resolve_model,
+    call_local,
+    call_vision,
+)
 
 # ── World Identity Context ───────────────────────────────────────────────────
 
@@ -391,99 +393,6 @@ Rules:
 {full_group_transcript}
 """
     return prompt.strip()
-
-# ── LM Studio & API Call ─────────────────────────────────────────────────────
-
-def get_loaded_models() -> List[str]:
-    """Query LM Studio CLI for currently loaded models in memory."""
-    try:
-        res = subprocess.run(
-            ["lms", "ps", "--json"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-            shell=True,
-        )
-        if res.returncode == 0 and res.stdout.strip():
-            data = json.loads(res.stdout)
-            return [m.get("identifier") for m in data if m.get("identifier")]
-    except Exception:
-        pass
-    return []
-
-
-def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> str:
-    """Resolve which model to use, preventing JIT eviction on Tesla P100."""
-    loaded = get_loaded_models()
-    if loaded:
-        print(f"[init] LM Studio loaded model(s): {', '.join(loaded)}")
-        if not requested_model or requested_model.lower() == "auto":
-            for preferred in ("google/gemma-4-12b-qat", "qwen/qwen3.5-9b"):
-                if preferred in loaded:
-                    print(f"[init] Auto-selected loaded model: {preferred}")
-                    return preferred
-            return loaded[0]
-
-        if requested_model in loaded:
-            print(f"[init] Using requested loaded model: {requested_model}")
-            return requested_model
-
-        if force:
-            return requested_model
-
-        fallback = loaded[0]
-        for preferred in ("google/gemma-4-12b-qat", "qwen/qwen3.5-9b"):
-            if preferred in loaded:
-                fallback = preferred
-                break
-        print(f"[warn] '{requested_model}' not loaded; using '{fallback}' to prevent eviction.", file=sys.stderr)
-        return fallback
-
-    return "google/gemma-4-12b-qat" if (not requested_model or requested_model.lower() == "auto") else requested_model
-
-
-def call_local(
-    endpoint: str,
-    model: str,
-    prompt: str,
-    max_tokens: int,
-    temperature: float,
-) -> str:
-    """Call local OpenAI-compatible API."""
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": temperature,
-        "max_tokens": max_tokens,
-    }
-    req = urllib.request.Request(
-        endpoint,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=180) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-
-    msg = data["choices"][0]["message"]
-    content = msg.get("content", "").strip()
-
-    if not content and msg.get("reasoning_content"):
-        rc = msg["reasoning_content"]
-        if "ส่วนที่" in rc or "════" in rc:
-            content = rc
-        else:
-            m = re.findall(r"(\d{2}:\d{2}:\d{2}\s*-\s*\[[\w]+\]\s*[^\n]+)", rc)
-            if m:
-                content = "\n".join(m)
-            elif "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
-                content = "CONTINUATION"
-            else:
-                content = rc
-
-    return content
 
 # ── Chunk Discovery & Loading ────────────────────────────────────────────────
 

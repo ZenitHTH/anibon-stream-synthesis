@@ -1,0 +1,54 @@
+import unittest
+from unittest.mock import patch, MagicMock
+from pathlib import Path
+
+from anibon.lmstudio import (
+    SYSTEM_PROMPT,
+    resolve_model,
+    encode_image_base64,
+    build_chat_payload,
+    build_vision_payload,
+)
+
+
+class TestLMStudio(unittest.TestCase):
+
+    @patch("anibon.lmstudio.get_loaded_models")
+    def test_resolve_model_auto(self, mock_get_loaded):
+        mock_get_loaded.return_value = ["google/gemma-4-12b-qat", "other-model"]
+        chosen = resolve_model("auto", "http://127.0.0.1:1234")
+        self.assertEqual(chosen, "google/gemma-4-12b-qat")
+
+    @patch("anibon.lmstudio.get_loaded_models")
+    def test_resolve_model_fallback(self, mock_get_loaded):
+        mock_get_loaded.return_value = ["qwen/qwen3.5-9b"]
+        chosen = resolve_model("google/gemma-4-12b-qat", "http://127.0.0.1:1234", force=False)
+        self.assertEqual(chosen, "qwen/qwen3.5-9b")
+
+    def test_build_chat_payload(self):
+        payload = build_chat_payload("test-model", "Test prompt", 256, 0.2)
+        self.assertEqual(payload["model"], "test-model")
+        self.assertEqual(len(payload["messages"]), 2)
+        self.assertEqual(payload["messages"][0]["role"], "system")
+        self.assertEqual(payload["messages"][1]["content"], "Test prompt")
+
+    def test_build_vision_payload(self):
+        payload = build_vision_payload(
+            "test-vision-model",
+            "Identify this game",
+            "data:image/jpeg;base64,dGVzdA==",
+            max_tokens=300,
+        )
+        self.assertEqual(payload["model"], "test-vision-model")
+        user_msg = payload["messages"][1]
+        self.assertIsInstance(user_msg["content"], list)
+        self.assertEqual(user_msg["content"][0]["type"], "text")
+        self.assertEqual(user_msg["content"][1]["type"], "image_url")
+        self.assertEqual(
+            user_msg["content"][1]["image_url"]["url"],
+            "data:image/jpeg;base64,dGVzdA==",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
