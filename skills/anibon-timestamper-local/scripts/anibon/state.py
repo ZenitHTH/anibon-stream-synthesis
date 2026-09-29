@@ -79,15 +79,28 @@ def load_chunk_mood(workspace: Path, chunk_idx: str) -> str:
 
 
 def discover_chunks(workspace: Path) -> List[Path]:
-    """Find and sort all chunk transcript files in workspace/chunks/."""
+    """Find and sort all chunk transcript files in workspace/chunks/.
+
+    Prioritizes .txt files (formatted chunks with explicit time ranges).
+    Falls back to .json files only if no .txt files exist. Never mixes both.
+    """
     chunks_dir = workspace / "chunks"
     if not chunks_dir.exists():
         raise FileNotFoundError(f"No chunks dir: {chunks_dir}")
 
-    files = sorted(
-        list(chunks_dir.glob("chunk_*.txt")) + list(chunks_dir.glob("chunk_*.json")),
-        key=lambda f: int(re.search(r"chunk_(\d+)", f.stem).group(1)),
-    )
+    txt_files = list(chunks_dir.glob("chunk_*.txt"))
+    if txt_files:
+        files = sorted(
+            txt_files,
+            key=lambda f: int(re.search(r"chunk_(\d+)", f.stem).group(1)),
+        )
+    else:
+        json_files = list(chunks_dir.glob("chunk_*.json"))
+        files = sorted(
+            json_files,
+            key=lambda f: int(re.search(r"chunk_(\d+)", f.stem).group(1)),
+        )
+
     if not files:
         raise FileNotFoundError(f"No chunk files in: {chunks_dir}")
     return files

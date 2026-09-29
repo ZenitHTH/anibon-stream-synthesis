@@ -159,7 +159,9 @@ def run_recursive_mode(
 
     processed_count = 0
     for i, chunk_path in enumerate(chunk_files):
-        chunk_idx = f"chunk_{i:02d}"
+        m = re.search(r"chunk_(\d+)", chunk_path.stem)
+        ch_num = int(m.group(1)) if m else i
+        chunk_idx = f"chunk_{ch_num:02d}"
         out_path = output_dir / f"{chunk_idx}.json"
 
         if not no_resume and out_path.exists():
@@ -181,7 +183,7 @@ def run_recursive_mode(
             print(f"[warn] failed to load {chunk_path.name}: {e}", file=sys.stderr)
             continue
 
-        chunk["_idx"] = i
+        chunk["_idx"] = ch_num
         sig = signals_map.get(chunk_idx)
         lc = load_chunk_livechat(workspace, chunk_idx)
         act = load_chunk_activity(workspace, chunk_idx)
