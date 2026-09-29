@@ -115,119 +115,15 @@ def _chunk_range(items: list) -> Tuple[str, str]:
     end = last.get("start", 0) + last.get("duration", 5)
     return _fmt_ts(start), _fmt_ts(end)
 
-# ── Multi-Modal Context Helpers ──────────────────────────────────────────────
-
-def load_chunk_livechat(workspace: Path, chunk_idx: str) -> str:
-    """Return top chat snippet for this chunk if available."""
-    lc_file = workspace / "livechat" / f"livechat_{chunk_idx}.txt"
-    if lc_file.exists():
-        try:
-            lines = [l.strip() for l in lc_file.read_text(encoding="utf-8").splitlines() if l.strip()]
-            if lines:
-                return "\n".join(lines[:6])
-        except Exception:
-            pass
-    return ""
-
-
-def load_chunk_activity(workspace: Path, chunk_idx: str) -> str:
-    """Return visual activity summary (game on screen, webcam state) if available."""
-    act_file = workspace / "activity" / f"activity_{chunk_idx}.txt"
-    if act_file.exists():
-        try:
-            return act_file.read_text(encoding="utf-8").strip()
-        except Exception:
-            pass
-    return ""
-
-
-def load_chunk_mood(workspace: Path, chunk_idx: str) -> str:
-    """Return 555 laugh/meme pulse verdict if available."""
-    mood_file = workspace / "mood_555.json"
-    if mood_file.exists():
-        try:
-            with open(mood_file, encoding="utf-8") as f:
-                data = json.load(f)
-                info = data.get(chunk_idx)
-                if info and info.get("verdict") and info.get("verdict") != "QUIET":
-                    tone_desc = info.get("tone", {}).get("tone", "")
-                    return f"Chat Mood: {info.get('verdict')} ({tone_desc})"
-        except Exception:
-            pass
-    return ""
-
-# ── Chunk Discovery & Loading ────────────────────────────────────────────────
-
-# ── Chunk Discovery & Loading ────────────────────────────────────────────────
-
-def discover_chunks(workspace: Path) -> List[Path]:
-    chunks_dir = workspace / "chunks"
-    if not chunks_dir.exists():
-        raise FileNotFoundError(f"No chunks dir: {chunks_dir}")
-
-    files = sorted(
-        list(chunks_dir.glob("chunk_*.txt")) + list(chunks_dir.glob("chunk_*.json")),
-        key=lambda f: int(re.search(r"chunk_(\d+)", f.stem).group(1)),
-    )
-    if not files:
-        raise FileNotFoundError(f"No chunk files in: {chunks_dir}")
-    return files
-
-
-def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
-    if path.suffix == ".json":
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        for it in data.get("items", []):
-            if it.get("text"):
-                it["text"] = normalize_transcript(it["text"], mappings or [])
-        return data
-
-    text = path.read_text(encoding="utf-8")
-    lines = text.splitlines()
-    items = []
-    start_sec = 0
-    end_sec = 0
-    cutoff = 0
-
-    if lines:
-        header = lines[0]
-        m = re.search(r"(\d{2}:\d{2}:\d{2})[–-](\d{2}:\d{2}:\d{2})", header)
-        if m:
-            start_sec = ts_to_sec(m.group(1))
-            end_sec = ts_to_sec(m.group(2))
-        mc = re.search(r"cutoff=(\d{2}:\d{2}:\d{2})", header)
-        if mc:
-            cutoff = ts_to_sec(mc.group(1)) if mc else end_sec
-
-        for line in lines[1:]:
-            lm = re.match(r"\((\d{2}:\d{2}:\d{2})\)\s+(.*)", line)
-            if lm:
-                ts = lm.group(1)
-                sec = ts_to_sec(ts)
-                if cutoff and sec > cutoff:
-                    continue
-                raw_text = lm.group(2)
-                clean_text = normalize_transcript(raw_text, mappings or [])
-                items.append({"start": float(sec), "timestamp": ts, "text": clean_text})
-
-    return {"start_sec": start_sec, "end_sec": end_sec, "items": items}
-
-# ── State Management ─────────────────────────────────────────────────────────
-
-def load_state(workspace: Path) -> dict:
-    state_path = workspace / "anibon_timestamper_state.json"
-    if state_path.exists():
-        with open(state_path, encoding="utf-8") as f:
-            return json.load(f)
-    return {}
-
-
-def save_state(workspace: Path, state: dict) -> None:
-    state_path = workspace / "anibon_timestamper_state.json"
-    state["last_updated"] = datetime.now(timezone.utc).isoformat()
-    with open(state_path, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+from anibon.state import (
+    load_state,
+    save_state,
+    load_chunk_livechat,
+    load_chunk_activity,
+    load_chunk_mood,
+    discover_chunks,
+    load_chunk_file,
+)
 
 # ── Execution Engines ────────────────────────────────────────────────────────
 
