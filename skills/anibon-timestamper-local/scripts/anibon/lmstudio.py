@@ -56,6 +56,31 @@ def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
     return []
 
 
+def _matches_model_alias(requested: str, candidate: str) -> bool:
+    """Check if a requested model alias (e.g., 'gemma4 26b q2') matches a candidate ID."""
+    req = requested.lower().strip()
+    cand = candidate.lower().strip()
+    if req == cand or req in cand or cand in req:
+        return True
+
+    # Normalize separators and common variants (e.g. gemma4 -> gemma 4, q2_k_xl -> q2)
+    req_norm = re.sub(r"[-_@/]+", " ", req)
+    req_norm = re.sub(r"([a-z]+)(\d+)", r"\1 \2", req_norm)
+    cand_norm = re.sub(r"[-_@/]+", " ", cand)
+    cand_norm = re.sub(r"([a-z]+)(\d+)", r"\1 \2", cand_norm)
+
+    req_tokens = set(req_norm.split())
+    cand_tokens = set(cand_norm.split())
+
+    # If all non-empty tokens in requested are present in candidate tokens (or prefixes like 'q2' matching 'q2 k xl')
+    matched_tokens = 0
+    for rt in req_tokens:
+        if rt in cand_tokens or any(ct.startswith(rt) for ct in cand_tokens):
+            matched_tokens += 1
+
+    return matched_tokens == len(req_tokens) if req_tokens else False
+
+
 def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> str:
     """Resolve which model to use, preventing JIT eviction on Tesla P100."""
     preferred_models = (
@@ -78,7 +103,7 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
             return loaded[0]
 
         for lm in loaded:
-            if requested_model == lm or requested_model in lm or lm in requested_model:
+            if _matches_model_alias(requested_model, lm):
                 print(f"[init] Using requested loaded model: {lm}")
                 return lm
 
@@ -94,7 +119,14 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
         print(f"[warn] '{requested_model}' not loaded; using '{fallback}' to prevent eviction.", file=sys.stderr)
         return fallback
 
-    return "unsloth/gemma-4-26b-a4b-it@q2_k_x" if (not requested_model or requested_model.lower() == "auto") else requested_model
+    if not requested_model or requested_model.lower() == "auto":
+        return "unsloth/gemma-4-26b-a4b-it@q2_k_x"
+
+    for preferred in preferred_models:
+        if _matches_model_alias(requested_model, preferred):
+            return preferred
+
+    return requested_model
 
 
 def encode_image_base64(image_path: Union[str, Path]) -> str:

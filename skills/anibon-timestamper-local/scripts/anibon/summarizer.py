@@ -16,25 +16,26 @@ from anibon.timestamps import deduplicate_consecutive_timestamps
 
 
 def generate_part_summary(stamps: List[str]) -> str:
-    """Generate a 2-3 topic summary sentence from stamps in this part (heuristic fallback)."""
+    """Generate a clean 2-3 topic summary phrase from stamps in this part (heuristic fallback)."""
     topics = []
     for s in stamps:
         desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", s).strip()
-        # Clean speaker prefixes
+        # Clean speaker prefixes and trailing punctuation
         clean = re.sub(r"^(ปู่โบ๊ต|ปู่บอร์ด|พูดถึง|วิเคราะห์|คุยเรื่อง|ดู|รับชม|เปิดดู|เล่าข่าว|บ่นเรื่อง|ถกประเด็น)\s*", "", desc)
+        clean = clean.strip(". ")
         if clean and clean not in topics:
             topics.append(clean)
 
     if not topics:
-        return "สรุปเนื้อหาและบรรยากาศในไลฟ์สตรีม."
+        return "สรุปเนื้อหาและบรรยากาศในไลฟ์สตรีม"
 
-    if len(topics) <= 3:
-        return ". ".join(topics) + "."
+    if len(topics) <= 2:
+        return " และ ".join(topics)
 
-    t1 = topics[0].rstrip(". ")
-    t2 = topics[len(topics) // 2].rstrip(". ")
-    t3 = topics[-1].rstrip(". ")
-    return f"{t1}. {t2}. {t3}."
+    t1 = topics[0]
+    t2 = topics[len(topics) // 2]
+    t3 = topics[-1]
+    return f"{t1}, {t2} และ {t3}"
 
 
 def run_local_summarizer_pass(

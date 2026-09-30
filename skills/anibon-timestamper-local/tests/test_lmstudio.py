@@ -25,6 +25,16 @@ class TestLMStudio(unittest.TestCase):
         chosen = resolve_model("unsloth/gemma-4-26b-a4b-it@q2_k_x", "http://127.0.0.1:1234", force=False)
         self.assertEqual(chosen, "qwen/qwen3.5-9b")
 
+    @patch("anibon.lmstudio.get_loaded_models")
+    def test_resolve_model_shorthand_alias(self, mock_get_loaded):
+        mock_get_loaded.return_value = ["gemma-4-26b-a4b-it@q2_k_xl", "qwen/qwen3.5-9b"]
+        chosen = resolve_model("gemma4 26b q2", "http://127.0.0.1:1234")
+        self.assertEqual(chosen, "gemma-4-26b-a4b-it@q2_k_xl")
+
+        mock_get_loaded.return_value = []
+        chosen_offline = resolve_model("gemma4 26b q2", "http://127.0.0.1:1234")
+        self.assertEqual(chosen_offline, "unsloth/gemma-4-26b-a4b-it@q2_k_x")
+
     def test_build_chat_payload(self):
         payload = build_chat_payload("test-model", "Test prompt", 256, 0.2)
         self.assertEqual(payload["model"], "test-model")
