@@ -24,8 +24,22 @@ Do NOT list items or transcribe text in your thinking. \
 Proceed immediately to outputting the final decision."""
 
 
-def get_loaded_models() -> List[str]:
-    """Query LM Studio CLI for currently loaded models in memory."""
+def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
+    """Query LM Studio for currently loaded models in memory (via HTTP API or CLI)."""
+    if endpoint:
+        try:
+            m = re.match(r"(https?://[^/]+)", endpoint)
+            base = m.group(1) if m else endpoint
+            url = f"{base}/api/v0/models"
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                loaded = [m.get("id") for m in data.get("data", []) if m.get("state") == "loaded"]
+                if loaded:
+                    return loaded
+        except Exception:
+            pass
+
     try:
         res = subprocess.run(
             ["lms", "ps", "--json"],
@@ -44,32 +58,43 @@ def get_loaded_models() -> List[str]:
 
 def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> str:
     """Resolve which model to use, preventing JIT eviction on Tesla P100."""
-    loaded = get_loaded_models()
+    preferred_models = (
+        "unsloth/gemma-4-26b-a4b-it@q2_k_x",
+        "gemma-4-26b-a4b-it@q2_k_xl",
+        "gemma-4-26b-a4b-it@q2_k_x",
+        "google/gemma-4-12b-qat",
+        "google/gemma-3-12b-it",
+        "qwen/qwen3.5-9b",
+    )
+    loaded = get_loaded_models(endpoint)
     if loaded:
         print(f"[init] LM Studio loaded model(s): {', '.join(loaded)}")
         if not requested_model or requested_model.lower() == "auto":
-            for preferred in ("google/gemma-4-12b-qat", "google/gemma-3-12b-it", "qwen/qwen3.5-9b"):
-                if preferred in loaded:
-                    print(f"[init] Auto-selected loaded model: {preferred}")
-                    return preferred
+            for preferred in preferred_models:
+                for lm in loaded:
+                    if preferred in lm or lm in preferred:
+                        print(f"[init] Auto-selected loaded model: {lm}")
+                        return lm
             return loaded[0]
 
-        if requested_model in loaded:
-            print(f"[init] Using requested loaded model: {requested_model}")
-            return requested_model
+        for lm in loaded:
+            if requested_model == lm or requested_model in lm or lm in requested_model:
+                print(f"[init] Using requested loaded model: {lm}")
+                return lm
 
         if force:
             return requested_model
 
         fallback = loaded[0]
-        for preferred in ("google/gemma-4-12b-qat", "google/gemma-3-12b-it", "qwen/qwen3.5-9b"):
-            if preferred in loaded:
-                fallback = preferred
-                break
+        for preferred in preferred_models:
+            for lm in loaded:
+                if preferred in lm or lm in preferred:
+                    fallback = lm
+                    break
         print(f"[warn] '{requested_model}' not loaded; using '{fallback}' to prevent eviction.", file=sys.stderr)
         return fallback
 
-    return "google/gemma-4-12b-qat" if (not requested_model or requested_model.lower() == "auto") else requested_model
+    return "unsloth/gemma-4-26b-a4b-it@q2_k_x" if (not requested_model or requested_model.lower() == "auto") else requested_model
 
 
 def encode_image_base64(image_path: Union[str, Path]) -> str:

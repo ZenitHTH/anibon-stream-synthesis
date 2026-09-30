@@ -138,19 +138,25 @@ Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to
 
 Rules:
 1. is_continuation:
-   - true: Speaker is still on the same broader subject, activity, or ongoing thread.
-   - false: Speaker completely shifted to a brand new subject, different game, or major pivot.
+   - true: Speaker is still on the same broader subject, gameplay session, or ongoing thread.
+   - false: Speaker completely shifted to a brand new subject, different game, or major activity pivot.
    - Exception: Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic shifts.
 
 2. timestamps:
-   - Provide 1 to 3 exact timestamps ["HH:MM:SS - [Tag] Description", ...] for key events, character/skin reviews, gacha rolls, skill analyses, gameplay climaxes, reactions, or topic moments in this chunk ({start_ts} - {end_ts}).
-     Tags: {tags_list} (Strictly use allowed tags).
-     First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
+   - OUTPUT BUDGET: Provide 1 timestamp by default, 2 MAX per chunk ({start_ts} - {end_ts}).
+     Do NOT micro-stamp conversational pauses or minor dialogue turns within the same game or talk topic.
+   - Output an EMPTY list [] if this chunk is a continuation (same game, same activity, no major event shift like Boss/Death/Victory/Cutscene/Donation).
+   - STRICT PASSING MENTIONS & OFF-HAND REMARKS FILTER (CRITICAL):
+     DO NOT emit timestamps for brief passing remarks, 1-3 sentence off-hand mentions, or momentary tangents where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. merely reading a chat comment, saying "เห็นข่าวเกม X แวบๆ", "เดี๋ยวค่อยว่ากัน", casual hello to a chatter, fleeting side comments, mentioning a console/game name in passing).
+     A timestamp is WARRANTED ONLY IF:
+     1) Pu Boat actively dwells and spends SUBSTANTIAL focused discussion (several paragraphs, >1-2 minutes) analyzing, explaining, critiquing, or reacting deeply to that specific subject.
+     2) OR an unambiguous gameplay milestone occurs (Boss encounter, Death, Victory, Gacha roll, Donation).
+     If Pu Boat only mentions something briefly in passing without deep-dive discussion, you MUST IGNORE IT or output [].
+   - Tags: {tags_list} (Strictly use allowed tags).
+   - First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
    - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
    - ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names.
    - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
-   - If multiple distinct highlights, topic shifts, or reactions occur within this chunk, include up to 3 chronological timestamps (separated by at least 60s).
-   - ONLY return an empty list [] if this chunk purely continues the previous thought with NO new character, review, reaction, or distinct sub-point.
 
 3. garbled_notes:
    - Array of phonetic hybrids / garbled words spotted in transcript that survived cleaning (e.g. Thai-Latin hybrids like "ดองซam", "โinaa" or phonetically mutilated proper nouns) with timestamp: ["word @ HH:MM:SS", ...].
@@ -279,6 +285,7 @@ Rules:
   * If consecutive chunks discuss the same topic or review the same game/subject, emit ONLY ONE timestamp when the topic starts.
   * Do NOT emit micro-stamps for minor conversational pauses within the same topic.
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
+  * STRICT PASSING MENTIONS FILTER: Do NOT stamp brief passing remarks or 1-3 sentence off-hand mentions where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. reading a chat comment, casual mentions of other games/consoles, fleeting remarks). Timestamp ONLY when speaker actively dwells and analyzes the topic for >1-2 minutes or several paragraphs.
   * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.
 - FULL LIST REVEAL RULE: If streamer reveals a multi-character list/banner across chunks, do not prematurely truncate count; describe accurate ongoing list.
 - ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names.

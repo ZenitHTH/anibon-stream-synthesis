@@ -23,10 +23,10 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 `process_chunks_local.py` is decomposed into single-responsibility, unit-tested modules:
 - `anibon/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
-- `anibon/lmstudio.py`: LM Studio client, model resolution, text completions, and multi-modal Vision API (`image_url` data URIs for Gemma 3/4 12B Vision, Qwen-VL).
+- `anibon/lmstudio.py`: LM Studio client, model resolution (defaults to `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, and multi-modal Vision API (`image_url` data URIs for Gemma 3/4 Vision, Qwen-VL).
 - `anibon/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
 - `anibon/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
-- `anibon/summarizer.py`: Pass 2 local summarizer and YouTube comment block assembly (<3,500 bytes).
+- `anibon/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and YouTube comment block assembly (<3,500 bytes).
 - `anibon/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
 
 
@@ -36,8 +36,9 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 ### Mode 1: Recursive Rolling Summary (`--mode recursive`, Default & Recommended)
 Pu Boat's discussions follow organic content flow rather than clock boundaries. A topic may last 3 minutes or 25 minutes.
-- **`SAME_TOPIC`**: If Chunk $N$ continues the ongoing topic, it merges into the rolling summary without emitting a timestamp (or emits an optional sub-topic / highlight stamp if distinct key moments occur).
-- **`TOPIC_SHIFT` / Highlights**: When the topic shifts, it flushes previous context and stamps the shift. A chunk can emit 1–3 chronological timestamps (e.g. major shift + reaction or multiple distinct highlights $\ge$45s apart).
+- **`SAME_TOPIC`**: If Chunk $N$ continues the ongoing topic, it merges into the rolling summary without emitting a timestamp (0 timestamps).
+- **`TOPIC_SHIFT` / Highlights**: When the topic shifts, it flushes previous context and stamps the shift. Emits 1 timestamp by default, 2 MAX per chunk ($\ge$45s apart).
+- **Consolidation & Anti-Inflation**: Pass 2 summarizer deduplicates consecutive same-game/same-topic stamps within 10 minutes (following `anibon-summarizer`), keeping long streams (e.g. Elden Ring gameplay) compact and preventing 10+ fragmented parts.
 
 ### Mode 2: Fixed Window Groups (`--mode group`, Alternative)
 Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and collision guards.

@@ -22,7 +22,7 @@ class TestSummarizer(unittest.TestCase):
             f"00:{i:02d}:00 - [Talk] ประเด็นที่ {i} รายละเอียดสตรีมประจำวัน"
             for i in range(15)
         ]
-        assembled = assemble_parts(stamps)
+        assembled = assemble_parts(stamps, deduplicate=False)
         self.assertIn("ส่วนที่ 1:", assembled)
         self.assertIn("ส่วนที่ 2:", assembled)
         self.assertIn("═" * 57, assembled)

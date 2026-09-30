@@ -34,7 +34,7 @@ class TestState(unittest.TestCase):
         chunks_dir = self.ws / "chunks"
         chunks_dir.mkdir()
         (chunks_dir / "chunk_01.txt").write_text("(00:01:00) Hi", encoding="utf-8")
-        (chunks_dir / "chunk_00.json").write_text('{"start_sec": 0, "items": []}', encoding="utf-8")
+        (chunks_dir / "chunk_00.txt").write_text("(00:00:00) Start", encoding="utf-8")
 
         files = discover_chunks(self.ws)
         self.assertEqual(len(files), 2)

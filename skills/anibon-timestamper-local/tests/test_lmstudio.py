@@ -15,14 +15,14 @@ class TestLMStudio(unittest.TestCase):
 
     @patch("anibon.lmstudio.get_loaded_models")
     def test_resolve_model_auto(self, mock_get_loaded):
-        mock_get_loaded.return_value = ["google/gemma-4-12b-qat", "other-model"]
+        mock_get_loaded.return_value = ["unsloth/gemma-4-26b-a4b-it@q2_k_x", "other-model"]
         chosen = resolve_model("auto", "http://127.0.0.1:1234")
-        self.assertEqual(chosen, "google/gemma-4-12b-qat")
+        self.assertEqual(chosen, "unsloth/gemma-4-26b-a4b-it@q2_k_x")
 
     @patch("anibon.lmstudio.get_loaded_models")
     def test_resolve_model_fallback(self, mock_get_loaded):
         mock_get_loaded.return_value = ["qwen/qwen3.5-9b"]
-        chosen = resolve_model("google/gemma-4-12b-qat", "http://127.0.0.1:1234", force=False)
+        chosen = resolve_model("unsloth/gemma-4-26b-a4b-it@q2_k_x", "http://127.0.0.1:1234", force=False)
         self.assertEqual(chosen, "qwen/qwen3.5-9b")
 
     def test_build_chat_payload(self):

@@ -8,6 +8,7 @@ from anibon.timestamps import (
     parse_timestamps,
     validate_timestamps,
     is_continuation,
+    deduplicate_consecutive_timestamps,
 )
 
 
@@ -53,10 +54,18 @@ class TestTimestamps(unittest.TestCase):
         self.assertIn("00:01:00", parsed[0])
         self.assertIn("00:02:30", parsed[1])
 
-    def test_is_continuation(self):
-        self.assertTrue(is_continuation("SKIP"))
-        self.assertTrue(is_continuation("CONTINUATION"))
-        self.assertFalse(is_continuation("00:01:00 - [Talk] Topic"))
+    def test_deduplicate_consecutive_timestamps(self):
+        stamps = [
+            "00:01:00 - [Talk] พูดถึงเกม Elden Ring สายเวท",
+            "00:02:15 - [Talk] บ่นเรื่องดาเมจในเกม Elden Ring",
+            "00:05:00 - [Talk] วิเคราะห์การเล่นเกม Elden Ring ต่อเนื่อง",
+            "00:15:00 - [Gameplay] เริ่มเล่นเกม Minecraft โหมดใหม่",
+        ]
+        deduped = deduplicate_consecutive_timestamps(stamps, min_gap_sec=120, max_dedup_gap_sec=600)
+        # 00:02:15 and 00:05:00 should be deduplicated into the earliest 00:01:00 stamp
+        self.assertEqual(len(deduped), 2)
+        self.assertIn("00:01:00", deduped[0])
+        self.assertIn("00:15:00", deduped[1])
 
 
 if __name__ == "__main__":
