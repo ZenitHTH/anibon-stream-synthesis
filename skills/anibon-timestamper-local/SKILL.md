@@ -37,8 +37,9 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 ### Mode 1: Recursive Rolling Summary (`--mode recursive`, Default & Recommended)
 Pu Boat's discussions follow organic content flow rather than clock boundaries. A topic may last 3 minutes or 25 minutes.
 - **`SAME_TOPIC`**: If Chunk $N$ continues the ongoing topic, it merges into the rolling summary without emitting a timestamp (0 timestamps).
+  - **Long-Form Talk/News Exception**: If a monologue or societal debate continues across multiple chunks (>8–10 minutes without a stamp), the model MUST extract a distinct sub-angle or specific policy critique (1 timestamp) rather than leaving long blanks.
 - **`TOPIC_SHIFT` / Highlights**: When the topic shifts, it flushes previous context and stamps the shift. Emits 1 timestamp by default, 2 MAX per chunk ($\ge$45s apart).
-- **Consolidation & Anti-Inflation**: Pass 2 summarizer deduplicates consecutive same-game/same-topic stamps within 10 minutes (following `anibon-summarizer`), keeping long streams (e.g. Elden Ring gameplay) compact and preventing 10+ fragmented parts.
+- **Thematic Part Grouping**: Pass 2 summarizer groups timestamps strictly by overarching thematic category into sequential integer parts (ส่วนที่ 1, 2, 3...) without artificial byte splits (no 1.1, 1.2 or 3,500-byte slicing). Consecutive same-game grinding is consolidated within 10 minutes while talk/news sub-topics use a 4-minute window.
 
 ### Mode 2: Fixed Window Groups (`--mode group`, Alternative)
 Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and collision guards.

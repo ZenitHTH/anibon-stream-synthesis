@@ -159,7 +159,7 @@ def deduplicate_consecutive_timestamps(
         common_entities = [
             "elden ring", "fgo", "fate", "minecraft", "jojo", "yugioh", "yu-gi-oh",
             "รางดาว", "star rail", "honkai", "lol", "league of legends", "limbus",
-            "nikke", "genshin", "dark souls", "น้ำท่วม",
+            "nikke", "genshin", "dark souls", "deadlock", "monster hunter",
         ]
         desc_lower = desc.lower()
         for ent in common_entities:
@@ -191,12 +191,16 @@ def deduplicate_consecutive_timestamps(
 
         is_same_topic = False
         if prev_game and curr_game and prev_game == curr_game:
-            # Same game / topic discussed
+            # Same game session: deduplicate gameplay grinding across up to max_dedup_gap_sec (10m)
             is_same_topic = True
-        elif len(common_kw) >= 3 or (len(prev_kw) >= 2 and len(common_kw) / len(prev_kw) >= 0.75):
+            topic_dedup_gap = max_dedup_gap_sec
+        elif len(common_kw) >= 4 or (len(prev_kw) >= 3 and len(common_kw) / len(prev_kw) >= 0.85):
+            # Same talk topic with heavy keyword overlap: deduplicate only across 240s (4m)
             is_same_topic = True
+            topic_dedup_gap = 240
+        else:
+            topic_dedup_gap = max_dedup_gap_sec
 
-        # Rule: If consecutive timestamps are < 10 mins apart and cover the same topic -> keep only earliest
         # Exception: Don't drop Boss / Death / Victory / Gacha / Donation milestones unless < 2 mins apart
         is_milestone = bool(re.search(r"\[(Boss|Death|Victory|Gacha|Donation)\]", curr_stamp))
 
@@ -209,8 +213,8 @@ def deduplicate_consecutive_timestamps(
             # Micro-gap (< 2 min): drop duplicate/continuation unless critical milestone
             if not is_milestone:
                 continue
-        elif gap < max_dedup_gap_sec and is_same_topic and not is_milestone:
-            # Redundant continuation stamp for same topic within 10 minutes
+        elif gap < topic_dedup_gap and is_same_topic and not is_milestone:
+            # Redundant continuation stamp for same topic within dedup window
             continue
 
         result.append(curr_stamp)

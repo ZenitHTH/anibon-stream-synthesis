@@ -61,18 +61,18 @@ def run_local_summarizer_pass(
 You are an expert livestream editor for Anibon Official.
 Below are {len(stamps)} timestamps from a livestream by Pu Boat.
 
-Divide these timestamps into roughly {expected_parts} logical Parts for YouTube comments.
+Divide these timestamps into cohesive, logical thematic Parts based on overarching topic categories.
 
-CRITICAL GROUPING & CONSOLIDATION RULES (from anibon-summarizer):
-1. GROUP BY ACTIVITY PERIOD & FILTER PASSING MENTIONS:
-   - Primary grouping unit is continuous activity (one watchparty screening, sustained discussion block of one game/topic, gameplay segment, closing).
+CRITICAL GROUPING & CONSOLIDATION RULES:
+1. GROUP STRICTLY BY THEMATIC ACTIVITY & TOPIC CATEGORY:
+   - Primary grouping unit is continuous thematic activity (e.g. Political/Flood News & Social Critique, Watchparty / Media Review, Gaming Session, Concluding Thoughts / Q&A / Donations).
    - Do NOT split on single-tag flickers or passing micro-topics inside the same activity.
-   - Strictly filter out superficial 1-2 sentence off-hand mentions or passing remarks (where the speaker does not dive deep or analyze); do NOT highlight passing side-topics in Caveman Part headers.
-   - Hard breaks that require new parts: Stream opening -> first watchparty/talk; Game -> news/donation segment; Talk -> gacha; Last content -> signing-off.
-2. BYTE & STAMP CEILINGS:
-   - YouTube comment limit is 3,500 bytes (Thai chars = 3 bytes).
-   - Target size: 8 to 13 timestamps per part. NEVER exceed 14 timestamps per part.
-   - Consolidation: Do NOT create parts containing only 1-3 timestamps (unless standalone closing/donation). Merge same activity parts if under 3,500 bytes.
+   - Strictly filter out superficial 1-2 sentence off-hand mentions in headers.
+   - Hard breaks that require new parts: Stream opening -> first watchparty/talk; Game -> news/donation segment; Talk -> gacha/gaming; Last content -> signing-off.
+2. NO BYTE LIMITS & SEQUENTIAL INTEGER NUMBERING ONLY:
+   - Do NOT divide parts based on byte limits (no 3,500 byte limit). A thematic part can contain as many timestamps as belong to that topic category.
+   - Number parts sequentially as integers ONLY (Part 1, Part 2, Part 3, etc.). NEVER create sub-parts like 1.1, 1.2.
+   - Consolidation: Do NOT create tiny parts containing only 1-2 timestamps (unless standalone closing/donation).
 3. CAVEMAN SUMMARY HEADERS:
    - Punchy Thai summary header (2-3 short, dense sentences in Thai, active voice, zero fluff, highlighting major drama, news, or gameplay).
 
@@ -122,20 +122,8 @@ TIMESTAMPS:
 
                 header = f" ส่วนที่ {curr_part_num}: {p_summary.strip()} (⏱ เริ่ม: {p_start})"
                 part_text = f"{border}\n{header}\n{border}\n" + "\n".join(part_stamps)
-
-                # If this part exceeds 3,500 bytes or 14 stamps, split cleanly
-                if len(part_text.encode("utf-8")) > 3500 or len(part_stamps) > 14:
-                    chunk_limit = 11
-                    sub_blocks = [part_stamps[i:i + chunk_limit] for i in range(0, len(part_stamps), chunk_limit)]
-                    for sub_idx, sub_b in enumerate(sub_blocks, 1):
-                        sub_start = sub_b[0][:8]
-                        sub_sum = generate_part_summary(sub_b)
-                        sub_header = f" ส่วนที่ {curr_part_num}.{sub_idx}: {sub_sum} (⏱ เริ่ม: {sub_start})"
-                        rendered_parts.append(f"{border}\n{sub_header}\n{border}\n" + "\n".join(sub_b))
-                    curr_part_num += 1
-                else:
-                    rendered_parts.append(part_text)
-                    curr_part_num += 1
+                rendered_parts.append(part_text)
+                curr_part_num += 1
 
             if rendered_parts:
                 return "\n\n".join(rendered_parts)
@@ -150,7 +138,7 @@ def assemble_parts(
     block_size: int = 2400,
     deduplicate: bool = True,
 ) -> str:
-    """Group timestamps into YouTube parts (<3500 bytes) with double borders."""
+    """Group timestamps into sequential integer parts with double borders."""
     if not all_stamps:
         return ""
 
@@ -158,8 +146,7 @@ def assemble_parts(
     if not stamps:
         return ""
 
-    # Target 8-12 stamps per part to strictly guarantee <3,500 bytes
-    target_stamps_per_part = 10
+    target_stamps_per_part = 14
     blocks: List[List[str]] = []
     for i in range(0, len(stamps), target_stamps_per_part):
         blocks.append(stamps[i:i + target_stamps_per_part])
@@ -171,17 +158,7 @@ def assemble_parts(
         summary = generate_part_summary(block)
         header = f" ส่วนที่ {i}: {summary} (⏱ เริ่ม: {start})"
         part_text = f"{border}\n{header}\n{border}\n" + "\n".join(block)
-
-        if len(part_text.encode("utf-8")) > 3500 and len(block) > 4:
-            mid = len(block) // 2
-            b1, b2 = block[:mid], block[mid:]
-            s1, s2 = generate_part_summary(b1), generate_part_summary(b2)
-            p1 = f"{border}\n ส่วนที่ {i}.1: {s1} (⏱ เริ่ม: {b1[0][:8]})\n{border}\n" + "\n".join(b1)
-            p2 = f"{border}\n ส่วนที่ {i}.2: {s2} (⏱ เริ่ม: {b2[0][:8]})\n{border}\n" + "\n".join(b2)
-            parts.append(p1)
-            parts.append(p2)
-        else:
-            parts.append(part_text)
+        parts.append(part_text)
 
     return "\n\n".join(parts)
 

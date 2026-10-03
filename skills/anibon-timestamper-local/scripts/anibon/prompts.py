@@ -20,7 +20,7 @@ _WI_CANDIDATES = [
     _SCRIPT_DIR.parent.parent.parent / "anibon-world-identity" / "references",
 ]
 WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir()), None)
-_WI_SNIPPET_LIMIT = 1500
+_WI_SNIPPET_LIMIT = 4000
 
 
 def _chunk_range(items: list) -> Tuple[str, str]:
@@ -146,6 +146,9 @@ Rules:
    - OUTPUT BUDGET: Provide 1 timestamp by default, 2 MAX per chunk ({start_ts} - {end_ts}).
      Do NOT micro-stamp conversational pauses or minor dialogue turns within the same game or talk topic.
    - Output an EMPTY list [] if this chunk is a continuation (same game, same activity, no major event shift like Boss/Death/Victory/Cutscene/Donation).
+   - LONG-FORM TALK/NEWS EXCEPTION (CRITICAL FOR MONOLOGUES & SOCIAL CRITIQUE):
+     If the speaker continues discussing the same broad news, political, or societal subject across multiple chunks (>8-10 minutes without any timestamp), you MUST NOT leave it blank as an empty continuation.
+     Identify any distinct sub-angle, specific policy/news critique, concrete case study, or notable shift in focus (e.g. specific data, secondary news item, viewer debate, geographic analysis) and emit 1 timestamp marking that sub-topic (using [Talk] or [News]) so long monologues are properly indexable.
    - STRICT PASSING MENTIONS & OFF-HAND REMARKS FILTER (CRITICAL):
      DO NOT emit timestamps for brief passing remarks, 1-3 sentence off-hand mentions, or momentary tangents where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. merely reading a chat comment, saying "เห็นข่าวเกม X แวบๆ", "เดี๋ยวค่อยว่ากัน", casual hello to a chatter, fleeting side comments, mentioning a console/game name in passing).
      A timestamp is WARRANTED ONLY IF:
@@ -155,7 +158,7 @@ Rules:
    - Tags: {tags_list} (Strictly use allowed tags).
    - First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
    - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
-   - ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names.
+   - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
    - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
 
 3. garbled_notes:
@@ -288,7 +291,7 @@ Rules:
   * STRICT PASSING MENTIONS FILTER: Do NOT stamp brief passing remarks or 1-3 sentence off-hand mentions where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. reading a chat comment, casual mentions of other games/consoles, fleeting remarks). Timestamp ONLY when speaker actively dwells and analyzes the topic for >1-2 minutes or several paragraphs.
   * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.
 - FULL LIST REVEAL RULE: If streamer reveals a multi-character list/banner across chunks, do not prematurely truncate count; describe accurate ongoing list.
-- ANTI-HALLUCINATION / ASR GHOSTS: Every game/character name MUST appear in or be clearly implied by transcript text (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names.
+- ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
 - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally ("เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration; 1-star hype = meme banter).
 - First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
 - Output ONLY 2 to 4 timestamp lines in chronological order. Immediately STOP after the last timestamp. Do NOT repeat or output a second list. No preamble, no explanation.

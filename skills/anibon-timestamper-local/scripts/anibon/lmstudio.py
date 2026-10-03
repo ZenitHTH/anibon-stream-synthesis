@@ -34,7 +34,22 @@ def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
             req = urllib.request.Request(url)
             with urllib.request.urlopen(req, timeout=3) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                loaded = [m.get("id") for m in data.get("data", []) if m.get("state") == "loaded"]
+                models_list = data.get("data", [])
+                loading = [m.get("id") for m in models_list if m.get("state") == "loading"]
+                if loading:
+                    print(f"[init] Model(s) currently loading into VRAM: {', '.join(loading)}. Waiting for readiness...", file=sys.stderr)
+                    for _ in range(24):  # Wait up to 120s
+                        time.sleep(5)
+                        try:
+                            with urllib.request.urlopen(req, timeout=3) as r2:
+                                d2 = json.loads(r2.read().decode("utf-8"))
+                                ready = [m.get("id") for m in d2.get("data", []) if m.get("state") == "loaded"]
+                                if ready:
+                                    print(f"[init] Model loaded successfully: {', '.join(ready)}", file=sys.stderr)
+                                    return ready
+                        except Exception:
+                            pass
+                loaded = [m.get("id") for m in models_list if m.get("state") == "loaded"]
                 if loaded:
                     return loaded
         except Exception:
