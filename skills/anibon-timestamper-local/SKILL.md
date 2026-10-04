@@ -167,3 +167,13 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 3. **ASR Phonetic Drift**:
    - *Symptom*: Names like "นครโตะ" appear instead of "Naucrate (นอคราเต้)".
    - *Fix*: `process_chunks_local.py` loads `resources/default_mappings.json` and runs TF-IDF signal detection before prompt generation.
+
+4. **Missing Multimodal Projector (`mmproj`) on Vision Prompts**:
+   - *Symptom*: Image verification or storyboard inspection responds with *"I cannot see an image or video"*.
+   - *Cause*: Model GGUF has multimodal prompt tokens but was loaded into LM Studio / `llama.cpp` without its companion `mmproj-*.gguf` file.
+   - *Fix*: Explicitly attach the `mmproj` file in LM Studio model settings or `llama-server --mmproj`, or switch to a unified vision model like `Qwen2.5-VL-7B`.
+
+5. **Re-running with Modified/Recovered Transcript**:
+   - *Symptom*: Timestamper finishes in 1 second showing `[skip] chunk_XX (already processed)`.
+   - *Cause*: Script caches per-chunk responses in `<workspace>/recursive_outputs/chunk_XX.json` as well as `anibon_timestamper_state.json`.
+   - *Fix*: Pass `--no-resume` and remove `recursive_outputs/` and `anibon_timestamper_state.json`.

@@ -276,4 +276,7 @@ def call_vision(
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     msg = data["choices"][0]["message"]
-    return msg.get("content", "").strip()
+    content = msg.get("content", "").strip()
+    if not content and msg.get("reasoning_content"):
+        content = msg["reasoning_content"].strip()
+    return content

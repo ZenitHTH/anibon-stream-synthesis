@@ -16,8 +16,14 @@ Download audio stream directly as mono 16kHz 16-bit PCM WAV (avoids temporary fi
 
 ```bash
 # Direct single-pass extraction via yt-dlp + ffmpeg:
-yt-dlp -f ba -x --audio-format wav --postprocessor-args "-ar 16000 -ac 1 -c:a pcm_s16le" -o "audio_16k.%(ext)s" "VIDEO_URL"
+yt-dlp -f ba -x --audio-format wav --postprocessor-args "ExtractAudio:-ar 16000 -ac 1 -c:a pcm_s16le" -o "audio_16k.%(ext)s" "VIDEO_URL"
 ```
+
+> [!NOTE]
+> If YouTube returns `HTTP Error 403: Forbidden`, update yt-dlp first:
+> ```bash
+> yt-dlp --update
+> ```
 
 Or convert existing audio:
 ```bash
@@ -48,28 +54,57 @@ For full build options and platform configurations, see [BUILD_WHISPERCPP_GUILD.
 
 ## 3. Format Conversion & Windows Invariants
 
-Convert whisper-cli raw JSON output to pipeline-standard `raw_transcript.json`:
+Convert `whisper_output.json` directly to pipeline-standard `raw_transcript.json`:
 
 > [!IMPORTANT]
 > **Windows UTF-8 Invariant**:
 > 1. Windows default console encoding (`cp1252`/`charmap`) crashes when printing Thai text. Always run scripts with `python -X utf8`.
-> 2. MSVC `whisper-cli` output can split multibyte Thai UTF-8 characters across segment buffer cuts. Always decode JSON with `errors="replace"`:
->    ```python
->    with open("whisper_output.json", "rb") as f:
->        data = json.loads(f.read().decode("utf-8", errors="replace"))
->    ```
+> 2. MSVC `whisper-cli` output can split multibyte Thai UTF-8 characters across segment buffer cuts. Always decode JSON with `errors="replace"`.
 
-```bash
-python -X utf8 convert_whisper_and_chunk.py
+Run inline Python converter:
+```powershell
+python -X utf8 -c "
+import json
+
+def fmt_ts(seconds):
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    return f'{h:02d}:{m:02d}:{s:02d}'
+
+with open('whisper_output.json', 'rb') as f:
+    data = json.loads(f.read().decode('utf-8', errors='replace'))
+
+items = []
+for seg in data.get('transcription', []):
+    text = seg.get('text', '').strip()
+    if not text:
+        continue
+    offsets = seg.get('offsets', {})
+    start_sec = offsets.get('from', 0) / 1000.0
+    end_sec = offsets.get('to', 0) / 1000.0
+    items.append({
+        'text': text,
+        'start': round(start_sec, 2),
+        'duration': round(end_sec - start_sec, 2),
+        'timestamp': fmt_ts(start_sec)
+    })
+
+with open('raw_transcript.json', 'w', encoding='utf-8') as out:
+    json.dump(items, out, ensure_ascii=False, indent=2)
+"
 ```
-
-Then proceed with the standard pipeline (chunking, signal detection, subagents).
 
 ## 4. Hallucination Detection & Recovery
 
-Detect repetition loops / hallucinations via frequency analysis and auto-trigger recovery:
+On livestreams $\ge 2\text{h}$, Whisper may loop on music or silence. Run parallel Divide-and-Conquer recovery:
 
-```bash
-python3 scripts/detect_hallucinations.py whisper_output.json --audio audio_16k.wav -o recovered_transcript.json
+```powershell
+python -X utf8 ..\whisper-corruption-recovery\scripts\fix_hallucinations.py whisper_output.json audio_16k.wav --devices 0 -w 3 -o raw_transcript.json
+```
+
+Then run chunking with `prepare_video.py`:
+```powershell
+python -X utf8 scripts\prepare_video.py <VIDEO_URL> --workspace <WORKSPACE> --format txt --block 300 --overlap 30
 ```
 
