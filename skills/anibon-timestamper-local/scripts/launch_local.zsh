@@ -3,11 +3,12 @@
 set -e
 
 usage() {
-    echo "Usage: $0 <WORKSPACE> [ENDPOINT_OR_IP] [MODEL] [LANG] [MODE]"
+    echo "Usage: $0 <WORKSPACE> [ENDPOINT_OR_IP] [MODEL] [LANG] [MODE] [VIDEO_URL]"
     echo "  ENDPOINT_OR_IP: Full URL or IP address (default: 100.115.25.30)"
     echo "  MODEL: Model identifier (default: auto)"
     echo "  LANG: Output language th|en (default: th)"
     echo "  MODE: recursive|group (default: recursive)"
+    echo "  VIDEO_URL: Optional YouTube URL for whisper audio slicing"
     exit 1
 }
 
@@ -20,6 +21,7 @@ ENDPOINT="${2:-100.115.25.30}"
 MODEL="${3:-auto}"
 LANG="${4:-th}"
 MODE="${5:-recursive}"
+VIDEO_URL="${6:-}"
 
 if [[ ! -d "$WORKSPACE" ]]; then
     echo "Error: Workspace directory does not exist: $WORKSPACE" >&2
@@ -45,11 +47,16 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
+EXTRA_ARGS=()
+if [[ -n "$VIDEO_URL" ]]; then
+    EXTRA_ARGS+=(--video-url "$VIDEO_URL")
+fi
+
 nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \
     --model "$MODEL" \
     --lang "$LANG" \
-    --mode "$MODE" > "$LOG_FILE" 2> "$ERR_FILE" &!
+    --mode "$MODE" "${EXTRA_ARGS[@]}" > "$LOG_FILE" 2> "$ERR_FILE" &!
 
 PID=$!
 echo "$PID" > "$PID_FILE"

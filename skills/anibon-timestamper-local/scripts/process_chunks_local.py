@@ -278,7 +278,14 @@ def run_recursive_mode(
                 if isinstance(garbled_notes, list) and garbled_notes:
                     raw_notes_dir = workspace / "garbled_notes_raw"
                     raw_notes_dir.mkdir(exist_ok=True)
-                    gn_lines = [f"- {gn.strip()}" for gn in garbled_notes if isinstance(gn, str) and gn.strip()]
+                    gn_lines = []
+                    for gn in garbled_notes:
+                        if isinstance(gn, str) and gn.strip():
+                            val = gn.strip()
+                            if "@" in val and not val.startswith('"'):
+                                tok, rest = val.split("@", 1)
+                                val = f'"{tok.strip()}" @{rest}'
+                            gn_lines.append(f"- {val} ({chunk_idx})")
                     if gn_lines:
                         (raw_notes_dir / f"{chunk_idx}.txt").write_text(
                             "GARBLED_NOTES:\n" + "\n".join(gn_lines) + "\n",

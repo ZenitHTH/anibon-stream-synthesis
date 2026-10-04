@@ -208,14 +208,15 @@ def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                m = re.search(r'"([^"]+)"(?:\s*->\s*([^@]+?))?\s*@\s*(\d{1,2}:\d{2}:\d{2})\s*(?:\((chunk_\d+)\))?', line)
+                # Match quoted ("word") or unquoted (word) candidates, with optional leading dash
+                m = re.search(r'^(?:-\s*)?(?:"([^"]+)"|([^\s@\->]+(?:\s+[^\s@\->]+)*))(?:\s*->\s*([^@]+?))?\s*@\s*(\d{1,2}:\d{2}:\d{2})\s*(?:\((chunk_\d+)\))?', line)
                 if m:
-                    g = m.group(1).strip()
-                    correct_raw = (m.group(2) or "").strip()
+                    g = (m.group(1) or m.group(2) or "").strip()
+                    correct_raw = (m.group(3) or "").strip()
                     is_unknown = not correct_raw or correct_raw.upper() in ["UNKNOWN", "NULL", "NONE"]
                     correct = None if is_unknown else correct_raw
-                    ts = m.group(3).strip()
-                    ch = m.group(4) or ""
+                    ts = m.group(4).strip()
+                    ch = m.group(5) or ""
                     if len(ts.split(":")[0]) == 1:
                         ts = "0" + ts
                     sec = parse_time_str(ts)
