@@ -75,6 +75,7 @@ CRITICAL GROUPING & CONSOLIDATION RULES:
    - Consolidation: Do NOT create tiny parts containing only 1-2 timestamps (unless standalone closing/donation).
 3. CAVEMAN SUMMARY HEADERS:
    - Punchy Thai summary header (2-3 short, dense sentences in Thai, active voice, zero fluff, highlighting major drama, news, or gameplay).
+   - NEVER drop proper nouns (game titles, character names, people) to fit limits; trim filler adjectives instead.
 
 For each part, specify:
 1. The start timestamp where this part begins.

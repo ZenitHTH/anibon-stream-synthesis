@@ -95,6 +95,8 @@ Thai chars = 3 bytes. ASCII/English chars = 1 byte.
 - To stay strictly below the 3,500-byte target ceiling, **never exceed 14 timestamps per part**.
 - Typical target: **8–13 timestamps per part**.
 - If an activity period has 15+ timestamps, you MUST split it at a logical sub-topic break into Part A / Part B.
+- **NEVER DROP PROPER NOUNS TO FIT BYTE LIMITS (CRITICAL):**
+  Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers just to fit the byte ceiling. If a part exceeds 3,500 bytes, split the part into Part A / Part B or trim filler adjectives and emotional fluff — NEVER omit the proper noun.
 
 
 ## CAVEMAN SUMMARY RULES

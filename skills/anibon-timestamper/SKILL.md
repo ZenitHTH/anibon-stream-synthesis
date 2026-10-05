@@ -407,7 +407,7 @@ Once `output.md` is generated and verified (or after a multi-part series run fin
 2. **Ingest into `timestamp_workspace`**:
    - **REQUIRED SUB-SKILL:** Use `backing-up-timestamps`.
    - Run `python3 -X utf8 import_workspace.py ~/youtube_<id>_workspace` (or batch across `~/youtube_*_workspace`).
-   - Automatically archives structured transcripts (`transcripts/transcript_<id>.json` & `.txt`) when YouTube auto-captions were absent, linking them in `by_video_id/timestamp_<id>.md` and `README.md`.
+   - Automatically archives structured transcripts (`transcripts/transcript_<id>.jsonl.gz`), copies `extras/<id>/`, automatically rebuilds the search index (`python3 -m anibon_search build`), and links entries in `by_video_id/timestamp_<id>.md` and `README.md`.
    - Commit and push `timestamp_workspace` to GitHub (`ZenitHTH/timestamp-workspace.git`).
 
 3. **Archive Raw Workspaces**:
@@ -477,4 +477,5 @@ HH:MM:SS - [Tag] Description
 - **NON-SPOILER GACHA POLICY** — Never spoil whether the streamer won or lost a gacha pull in the timestamp description. Focus on anticipation, the featured banner/character, and chat interactions.
 - **18+ / RULE 34 TONE INTEGRITY** — Do not trivialize adult fanart or Rule 34 commentary under generic comedic tags (`[Reaction] ฮา...`). Use `[Talk]` with mature, direct, and accurate summaries.
 - **PROPER NOUN & GAME TITLE INTEGRITY** — When processing garbled notes (Step 8.6), NEVER map legitimate external game titles (e.g. *MARVEL Tōkon: Fighting Souls*, *Alien: Isolation*, *TMNT: The Last Ronin*), brand names, or common English phrases (e.g. *where we meet*) as noise patterns. Unconfirmed proper nouns must remain `correct: null` for human review rather than being forced into generic Thai terms.
+- **PROPER NOUN IN EVERY STAMP** — Every timestamp must name its specific proper noun (e.g. *Wuthering Waves*, *Zelda*, *น้องเนเน่ AGT*, *Bleach*). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit the 3,500-byte comment limit; trim adjectives or emotional filler instead.
 

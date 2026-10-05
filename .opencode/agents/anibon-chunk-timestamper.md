@@ -271,6 +271,8 @@ Do NOT overstate: if the live is calm about a gacha fail, do NOT write words tha
 - **STRICT LENGTH CAP: Max 10–12 words (~100 chars max).** Ultra-concise, punchy single phrase. No multi-clause sentences or filler.
 - Macro summary only.
 - Use exact technical terms, game names, character names. No invented names.
+- **PROPER NOUN IN EVERY STAMP (CRITICAL):**
+  Every timestamp must name its specific proper noun (e.g. *Wuthering Waves*, *Zelda*, *น้องเนเน่ AGT*, *Bleach*). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit byte limits; trim adjectives or emotional filler instead.
 - **Multilingual Naming Rule:**
   - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
   - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames only (e.g. `มาชู`, `ก๊อดดอฟ`) without parentheses.

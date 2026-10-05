@@ -83,6 +83,9 @@ YouTube comment hard cap = 4,500 UTF-8 bytes.
 Target ceiling = 3,500 bytes per pasted block (leaves margin for header).
 Thai chars = 3 bytes. ASCII/English chars = 1 byte.
 
+- **NEVER DROP PROPER NOUNS TO FIT BYTE LIMITS (CRITICAL):**
+  Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers just to fit the byte ceiling. If a part exceeds 3,500 bytes, split the part into Part A / Part B or trim filler adjectives and emotional fluff — NEVER omit the proper noun.
+
 ## CAVEMAN SUMMARY RULES
 
 Write each part heading like a caveman:

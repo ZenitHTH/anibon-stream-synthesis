@@ -96,7 +96,8 @@ python3 -X utf8 /Users/zenithth/timestamp_workspace/import_workspace.py   ~/yout
 Run the ingestion tool. It automatically:
 - Extracts title and upload date (via `video_info.json`, `yt-dlp`, or `*.live_chat.json` fallback).
 - Injects standard header metadata (`# Title`, `YouTube Video ID`, `Workspace Directory`, `Total Timestamps`).
-- Detects local Whisper ASR (`whisper_output.json` / `raw_transcript.json`) when YouTube auto-captions were unavailable, automatically archiving structured transcripts to `transcripts/transcript_<video_id>.json` & `.txt` and linking them in the markdown header and catalog.
+- Detects transcript sources (YouTube json3 or Whisper ASR), automatically archiving structured transcripts to `transcripts/transcript_<video_id>.jsonl.gz` (one `{"start","end","text"}` per line), copying visual/mood timelines to `extras/<video_id>/`, and linking them in the markdown header and catalog.
+- Automatically rebuilds the local SQLite search index (`python3 -m anibon_search build`).
 - Preserves `═════` part divider blocks and tag formatting.
 - Writes `by_video_id/timestamp_<video_id>.md`.
 - Appends/updates `metadata/catalog.json` sorted chronologically descending.
@@ -149,11 +150,15 @@ json.dump(cat, open('/Users/zenithth/timestamp_workspace/metadata/catalog.json',
 
 ```bash
 cd /Users/zenithth/timestamp_workspace
-# Stage markdown index, metadata, catalog readme, and transcripts (if generated)
+# Stage markdown index, metadata, catalog readme, compressed transcripts, and extras
 git add by_video_id/timestamp_<video_id>.md metadata/catalog.json README.md
 if [ -d "transcripts" ]; then
-  git add transcripts/transcript_<video_id>.* 2>/dev/null || true
+  git add transcripts/transcript_<video_id>.jsonl.gz 2>/dev/null || true
 fi
+if [ -d "extras/<video_id>" ]; then
+  git add extras/<video_id>/ 2>/dev/null || true
+fi
+# Note: import_workspace.py automatically rebuilds index/search.db incrementally.
 git commit -m "feat(catalog): backup <video_id> timestamps and update catalog/README"
 git push origin main
 ```
