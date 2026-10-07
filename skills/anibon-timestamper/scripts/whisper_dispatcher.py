@@ -664,8 +664,24 @@ def dispatch_verification(
     if not audio_source:
         if stream_url:
             audio_source = stream_url
-        elif video_url:
-            audio_source = get_youtube_stream_url(video_url)
+        else:
+            if not video_url:
+                # 1. Try workspace/.video_url
+                url_file = os.path.join(workspace, ".video_url")
+                if os.path.isfile(url_file):
+                    try:
+                        with open(url_file, "r", encoding="utf-8") as uf:
+                            video_url = uf.read().strip()
+                    except Exception:
+                        pass
+                # 2. Try inferring from workspace folder name (e.g. youtube_<id>_workspace)
+                if not video_url:
+                    m = re.search(r"youtube_([a-zA-Z0-9_-]{11})_workspace", os.path.abspath(workspace))
+                    if m:
+                        video_url = f"https://www.youtube.com/watch?v={m.group(1)}"
+
+            if video_url:
+                audio_source = get_youtube_stream_url(video_url)
 
     # Auto-calibrate or apply audio-to-transcript timeline offset
     raw_th_orig = os.path.join(workspace, "raw_transcript.th-orig.json3")

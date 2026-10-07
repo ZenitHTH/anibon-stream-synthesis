@@ -45,11 +45,24 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
+VIDEO_URL="${6:-}"
+if [[ -z "$VIDEO_URL" && -f "${WORKSPACE}/.video_url" ]]; then
+    VIDEO_URL="$(cat "${WORKSPACE}/.video_url" 2>/dev/null || true)"
+fi
+if [[ -z "$VIDEO_URL" && "$WORKSPACE" =~ youtube_([a-zA-Z0-9_-]{11})_workspace ]]; then
+    VIDEO_URL="https://www.youtube.com/watch?v=${BASH_REMATCH[1]}"
+fi
+
+EXTRA_ARGS=()
+if [[ -n "$VIDEO_URL" ]]; then
+    EXTRA_ARGS+=(--video-url "$VIDEO_URL")
+fi
+
 nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \
     --model "$MODEL" \
     --lang "$LANG" \
-    --mode "$MODE" > "$LOG_FILE" 2> "$ERR_FILE" &
+    --mode "$MODE" "${EXTRA_ARGS[@]}" > "$LOG_FILE" 2> "$ERR_FILE" &
 
 PID=$!
 echo "$PID" > "$PID_FILE"

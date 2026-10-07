@@ -21,6 +21,7 @@ Game reference files live alongside this index in `references/`.
 - [Japan Events & Conventions Reference](Japan_Event_Convention.md)
 - [Thai Book Fairs & Conventions Reference](Thai_Book_Fair_Convention.md)
 - [Zenless Zone Zero Reference](Zenless_Zone_Zero.md)
+- [Tokusatsu & Project R.E.D. Reference](Tokusatsu_Project_RED.md)
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
 
 ## Database-backed Games

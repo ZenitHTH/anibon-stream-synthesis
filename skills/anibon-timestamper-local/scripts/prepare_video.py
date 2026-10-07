@@ -66,6 +66,7 @@ def main():
     workspace.mkdir(parents=True, exist_ok=True)
     print(f"[*] Workspace: {workspace}", file=sys.stderr)
 
+    (workspace / ".video_url").write_text(url.strip(), encoding="utf-8")
     ytdlp.download_transcript(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
 

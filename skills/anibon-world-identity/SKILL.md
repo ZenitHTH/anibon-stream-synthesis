@@ -16,7 +16,7 @@ Local references → cached story refs → reference SRT → websearch fallback
 
 ### a. Check local game & event references
 
-`references/INDEX.md` lists available game and cultural event knowledge files (including anime gacha games, and Japanese event conventions/cuisines like `Japan_Event_Convention.md`). This is the fastest and most reliable source.
+`references/INDEX.md` lists available game, Tokusatsu, and cultural event knowledge files (including anime gacha games, Tokusatsu / Project R.E.D. like `Tokusatsu_Project_RED.md`, and Japanese event conventions/cuisines like `Japan_Event_Convention.md`). This is the fastest and most reliable source.
 
 ### b. Check cached story refs
 

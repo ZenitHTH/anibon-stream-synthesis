@@ -47,6 +47,13 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
+if [[ -z "$VIDEO_URL" && -f "${WORKSPACE}/.video_url" ]]; then
+    VIDEO_URL="$(cat "${WORKSPACE}/.video_url" 2>/dev/null || true)"
+fi
+if [[ -z "$VIDEO_URL" && "$WORKSPACE" =~ youtube_([a-zA-Z0-9_-]{11})_workspace ]]; then
+    VIDEO_URL="https://www.youtube.com/watch?v=${match[1]}"
+fi
+
 EXTRA_ARGS=()
 if [[ -n "$VIDEO_URL" ]]; then
     EXTRA_ARGS+=(--video-url "$VIDEO_URL")

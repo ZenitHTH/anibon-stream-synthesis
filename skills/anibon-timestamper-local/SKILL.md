@@ -123,6 +123,14 @@ After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py
       --workspace ~/youtube_<VIDEO_ID>_workspace
   ```
 
+#### 5. Fact Verification & Web Search Grounding (Post-Pass)
+When timestamps feature suspicious phonetic strings, unfamiliar show titles, or newly airing series (e.g., post-cutoff Tokusatsu or anime):
+1. **Search & Disambiguate**: Cross-reference transcript clues via web search (e.g., writer names, transformation items, monster races).
+2. **Update Timestamps**: Correct names directly in `anibon_timestamps.md`.
+3. **Persist Knowledge**:
+   - Add newly verified lore/franchises to `anibon-world-identity/references/`.
+   - Add phonetic drift patterns (e.g. `กาชิกิ` → `ฟุคาชิกิ`) to `garbled_replacements.json` to immunize future runs.
+
 
 ---
 
