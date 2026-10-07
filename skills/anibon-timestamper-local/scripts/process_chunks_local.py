@@ -94,6 +94,8 @@ from anibon.summarizer import (
     assemble_parts,
 )
 
+from anibon.vision_verify import apply_vision_verify
+
 
 # ── Formatting & Time Helpers ────────────────────────────────────────────────
 
@@ -142,6 +144,7 @@ def run_recursive_mode(
     no_summarizer_pass: bool,
     block_size: int,
     world_identity_dir: Optional[Path] = None,
+    args: Optional[argparse.Namespace] = None,
 ) -> None:
     """Dynamic rolling summary state-machine execution."""
     output_dir = workspace / "recursive_outputs"
@@ -336,6 +339,9 @@ def run_recursive_mode(
     raw_ts.write_text("\n".join(deduped), encoding="utf-8")
     print(f"[done] Raw timestamps: {raw_ts}")
 
+    if args:
+        deduped = apply_vision_verify(deduped, workspace, args, model)
+
     assembled = None
     if not no_summarizer_pass:
         assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
@@ -376,6 +382,7 @@ def run_group_mode(
     no_summarizer_pass: bool,
     block_size: int,
     world_identity_dir: Optional[Path] = None,
+    args: Optional[argparse.Namespace] = None,
 ) -> None:
     """Group-based execution across fixed windows of chunks."""
     output_dir = workspace / "group_outputs"
@@ -501,6 +508,9 @@ def run_group_mode(
     raw_ts.write_text("\n".join(deduped), encoding="utf-8")
     print(f"[done] Raw timestamps: {raw_ts}")
 
+    if args:
+        deduped = apply_vision_verify(deduped, workspace, args, model)
+
     assembled = None
     if not no_summarizer_pass:
         assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
@@ -612,6 +622,12 @@ def main() -> None:
                     help="Path to whisper GGML model binary (auto-discovered if omitted)")
     ap.add_argument("--no-garbled-collector", action="store_true",
                     help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
+    ap.add_argument("--vision-verify", action="store_true",
+                    help="Inspect video frames with local vision model for ambiguous timestamps before Pass 2 summary")
+    ap.add_argument("--video-file", default=None,
+                    help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
+    ap.add_argument("--vision-model", default=None,
+                    help="Model name for vision calls (default: same as resolved --model)")
     args = ap.parse_args()
 
     workspace = Path(args.workspace)
@@ -629,6 +645,7 @@ def main() -> None:
             sys.exit(1)
         stamps = [l.strip() for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
         print(f"[summarize-only] Loaded {len(stamps)} timestamps. Running assembly...")
+        stamps = apply_vision_verify(stamps, workspace, args, model)
         assembled = None
         if not args.no_summarizer_pass:
             assembled = run_local_summarizer_pass(args.endpoint, model, stamps, workspace, args.temperature)
@@ -715,6 +732,7 @@ def main() -> None:
             no_summarizer_pass=args.no_summarizer_pass,
             block_size=args.block_size,
             world_identity_dir=world_identity_dir,
+            args=args,
         )
     else:
         run_group_mode(
@@ -733,6 +751,7 @@ def main() -> None:
             no_summarizer_pass=args.no_summarizer_pass,
             block_size=args.block_size,
             world_identity_dir=world_identity_dir,
+            args=args,
         )
 
     if not args.no_garbled_collector:

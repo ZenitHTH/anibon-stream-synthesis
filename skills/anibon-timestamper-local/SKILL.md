@@ -16,6 +16,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 | **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `anibon/` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
+| **2.5 Vision Ground Truth (Optional)** | `anibon/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
 | **3. Summarizer & Assembly (Pass 2)** | `anibon/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
 | **4. Garbled Collector & Whisper Ground Truth** | `whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
 
@@ -76,6 +77,12 @@ python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace"
 **Windows (PowerShell):**
 ```powershell
 python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
+```
+
+#### 2.1 In-Pipeline Vision Verification (Optional)
+Inspect on-screen video frames for ambiguous or vague timestamps (deictic pronouns, missing game names, `[?]` markers) using the local vision model before Pass 2 summary:
+```powershell
+python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th --vision-verify
 ```
 
 #### 3. Detached Background Launch (3 OS Families)
@@ -154,6 +161,7 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 | *"Let's write a custom Python script to speed this up."* | Ad-hoc scripts break state tracking, resume logic, and encoding. | Strictly use `process_chunks_local.py` flags. |
 
 ### Red Flags — STOP and Reset
+- Attempting to run timestamper before transcript recovery pipeline is 100% complete and validated (`whisper-corruption-recovery`).
 - Output file contains 35+ timestamps for a 2-hour stream (micro-stamping symptom).
 - Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).
 - Sections exceed 3,500 bytes (YouTube comment limit violation).

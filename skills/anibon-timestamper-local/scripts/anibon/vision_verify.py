@@ -237,3 +237,58 @@ def verify_ambiguous_stamps(
             pass
 
     return verified_stamps
+
+
+def apply_vision_verify(
+    stamps: List[str],
+    workspace: Path,
+    args: Any,
+    model: str,
+) -> List[str]:
+    """Helper to apply vision verification pass if enabled in CLI args."""
+    if not getattr(args, "vision_verify", False):
+        return stamps
+
+    workspace = Path(workspace)
+    video_file = getattr(args, "video_file", None)
+    if video_file:
+        video_path = Path(video_file)
+    else:
+        video_path = workspace / "video_360p.mp4"
+        if not video_path.exists():
+            video_path = workspace / "video.mp4"
+
+    vision_model = getattr(args, "vision_model", None) or model
+    endpoint = getattr(args, "endpoint", "http://127.0.0.1:1234/v1/chat/completions")
+
+    def context_fn(sec: int) -> str:
+        chunks_dir = workspace / "chunks"
+        if not chunks_dir.exists():
+            return ""
+        for cf in sorted(chunks_dir.glob("chunk_*.txt")):
+            txt = cf.read_text(encoding="utf-8", errors="replace")
+            for line in txt.splitlines():
+                m = re.match(r"\[(\d{2}):(\d{2}):(\d{2})\]", line)
+                if m:
+                    line_sec = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+                    if abs(line_sec - sec) <= 45:
+                        return line[:200]
+        return ""
+
+    verified = verify_ambiguous_stamps(
+        stamps,
+        workspace,
+        video_path,
+        endpoint,
+        vision_model,
+        context_fn=context_fn,
+    )
+
+    if verified != stamps:
+        raw_ts = workspace / "all_timestamps.txt"
+        try:
+            raw_ts.write_text("\n".join(verified) + "\n", encoding="utf-8")
+        except Exception:
+            pass
+
+    return verified

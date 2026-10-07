@@ -157,3 +157,46 @@ def test_verify_uses_cache(tmp_path):
     )
     assert out2 == out1
     assert len(calls) == 1
+
+
+def test_apply_vision_verify_noop_when_disabled(tmp_path):
+    import argparse
+    from unittest.mock import patch
+    from anibon.vision_verify import apply_vision_verify
+
+    args = argparse.Namespace(vision_verify=False)
+    stamps = [ORIG]
+    with patch("anibon.vision_verify.verify_ambiguous_stamps") as mock_fn:
+        out = apply_vision_verify(stamps, tmp_path, args, "model")
+        assert out == stamps
+        mock_fn.assert_not_called()
+
+
+def test_apply_vision_verify_calls_orchestrator(tmp_path):
+    import argparse
+    from unittest.mock import patch
+    from anibon.vision_verify import apply_vision_verify
+
+    video = tmp_path / "video_360p.mp4"
+    video.write_bytes(b"dummy")
+    args = argparse.Namespace(
+        vision_verify=True,
+        video_file=None,
+        vision_model="custom-vision",
+        endpoint="http://127.0.0.1:1234/v1/chat/completions",
+    )
+    stamps = [ORIG]
+    with patch("anibon.vision_verify.verify_ambiguous_stamps") as mock_fn:
+        mock_fn.return_value = ["03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock"]
+        out = apply_vision_verify(stamps, tmp_path, args, "default-model")
+        assert out == ["03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock"]
+        mock_fn.assert_called_once()
+        call_args = mock_fn.call_args
+        assert call_args[0][0] == stamps
+        assert call_args[0][1] == tmp_path
+        assert call_args[0][2] == video
+        assert call_args[0][3] == "http://127.0.0.1:1234/v1/chat/completions"
+        assert call_args[0][4] == "custom-vision"
+        # Verify all_timestamps.txt was updated
+        saved = (tmp_path / "all_timestamps.txt").read_text(encoding="utf-8")
+        assert "Seven และ McGinnis" in saved
