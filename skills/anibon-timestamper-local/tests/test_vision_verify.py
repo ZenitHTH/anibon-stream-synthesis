@@ -4,6 +4,8 @@ from anibon.vision_verify import (
     stamp_seconds,
     parse_verify_response,
     build_verify_prompt,
+    extract_frame,
+    verify_ambiguous_stamps,
 )
 
 ORIG = "03:52:49 - [Gameplay] เซเวนกับไหมกีนิด"
@@ -46,3 +48,112 @@ def test_build_verify_prompt():
     assert "03:52:49" in prompt
     assert "Seven" not in prompt or "McGinnis" not in prompt
     assert "JSON" in prompt
+
+
+def test_verify_corrects_only_ambiguous(tmp_path):
+    calls = []
+
+    def fake_call(e, m, p, img, **k):
+        calls.append(img)
+        return '{"corrected": "03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock", "confidence": 0.9}'
+
+    def fake_frame(v, s, o):
+        o.write_bytes(b"image")
+        return o
+
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"video")
+    stamps = [
+        "02:15:28 - [News] วิเคราะห์กรณี Ironmouse กับประเด็นการใช้ Generative AI ในงานศิลปะ",
+        ORIG,
+    ]
+    out = verify_ambiguous_stamps(
+        stamps,
+        tmp_path,
+        video,
+        "http://mock",
+        "mock-model",
+        call_fn=fake_call,
+        frame_fn=fake_frame,
+    )
+    assert out[0] == stamps[0]
+    assert "McGinnis" in out[1]
+    assert len(calls) == 1
+
+
+def test_verify_skips_without_video(tmp_path):
+    out = verify_ambiguous_stamps(
+        [ORIG],
+        tmp_path,
+        tmp_path / "missing.mp4",
+        "http://mock",
+        "mock-model",
+    )
+    assert out == [ORIG]
+
+
+def test_verify_keeps_original_on_exception(tmp_path):
+    def boom(*a, **k):
+        raise OSError("down")
+
+    def fake_frame(v, s, o):
+        o.write_bytes(b"image")
+        return o
+
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"video")
+    out = verify_ambiguous_stamps(
+        [ORIG],
+        tmp_path,
+        video,
+        "http://mock",
+        "mock-model",
+        call_fn=boom,
+        frame_fn=fake_frame,
+    )
+    assert out == [ORIG]
+
+
+def test_verify_uses_cache(tmp_path):
+    calls = []
+
+    def fake_call(e, m, p, img, **k):
+        calls.append(img)
+        return '{"corrected": "03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock", "confidence": 0.9}'
+
+    def fake_frame(v, s, o):
+        o.write_bytes(b"image")
+        return o
+
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"video")
+    stamps = [ORIG]
+
+    # First run
+    out1 = verify_ambiguous_stamps(
+        stamps,
+        tmp_path,
+        video,
+        "http://mock",
+        "mock-model",
+        call_fn=fake_call,
+        frame_fn=fake_frame,
+    )
+    assert len(calls) == 1
+    assert "Seven" in out1[0]
+
+    # Second run should read cache and not call model again
+    def boom(*a, **k):
+        raise RuntimeError("Should not be called")
+
+    out2 = verify_ambiguous_stamps(
+        stamps,
+        tmp_path,
+        video,
+        "http://mock",
+        "mock-model",
+        call_fn=boom,
+        frame_fn=fake_frame,
+    )
+    assert out2 == out1
+    assert len(calls) == 1
