@@ -105,6 +105,14 @@ When dispatching video frames to local VLMs (Gemma 4 VLM, Qwen-VL):
 2. **Game Modding & HUD Precedence**: Streamers frequently use custom 3D model/skin mods (e.g. anime skins in Deadlock such as Ellen Joe). HUD elements (top 6v6 team hero roster, souls score, ability icons, mini-map, lane icons) STRICTLY take precedence over character model appearances.
 3. **Main Display vs Chat Isolation**: Explicitly instruct the model to inspect the central screen area (game HUD, video player title, article header) and ignore viewer chat on the side. Never attribute chat comments to stream content.
 4. **Zero-Thinking JSON Enforcement**: Local VLMs will waste token budget generating verbose English chain-of-thought unless instructed: `Respond ONLY with a valid JSON object. No preface, no reasoning explanation, no markdown outside the JSON block.`
+5. **Application Switch Boundary Precedence**: When the visual frame transitions to a new full-screen application or game (e.g., launching *Honkai: Star Rail*, *Deadlock*, or *Steam*):
+   - The topic boundary MUST immediately break at the transition second.
+   - Never bleed previous game entities or topics (e.g., *FGO*) into the newly opened game's UI or gameplay.
+   - Specific game terms (e.g., "หอรี", "Apocalyptic Shadow", "เลือดมอนเฟ้อ", "เพล่า", "ฮั่วฮั่ว") belong exclusively to the active on-screen game.
+6. **Donation Alert Media vs. Product Showcase**: When character art, VTuber avatars, or figure photos abruptly appear on screen:
+   - **Check Donation Overlay**: Inspect bottom screen corners for donation alerts, donor handles (e.g., `SymboliRudolf`), and currency tickers (`THB ...`).
+   - **Cross-Reference Audio**: If the streamer reads a pun/joke, laughs, or says *"ขอบคุณมากนะครับ [ชื่อ] ที่โดเนทมา"*, classify as `[Donation]` or `[SuperChat]`, NEVER `[Talk] โชว์ฟิกเกอร์` or `[Review]`.
+   - **Capture Joke / Lore Interaction**: Note the donor's joke and streamer/chat reaction (e.g., *มุกแป้กคนชงชารินชา จนแชท Mood Down*).
 
 ---
 
@@ -123,6 +131,9 @@ Agents under pressure find excuses to avoid visual inspection. Every excuse belo
 - Quoting download numbers > 1,000 ล้าน for a mobile game.
 - Seeing LiveChat laugh (`555`, `ถถถ`) or type numbers immediately following streamer statements.
 - Removing campaign titles entirely because "the streamer sounded confused".
+- Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
+- Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
+- Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
 
 ---
 

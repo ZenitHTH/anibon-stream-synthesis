@@ -170,6 +170,9 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 - Sections exceed 3,500 bytes (YouTube comment limit violation).
 - Script crashes with `UnicodeEncodeError: 'charmap'` (forgot `-X utf8`).
 - Outro omitted when ending chunk is marked continuation. Always verify final 5 minutes for closing stamp.
+- Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
+- Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
+- Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
 
 ### Stream Ending / Outro Invariant
 In `--mode recursive`, long unbroken gameplay or concluding sessions must not allow `is_continuation=True` to swallow the stream outro.
