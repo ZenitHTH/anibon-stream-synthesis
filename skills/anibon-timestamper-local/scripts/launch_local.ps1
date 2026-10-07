@@ -24,7 +24,37 @@ if ($NoResume) { $Extra += " --no-resume" }
 if ($AdditionalArgs) { $Extra += " $AdditionalArgs" }
 
 if (-not ($Endpoint -match "^https?://")) {
-    $Endpoint = "http://${Endpoint}:1234/v1/chat/completions"
+    $Endpoint = "http://$Endpoint"
+}
+if (-not ($Endpoint -match ":\d+")) {
+    $Endpoint = "${Endpoint}:1234"
+}
+
+# Auto-probe: If endpoint is on 100.115.25.30, test reachability. Fallback to 127.0.0.1 if unreachable.
+if ($Endpoint -match "100\.115\.25\.30") {
+    $TestUri = $Endpoint -replace "/v1/.*$", ""
+    if (-not ($TestUri -match ":\d+$")) { $TestUri = "${TestUri}:1234" }
+    $IsReachable = $false
+    try {
+        $TcpClient = New-Object System.Net.Sockets.TcpClient
+        $Connect = $TcpClient.BeginConnect("100.115.25.30", 1234, $null, $null)
+        $Success = $Connect.AsyncWaitHandle.WaitOne(1000, $false)
+        if ($Success -and $TcpClient.Connected) {
+            $IsReachable = $true
+            $TcpClient.EndConnect($Connect)
+        }
+        $TcpClient.Close()
+    } catch {
+        $IsReachable = $false
+    }
+    if (-not $IsReachable) {
+        Write-Host "⚠️ Endpoint 100.115.25.30 is unreachable. Falling back to localhost (127.0.0.1:1234)..."
+        $Endpoint = $Endpoint -replace "100\.115\.25\.30", "127.0.0.1"
+    }
+}
+
+if (-not ($Endpoint -match "/v1/chat/completions$")) {
+    $Endpoint = "${Endpoint}/v1/chat/completions"
 }
 
 # Launch python runner detached in background

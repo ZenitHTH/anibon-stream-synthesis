@@ -67,3 +67,4 @@ agy --model "Gemini 3.6 Flash (Medium)" --dangerously-skip-permissions `
    - **Cross-segment sentence loops** ($A-A-A-A$, $A-B-A-B$) $\to$ Trigger D&C audio recovery.
    - **In-segment word repeats** $\to$ Mark with `"[?] "` for review (DO NOT trigger audio splitting).
 3. **Data Integrity**: Never silently discard sub-second or uncertain items; preserve text attempts prepended with `"[?] "`.
+4. **Pipeline Sequencing Invariant**: Never launch downstream timestamping scripts (`process_chunks_local.py`, etc.) until the recovery lifecycle is fully finished: D&C recovery completed, uncertain frames extracted/reviewed, phantom loops pruned, and a verified `raw_transcript.json` generated.

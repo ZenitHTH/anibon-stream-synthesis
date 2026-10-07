@@ -259,7 +259,9 @@ def apply_vision_verify(
             video_path = workspace / "video.mp4"
 
     vision_model = getattr(args, "vision_model", None) or model
-    endpoint = getattr(args, "endpoint", "http://127.0.0.1:1234/v1/chat/completions")
+    endpoint = getattr(args, "endpoint", None)
+    from anibon.lmstudio import resolve_endpoint
+    endpoint = resolve_endpoint(endpoint)
 
     def context_fn(sec: int) -> str:
         chunks_dir = workspace / "chunks"

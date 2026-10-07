@@ -32,6 +32,14 @@ if [[ ! "$ENDPOINT" =~ ^https?:// ]]; then
     ENDPOINT="http://${ENDPOINT}:1234/v1/chat/completions"
 fi
 
+# Auto-probe: If endpoint is on 100.115.25.30, test reachability. Fallback to 127.0.0.1 if unreachable.
+if [[ "$ENDPOINT" =~ 100\.115\.25\.30 ]]; then
+    if ! (nc -z -w 1 100.115.25.30 1234 2>/dev/null || (exec 3<>/dev/tcp/100.115.25.30/1234) 2>/dev/null); then
+        echo "⚠️ Endpoint 100.115.25.30 is unreachable. Falling back to localhost (127.0.0.1:1234)..."
+        ENDPOINT="${ENDPOINT//100.115.25.30/127.0.0.1}"
+    fi
+fi
+
 SCRIPT_DIR="${0:A:h}"
 RUNNER_SCRIPT="${SCRIPT_DIR}/process_chunks_local.py"
 LOG_FILE="${WORKSPACE}/timestamper.log"

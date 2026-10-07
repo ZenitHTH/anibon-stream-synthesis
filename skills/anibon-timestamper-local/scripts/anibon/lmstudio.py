@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 import time
@@ -16,6 +17,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import List, Optional, Union, Dict, Any
+from urllib.parse import urlparse, urlunparse
 
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
@@ -23,37 +25,84 @@ CRITICAL INSTRUCTION: Keep your internal thinking under 2 sentences. \
 Do NOT list items or transcribe text in your thinking. \
 Proceed immediately to outputting the final decision."""
 
+DEFAULT_PRIMARY_HOST = "100.115.25.30"
+DEFAULT_FALLBACK_HOST = "127.0.0.1"
+DEFAULT_PORT = 1234
+DEFAULT_CHAT_PATH = "/v1/chat/completions"
+
+
+def is_host_reachable(host: str, port: int, timeout: float = 1.0) -> bool:
+    """Test TCP connectivity to host:port."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = 1.0) -> str:
+    """Resolve endpoint URL with automatic fallback from 100.115.25.30 to 127.0.0.1.
+
+    When targeting 100.115.25.30, tests TCP reachability first. If unreachable (e.g.
+    running directly on localhost), automatically falls back to 127.0.0.1.
+    """
+    raw = (endpoint or "").strip()
+    if not raw:
+        raw = f"http://{DEFAULT_PRIMARY_HOST}:{DEFAULT_PORT}{DEFAULT_CHAT_PATH}"
+
+    if not raw.startswith(("http://", "https://")):
+        raw = f"http://{raw}"
+
+    parsed = urlparse(raw)
+    scheme = parsed.scheme or "http"
+    host = parsed.hostname or DEFAULT_PRIMARY_HOST
+    port = parsed.port or DEFAULT_PORT
+    path = parsed.path
+    if not path or path == "/":
+        path = DEFAULT_CHAT_PATH
+
+    if host == DEFAULT_PRIMARY_HOST:
+        if not is_host_reachable(host, port, timeout=timeout):
+            print(
+                f"[endpoint] {host}:{port} unreachable, falling back to localhost {DEFAULT_FALLBACK_HOST}:{port}",
+                file=sys.stderr,
+            )
+            host = DEFAULT_FALLBACK_HOST
+
+    netloc = f"{host}:{port}"
+    return urlunparse((scheme, netloc, path, "", "", ""))
+
 
 def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
     """Query LM Studio for currently loaded models in memory (via HTTP API or CLI)."""
-    if endpoint:
-        try:
-            m = re.match(r"(https?://[^/]+)", endpoint)
-            base = m.group(1) if m else endpoint
-            url = f"{base}/api/v0/models"
-            req = urllib.request.Request(url)
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                models_list = data.get("data", [])
-                loading = [m.get("id") for m in models_list if m.get("state") == "loading"]
-                if loading:
-                    print(f"[init] Model(s) currently loading into VRAM: {', '.join(loading)}. Waiting for readiness...", file=sys.stderr)
-                    for _ in range(24):  # Wait up to 120s
-                        time.sleep(5)
-                        try:
-                            with urllib.request.urlopen(req, timeout=3) as r2:
-                                d2 = json.loads(r2.read().decode("utf-8"))
-                                ready = [m.get("id") for m in d2.get("data", []) if m.get("state") == "loaded"]
-                                if ready:
-                                    print(f"[init] Model loaded successfully: {', '.join(ready)}", file=sys.stderr)
-                                    return ready
-                        except Exception:
-                            pass
-                loaded = [m.get("id") for m in models_list if m.get("state") == "loaded"]
-                if loaded:
-                    return loaded
-        except Exception:
-            pass
+    target = resolve_endpoint(endpoint)
+    try:
+        m = re.match(r"(https?://[^/]+)", target)
+        base = m.group(1) if m else target
+        url = f"{base}/api/v0/models"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models_list = data.get("data", [])
+            loading = [m.get("id") for m in models_list if m.get("state") == "loading"]
+            if loading:
+                print(f"[init] Model(s) currently loading into VRAM: {', '.join(loading)}. Waiting for readiness...", file=sys.stderr)
+                for _ in range(24):  # Wait up to 120s
+                    time.sleep(5)
+                    try:
+                        with urllib.request.urlopen(req, timeout=3) as r2:
+                            d2 = json.loads(r2.read().decode("utf-8"))
+                            ready = [m.get("id") for m in d2.get("data", []) if m.get("state") == "loaded"]
+                            if ready:
+                                print(f"[init] Model loaded successfully: {', '.join(ready)}", file=sys.stderr)
+                                return ready
+                    except Exception:
+                        pass
+            loaded = [m.get("id") for m in models_list if m.get("state") == "loaded"]
+            if loaded:
+                return loaded
+    except Exception:
+        pass
 
     try:
         res = subprocess.run(

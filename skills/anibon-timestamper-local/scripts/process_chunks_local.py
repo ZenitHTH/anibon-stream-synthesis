@@ -76,6 +76,7 @@ from anibon.timestamps import (
 from anibon.lmstudio import (
     SYSTEM_PROMPT,
     get_loaded_models,
+    resolve_endpoint,
     resolve_model,
     call_local,
     call_vision,
@@ -635,6 +636,7 @@ def main() -> None:
         print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
         sys.exit(1)
 
+    args.endpoint = resolve_endpoint(args.endpoint)
     model = resolve_model(args.model, args.endpoint, force=args.force_model)
 
     # ── Summarize-only Shortcut ──────────────────────────────────────────────

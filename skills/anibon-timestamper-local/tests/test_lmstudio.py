@@ -4,6 +4,7 @@ from pathlib import Path
 
 from anibon.lmstudio import (
     SYSTEM_PROMPT,
+    resolve_endpoint,
     resolve_model,
     encode_image_base64,
     build_chat_payload,
@@ -12,6 +13,41 @@ from anibon.lmstudio import (
 
 
 class TestLMStudio(unittest.TestCase):
+
+    @patch("anibon.lmstudio.is_host_reachable")
+    def test_resolve_endpoint_primary_reachable(self, mock_reachable):
+        mock_reachable.return_value = True
+        ep = resolve_endpoint("http://100.115.25.30:1234/v1/chat/completions")
+        self.assertEqual(ep, "http://100.115.25.30:1234/v1/chat/completions")
+        mock_reachable.assert_called_once_with("100.115.25.30", 1234, timeout=1.0)
+
+    @patch("anibon.lmstudio.is_host_reachable")
+    def test_resolve_endpoint_fallback_when_unreachable(self, mock_reachable):
+        mock_reachable.return_value = False
+        ep = resolve_endpoint("http://100.115.25.30:1234/v1/chat/completions")
+        self.assertEqual(ep, "http://127.0.0.1:1234/v1/chat/completions")
+
+    @patch("anibon.lmstudio.is_host_reachable")
+    def test_resolve_endpoint_default_none(self, mock_reachable):
+        mock_reachable.return_value = False
+        ep = resolve_endpoint(None)
+        self.assertEqual(ep, "http://127.0.0.1:1234/v1/chat/completions")
+
+        mock_reachable.return_value = True
+        ep2 = resolve_endpoint("")
+        self.assertEqual(ep2, "http://100.115.25.30:1234/v1/chat/completions")
+
+    @patch("anibon.lmstudio.is_host_reachable")
+    def test_resolve_endpoint_localhost_skips_check(self, mock_reachable):
+        ep = resolve_endpoint("http://127.0.0.1:1234/v1/chat/completions")
+        self.assertEqual(ep, "http://127.0.0.1:1234/v1/chat/completions")
+        mock_reachable.assert_not_called()
+
+    @patch("anibon.lmstudio.is_host_reachable")
+    def test_resolve_endpoint_normalizes_missing_scheme_and_path(self, mock_reachable):
+        mock_reachable.return_value = True
+        ep = resolve_endpoint("100.115.25.30")
+        self.assertEqual(ep, "http://100.115.25.30:1234/v1/chat/completions")
 
     @patch("anibon.lmstudio.get_loaded_models")
     def test_resolve_model_auto(self, mock_get_loaded):
