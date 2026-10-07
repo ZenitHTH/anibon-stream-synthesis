@@ -98,6 +98,16 @@ Streamers often misread Japanese kanji units on the fly when sleep-deprived:
 
 ---
 
+## VLM Prompt Engineering & Anti-Hallucination Discipline
+
+When dispatching video frames to local VLMs (Gemma 4 VLM, Qwen-VL):
+1. **Domain Prior Injection**: Always supply candidate games commonly played by the streamer (e.g. Deadlock, Baldur's Gate 3, FGO, Uma Musume, Wuthering Waves). Unconstrained VLMs default to generic Western titles (Valorant, Lethal Company, GTFO, horror walking simulators).
+2. **Game Modding & HUD Precedence**: Streamers frequently use custom 3D model/skin mods (e.g. anime skins in Deadlock such as Ellen Joe). HUD elements (top 6v6 team hero roster, souls score, ability icons, mini-map, lane icons) STRICTLY take precedence over character model appearances.
+3. **Main Display vs Chat Isolation**: Explicitly instruct the model to inspect the central screen area (game HUD, video player title, article header) and ignore viewer chat on the side. Never attribute chat comments to stream content.
+4. **Zero-Thinking JSON Enforcement**: Local VLMs will waste token budget generating verbose English chain-of-thought unless instructed: `Respond ONLY with a valid JSON object. No preface, no reasoning explanation, no markdown outside the JSON block.`
+
+---
+
 ## Rationalization Table & Red Flags
 
 Agents under pressure find excuses to avoid visual inspection. Every excuse below is a violation:

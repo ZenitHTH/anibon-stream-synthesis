@@ -108,6 +108,9 @@ powershell -ExecutionPolicy Bypass -File "scripts\launch_local.ps1" -Workspace "
 scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
 ```
 
+> [!NOTE]
+> **Endpoint Auto-Probe & Fallback Rule**: All runners and Python client (`anibon.lmstudio.resolve_endpoint()`) automatically probe `http://100.115.25.30:1234` with a 1.0s TCP socket test. If unreachable (indicating execution on localhost itself), they immediately and safely fall back to `http://127.0.0.1:1234`.
+
 #### 4. Garbled Collector & Whisper Ground Truth (Automatic Post-Pass)
 After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio and update `garbled_replacements.json`.
 
@@ -166,6 +169,16 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 - Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).
 - Sections exceed 3,500 bytes (YouTube comment limit violation).
 - Script crashes with `UnicodeEncodeError: 'charmap'` (forgot `-X utf8`).
+- Outro omitted when ending chunk is marked continuation. Always verify final 5 minutes for closing stamp.
+
+### Stream Ending / Outro Invariant
+In `--mode recursive`, long unbroken gameplay or concluding sessions must not allow `is_continuation=True` to swallow the stream outro.
+The final 5 minutes of transcript must always be checked for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `เจอกัน`, `บ๊ายบาย`) and emit:
+`HH:MM:SS - [Ending] ปู่บอทขอบคุณผู้ชมและกล่าวปิดสตรีม`
+
+### YouTube Comment Byte-Cap Invariant
+Strict 4,500 byte limit per comment. Target ceiling: 2,500–3,500 bytes per part.
+If a long discussion or topic spans over 3,500 bytes, split into sequential logical sub-parts (`ส่วนที่ 1`, `ส่วนที่ 2`) rather than exceeding comment limits.
 
 ---
 
@@ -193,3 +206,8 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
    - *Symptom*: Timestamper finishes in 1 second showing `[skip] chunk_XX (already processed)`.
    - *Cause*: Script caches per-chunk responses in `<workspace>/recursive_outputs/chunk_XX.json` as well as `anibon_timestamper_state.json`.
    - *Fix*: Pass `--no-resume` and remove `recursive_outputs/` and `anibon_timestamper_state.json`.
+
+6. **Outro Swallowed by Continuation Trap**:
+   - *Symptom*: Output timestamp stops 30–60 minutes before video end, missing streamer's closing remarks.
+   - *Cause*: `is_continuation=True` in recursive rolling mode treated the final session as unbroken gameplay, discarding outro.
+   - *Fix*: Outro invariant — final 5 minutes must always be scanned for `[Ending]` / farewell stamps.

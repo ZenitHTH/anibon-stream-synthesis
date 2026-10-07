@@ -521,6 +521,35 @@
         "โอรอนเกะ",
         "กริมสนาร์ล"
       ]
+    },
+    {
+      "correct": "อกตัญญู",
+      "patterns": [
+        "อักตันยู",
+        "อกตันยู"
+      ]
+    },
+    {
+      "correct": "Fire Emblem / Valheim",
+      "patterns": [
+        "วาวเฮม",
+        "วาลเฮม"
+      ]
+    },
+    {
+      "correct": "Hidden King (Mid Boss ใน Deadlock)",
+      "patterns": [
+        "red king",
+        "เรดคิง"
+      ]
+    },
+    {
+      "correct": "Mod หน้าอนุทิน ใน Deadlock",
+      "patterns": [
+        "เกม anutine",
+        "เกม anุทิน",
+        "เกมอนุทิน"
+      ]
     }
   ]
 }
