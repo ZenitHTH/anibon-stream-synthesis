@@ -70,12 +70,19 @@ def build_verify_prompt(stamp: str, context: str = "") -> str:
 Original draft timestamp line:
 {ts} - [{tag}] {desc}
 {ctx_block}
+Context:
+Common livestream subjects by Pu Boat:
+- Watching videos/articles: Limbus Company, Project Moon, Mili, VTubers, anime, steam charts.
+- Gameplay: Deadlock (Valve 6v6 hero shooter with lane rosters/souls; uses anime skin mods), Baldur's Gate 3, FGO, Wuthering Waves, Uma Musume, Arknights: Endfield.
+
 Task:
-1. Examine what is literally visible on screen (game title, character/hero names, UI elements, website, steam chart, article, or video).
+1. Examine the MAIN display area on screen (center):
+   - If playing a game: identify the specific game and heroes/actions accurately.
+   - If watching a video or article: read the video/article title shown on the player or page.
 2. If the draft description is vague, misheard, or phonetically garbled (e.g. 'ตัวละครใหม่' -> 'Acheron ใน Honkai: Star Rail'), correct the entity name accurately in Thai.
 3. Keep the EXACT same timestamp '{ts}' and tag '[{tag}]'. Only refine the description text following '[{tag}] '.
 4. Never report hyperbolic roasts as literal depiction.
-5. Return JSON ONLY in this format:
+5. Respond ONLY with a valid JSON object. No preface, no reasoning explanation, no markdown outside the JSON block.
 {{
   "corrected": "{ts} - [{tag}] <accurate Thai description>",
   "confidence": <float between 0.0 and 1.0>
