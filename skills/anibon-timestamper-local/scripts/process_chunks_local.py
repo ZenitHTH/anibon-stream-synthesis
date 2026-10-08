@@ -97,6 +97,70 @@ from anibon.summarizer import (
 
 from anibon.vision_verify import apply_vision_verify
 
+from anibon.knowledge_reader import (
+    extract_entity_glossary,
+    save_entity_glossary,
+    enrich_with_sqlite_databases,
+)
+
+
+def run_knowledge_discovery(
+    workspace: Path,
+    signals_map: Optional[dict] = None,
+    world_identity_dir: Optional[Path] = None,
+) -> Path:
+    """Auto-discover domain references, bootstrap DBs, and emit <workspace>/entity_glossary.json."""
+    workspace = Path(workspace)
+    if signals_map is None:
+        sig_file = workspace / "signals.json"
+        if sig_file.exists():
+            try:
+                with open(sig_file, encoding="utf-8") as f:
+                    signals_map = json.load(f)
+            except Exception:
+                signals_map = {}
+        else:
+            signals_map = {}
+
+    ref_dir = world_identity_dir or WORLD_IDENTITY_DIR
+    glossary = extract_entity_glossary(signals_map, ref_dir)
+    glossary = enrich_with_sqlite_databases(glossary, signals_map)
+    out_file = save_entity_glossary(glossary, workspace)
+    print(f"[knowledge] Generated entity glossary with {len(glossary)} entries -> {out_file.name}")
+    return out_file
+
+
+def audit_timestamps_against_glossary(timestamps_file: Path, glossary: dict) -> int:
+    """Scan generated anibon_timestamps.md against entity_glossary.json and audit/replace mistranslations."""
+    timestamps_file = Path(timestamps_file)
+    if not timestamps_file.exists() or not glossary:
+        return 0
+
+    content = timestamps_file.read_text(encoding="utf-8")
+    original = content
+    replacements_count = 0
+
+    for en_key, meta in glossary.items():
+        if not isinstance(meta, dict):
+            continue
+        th = meta.get("th")
+        en = meta.get("en") or en_key
+        alias_th = meta.get("alias_th")
+
+        # Replace phonetic alias with official Thai name if present and different
+        if alias_th and th and alias_th != th and alias_th in content:
+            matches = content.count(alias_th)
+            if matches > 0:
+                content = content.replace(alias_th, th)
+                replacements_count += matches
+
+    if content != original:
+        timestamps_file.write_text(content, encoding="utf-8")
+        print(f"[audit] Applied {replacements_count} glossary corrections to {timestamps_file.name}")
+
+    return replacements_count
+
+
 
 # ── Formatting & Time Helpers ────────────────────────────────────────────────
 
@@ -146,6 +210,7 @@ def run_recursive_mode(
     block_size: int,
     world_identity_dir: Optional[Path] = None,
     args: Optional[argparse.Namespace] = None,
+    glossary: Optional[dict] = None,
 ) -> None:
     """Dynamic rolling summary state-machine execution."""
     output_dir = workspace / "recursive_outputs"
@@ -204,6 +269,7 @@ def run_recursive_mode(
             activity=act,
             mood=mood,
             world_identity_ref=wi_ref,
+            glossary=glossary,
         )
         prompt_tokens = len(prompt) // 4
         print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
@@ -353,6 +419,8 @@ def run_recursive_mode(
 
     out_md = workspace / "anibon_timestamps.md"
     out_md.write_text(assembled, encoding="utf-8")
+    if glossary:
+        audit_timestamps_against_glossary(out_md, glossary)
     print(f"[done] Final timestamps: {out_md}")
 
     is_finished = (not max_chunks or processed_count >= total)
@@ -384,6 +452,7 @@ def run_group_mode(
     block_size: int,
     world_identity_dir: Optional[Path] = None,
     args: Optional[argparse.Namespace] = None,
+    glossary: Optional[dict] = None,
 ) -> None:
     """Group-based execution across fixed windows of chunks."""
     output_dir = workspace / "group_outputs"
@@ -442,6 +511,7 @@ def run_group_mode(
             livechat_loader=load_chunk_livechat,
             activity_loader=load_chunk_activity,
             mood_loader=load_chunk_mood,
+            glossary=glossary,
         )
         prompt_tokens = len(prompt) // 4
         print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
@@ -522,6 +592,8 @@ def run_group_mode(
 
     out_md = workspace / "anibon_timestamps.md"
     out_md.write_text(assembled, encoding="utf-8")
+    if glossary:
+        audit_timestamps_against_glossary(out_md, glossary)
     print(f"[done] Final timestamps: {out_md}")
 
     save_state(workspace, {
@@ -629,6 +701,8 @@ def main() -> None:
                     help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
     ap.add_argument("--vision-model", default=None,
                     help="Model name for vision calls (default: same as resolved --model)")
+    ap.add_argument("--no-knowledge-reader", action="store_true",
+                    help="Bypass automated entity glossary discovery and audit")
     args = ap.parse_args()
 
     workspace = Path(args.workspace)
@@ -655,6 +729,16 @@ def main() -> None:
             assembled = assemble_parts(stamps, workspace, args.block_size)
         out_md = workspace / "anibon_timestamps.md"
         out_md.write_text(assembled, encoding="utf-8")
+        if not args.no_knowledge_reader:
+            sig_file = workspace / "signals.json"
+            sig_map = json.loads(sig_file.read_text(encoding="utf-8")) if sig_file.exists() else {}
+            g_path = run_knowledge_discovery(workspace, sig_map, world_identity_dir=None)
+            if g_path.exists():
+                try:
+                    with open(g_path, encoding="utf-8") as gf:
+                        audit_timestamps_against_glossary(out_md, json.load(gf))
+                except Exception:
+                    pass
         print(f"✅ Assembly complete: {out_md}")
 
         if not args.no_garbled_collector:
@@ -706,6 +790,16 @@ def main() -> None:
         except Exception:
             signals_map = detect_signals_for_chunks(workspace)
 
+    # ── Stage 0.5: Domain Knowledge Discovery & Entity Glossary ───────────────
+    glossary = {}
+    if not args.no_knowledge_reader:
+        glossary_path = run_knowledge_discovery(workspace, signals_map, world_identity_dir)
+        try:
+            with open(glossary_path, encoding="utf-8") as f:
+                glossary = json.load(f)
+        except Exception:
+            glossary = {}
+
     # ── Phonetic & Garbled Correction Mappings ───────────────────────────────
     # garbled_replacements.json: confirmed Whisper ground-truth corrections (2000+ entries).
     # Loaded FIRST so confirmed corrections take priority over heuristic phonetic matches.
@@ -735,6 +829,7 @@ def main() -> None:
             block_size=args.block_size,
             world_identity_dir=world_identity_dir,
             args=args,
+            glossary=glossary,
         )
     else:
         run_group_mode(
@@ -754,6 +849,7 @@ def main() -> None:
             block_size=args.block_size,
             world_identity_dir=world_identity_dir,
             args=args,
+            glossary=glossary,
         )
 
     if not args.no_garbled_collector:
