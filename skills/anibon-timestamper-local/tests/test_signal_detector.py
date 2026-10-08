@@ -20,3 +20,29 @@ def test_detect_signals_prioritizes_specific_game_over_stream_type(tmp_path):
     best = signals["chunk_00"]["best_file"]
     assert best is not None
     assert "chaos_zero_nightmare" in best.lower()
+
+def test_extract_metadata_signals_from_info_json(tmp_path):
+    import json
+    from signal_detector import extract_metadata_signals
+    info_file = tmp_path / "info.json"
+    info_file.write_text(json.dumps({
+        "title": "สตรีมเล่น Deadlock กับเพื่อนๆ และเปิดตู้ CZN",
+        "description": "วันนี้มาลุย Deadlock ยาวๆ และรีวิว Chaos Zero Nightmare",
+        "tags": ["Deadlock", "CZN", "Gaming"]
+    }, ensure_ascii=False), encoding="utf-8")
+    
+    signals = extract_metadata_signals(tmp_path)
+    assert "deadlock" in signals
+    assert "czn" in signals
+
+def test_discover_reference_games_from_markdown_files(tmp_path):
+    from signal_detector import discover_reference_games
+    refs = tmp_path / "references"
+    refs.mkdir()
+    (refs / "Deadlock.md").write_text("# Deadlock\n", encoding="utf-8")
+    (refs / "Sekiro_Shadows_Die_Twice.md").write_text("# Sekiro\n", encoding="utf-8")
+    
+    discovered = discover_reference_games(refs)
+    assert "deadlock" in discovered
+    assert "sekiro" in discovered
+

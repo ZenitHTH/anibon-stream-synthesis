@@ -96,6 +96,66 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
     return result
 
 
+def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
+    """Scan markdown knowledge files and return mapping of lowercase keywords -> relative file path."""
+    if refs_dir is None:
+        script_dir = Path(__file__).resolve().parent
+        refs_dir = script_dir.parent.parent / "anibon-world-identity" / "references"
+    if not refs_dir or not refs_dir.is_dir():
+        return {}
+
+    discovered = {}
+    for f in refs_dir.glob("*.md"):
+        if f.name.upper() in ("INDEX.MD", "README.MD"):
+            continue
+        stem = f.stem.lower()
+        clean_name = stem.replace("_", " ")
+        discovered[clean_name] = f"../anibon-world-identity/references/{f.name}"
+        tokens = clean_name.split()
+        if tokens:
+            discovered[tokens[0]] = f"../anibon-world-identity/references/{f.name}"
+        if "chaos zero nightmare" in clean_name:
+            discovered["czn"] = f"../anibon-world-identity/references/{f.name}"
+            discovered["คาเซน่า"] = f"../anibon-world-identity/references/{f.name}"
+            discovered["คาเซนา"] = f"../anibon-world-identity/references/{f.name}"
+    return discovered
+
+
+def extract_metadata_signals(workspace: Path) -> dict[str, float]:
+    """Extract game and topic keywords from YouTube stream metadata (info.json / video_info.json)."""
+    candidates = [
+        workspace / "info.json",
+        workspace / "video_info.json",
+    ]
+    p = next((c for c in candidates if c.is_file()), None)
+    if not p:
+        for f in workspace.glob("*.info.json"):
+            p = f
+            break
+    if not p or not p.is_file():
+        return {}
+
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    text_parts = [
+        data.get("title", ""),
+        data.get("description", ""),
+        " ".join(data.get("tags", [])) if isinstance(data.get("tags"), list) else "",
+    ]
+    combined = " ".join(text_parts).lower()
+
+    signals = {}
+    for token in re.findall(r"[a-zA-Z0-9\u0E00-\u0E7F]+", combined):
+        t_l = token.lower()
+        if len(t_l) >= 3 or t_l in ("fgo", "czn", "ygo", "lol"):
+            signals[t_l] = signals.get(t_l, 0.0) + 1.0
+
+    return signals
+
+
 # Non-speech sound brackets and filler tokens commonly injected by YouTube ASR
 _NOISE_BRACKET_RE = re.compile(
     r"\[(?:เพลง|ดนตรี|เสียงดนตรี|เสียงปรบมือ|เสียงหัวเราะ|หัวเราะ|เสียงเอฟเฟกต์|Music|Applause|Laughter|Cheering)\]|"
@@ -196,13 +256,23 @@ def extract_chunk_text(path: Path) -> tuple[int, str]:
 
 def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = None) -> dict:
     """Run corpus-level TF-IDF signal detection on workspace chunks and return signals map."""
-    entries = load_knowledge(knowledge_path)
+    entries = load_knowledge(knowledge_path) or {}
+
+    # Merge dynamically discovered game references
+    discovered_refs = discover_reference_games()
+    for kw, ref_file in discovered_refs.items():
+        if kw not in entries:
+            entries[kw] = {"kind": "game", "file": ref_file}
+
     if not entries:
         return {}
 
     chunks_dir = workspace / "chunks"
     if not chunks_dir.exists():
         return {}
+
+    # Extract metadata signals from stream info if available
+    meta_signals = extract_metadata_signals(workspace)
 
     def sort_key(p: Path):
         m = re.search(r"chunk_(\d+)", p.stem)
