@@ -44,21 +44,21 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
             part1 = m_paren.group(1).strip()
             part2 = m_paren.group(2).strip()
             # If part1 is Thai and part2 is Eng, check if c1 is canonical Eng (e.g. Pokemon table)
-            if re.search(r"[\u0E00-\u0E7F]", part1) and re.search(r"[A-Za-z]", part2):
+            if re.search(r"[\u0E00-\u0E7F]", part1) and re.search(r"[a-zA-Z\u00C0-\u024F]", part2):
                 th = part1
-                en = c1 if re.match(r"^[A-Za-z0-9\s\-\'\.]+$", c1) else part2
+                en = c1 if re.match(r"^[a-zA-Z\u00C0-\u024F0-9\s\-\'\.]+$", c1) else part2
             else:
                 en = part1
                 th = part2
         else:
             if re.search(r"[\u0E00-\u0E7F]", raw_name):
                 th = raw_name
-                en = c1 if re.match(r"^[A-Za-z0-9\s\-\'\.]+$", c1) else ""
+                en = c1 if re.match(r"^[a-zA-Z\u00C0-\u024F0-9\s\-\'\.]+$", c1) else ""
             else:
                 en = raw_name
                 th = c1 if re.search(r"[\u0E00-\u0E7F]", c1) else ""
 
-        en_clean = re.sub(r"[^A-Za-z0-9\s\-\.]", "", en).strip()
+        en_clean = re.sub(r"[^a-zA-Z\u00C0-\u024F0-9\s\-\.]", "", en).strip()
         m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", th)
         th_clean = m_th.group(0).strip() if m_th else ""
 
@@ -94,12 +94,12 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
         if m_paren:
             part1 = m_paren.group(1).strip()
             part2 = m_paren.group(2).strip()
-            m_en = re.search(r"[A-Za-z0-9\s\-\.]+", part1 if re.search(r"[A-Za-z]", part1) else part2)
+            m_en = re.search(r"[a-zA-Z\u00C0-\u024F0-9\s\-\.]+", part1 if re.search(r"[a-zA-Z\u00C0-\u024F]", part1) else part2)
             m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", part2 if re.search(r"[\u0E00-\u0E7F]", part2) else part1)
             en = m_en.group(0).strip() if m_en else ""
             th = m_th.group(0).strip() if m_th else ""
         else:
-            m_en = re.search(r"[A-Za-z0-9\s\-\.]+", raw_name)
+            m_en = re.search(r"[a-zA-Z\u00C0-\u024F0-9\s\-\.]+", raw_name)
             m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", raw_name)
             en = m_en.group(0).strip() if m_en and not re.search(r"[\u0E00-\u0E7F]", raw_name) else ""
             th = m_th.group(0).strip() if m_th else ""
