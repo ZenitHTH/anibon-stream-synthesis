@@ -38,6 +38,28 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 - `anibon/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and YouTube comment block assembly (<3,500 bytes).
 - `anibon/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
 
+### Multi-Layer Anti-Hallucination & Verification Architecture (4-Layer Defense)
+
+Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of front-tier models, making them prone to phonetic guessing and hallucinated English titles. `anibon-timestamper-local` implements a deterministic 4-layer defense pipeline:
+
+1. **Layer 1: Metadata & Title Signal Ingestion (`signal_detector.py`)**
+   - Ingests video title, description, and tags from `info.json` via `extract_metadata_signals()`.
+   - Dynamically discovers all reference markdown games in `anibon-world-identity/references/*.md` via `discover_reference_games()`.
+   - Anchors stream context before inference to prevent misidentifying specific games as generic categories.
+
+2. **Layer 2: Pre-Inference Buffer Normalization & Scrubbing (`state.py`)**
+   - Automatically scrubs ASR speaker drift (`ปู่บอท`, `ลุงบอท`, `ปู่โบต` → `ปู่โบ๊ต`) during chunk loading in `load_chunk_file()`.
+   - Applies phonetic mappings from `default_mappings.json` before passing text to the LLM prompt.
+
+3. **Layer 3: Anti-Guessing & Invariant Prompt Directives (`prompts.py`)**
+   - Enforces `STREAMER IDENTITY` invariant: `สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท'`.
+   - Enforces `ANTI-GUESSING CONSTRAINT`: `ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่`.
+   - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'`.
+
+4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
+   - Automatically executes `sanitize_and_audit_timestamps()` during Pass 2 summary assembly.
+   - Deterministically corrects residual speaker misspellings and canonical dictionary patterns (`garbled_replacements.json`, e.g. `Archen` → `Arcane`, `Victor` → `Viktor`).
+   - Audits timestamp lines for unverified capitalized Latin words against whitelisted tags and glossaries, raising deterministic audit warnings for suspect hallucinations.
 
 ---
 
@@ -194,7 +216,7 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 ### Stream Ending / Outro Invariant
 In `--mode recursive`, long unbroken gameplay or concluding sessions must not allow `is_continuation=True` to swallow the stream outro.
 The final 5 minutes of transcript must always be checked for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `เจอกัน`, `บ๊ายบาย`) and emit:
-`HH:MM:SS - [Ending] ปู่บอทขอบคุณผู้ชมและกล่าวปิดสตรีม`
+`HH:MM:SS - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม`
 
 ### YouTube Comment Byte-Cap Invariant
 Strict 4,500 byte limit per comment. Target ceiling: 2,500–3,500 bytes per part.
