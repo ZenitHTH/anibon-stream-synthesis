@@ -9,11 +9,18 @@ description: Use when generating YouTube timestamps and topic summaries for long
 
 Local processing pipeline for generating YouTube timestamps and summaries from long livestreams via Dynamic Recursive Rolling Summary state-machines (`--mode recursive`) or group batching (`--mode group`), multi-modal context fusion, automatic tag normalization, and two-pass YouTube comment formatting.
 
+## Companion Skills & Required Sub-Skills
+
+- **`anibon-world-identity` (MANDATORY)**: Must be loaded whenever the stream covers gaming, anime, Pokémon, Tokusatsu, or pop-culture topics. The agent must verify character names, game titles, and terms against local references (`references/INDEX.md`, `atlas_fgo.db`, `pokemon.db`, `garbled_replacements.json`) before finalizing timestamps.
+- **`whisper-corruption-recovery`**: Automatically invoked if Whisper transcription contains repetition loops or silence stutter.
+- **`anibon-local-transcription`**: Used when YouTube has no subtitles or auto-captions to extract 16kHz audio and run local GPU whisper.cpp.
+
 ## Pipeline Architecture
 
 | Stage | Tool / Script | Input / Output | Function |
 | :--- | :--- | :--- | :--- |
 | **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `anibon/` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
+| **0.5 Knowledge Self-Reading** | `anibon/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, World Identity | Detects shifts/continuations, emits timestamps via local LLM. |
 | **2.5 Vision Ground Truth (Optional)** | `anibon/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
@@ -23,6 +30,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 ### Modular Library Architecture (`scripts/anibon/`)
 
 `process_chunks_local.py` is decomposed into single-responsibility, unit-tested modules:
+- `anibon/knowledge_reader.py`: Automated domain knowledge discovery from `signals.json`, regex table/bullet entity parser, SQLite DB enricher (`atlas_fgo.db`, `pokemon.db`), and `entity_glossary.json` generator.
 - `anibon/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
 - `anibon/lmstudio.py`: LM Studio client, model resolution (defaults to `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, and multi-modal Vision API (`image_url` data URIs for Gemma 3/4 Vision, Qwen-VL).
 - `anibon/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
@@ -53,6 +61,11 @@ Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and 
 
 #### 0. Denoising & Pre-normalization (Automatic)
 Before any signal detection or LLM analysis, `clean_transcript_noise()` automatically cleans ASR artifacts (`>>`, `[เพลง]`, `♪`, character repetitions), and applies 2000+ Whisper ground truths from `garbled_replacements.json` and `default_mappings.json`. No manual invocation needed.
+
+#### 0.5 Knowledge Self-Reading & Entity Glossary (Stage 0.5, Automatic)
+Before processing chunks, `run_knowledge_discovery()` inspects `signals.json`, self-reads matched markdown references in `anibon-world-identity/references/*.md`, queries local databases (`atlas_fgo.db`, `pokemon.db`), and emits `<workspace>/entity_glossary.json`. Chunk prompts automatically filter relevant entities (capped to ~300 tokens) into the prompt context.
+- To bypass entity glossary discovery: pass `--no-knowledge-reader`.
+
 
 #### 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
 **macOS / Linux:**
@@ -133,13 +146,17 @@ After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py
       --workspace ~/youtube_<VIDEO_ID>_workspace
   ```
 
-#### 5. Fact Verification & Web Search Grounding (Post-Pass)
-When timestamps feature suspicious phonetic strings, unfamiliar show titles, or newly airing series (e.g., post-cutoff Tokusatsu or anime):
-1. **Search & Disambiguate**: Cross-reference transcript clues via web search (e.g., writer names, transformation items, monster races).
-2. **Update Timestamps**: Correct names directly in `anibon_timestamps.md`.
+#### 5. World Identity & Fact Verification Audit (Mandatory Pass)
+Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
+1. **Load `anibon-world-identity`**: Scan all emitted timestamp titles and descriptions against local knowledge bases:
+   - **FGO Servants / Classes**: Query `atlas_fgo.db` (do NOT confuse Ashiya Douman with Ascalon/Asclepius).
+   - **Pokémon Entities**: Query `pokemon.db` and enforce Thai community/official names first (e.g. `แบกซ์แคลิเบอร์ (Baxcalibur)`).
+   - **Anime / Gacha Titles**: Verify against `references/*.md` (e.g. `Chaos_Zero_Nightmare.md`, `Genshin_Impact.md`, `Honkai_Star_Rail.md`, `Wuthering_Waves.md`).
+   - **New Competitive Games (Deadlock, etc.)**: Cross-reference hero names (Baba / Baba Yaga, Celeste, Abrams) via web search or patch notes.
+2. **Apply Entity Corrections**: Correct phonetic drifts, misheard titles, or LLM hallucinations directly in `anibon_timestamps.md`.
 3. **Persist Knowledge**:
-   - Add newly verified lore/franchises to `anibon-world-identity/references/`.
-   - Add phonetic drift patterns (e.g. `กาชิกิ` → `ฟุคาชิกิ`) to `garbled_replacements.json` to immunize future runs.
+   - Add confirmed phonetic drift patterns (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` across root and skill resources.
+   - Add newly verified franchises/characters to `anibon-world-identity/references/`.
 
 
 ---
@@ -182,6 +199,9 @@ The final 5 minutes of transcript must always be checked for closing tokens (`�
 ### YouTube Comment Byte-Cap Invariant
 Strict 4,500 byte limit per comment. Target ceiling: 2,500–3,500 bytes per part.
 If a long discussion or topic spans over 3,500 bytes, split into sequential logical sub-parts (`ส่วนที่ 1`, `ส่วนที่ 2`) rather than exceeding comment limits.
+
+### World Identity Audit Invariant
+NEVER deliver the final timestamp output without performing an `anibon-world-identity` audit on all proper nouns, game titles, and character names. Thai Whisper outputs are phonetic; local LLMs hallucinate well-known games (Genshin, Dota) when hearing unfamiliar ones (CZN, Deadlock). Local references (`references/*.md`) and card/entity databases (`atlas_fgo.db`, `pokemon.db`) take strict precedence over model memory. `process_chunks_local.py` automatically audits generated `anibon_timestamps.md` against `<workspace>/entity_glossary.json` upon completion to replace confirmed phonetic variants.
 
 ---
 
