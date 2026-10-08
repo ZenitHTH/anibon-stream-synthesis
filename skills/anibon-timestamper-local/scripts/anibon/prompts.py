@@ -243,6 +243,9 @@ Rules:
    - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. Wuthering Waves, Zelda, Bleach). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
    - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
    - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
+   - STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต'
+   - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
+   - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
    - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
 
 3. garbled_notes:
@@ -381,6 +384,9 @@ Rules:
 - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. Wuthering Waves, Zelda, Bleach). Never use vague pronouns ("เกมนี้", "คนนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
 - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
 - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
+- STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต'
+- ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
+- POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
 - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally ("เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration; 1-star hype = meme banter).
 - First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
 - Output ONLY 2 to 4 timestamp lines in chronological order. Immediately STOP after the last timestamp. Do NOT repeat or output a second list. No preamble, no explanation.

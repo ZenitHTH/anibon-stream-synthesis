@@ -71,7 +71,33 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("Maribell (มาริเบล)", context)
         self.assertNotIn("Ashiya Douman", context)
 
+    def test_prompts_contain_anti_guessing_and_streamer_invariants(self):
+        chunks = [
+            {"_idx": 0, "start_sec": 0, "end_sec": 300, "items": [{"start": 0, "timestamp": "00:00:00", "text": "hello"}]}
+        ]
+        group_prompt = build_group_prompt(
+            chunks=chunks,
+            group_idx=0,
+            prev_tail="",
+            lang="th",
+            signals_map={},
+            workspace=Path(self.tmp_dir.name),
+        )
+        self.assertIn("ปู่โบ๊ต", group_prompt)
+        self.assertIn("ห้ามสะกดว่า 'ปู่บอท'", group_prompt)
+        self.assertIn("ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการ", group_prompt)
+
+        rec_prompt = build_recursive_prompt(
+            chunk=chunks[0],
+            current_topic="Test",
+            rolling_summary="",
+            lang="th",
+        )
+        self.assertIn("ปู่โบ๊ต", rec_prompt)
+        self.assertIn("ห้ามสะกดว่า 'ปู่บอท'", rec_prompt)
+        self.assertIn("ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการ", rec_prompt)
 
 
 if __name__ == "__main__":
     unittest.main()
+
