@@ -86,13 +86,23 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
         data = json.load(f)
 
     mappings_dict = data.get("mappings", {})
-    if not isinstance(mappings_dict, dict):
-        return []
-
     result = []
-    for correct, garbled_variants in mappings_dict.items():
-        if isinstance(garbled_variants, list) and garbled_variants:
-            result.append({"correct": correct, "patterns": garbled_variants})
+    if isinstance(mappings_dict, dict):
+        for correct, garbled_variants in mappings_dict.items():
+            if isinstance(garbled_variants, list) and garbled_variants:
+                result.append({"correct": correct, "patterns": garbled_variants})
+            elif isinstance(garbled_variants, str):
+                result.append({"correct": garbled_variants, "patterns": [correct]})
+
+    # Also handle root-level entries added from notes/spotter (flat garbled -> correct)
+    for k, v in data.items():
+        if k in ("version", "description", "note", "mappings"):
+            continue
+        if isinstance(v, str):
+            result.append({"correct": v, "patterns": [k]})
+        elif isinstance(v, list) and v:
+            result.append({"correct": k, "patterns": v})
+
     return result
 
 

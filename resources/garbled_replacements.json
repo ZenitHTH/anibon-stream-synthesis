@@ -7311,13 +7311,24 @@
     ],
     "Abrams": [
       "อัพโฟโล",
-      "อ้าวโฟโล"
+      "อ้าวโฟโล",
+      "Uhlom",
+      "อุหลอม"
     ],
     "Vindicta": [
       "วันติกเซ็น"
     ],
+    "Arcane": [
+      "Archen",
+      "อาเชน"
+    ],
+    "Viktor": [
+      "Victor"
+    ],
     "ปู่โบ๊ต": [
-      "ปู่บอท"
+      "ปู่บอท",
+      "ลุงบอท",
+      "ปู่โบต"
     ]
   },
   "เคราสเซียร์นี้แม่": "Chaos Zero Nightmare",
@@ -7327,5 +7338,8 @@
   "อัชเฉร้อน": "อาชิยะ โดมัน (Ashiya Douman)",
   "อัสคิดเพียส": "อาชิยะ โดมัน (Ashiya Douman)",
   "กระตูบาบา": "Baba (Deadlock)",
-  "นิกี้อัน": "Goddess of Victory: NIKKE"
+  "นิกี้อัน": "Goddess of Victory: NIKKE",
+  "Archen": "Arcane",
+  "Victor": "Viktor",
+  "Uhlom": "Abrams"
 }
