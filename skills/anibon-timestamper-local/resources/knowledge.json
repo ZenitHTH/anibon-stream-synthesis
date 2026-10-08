@@ -792,6 +792,42 @@
   "心动小镇": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Heartopia.md"
+  },
+  "deadlock": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "เดดล็อก": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "เดดล็อค": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "abrams": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "vindicta": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "bebop": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "czn": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
+  "คาเซน่า": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
+  "คาเซนา": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   }
  },
  "_discovered": {

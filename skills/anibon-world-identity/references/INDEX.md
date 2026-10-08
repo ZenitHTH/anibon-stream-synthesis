@@ -6,6 +6,7 @@ Game reference files live alongside this index in `references/`.
 - [Arknights: Endfield Reference](Arknights_Endfield.md)
 - [Blue Archive Reference](Blue_Archive.md)
 - [Chaos Zero Nightmare Reference](Chaos_Zero_Nightmare.md)
+- [Deadlock Reference](Deadlock.md)
 - [Dinoblade Reference](Dinoblade.md)
 - [Genshin Impact Reference](Genshin_Impact.md)
 - [Heartopia Reference](Heartopia.md)
