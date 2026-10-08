@@ -32,3 +32,48 @@ def test_save_entity_glossary(tmp_path):
     out_file = save_entity_glossary(glossary, tmp_path)
     assert out_file.exists()
     assert "Maribell" in out_file.read_text(encoding="utf-8")
+
+def test_enrich_with_fgo_db(tmp_path):
+    import sqlite3
+    from anibon.knowledge_reader import enrich_with_sqlite_databases
+
+    db_path = tmp_path / "atlas_fgo.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE basic_servant (name TEXT, className TEXT, rarity INTEGER)")
+    conn.execute("INSERT INTO basic_servant VALUES ('Ashiya Douman', 'alterEgo', 5)")
+    conn.commit()
+    conn.close()
+
+    signals_map = {
+        "chunk_01": {
+            "best_file": "fgo-knowledge.md",
+            "matched_keywords": {"fgo": {"count": 2}}
+        }
+    }
+    glossary = {}
+    enriched = enrich_with_sqlite_databases(glossary, signals_map, fgo_db=db_path)
+    assert "Ashiya Douman" in enriched
+    assert enriched["Ashiya Douman"]["class"] == "alterEgo"
+
+def test_enrich_with_pokemon_db(tmp_path):
+    import sqlite3
+    from anibon.knowledge_reader import enrich_with_sqlite_databases
+
+    db_path = tmp_path / "pokemon.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE pokemon (id INTEGER, name_en TEXT, name_ja TEXT, name_th_official TEXT, name_th_english_sound TEXT)")
+    conn.execute("INSERT INTO pokemon VALUES (25, 'Pikachu', 'ピカチュウ', 'พิคาชู', 'ปิกาจู')")
+    conn.commit()
+    conn.close()
+
+    signals_map = {
+        "chunk_01": {
+            "best_file": "Pokemon_PvP.md",
+            "weighted_files": [{"file": "Pokemon_PvP.md", "score": 8.0}]
+        }
+    }
+    glossary = {}
+    enriched = enrich_with_sqlite_databases(glossary, signals_map, pokemon_db=db_path)
+    assert "Pikachu" in enriched
+    assert enriched["Pikachu"]["th"] == "พิคาชู"
+
