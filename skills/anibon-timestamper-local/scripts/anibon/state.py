@@ -106,6 +106,13 @@ def discover_chunks(workspace: Path) -> List[Path]:
     return files
 
 
+def scrub_speaker_identity(text: str) -> str:
+    """Deterministically normalize speaker identity aliases to 'ปู่โบ๊ต'."""
+    if not text:
+        return ""
+    return re.sub(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", text)
+
+
 def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
     """Load and normalize transcript items from a single chunk file."""
     if path.suffix == ".json":
@@ -113,7 +120,8 @@ def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
             data = json.load(f)
         for it in data.get("items", []):
             if it.get("text"):
-                it["text"] = normalize_transcript(it["text"], mappings or [])
+                txt = scrub_speaker_identity(it["text"])
+                it["text"] = normalize_transcript(txt, mappings or [])
         return data
 
     text = path.read_text(encoding="utf-8")
@@ -141,7 +149,9 @@ def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
                 if cutoff and sec > cutoff:
                     continue
                 raw_text = lm.group(2)
-                clean_text = normalize_transcript(raw_text, mappings or [])
+                txt = scrub_speaker_identity(raw_text)
+                clean_text = normalize_transcript(txt, mappings or [])
                 items.append({"start": float(sec), "timestamp": ts, "text": clean_text})
 
     return {"start_sec": start_sec, "end_sec": end_sec, "items": items}
+

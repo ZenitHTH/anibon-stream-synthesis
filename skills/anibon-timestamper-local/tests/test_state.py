@@ -58,6 +58,28 @@ class TestState(unittest.TestCase):
         self.assertEqual("Game on screen: FGO", load_chunk_activity(self.ws, "chunk_00"))
         self.assertIn("HYPE", load_chunk_mood(self.ws, "chunk_00"))
 
+    def test_load_chunk_file_scrubs_speaker_name_and_phonetics(self):
+        chunks_dir = self.ws / "chunks"
+        chunks_dir.mkdir()
+        chunk_file = chunks_dir / "chunk_00.txt"
+        chunk_file.write_text(
+            "CHUNK 00 | 00:00:00–00:05:00 | cutoff=00:04:30\n"
+            "(00:01:00) ปู่บอทกำลังเล่น อัพโฟโล สายต่อย\n"
+            "(00:02:00) ลุงบอทบ่นเรื่อง เค้าสิ่งนี้แม่ ว่าแจกเยอะ\n",
+            encoding="utf-8"
+        )
+        mappings = [
+            {"correct": "Abrams", "patterns": ["อัพโฟโล"]},
+            {"correct": "Chaos Zero Nightmare", "patterns": ["เค้าสิ่งนี้แม่"]},
+        ]
+        data = load_chunk_file(chunk_file, mappings=mappings)
+        texts = [item["text"] for item in data["items"]]
+        self.assertIn("ปู่โบ๊ตกำลังเล่น Abrams สายต่อย", texts[0])
+        self.assertIn("ปู่โบ๊ตบ่นเรื่อง Chaos Zero Nightmare ว่าแจกเยอะ", texts[1])
+        self.assertNotIn("ปู่บอท", texts[0])
+        self.assertNotIn("ลุงบอท", texts[1])
+
 
 if __name__ == "__main__":
     unittest.main()
+
