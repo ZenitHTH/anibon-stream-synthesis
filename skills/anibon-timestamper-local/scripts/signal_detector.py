@@ -251,6 +251,7 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
         text = c["text"]
 
         matched_files = {}
+        file_kinds = {}
         kind_weighted = {}
         matched_keywords = {}
 
@@ -272,12 +273,21 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
 
                 if file_ref:
                     matched_files[file_ref] = matched_files.get(file_ref, 0.0) + score
+                    file_kinds.setdefault(file_ref, set()).add(kind)
                 kind_weighted[kind] = kind_weighted.get(kind, 0.0) + score
 
-        # Rank files
+        # Rank files: prioritize specific content (game, tokusatsu, anime, etc.) over generic stream_type
+        specific_kinds = {"game", "tokusatsu", "anime", "event", "publisher", "bookstore", "vlog_theme"}
+
+        def file_rank_key(item):
+            f = item["file"]
+            kinds = file_kinds.get(f, set())
+            is_specific = 1 if (kinds & specific_kinds) and "stream_type" not in kinds else 0
+            return (is_specific, item["score"])
+
         sorted_files = sorted(
             [{"file": f, "score": round(s, 4)} for f, s in matched_files.items()],
-            key=lambda x: x["score"],
+            key=file_rank_key,
             reverse=True
         )
 
