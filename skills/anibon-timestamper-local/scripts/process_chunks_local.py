@@ -627,10 +627,33 @@ def run_garbled_collector(
         return
 
     try:
-        try:
-            from whisper_dispatcher import dispatch_verification
-        except ImportError:
-            from scripts.whisper_dispatcher import dispatch_verification
+        def _load_whisper_dispatcher():
+            import importlib.util
+            target = _SCRIPT_DIR / "whisper_dispatcher.py"
+            if target.is_file():
+                try:
+                    txt = target.read_text(encoding="utf-8", errors="ignore").strip()
+                    if (txt.startswith("..") or txt.startswith(".")) and "\n" not in txt and txt.endswith(".py"):
+                        candidate = (target.parent / txt).resolve()
+                        if candidate.is_file():
+                            target = candidate
+                except Exception:
+                    pass
+            if not target.is_file() or target == _SCRIPT_DIR / "whisper_dispatcher.py":
+                fallback = _SCRIPT_DIR.parent.parent / "anibon-timestamper" / "scripts" / "whisper_dispatcher.py"
+                if fallback.is_file():
+                    target = fallback
+            if target.is_file():
+                spec = importlib.util.spec_from_file_location("whisper_dispatcher", target)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    return mod
+            import whisper_dispatcher
+            return whisper_dispatcher
+
+        wd = _load_whisper_dispatcher()
+        dispatch_verification = wd.dispatch_verification
 
         print("[garbled] Running whisper_dispatcher.py with local whisper.cpp...")
         ret = dispatch_verification(
