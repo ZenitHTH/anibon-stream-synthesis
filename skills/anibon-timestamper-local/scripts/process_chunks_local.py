@@ -130,33 +130,113 @@ def run_knowledge_discovery(
     return out_file
 
 
-def audit_timestamps_against_glossary(timestamps_file: Path, glossary: dict) -> int:
-    """Scan generated anibon_timestamps.md against entity_glossary.json and audit/replace mistranslations."""
-    timestamps_file = Path(timestamps_file)
-    if not timestamps_file.exists() or not glossary:
-        return 0
+def sanitize_and_audit_timestamps(
+    content: str,
+    glossary: Optional[dict] = None,
+    signals: Optional[dict] = None,
+    garbled: Optional[list] = None,
+) -> Tuple[str, dict]:
+    """Deterministically sanitize timestamps, replace phonetic drifts, and audit hallucinations."""
+    if not content:
+        return "", {"corrections_applied": 0, "suspected_hallucinations": []}
 
-    content = timestamps_file.read_text(encoding="utf-8")
-    original = content
-    replacements_count = 0
+    cleaned = content
+    corrections_applied = 0
+    glossary = glossary or {}
+    garbled = garbled or []
 
+    # 1. Deterministic Speaker Scrubbing: Ensure 'ปู่บอท', 'ลุงบอท', 'ปู่โบต' become 'ปู่โบ๊ต'
+    speaker_matches = len(re.findall(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", cleaned))
+    if speaker_matches:
+        cleaned = re.sub(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", cleaned)
+        corrections_applied += speaker_matches
+
+    # 2. Apply Confirmed Garbled Replacements (e.g. Archen -> Arcane, Victor -> Viktor)
+    for entry in garbled:
+        correct = entry.get("correct")
+        patterns = entry.get("patterns", [])
+        if not correct or not patterns:
+            continue
+        for pat in patterns:
+            if not pat:
+                continue
+            matches = len(re.findall(re.escape(pat), cleaned, flags=re.IGNORECASE))
+            if matches:
+                cleaned = re.sub(re.escape(pat), correct, cleaned, flags=re.IGNORECASE)
+                corrections_applied += matches
+
+    # 3. Glossary Alias Replacements
     for en_key, meta in glossary.items():
         if not isinstance(meta, dict):
             continue
         th = meta.get("th")
-        en = meta.get("en") or en_key
         alias_th = meta.get("alias_th")
+        if alias_th and th and alias_th != th and alias_th in cleaned:
+            matches = cleaned.count(alias_th)
+            if matches:
+                cleaned = cleaned.replace(alias_th, th)
+                corrections_applied += matches
 
-        # Replace phonetic alias with official Thai name if present and different
-        if alias_th and th and alias_th != th and alias_th in content:
-            matches = content.count(alias_th)
-            if matches > 0:
-                content = content.replace(alias_th, th)
-                replacements_count += matches
+    # 4. Hallucination Detection: Find unverified Latin capitalized words
+    whitelisted_latin = {
+        "talk", "gameplay", "gacha", "boss", "death", "victory", "watchparty",
+        "reaction", "story", "lore", "review", "news", "chat", "donation", "greeting",
+        "part", "switch", "dota", "lol", "fgo", "czn", "steam", "moba", "ps5", "pc",
+        "skill", "parry", "spirit", "mario", "kart", "zelda", "boat", "anibon", "extra", "class",
+        "arcane", "viktor", "abrams", "vindicta", "bebop", "shiv", "seven", "dynamo", "haze"
+    }
+    for k, meta in glossary.items():
+        whitelisted_latin.add(k.lower())
+        if isinstance(meta, dict) and meta.get("en"):
+            whitelisted_latin.add(str(meta.get("en")).lower())
 
-    if content != original:
-        timestamps_file.write_text(content, encoding="utf-8")
-        print(f"[audit] Applied {replacements_count} glossary corrections to {timestamps_file.name}")
+    suspected = []
+    for line in cleaned.splitlines():
+        line = line.strip()
+        m = re.match(r"^\d{2}:\d{2}:\d{2}\s*-\s*(?:\[.*?\])+\s*(.*)$", line)
+        if not m:
+            continue
+        desc = m.group(1)
+        for word in re.findall(r"\b[A-Z][a-zA-Z0-9'\-]+\b", desc):
+            w_lower = word.lower()
+            if w_lower not in whitelisted_latin:
+                suspected.append(word)
+
+    stats = {
+        "corrections_applied": corrections_applied,
+        "suspected_hallucinations": sorted(list(set(suspected))),
+    }
+    return cleaned, stats
+
+
+def audit_timestamps_against_glossary(
+    timestamps_file: Path,
+    glossary: dict,
+    signals: Optional[dict] = None,
+    garbled: Optional[list] = None,
+) -> int:
+    """Scan generated anibon_timestamps.md against entity_glossary.json and audit/replace mistranslations."""
+    timestamps_file = Path(timestamps_file)
+    if not timestamps_file.exists():
+        return 0
+
+    content = timestamps_file.read_text(encoding="utf-8")
+    if garbled is None:
+        try:
+            garbled = load_garbled_replacements()
+        except Exception:
+            garbled = []
+
+    cleaned, stats = sanitize_and_audit_timestamps(content, glossary=glossary, signals=signals, garbled=garbled)
+    replacements_count = stats.get("corrections_applied", 0)
+
+    if cleaned != content:
+        timestamps_file.write_text(cleaned, encoding="utf-8")
+        print(f"[audit] Applied {replacements_count} glossary/phonetic corrections to {timestamps_file.name}")
+
+    suspected = stats.get("suspected_hallucinations", [])
+    if suspected:
+        print(f"[audit] Warning: Suspected unverified entities in {timestamps_file.name}: {', '.join(suspected)}")
 
     return replacements_count
 

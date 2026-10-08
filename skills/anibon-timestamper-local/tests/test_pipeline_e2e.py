@@ -21,3 +21,25 @@ def test_audit_timestamps_replaces_known_variants(tmp_path):
     assert count > 0
     content = ts_file.read_text(encoding="utf-8")
     assert "นอคราเต้" in content
+
+def test_sanitize_and_audit_timestamps_cleans_hallucinations_and_drift():
+    from process_chunks_local import sanitize_and_audit_timestamps
+    raw_md = (
+        "═════════════════════════════════════════════════════════\n"
+        " ส่วนที่ 1: เม้าท์มอยกับผู้ชม (⏱ เริ่ม: 00:00:00)\n"
+        "═════════════════════════════════════════════════════════\n"
+        "00:00:00 - [Talk] ปู่บอทกล่าวทักทายผู้ชม\n"
+        "00:05:00 - [Talk] เม้าท์มอยเรื่องซีรีส์ Archen และตัวละคร Victor\n"
+        "00:10:00 - [Gameplay] เล่นตัวละคร Uhlom สายต่อย\n"
+    )
+    glossary = {"Abrams": {"en": "Abrams", "th": "เอแบรห์มส์"}}
+    garbled = [
+        {"correct": "Arcane", "patterns": ["Archen"]},
+        {"correct": "Viktor", "patterns": ["Victor"]},
+    ]
+    cleaned_md, stats = sanitize_and_audit_timestamps(raw_md, glossary=glossary, signals={}, garbled=garbled)
+    assert "ปู่โบ๊ตกล่าวทักทายผู้ชม" in cleaned_md
+    assert "ซีรีส์ Arcane และตัวละคร Viktor" in cleaned_md
+    assert "Uhlom" in stats["suspected_hallucinations"]
+    assert stats["corrections_applied"] > 0
+
