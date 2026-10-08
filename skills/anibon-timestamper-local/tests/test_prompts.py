@@ -6,7 +6,9 @@ from anibon.prompts import (
     load_world_identity_context,
     build_recursive_prompt,
     build_group_prompt,
+    build_chunk_entity_context,
 )
+
 
 
 class TestPrompts(unittest.TestCase):
@@ -57,6 +59,18 @@ class TestPrompts(unittest.TestCase):
         )
         self.assertIn("Group 0", prompt)
         self.assertIn("00:00:00 - 00:10:00", prompt)
+
+    def test_build_chunk_entity_context_filters_relevant_entities(self):
+        glossary = {
+            "Maribell": {"th": "มาริเบล", "role": "Vanguard"},
+            "Kayron": {"th": "ไครอน", "role": "Psionic"},
+            "Ashiya Douman": {"th": "อาชิยะ โดมัน", "class": "alterEgo"},
+        }
+        chunk_text = "ตอนนี้มาริเบลใช้สกิลเกราะหนามากครับ"
+        context = build_chunk_entity_context(chunk_text, glossary)
+        self.assertIn("Maribell (มาริเบล)", context)
+        self.assertNotIn("Ashiya Douman", context)
+
 
 
 if __name__ == "__main__":

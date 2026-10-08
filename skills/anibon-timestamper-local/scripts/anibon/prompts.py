@@ -41,15 +41,27 @@ def load_world_identity_context(
     if not ref_dir or not signal:
         return ""
 
-    best_file = signal.get("best_file") or ""
-    if not best_file:
+    candidate_files = []
+    if signal.get("best_file"):
+        candidate_files.append(signal["best_file"])
+    for wf in signal.get("weighted_files", []):
+        f = wf.get("file") if isinstance(wf, dict) else wf
+        if f and f not in candidate_files:
+            candidate_files.append(f)
+
+    if not candidate_files:
         return ""
 
-    candidate = ref_dir / Path(best_file).name
-    if not candidate.exists():
-        stem = Path(best_file).stem.lower()
-        matches = [p for p in ref_dir.glob("*.md") if p.stem.lower() == stem]
-        candidate = matches[0] if matches else None
+    candidate = None
+    for target in candidate_files:
+        c = ref_dir / Path(target).name
+        if not c.exists():
+            stem = Path(target).stem.lower()
+            matches = [p for p in ref_dir.glob("*.md") if p.stem.lower() == stem]
+            c = matches[0] if matches else None
+        if c and c.exists():
+            candidate = c
+            break
 
     if not candidate or not candidate.exists():
         return ""
@@ -75,6 +87,71 @@ def load_world_identity_context(
     return f"## WORLD IDENTITY REFERENCE: {candidate.stem}\n{snippet}{extra}"
 
 
+def build_chunk_entity_context(
+    chunk_text: str,
+    glossary: Optional[dict] = None,
+    max_tokens: int = 300,
+) -> str:
+    """Filter entity glossary to entities relevant to the current chunk text.
+
+    Scans for English and Thai names/aliases in chunk_text and outputs a
+    compact Markdown block under ## VERIFIED DOMAIN ENTITIES (WORLD IDENTITY).
+    Capped to avoid prompt token explosion on local 16GB GPUs.
+    """
+    if not chunk_text or not glossary:
+        return ""
+
+    text_lower = chunk_text.lower()
+    matched_lines = []
+    seen = set()
+
+    for name, meta in glossary.items():
+        if not isinstance(meta, dict):
+            continue
+
+        en = str(meta.get("en") or (name if not re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
+        th = str(meta.get("th") or (name if re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
+        alias_th = str(meta.get("alias_th", "")).strip()
+
+        hit = False
+        if en and len(en) >= 3 and en.lower() in text_lower:
+            hit = True
+        elif th and len(th) >= 2 and th.lower() in text_lower:
+            hit = True
+        elif alias_th and len(alias_th) >= 2 and alias_th.lower() in text_lower:
+            hit = True
+        elif name and len(name) >= 3 and name.lower() in text_lower:
+            hit = True
+
+        if hit:
+            key_id = en or th or name
+            if key_id in seen:
+                continue
+            seen.add(key_id)
+
+            label = f"{en} ({th})" if (en and th) else (en or th or name)
+            role = meta.get("role") or meta.get("class")
+            extra = f" [{role}]" if role else ""
+            matched_lines.append(f"- {label}{extra}")
+
+            if len(matched_lines) >= 15:
+                break
+
+    if not matched_lines:
+        return ""
+
+    char_limit = max_tokens * 4
+    selected_lines = []
+    curr_len = 0
+    for line in matched_lines:
+        if curr_len + len(line) + 1 > char_limit and selected_lines:
+            break
+        selected_lines.append(line)
+        curr_len += len(line) + 1
+
+    return "## VERIFIED DOMAIN ENTITIES (WORLD IDENTITY):\n" + "\n".join(selected_lines)
+
+
 def build_recursive_prompt(
     chunk: dict,
     current_topic: str,
@@ -87,6 +164,8 @@ def build_recursive_prompt(
     world_identity_ref: str = "",
     web_context: str = "",
     vision_context: str = "",
+    entity_context: str = "",
+    glossary: Optional[dict] = None,
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
@@ -106,6 +185,10 @@ def build_recursive_prompt(
 
     domain_section = f"{domain_block}\n" if domain_block else ""
     world_identity_section = f"{world_identity_ref}\n" if world_identity_ref else ""
+
+    if not entity_context and glossary:
+        entity_context = build_chunk_entity_context(transcript_block, glossary)
+    entity_section = f"{entity_context}\n" if entity_context else ""
 
     context_extras = []
     if mood:
@@ -132,7 +215,7 @@ Recent Focus: {rolling_summary}
     prompt = f"""\
 You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
 
-{topic_section}{context_block}{domain_section}{world_identity_section}
+{topic_section}{context_block}{domain_section}{world_identity_section}{entity_section}
 ## YOUR TASK
 Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to the Previous Topic State above.
 
@@ -201,6 +284,7 @@ def build_group_prompt(
     livechat_loader=None,
     activity_loader=None,
     mood_loader=None,
+    glossary: Optional[dict] = None,
 ) -> str:
     """Build group prompt combining 3-5 chunks (~15-25 min) with continuity awareness."""
     first_items = chunks[0].get("items", [])
@@ -269,11 +353,14 @@ def build_group_prompt(
     wi_ref = load_world_identity_context(best_group_signal, world_identity_dir)
     world_identity_section = f"{wi_ref}\n" if wi_ref else ""
 
+    entity_ctx = build_chunk_entity_context(full_group_transcript, glossary) if glossary else ""
+    entity_section = f"{entity_ctx}\n" if entity_ctx else ""
+
     prompt = f"""\
 You are an expert timestamper processing Group {group_idx} (chunks {chunks[0].get('_idx', 0):02d} to {chunks[-1].get('_idx', 0):02d}) of a Thai livestream by Pu Boat (Anibon Official).
 Group Time Range: {group_start} - {group_end} (~{len(chunks)*4} minutes)
 
-{prev_section}{domain_guidance}{world_identity_section}
+{prev_section}{domain_guidance}{world_identity_section}{entity_section}
 ## YOUR TASK
 
 Read the entire group transcript. Output 2 to 4 notable timestamps for major topics or moments in this group.
