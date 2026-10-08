@@ -116,9 +116,9 @@ def build_chunk_entity_context(
         hit = False
         if en and len(en) >= 3 and en.lower() in text_lower:
             hit = True
-        elif th and len(th) >= 2 and th.lower() in text_lower:
+        elif th and len(th) >= 3 and th.lower() in text_lower:
             hit = True
-        elif alias_th and len(alias_th) >= 2 and alias_th.lower() in text_lower:
+        elif alias_th and len(alias_th) >= 3 and alias_th.lower() in text_lower:
             hit = True
         elif name and len(name) >= 3 and name.lower() in text_lower:
             hit = True

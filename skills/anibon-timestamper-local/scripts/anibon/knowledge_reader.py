@@ -20,52 +20,95 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
     """Extract character, faction, and game entities from markdown tables and bullet lists."""
     entities: Dict[str, Dict[str, Any]] = {}
 
-    # 1. Match Markdown table rows with bold bilingual names:
-    # Example: | **Maribell (มาริเบล)** | Vanguard | Passion | ...
-    table_pattern = re.compile(
-        r"\|\s*\*\*([A-Za-z0-9\s\-'\.]+)\s*\(([\u0E00-\u0E7F\s\-'\.]+)\)\*\*\s*\|\s*([^\|]*)\|\s*([^\|]*)\|"
-    )
-    for m in table_pattern.finditer(text):
-        en_name = m.group(1).strip()
-        th_name = m.group(2).strip()
-        col2 = m.group(3).strip()
-        col3 = m.group(4).strip()
-        entities[en_name] = {
-            "en": en_name,
-            "th": th_name,
-            "class": col2 if col2 and col2 != ":---:" else "",
-            "attribute": col3 if col3 and col3 != ":---:" else "",
-        }
+    # 1. Tables: split lines with '|'
+    for line in text.splitlines():
+        line = line.strip()
+        if not line.startswith("|") or not line.endswith("|"):
+            continue
+        cols = [c.strip() for c in line[1:-1].split("|")]
+        if len(cols) < 2 or ":---" in cols[0] or ":---" in cols[1]:
+            continue
+        c0, c1 = cols[0], cols[1]
+        c2 = cols[2] if len(cols) > 2 else ""
+        c3 = cols[3] if len(cols) > 3 else ""
 
-    # 2. Match Bullet points with bold bilingual names:
-    # Example: * **Navigator (ผู้ชี้ทาง):** บทบาทของผู้เล่น...
-    # Example: - **Maribell (มาริเบล)**: แทงค์สายเกราะ...
-    bullet_pattern = re.compile(
-        r"[\*\-]\s+\*\*([A-Za-z0-9\s\-'\.]+)\s*\(([\u0E00-\u0E7F\s\-'\.]+)\)\*\*\s*[:\-]?\s*([^\n\r]*)"
-    )
-    for m in bullet_pattern.finditer(text):
-        en_name = m.group(1).strip()
-        th_name = m.group(2).strip()
-        desc = m.group(3).strip()
-        if en_name not in entities:
-            entities[en_name] = {
-                "en": en_name,
-                "th": th_name,
-                "description": desc[:100],
+        # Check bold in c0
+        m_bold = re.search(r"\*\*([^\*]+)\*\*", c0)
+        if not m_bold:
+            continue
+        raw_name = m_bold.group(1).strip()
+
+        # Check if raw_name is X (Y)
+        m_paren = re.search(r"([^\(\)]+)\s*\(([^)]+)\)", raw_name)
+        if m_paren:
+            part1 = m_paren.group(1).strip()
+            part2 = m_paren.group(2).strip()
+            # If part1 is Thai and part2 is Eng, check if c1 is canonical Eng (e.g. Pokemon table)
+            if re.search(r"[\u0E00-\u0E7F]", part1) and re.search(r"[A-Za-z]", part2):
+                th = part1
+                en = c1 if re.match(r"^[A-Za-z0-9\s\-\'\.]+$", c1) else part2
+            else:
+                en = part1
+                th = part2
+        else:
+            if re.search(r"[\u0E00-\u0E7F]", raw_name):
+                th = raw_name
+                en = c1 if re.match(r"^[A-Za-z0-9\s\-\'\.]+$", c1) else ""
+            else:
+                en = raw_name
+                th = c1 if re.search(r"[\u0E00-\u0E7F]", c1) else ""
+
+        en_clean = re.sub(r"[^A-Za-z0-9\s\-\.]", "", en).strip()
+        m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", th)
+        th_clean = m_th.group(0).strip() if m_th else ""
+
+        if c1 and c1 != en and ":---" not in c1:
+            role = c1
+            attr = c2 if (c2 and ":---" not in c2) else ""
+        else:
+            role = c2 if (c2 and ":---" not in c2) else ""
+            attr = c3 if (c3 and ":---" not in c3) else ""
+
+        role = re.sub(r"[:\-\|]", "", role).strip()
+
+        key = en_clean or th_clean
+        if key and len(key) >= 3:
+            entities[key] = {
+                "en": en_clean,
+                "th": th_clean,
+                "class": role,
+                "role": role,
+                "attribute": attr.strip(),
             }
 
-    # 3. Match pure Thai bold aliases:
-    # Example: * **ผู้ชี้ทาง:** คำแปลไทยอย่างเป็นทางการของ Navigator
-    alias_pattern = re.compile(
-        r"[\*\-]\s+\*\*([\u0E00-\u0E7F\s\-'\.]+)\*\*\s*[:\-]\s*([^\n\r]*)"
-    )
-    for m in alias_pattern.finditer(text):
-        th_term = m.group(1).strip()
-        desc = m.group(2).strip()
-        if th_term not in entities:
-            entities[th_term] = {
-                "en": "",
-                "th": th_term,
+    # 2. Bullets: - **Name (Alias)** [:—-] desc
+    for line in text.splitlines():
+        line = line.strip()
+        m_b = re.match(r"^[\*\-]\s+\*\*([^\*]+)\*\*\s*[:\-—]?\s*(.*)", line)
+        if not m_b:
+            continue
+        raw_name = m_b.group(1).strip()
+        desc = m_b.group(2).strip()
+
+        m_paren = re.search(r"([^\(\)]+)\s*\(([^)]+)\)", raw_name)
+        if m_paren:
+            part1 = m_paren.group(1).strip()
+            part2 = m_paren.group(2).strip()
+            m_en = re.search(r"[A-Za-z0-9\s\-\.]+", part1 if re.search(r"[A-Za-z]", part1) else part2)
+            m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", part2 if re.search(r"[\u0E00-\u0E7F]", part2) else part1)
+            en = m_en.group(0).strip() if m_en else ""
+            th = m_th.group(0).strip() if m_th else ""
+        else:
+            m_en = re.search(r"[A-Za-z0-9\s\-\.]+", raw_name)
+            m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", raw_name)
+            en = m_en.group(0).strip() if m_en and not re.search(r"[\u0E00-\u0E7F]", raw_name) else ""
+            th = m_th.group(0).strip() if m_th else ""
+
+        key = en or th
+        if key and len(key) >= 3 and key not in entities:
+            entities[key] = {
+                "en": en,
+                "th": th,
                 "description": desc[:100],
             }
 
