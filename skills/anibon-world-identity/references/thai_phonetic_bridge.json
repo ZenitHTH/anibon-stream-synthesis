@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "description": "Thai Whisper phonemes to canonical English entity keys and domains",
+  "mappings": {
+    "เฟส grand ออเดอร์": {"en": "Fate/Grand Order", "domain": "fgo"},
+    "เฟท": {"en": "Fate", "domain": "fgo"},
+    "โอบารอน": {"en": "Oberon", "domain": "fgo", "class": "Pretender"},
+    "มอร์แกน": {"en": "Morgan", "domain": "fgo", "class": "Berserker"},
+    "คาซูระดรอป": {"en": "Kazuradrop", "domain": "fgo", "class": "Alter Ego"},
+    "อัลเควด": {"en": "Archetype: Earth", "domain": "fgo", "class": "MoonCancer"},
+    "เมลูซีน": {"en": "Melusine", "domain": "fgo", "class": "Lancer"},
+    "เกนไซ": {"en": "Gensai", "domain": "fgo"},
+    
+    "multiblood": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
+    "เมลตี้บลัด": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
+    "t moon": {"en": "TYPE-MOON", "domain": "typemoon"},
+    "ไทป์มูน": {"en": "TYPE-MOON", "domain": "typemoon"},
+    
+    "เรดแรปเตอร์": {"en": "Raidraptor", "archetype": "Raidraptor", "domain": "yugioh"},
+    "อัลทิเมตฟอลคอน": {"en": "Raidraptor - Ultimate Falcon", "archetype": "Raidraptor", "domain": "yugioh"},
+    "แม็กซ์ ซี": {"en": "Maxx \"C\"", "domain": "yugioh"},
+    "maxx c": {"en": "Maxx \"C\"", "domain": "yugioh"},
+    "บารอนเนส": {"en": "Baronne de Fleur", "domain": "yugioh"},
+    "สเนคอาย": {"en": "Snake-Eye", "archetype": "Snake-Eye", "domain": "yugioh"},
+    "ทีอาลาเมนต์": {"en": "Tearlaments", "archetype": "Tearlaments", "domain": "yugioh"},
+    "บลูอายส์": {"en": "Blue-Eyes White Dragon", "archetype": "Blue-Eyes", "domain": "yugioh"},
+    "แบรนเด็ด": {"en": "Branded", "archetype": "Branded", "domain": "yugioh"},
+    "คัชติร่า": {"en": "Kashtira", "archetype": "Kashtira", "domain": "yugioh"},
+    
+    "การ์โชมป์": {"en": "Garchomp", "th": "การ์โชมป์", "domain": "pokemon"},
+    "เป็ดต้นหอม": {"en": "Farfetch'd", "th": "คาโมเนกิ (เป็ดต้นหอม)", "domain": "pokemon"},
+    "แบกซ์แคลิเบอร์": {"en": "Baxcalibur", "th": "แบกซ์แคลิเบอร์", "domain": "pokemon"},
+    "ม้าดำ": {"en": "Spectrier", "th": "ม้าดำ", "domain": "pokemon"},
+    "สเปกเทรียร์": {"en": "Spectrier", "th": "สเปกเทรียร์", "domain": "pokemon"},
+    "ลิซาร์ดอน": {"en": "Charizard", "th": "ลิซาร์ดอน", "domain": "pokemon"},
+    "เกงกา": {"en": "Gengar", "th": "เกงกา", "domain": "pokemon"},
+    
+    "ริมัส": {"en": "Limbus Company", "domain": "limbus"},
+    "ิม company": {"en": "Limbus Company", "domain": "limbus"},
+    "คันเ 10": {"en": "Canto X", "domain": "limbus"},
+    "ฮีธคลิฟฟ์": {"en": "Heathcliff", "domain": "limbus"},
+    "ดันเต้": {"en": "Dante", "domain": "limbus"},
+    
+    "oneพiece": {"en": "One Piece", "domain": "anime"},
+    "วันพีซ": {"en": "One Piece", "domain": "anime"},
+    "บリーチ": {"en": "Bleach", "domain": "anime"},
+    "เคมปาจิ": {"en": "Zaraki Kenpachi", "domain": "anime"},
+    "ยูฮาบัค": {"en": "Yhwach", "domain": "anime"}
+  }
+}

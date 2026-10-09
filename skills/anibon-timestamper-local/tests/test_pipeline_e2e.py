@@ -43,3 +43,49 @@ def test_sanitize_and_audit_timestamps_cleans_hallucinations_and_drift():
     assert "Uhlom" in stats["suspected_hallucinations"]
     assert stats["corrections_applied"] > 0
 
+
+def test_full_pipeline_simulation_with_stream_and_game_knowledge(tmp_path):
+    """Simulate end-to-end knowledge loading, signal detection, and prompt injection."""
+    from signal_detector import detect_signals_for_chunks
+    from process_chunks_local import run_knowledge_discovery
+    from anibon.prompts import load_world_identity_context, build_recursive_prompt
+    import json
+
+    # 1. Setup mock chunks in workspace
+    chunks_dir = tmp_path / "chunks"
+    chunks_dir.mkdir()
+    (chunks_dir / "chunk_00.txt").write_text("(00:00:10) เล่นเกม Zelda ด้วย Joy-Con สนุกมาก", encoding="utf-8")
+    (chunks_dir / "chunk_01.txt").write_text("(00:05:00) วิเคราะห์ตัวละคร Limbus Company และ Meursault Canto X", encoding="utf-8")
+
+    # 2. Run signal detection
+    signals_map = detect_signals_for_chunks(tmp_path)
+    assert "chunk_00" in signals_map
+    assert "chunk_01" in signals_map
+
+    # 3. Run knowledge discovery
+    glossary_path = run_knowledge_discovery(tmp_path, signals_map)
+    assert glossary_path.exists()
+    glossary = json.loads(glossary_path.read_text(encoding="utf-8"))
+
+    # 4. Verify stream-type knowledge resolved in prompt for chunk_00
+    sig_00 = signals_map["chunk_00"]
+    ctx_00 = load_world_identity_context(sig_00)
+    assert len(ctx_00) > 0
+
+    # 5. Verify game-specific knowledge resolved in prompt for chunk_01
+    sig_01 = signals_map["chunk_01"]
+    ctx_01 = load_world_identity_context(sig_01)
+    assert len(ctx_01) > 0
+    assert "Limbus_Company" in ctx_01
+
+    # 6. Verify prompt builds with injected knowledge context
+    prompt = build_recursive_prompt(
+        chunk={"_idx": 0, "items": [{"timestamp": "00:00:10", "start": 10.0, "text": "เล่นเกม Zelda"}]},
+        current_topic="เล่นเกม",
+        rolling_summary="สรุป",
+        lang="th",
+        world_identity_ref=ctx_00,
+        glossary=glossary,
+    )
+    assert "WORLD IDENTITY REFERENCE" in prompt
+

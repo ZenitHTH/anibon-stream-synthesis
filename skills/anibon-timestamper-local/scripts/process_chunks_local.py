@@ -223,12 +223,31 @@ def audit_timestamps_against_glossary(
     content = timestamps_file.read_text(encoding="utf-8")
     if garbled is None:
         try:
-            garbled = load_garbled_replacements()
+            from anibon.transcript_source import is_youtube_auto_transcript
+            if is_youtube_auto_transcript(timestamps_file.parent):
+                garbled = load_garbled_replacements()
+            else:
+                garbled = []
         except Exception:
             garbled = []
 
     cleaned, stats = sanitize_and_audit_timestamps(content, glossary=glossary, signals=signals, garbled=garbled)
     replacements_count = stats.get("corrections_applied", 0)
+
+    # Stage 5 Deterministic World Sanitizer (Pokémon naming, token stutter, outro injection)
+    try:
+        from anibon.world_sanitizer import audit_and_sanitize_final_markdown
+        from anibon.topic_scanner import extract_macro_anchor
+        info_f = timestamps_file.parent / "info.json"
+        macro_anchor = None
+        if info_f.is_file():
+            try:
+                macro_anchor = extract_macro_anchor(json.loads(info_f.read_text(encoding="utf-8")))
+            except Exception:
+                pass
+        cleaned, ws_stats = audit_and_sanitize_final_markdown(cleaned, timestamps_file.parent, macro_anchor=macro_anchor)
+    except Exception as e:
+        print(f"[audit] World sanitizer notice: {e}")
 
     if cleaned != content:
         timestamps_file.write_text(cleaned, encoding="utf-8")
@@ -844,13 +863,16 @@ def main() -> None:
                     pass
         print(f"✅ Assembly complete: {out_md}")
 
-        if not args.no_garbled_collector:
+        from anibon.transcript_source import is_youtube_auto_transcript
+        if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
             run_garbled_collector(
                 workspace=workspace,
                 video_url=args.video_url,
                 whisper_bin=args.whisper_bin,
                 model=args.whisper_model,
             )
+        elif not is_youtube_auto_transcript(workspace):
+            print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
         return
 
     try:
@@ -903,10 +925,18 @@ def main() -> None:
         except Exception:
             glossary = {}
 
-    # ── Phonetic & Garbled Correction Mappings ───────────────────────────────
-    # garbled_replacements.json: confirmed Whisper ground-truth corrections (2000+ entries).
-    # Loaded FIRST so confirmed corrections take priority over heuristic phonetic matches.
-    garbled = load_garbled_replacements()
+    # ── Transcript Source Detection & Garbled Configuration ──────────────────
+    from anibon.transcript_source import is_youtube_auto_transcript, detect_transcript_source
+    is_yt_auto = is_youtube_auto_transcript(workspace)
+    src_label = detect_transcript_source(workspace)
+
+    if is_yt_auto:
+        print(f"[transcript] Source: YouTube Auto-Transcript -> Enabling Garbled replacements & collector.")
+        garbled = load_garbled_replacements()
+    else:
+        print(f"[transcript] Source: {src_label.capitalize()}/clean transcript -> Skipping Garbled replacements & collector.")
+        garbled = []
+
     mappings = load_mappings()
     if garbled:
         print(f"[knowledge] Loaded {len(garbled)} garbled replacement entries (garbled_replacements.json)")
@@ -955,13 +985,15 @@ def main() -> None:
             glossary=glossary,
         )
 
-    if not args.no_garbled_collector:
+    if is_yt_auto and not args.no_garbled_collector:
         run_garbled_collector(
             workspace=workspace,
             video_url=args.video_url,
             whisper_bin=args.whisper_bin,
             model=args.whisper_model,
         )
+    elif not is_yt_auto:
+        print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
 
 
 if __name__ == "__main__":

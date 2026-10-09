@@ -32,11 +32,25 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
         c2 = cols[2] if len(cols) > 2 else ""
         c3 = cols[3] if len(cols) > 3 else ""
 
-        # Check bold in c0
-        m_bold = re.search(r"\*\*([^\*]+)\*\*", c0)
-        if not m_bold:
+        # Check bold in c0 or c1
+        m_bold_0 = re.search(r"\*\*([^\*]+)\*\*", c0)
+        m_bold_1 = re.search(r"\*\*([^\*]+)\*\*", c1)
+
+        # Detect if c0 is version, chapter, canto, or index rather than a character name
+        c0_is_version_or_meta = bool(
+            re.search(r"^\*?\*?(?:v?\d+(?:\.\d+)*|canto\s+[a-z0-9]+|บทที่\s*\d+|ตอนที่\s*\d+)\*?\*?$", c0.strip(), re.I)
+        )
+
+        if (c0_is_version_or_meta or not m_bold_0) and m_bold_1:
+            raw_name = m_bold_1.group(1).strip()
+            role = c2 if (c2 and ":---" not in c2) else c0
+            attr = c3 if (c3 and ":---" not in c3) else ""
+        elif m_bold_0:
+            raw_name = m_bold_0.group(1).strip()
+            role = c1 if (c1 and ":---" not in c1) else c2
+            attr = c2 if (c2 and ":---" not in c2 and role != c2) else c3
+        else:
             continue
-        raw_name = m_bold.group(1).strip()
 
         # Check if raw_name is X (Y)
         m_paren = re.search(r"([^\(\)]+)\s*\(([^)]+)\)", raw_name)
@@ -62,7 +76,8 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
         m_th = re.search(r"[\u0E00-\u0E7F\s\-\.]+", th)
         th_clean = m_th.group(0).strip() if m_th else ""
 
-        if c1 and c1 != en and ":---" not in c1:
+        is_c1_entity = bool(m_bold_1 and raw_name == m_bold_1.group(1).strip())
+        if not is_c1_entity and c1 and c1 != en and ":---" not in c1:
             role = c1
             attr = c2 if (c2 and ":---" not in c2) else ""
         else:
@@ -115,14 +130,68 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
     return entities
 
 
+def resolve_reference_file(
+    target: Any,
+    search_dirs: Optional[List[Path]] = None,
+) -> Optional[Path]:
+    """Resolve target reference markdown file across candidate reference directories."""
+    if not target:
+        return None
+    target_str = str(target).replace("\\", "/")
+    target_name = Path(target_str).name
+    stem = Path(target_str).stem.lower()
+
+    # Build default candidate search directories if none provided
+    candidates: List[Path] = []
+    if search_dirs:
+        for d in search_dirs:
+            if d and Path(d).is_dir() and Path(d) not in candidates:
+                candidates.append(Path(d))
+
+    # Standard plugin reference directories
+    script_dir = Path(__file__).resolve().parent
+    standard_dirs = [
+        script_dir.parent.parent.parent / "anibon-world-identity" / "references",
+        script_dir.parent.parent / "references" / "stream",
+        script_dir.parent.parent / "references",
+        script_dir.parent.parent.parent / "anibon-timestamper" / "references" / "stream",
+        script_dir.parent.parent.parent / "anibon-timestamper" / "references",
+    ]
+    for d in standard_dirs:
+        if d.is_dir() and d not in candidates:
+            candidates.append(d)
+
+    for d in candidates:
+        # 1. Exact file name in directory
+        c = d / target_name
+        if c.is_file():
+            return c
+        # 2. Subpath match
+        sub_c = d / target_str
+        if sub_c.is_file():
+            return sub_c
+        # 3. Case-insensitive stem match
+        for p in d.glob("*.md"):
+            if p.stem.lower() == stem:
+                return p
+
+    return None
+
+
 def extract_entity_glossary(
     signals_map: Dict[str, Any],
-    ref_dir: Path,
+    ref_dir: Optional[Path] = None,
+    extra_ref_dirs: Optional[List[Path]] = None,
 ) -> Dict[str, Dict[str, Any]]:
     """Scan signals_map for knowledge references, self-read markdown files, and build entity glossary."""
     glossary: Dict[str, Dict[str, Any]] = {}
-    if not ref_dir or not ref_dir.exists():
-        return glossary
+    search_dirs: List[Path] = []
+    if ref_dir and Path(ref_dir).is_dir():
+        search_dirs.append(Path(ref_dir))
+    if extra_ref_dirs:
+        for ed in extra_ref_dirs:
+            if ed and Path(ed).is_dir():
+                search_dirs.append(Path(ed))
 
     # Collect unique target files from all chunk signals
     targets: Set[str] = set()
@@ -139,14 +208,8 @@ def extract_entity_glossary(
 
     # Resolve and parse each target reference
     for target in targets:
-        target_name = Path(target).name
-        candidate = ref_dir / target_name
-        if not candidate.exists():
-            stem = Path(target).stem.lower()
-            matches = [p for p in ref_dir.glob("*.md") if p.stem.lower() == stem]
-            candidate = matches[0] if matches else None
-
-        if candidate and candidate.exists():
+        candidate = resolve_reference_file(target, search_dirs)
+        if candidate and candidate.is_file():
             try:
                 content = candidate.read_text(encoding="utf-8")
                 parsed = parse_markdown_entities(content)

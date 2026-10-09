@@ -201,8 +201,10 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 | *"I can invent tags like [วิเคราะห์] because it fits the content."* | Front-tier benchmarks reject non-standard tags; breaks comment parsers. | Normalizer automatically remaps `[วิเคราะห์]` → `[Talk]`. |
 | *"I'll just summarize the whole 3-hour transcript in 1 prompt."* | Exceeds context and degrades entity recall on 12B models. | Sequential rolling state-machine keeps prompt under 2k tokens. |
 | *"Let's write a custom Python script to speed this up."* | Ad-hoc scripts break state tracking, resume logic, and encoding. | Strictly use `process_chunks_local.py` flags. |
+| *"The timestamps look good enough without checking World Identity."* | Hallucinates post-cutoff games or uses bare English Pokémon names without community Thai transliteration. | Strictly invoke `/anibon-world-identity` gate before final handoff. |
 
 ### Red Flags — STOP and Reset
+- Delivering timestamp output to user without verifying franchise entities against `/anibon-world-identity`.
 - Attempting to run timestamper before transcript recovery pipeline is 100% complete and validated (`whisper-corruption-recovery`).
 - Output file contains 35+ timestamps for a 2-hour stream (micro-stamping symptom).
 - Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).

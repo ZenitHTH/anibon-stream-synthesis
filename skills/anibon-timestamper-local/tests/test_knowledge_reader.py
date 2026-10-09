@@ -77,3 +77,56 @@ def test_enrich_with_pokemon_db(tmp_path):
     assert "Pikachu" in enriched
     assert enriched["Pikachu"]["th"] == "พิคาชู"
 
+
+def test_extract_entity_glossary_with_version_and_canto_columns(tmp_path):
+    ref_dir = tmp_path / "references"
+    ref_dir.mkdir()
+    md_file = ref_dir / "Honkai_Star_Rail.md"
+    md_file.write_text(
+        "# Honkai: Star Rail\n\n"
+        "| เวอร์ชัน | ตัวละคร | พาธ (Path) | ธาตุ |\n"
+        "| :---: | :--- | :---: | :---: |\n"
+        "| **4.3** | **Phainon (ไฟนอน)** | ล่าสังหาร (The Hunt) | ไฟ |\n"
+        "| **Canto X** | **Meursault** | Vanguard | Ice |\n",
+        encoding="utf-8"
+    )
+    signals_map = {
+        "chunk_00": {
+            "best_file": "Honkai_Star_Rail.md",
+            "weighted_files": [{"file": "Honkai_Star_Rail.md", "score": 10.0}]
+        }
+    }
+    glossary = extract_entity_glossary(signals_map, ref_dir)
+    assert "4.3" not in glossary
+    assert "Canto X" not in glossary
+    assert "Phainon" in glossary
+    assert glossary["Phainon"]["th"] == "ไฟนอน"
+    assert glossary["Phainon"]["role"] == "ล่าสังหาร (The Hunt)"
+    assert "Meursault" in glossary
+
+
+def test_extract_entity_glossary_resolves_stream_references(tmp_path):
+    # Base ref_dir without gaming-stream.md
+    ref_dir = tmp_path / "anibon-world-identity" / "references"
+    ref_dir.mkdir(parents=True)
+    
+    # Stream references directory in sibling timestamper
+    stream_dir = tmp_path / "anibon-timestamper-local" / "references" / "stream"
+    stream_dir.mkdir(parents=True)
+    (stream_dir / "gaming-stream.md").write_text(
+        "# Gaming Stream\n\n"
+        "| คำศัพท์ | ความหมาย |\n"
+        "| :--- | :--- |\n"
+        "| **Joy-Con** | จอยสติ๊ก Switch |\n",
+        encoding="utf-8"
+    )
+
+    signals_map = {
+        "chunk_01": {
+            "best_file": "references/stream/gaming-stream.md",
+            "weighted_files": [{"file": "references/stream/gaming-stream.md", "score": 10.0}]
+        }
+    }
+    glossary = extract_entity_glossary(signals_map, ref_dir, extra_ref_dirs=[stream_dir])
+    assert "Joy-Con" in glossary
+

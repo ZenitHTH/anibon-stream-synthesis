@@ -52,14 +52,16 @@ def load_world_identity_context(
     if not candidate_files:
         return ""
 
+    from anibon.knowledge_reader import resolve_reference_file
+
+    search_dirs = [world_identity_dir] if (world_identity_dir and Path(world_identity_dir).is_dir()) else []
+    if WORLD_IDENTITY_DIR and WORLD_IDENTITY_DIR.is_dir() and WORLD_IDENTITY_DIR not in search_dirs:
+        search_dirs.append(WORLD_IDENTITY_DIR)
+
     candidate = None
     for target in candidate_files:
-        c = ref_dir / Path(target).name
-        if not c.exists():
-            stem = Path(target).stem.lower()
-            matches = [p for p in ref_dir.glob("*.md") if p.stem.lower() == stem]
-            c = matches[0] if matches else None
-        if c and c.exists():
+        c = resolve_reference_file(target, search_dirs)
+        if c and c.is_file():
             candidate = c
             break
 
@@ -136,6 +138,19 @@ def build_chunk_entity_context(
 
             if len(matched_lines) >= 15:
                 break
+
+    # Also resolve JIT domain entities (phonetic bridge + SQLite)
+    try:
+        from anibon.domain_db import resolve_entities_for_chunk
+        jit_entities = resolve_entities_for_chunk(chunk_text, max_entities=10)
+        for entity_label in jit_entities:
+            if entity_label not in seen:
+                seen.add(entity_label)
+                matched_lines.append(f"- {entity_label}")
+                if len(matched_lines) >= 15:
+                    break
+    except Exception:
+        pass
 
     if not matched_lines:
         return ""

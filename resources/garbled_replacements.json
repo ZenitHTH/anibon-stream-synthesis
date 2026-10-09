@@ -40,6 +40,12 @@
     "about": [
       "adม"
     ],
+    "Abrams": [
+      "อ้าวโฟโล",
+      "อัพโฟโล",
+      "อุหลอม",
+      "Uhlom"
+    ],
     "AC Milan": [
       "AC Mirาน"
     ],
@@ -306,6 +312,10 @@
       "Arkโด",
       "อาcด"
     ],
+    "Arcane": [
+      "Archen",
+      "อาเชน"
+    ],
     "Arceus": [
       "AิUS"
     ],
@@ -429,6 +439,12 @@
     ],
     "Avenger": [
       "avengจอร์"
+    ],
+    "Aza Zorth (อซา ซอร์ธ)": [
+      "Azasoon",
+      "Asazoon",
+      "อซาโซ",
+      "อซบ"
     ],
     "Azur Lane": [
       "Asuren"
@@ -897,13 +913,13 @@
     ],
     "Chaos Zero Nightmare": [
       "ไอos Zero Nightman",
+      "Caos Serone Mare",
+      "เค้าสิ่งนี้แม่",
+      "Caos and Mare",
       "เคส man",
       "เคอเซแม",
       "แคซman",
-      "เคซิเม",
-      "เค้าสิ่งนี้แม่",
-      "Caos and Mare",
-      "Caos Serone Mare"
+      "เคซิเม"
     ],
     "chapter": [
       "shฟเตอร์",
@@ -2067,6 +2083,11 @@
       "Gน Lightting",
       "Gส Lighting"
     ],
+    "Gavan Amigo": [
+      "เกียร์บันAmิโก",
+      "เกียร์บันAmิ",
+      "Gear Banico"
+    ],
     "Gears of War: E-Day": [
       "Kill of War"
     ],
@@ -2411,6 +2432,11 @@
       "Herีโร่Shootตอร",
       "HerีรShootตอ"
     ],
+    "Heroes Cartoon Club": [
+      "ฮีโร่การ์ตูนขับ",
+      "การ์ตูนขับ",
+      "การ์ตูนคำ"
+    ],
     "Heroes III": [
       "Herีร่ 3"
     ],
@@ -2707,12 +2733,12 @@
       "Godฉ"
     ],
     "Kamen Rider My-Th": [
-      "ไม้สึ",
       "มาเป็น must rer ไ",
+      "มาเป็น Rider M",
+      "ไรเดอร์ไมค์",
       "Rider M",
       "rider ไ",
-      "มาเป็น Rider M",
-      "ไรเดอร์ไมค์"
+      "ไม้สึ"
     ],
     "Kamen Rider Zeztz The Movie": [
       "Marer Set M"
@@ -5124,6 +5150,11 @@
     "Teleport": [
       "telพอร์ต"
     ],
+    "Televi-kun (เทเลบิคุง)": [
+      "นิตยสารเทราบิ",
+      "นิตยสาร TeVe",
+      "เทราบิ"
+    ],
     "Tencent": [
       "เensซen"
     ],
@@ -5201,7 +5232,8 @@
     "The Legend of Zelda: Breath of the Wild": [
       "Legal Zelda Breath of the Wild",
       "Zelda Breath of the Wid",
-      "\\bBreath of the W\\b"
+      "\\bBreath of the W\\b",
+      "Breath of the W"
     ],
     "The Legend of Zelda: Ocarina of Time": [
       "คinal"
@@ -5583,6 +5615,12 @@
     "View": [
       "viว"
     ],
+    "Viktor": [
+      "Victor"
+    ],
+    "Vindicta": [
+      "วันติกเซ็น"
+    ],
     "Vintage Henshin": [
       "Vintage เchin"
     ],
@@ -5698,6 +5736,12 @@
     "Wolverine": [
       "Wฟine",
       "Wฟีน"
+    ],
+    "Wonder Festival": [
+      "วันเดอร์เฟซ",
+      "Wonderface",
+      "Waterface",
+      "Wonderf"
     ],
     "Wonder of U": [
       "Wer of you"
@@ -6210,6 +6254,15 @@
     "นอสทัลเจีย (Nostalgia)": [
       "นอสalาเจีย"
     ],
+    "นักล่าอสูรราชันผงาด โอเมก้าฮอร์น": [
+      "นักล่าศูนย์ราชันผงาด Omega H",
+      "นักล่าศูนย์ราชันพงาดโอเมก้าฮ",
+      "โอเมก้าฮอร์"
+    ],
+    "นารุฮิสะ อาราคาวะ (Naruhisa Arakawa)": [
+      "คุณอาราคาวะ",
+      "อาราคาวะ"
+    ],
     "นินจาไกเดน": [
       "นินจาไกเด้en",
       "นินจาไดen"
@@ -6225,6 +6278,11 @@
     ],
     "บัฟมั่ว": [
       "Baphometั่ว"
+    ],
+    "บาคูเมตสึ (Bakumetsu)": [
+      "บาคูเมสึ",
+      "บาคูมึ",
+      "บาคูสึ"
     ],
     "บางนาซิ่ง": [
       "บนnasซิ่ง"
@@ -6262,6 +6320,11 @@
     ],
     "ปุ่ม Skip": [
       "ปุสิ"
+    ],
+    "ปู่โบ๊ต": [
+      "ปู่บอท",
+      "ลุงบอท",
+      "ปู่โบต"
     ],
     "พระไซด์ไลน์": [
       "พระไซลine"
@@ -6325,6 +6388,11 @@
     "ฟุคาชิ": [
       "ฟukashิ",
       "ฟukาชิ"
+    ],
+    "ฟุคาชิกิ (Fukashigi)": [
+      "กาชิกิ",
+      "กาวิกิ",
+      "ฟุกจิ"
     ],
     "ฟุยุคิ": [
       "ฟ[จ]?ukิ",
@@ -6647,6 +6715,13 @@
     "อินโทร": [
       "อินโทro",
       "อินทro"
+    ],
+    "อิบารุ (Ibaru of Despair)": [
+      "ไอ้ เบา",
+      "ไอ้เบา",
+      "พี่เบา",
+      "อีบาว",
+      "อีเบา"
     ],
     "อิบุกิ": [
       "อิบukิ",
@@ -7152,6 +7227,10 @@
     "โพเทนเชียล": [
       "poนtiล"
     ],
+    "โมจีน (Mo-Jin)": [
+      "โมเดลจีน Mo-Jin",
+      "โมจีน Mo-Jin"
+    ],
     "โมะแสง": [
       "โม้แสง",
       "โมแสง"
@@ -7251,95 +7330,6 @@
     ],
     "ไฮป์ Bleach": [
       "ไฮบriิด"
-    ],
-    "Wonder Festival": [
-      "Wonderface",
-      "Wonderf",
-      "Waterface",
-      "วันเดอร์เฟซ"
-    ],
-    "ฟุคาชิกิ (Fukashigi)": [
-      "ฟุกจิ",
-      "กาชิกิ",
-      "กาวิกิ"
-    ],
-    "บาคูเมตสึ (Bakumetsu)": [
-      "บาคูมึ",
-      "บาคูสึ",
-      "บาคูเมสึ"
-    ],
-    "อิบารุ (Ibaru of Despair)": [
-      "อีบาว",
-      "อีเบา",
-      "ไอ้เบา",
-      "พี่เบา",
-      "ไอ้ เบา"
-    ],
-    "นารุฮิสะ อาราคาวะ (Naruhisa Arakawa)": [
-      "คุณอาราคาวะ",
-      "อาราคาวะ"
-    ],
-    "Aza Zorth (อซา ซอร์ธ)": [
-      "อซาโซ",
-      "อซบ",
-      "Azasoon",
-      "Asazoon"
-    ],
-    "Televi-kun (เทเลบิคุง)": [
-      "นิตยสาร TeVe",
-      "นิตยสารเทราบิ",
-      "เทราบิ"
-    ],
-    "Heroes Cartoon Club": [
-      "การ์ตูนขับ",
-      "การ์ตูนคำ",
-      "ฮีโร่การ์ตูนขับ"
-    ],
-    "นักล่าอสูรราชันผงาด โอเมก้าฮอร์น": [
-      "นักล่าศูนย์ราชันผงาด Omega H",
-      "นักล่าศูนย์ราชันพงาดโอเมก้าฮ",
-      "โอเมก้าฮอร์"
-    ],
-    "โมจีน (Mo-Jin)": [
-      "โมเดลจีน Mo-Jin",
-      "โมจีน Mo-Jin"
-    ],
-    "Gavan Amigo": [
-      "Gear Banico",
-      "เกียร์บันAmิโก",
-      "เกียร์บันAmิ"
-    ],
-    "Abrams": [
-      "อัพโฟโล",
-      "อ้าวโฟโล",
-      "Uhlom",
-      "อุหลอม"
-    ],
-    "Vindicta": [
-      "วันติกเซ็น"
-    ],
-    "Arcane": [
-      "Archen",
-      "อาเชน"
-    ],
-    "Viktor": [
-      "Victor"
-    ],
-    "ปู่โบ๊ต": [
-      "ปู่บอท",
-      "ลุงบอท",
-      "ปู่โบต"
     ]
-  },
-  "เคราสเซียร์นี้แม่": "Chaos Zero Nightmare",
-  "เค้าสิ่งนี้แม่": "Chaos Zero Nightmare",
-  "Caos and Mare": "Chaos Zero Nightmare",
-  "Caos Serone Mare": "Chaos Zero Nightmare",
-  "อัชเฉร้อน": "อาชิยะ โดมัน (Ashiya Douman)",
-  "อัสคิดเพียส": "อาชิยะ โดมัน (Ashiya Douman)",
-  "กระตูบาบา": "Baba (Deadlock)",
-  "นิกี้อัน": "Goddess of Victory: NIKKE",
-  "Archen": "Arcane",
-  "Victor": "Viktor",
-  "Uhlom": "Abrams"
+  }
 }

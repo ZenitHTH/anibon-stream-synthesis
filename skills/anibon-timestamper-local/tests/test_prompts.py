@@ -28,6 +28,12 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("WORLD IDENTITY REFERENCE", ctx)
         self.assertIn("Honkai Star Rail lore snippet", ctx)
 
+    def test_load_world_identity_context_from_stream_references(self):
+        signal = {"best_file": "references/stream/gaming-stream.md", "confidence": 1.0}
+        ctx = load_world_identity_context(signal, self.ref_dir)
+        self.assertIn("WORLD IDENTITY REFERENCE", ctx)
+        self.assertIn("gaming-stream", ctx.lower())
+
     def test_build_recursive_prompt(self):
         chunk = {
             "_idx": 1,
