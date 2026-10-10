@@ -5230,6 +5230,7 @@
       "diอ"
     ],
     "The Legend of Zelda: Breath of the Wild": [
+      "The Legend of Zelda: Breath of the Wildildorld",
       "Legal Zelda Breath of the Wild",
       "Zelda Breath of the Wid",
       "\\bBreath of the W\\b",
@@ -6165,6 +6166,9 @@
     "ดราก้อนบอล": [
       "Drag้อนบอล"
     ],
+    "ดาบตัดวายุ (Windcleaver)": [
+      "ดาบตัดวายุ"
+    ],
     "ดาร์ก": [
       "darดาร"
     ],
@@ -6477,6 +6481,11 @@
     "รองเท้าโซนิค (Sonic Shoes)": [
       "House โซนิค"
     ],
+    "ราชาโดเรฟาน (King Dorephan)": [
+      "ดอร์ฟาน",
+      "โดเรฟัน",
+      "Dorfan"
+    ],
     "รีดักชัน": [
       "redด"
     ],
@@ -6655,6 +6664,11 @@
     "อย่า sad": [
       "อย่าแซad"
     ],
+    "อสูรเทพวารูตะ (Divine Beast Vah Ruta)": [
+      "วา รูต้า",
+      "อสุรเทพ",
+      "วารูตะ"
+    ],
     "ออพติไมซ์": [
       "อtim(?=[\\s,.]|$)",
       "อtimiz"
@@ -6807,6 +6821,16 @@
     "เงิน donation": [
       "เงินโดนชั"
     ],
+    "เจ้าชายไซดอน (Prince Sidon)": [
+      "Seadoll",
+      "ซีดอล",
+      "ไซดอล"
+    ],
+    "เจ้าหญิงมิฟา (Princess Mipha)": [
+      "\\bMifa\\b",
+      "มิฟาน่า",
+      "มีฟา"
+    ],
     "เจ๊ใหญ่มีเดีย (Jai Yai Media)": [
       "เจ๊ใหญ่Medเดีย"
     ],
@@ -6886,6 +6910,9 @@
     ],
     "เทวสถาน โอมาน อู (Oman Au Shrine)": [
       "เทพว่าสถานอูมันู"
+    ],
+    "เทวสถานมิร์โร ชาซ (Mirro Shaz Shrine)": [
+      "คาตซาร"
     ],
     "เทสคัตลิโพกา": [
       "tสิok้า"

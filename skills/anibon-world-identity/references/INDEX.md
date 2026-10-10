@@ -24,6 +24,7 @@ Game reference files live alongside this index in `references/`.
 - [Zenless Zone Zero Reference](Zenless_Zone_Zero.md)
 - [Tokusatsu & Project R.E.D. Reference](Tokusatsu_Project_RED.md)
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
+- [The Legend of Zelda: Breath of the Wild Reference](Zelda_Breath_of_the_Wild.md)
 
 ## Database-backed Games
 
