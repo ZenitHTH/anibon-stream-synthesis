@@ -103,6 +103,13 @@ from anibon.knowledge_reader import (
     enrich_with_sqlite_databases,
 )
 
+from anibon.multimodal import (
+    prepare_storyboard_slides,
+    sample_chunk_keyframes,
+    build_multimodal_content,
+    call_multimodal,
+)
+
 
 def run_knowledge_discovery(
     workspace: Path,
@@ -325,6 +332,18 @@ def run_recursive_mode(
     if not no_resume and all_timestamps:
         print(f"[resume] Loaded {len(all_timestamps)} timestamps from state (Ongoing Topic: '{current_topic_title}')")
 
+    is_multimodal = bool(args and (getattr(args, "multimodal_chunks", False) or getattr(args, "multimodal", False)))
+    slides_dir = None
+    tiles_dir = workspace / "frames" / "chunk_tiles"
+    if is_multimodal:
+        slides_dir = prepare_storyboard_slides(workspace)
+        if slides_dir:
+            tiles_dir.mkdir(parents=True, exist_ok=True)
+            print(f"[multimodal] Enabled: Grounding chunks with Storyboard keyframes from {slides_dir.name}")
+        else:
+            print("[multimodal] Warning: No storyboard slides found in workspace/frames, falling back to text-only mode.")
+            is_multimodal = False
+
     processed_count = 0
     for i, chunk_path in enumerate(chunk_files):
         m = re.search(r"chunk_(\d+)", chunk_path.stem)
@@ -358,6 +377,13 @@ def run_recursive_mode(
         mood = load_chunk_mood(workspace, chunk_idx)
         wi_ref = load_world_identity_context(sig, world_identity_dir)
 
+        keyframes = []
+        if is_multimodal and slides_dir:
+            items = chunk.get("items", [])
+            st_sec = items[0].get("start", 0) if items else ch_num * 270
+            en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
+            keyframes = sample_chunk_keyframes(int(st_sec), int(en_sec), slides_dir, tiles_dir)
+
         prompt = build_recursive_prompt(
             chunk=chunk,
             current_topic=current_topic_title,
@@ -369,12 +395,19 @@ def run_recursive_mode(
             mood=mood,
             world_identity_ref=wi_ref,
             glossary=glossary,
+            keyframes=keyframes if keyframes else None,
         )
         prompt_tokens = len(prompt) // 4
-        print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
+        kf_info = f" + {len(keyframes)} frames" if keyframes else ""
+        print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens{kf_info} → calling model ...", end=" ", flush=True)
 
         try:
-            raw = call_local(endpoint, model, prompt, max_tokens, temperature)
+            api_key = getattr(args, "api_key", None) if args else None
+            if keyframes:
+                content_list = build_multimodal_content(prompt, keyframes)
+                raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, api_key=api_key)
+            else:
+                raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
             text = raw
             jm = re.search(r'(\{[^{}]*"is_continuation"[^{}]*\})', text, re.DOTALL)
             if not jm:
@@ -792,7 +825,7 @@ def main() -> None:
     ap.add_argument("--model", default="auto")
     ap.add_argument("--force-model", action="store_true")
     ap.add_argument("--lang", default="th", choices=["th", "en"])
-    ap.add_argument("--max-tokens", type=int, default=1200)
+    ap.add_argument("--max-tokens", type=int, default=4096)
     ap.add_argument("--temperature", type=float, default=0.1)
     ap.add_argument("--group-size", type=int, default=4,
                     help="Chunks per group in --mode group (default 4 = ~16-20 min)")
@@ -819,13 +852,20 @@ def main() -> None:
                     help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
     ap.add_argument("--vision-verify", action="store_true",
                     help="Inspect video frames with local vision model for ambiguous timestamps before Pass 2 summary")
+    ap.add_argument("--multimodal-chunks", "--multimodal", action="store_true",
+                    help="Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes")
     ap.add_argument("--video-file", default=None,
                     help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
     ap.add_argument("--vision-model", default=None,
                     help="Model name for vision calls (default: same as resolved --model)")
     ap.add_argument("--no-knowledge-reader", action="store_true",
                     help="Bypass automated entity glossary discovery and audit")
+    ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"),
+                    help="Bearer API key for remote endpoint (e.g. tokenme.limited)")
     args = ap.parse_args()
+
+    if args.api_key:
+        os.environ["TOKENME_API_KEY"] = args.api_key
 
     workspace = Path(args.workspace)
     if not workspace.exists():

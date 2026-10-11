@@ -48,7 +48,8 @@ def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = 1.0) -> st
     """
     raw = (endpoint or "").strip()
     if not raw:
-        raw = f"http://{DEFAULT_PRIMARY_HOST}:{DEFAULT_PORT}{DEFAULT_CHAT_PATH}"
+        env_host = os.environ.get("LM_STUDIO_HOST", "").strip()
+        raw = env_host if env_host else f"http://{DEFAULT_PRIMARY_HOST}:{DEFAULT_PORT}{DEFAULT_CHAT_PATH}"
 
     if not raw.startswith(("http://", "https://")):
         raw = f"http://{raw}"
@@ -56,31 +57,45 @@ def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = 1.0) -> st
     parsed = urlparse(raw)
     scheme = parsed.scheme or "http"
     host = parsed.hostname or DEFAULT_PRIMARY_HOST
-    port = parsed.port or DEFAULT_PORT
+    port = parsed.port
     path = parsed.path
     if not path or path == "/":
         path = DEFAULT_CHAT_PATH
 
     if host == DEFAULT_PRIMARY_HOST:
-        if not is_host_reachable(host, port, timeout=timeout):
+        target_port = port or DEFAULT_PORT
+        if not is_host_reachable(host, target_port, timeout=timeout):
             print(
-                f"[endpoint] {host}:{port} unreachable, falling back to localhost {DEFAULT_FALLBACK_HOST}:{port}",
+                f"[endpoint] {host}:{target_port} unreachable, falling back to localhost {DEFAULT_FALLBACK_HOST}:{DEFAULT_PORT}",
                 file=sys.stderr,
             )
             host = DEFAULT_FALLBACK_HOST
+            port = DEFAULT_PORT
 
-    netloc = f"{host}:{port}"
+    if port:
+        netloc = f"{host}:{port}"
+    else:
+        if scheme == "http" and host in (DEFAULT_PRIMARY_HOST, DEFAULT_FALLBACK_HOST):
+            netloc = f"{host}:{DEFAULT_PORT}"
+        else:
+            netloc = host
+
     return urlunparse((scheme, netloc, path, "", "", ""))
 
 
-def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
-    """Query LM Studio for currently loaded models in memory (via HTTP API or CLI)."""
+def get_loaded_models(endpoint: Optional[str] = None, api_key: Optional[str] = None) -> List[str]:
+    """Query LM Studio or OpenAI-compatible endpoint for currently loaded models."""
     target = resolve_endpoint(endpoint)
+    api_key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
     try:
         m = re.match(r"(https?://[^/]+)", target)
         base = m.group(1) if m else target
         url = f"{base}/api/v0/models"
-        req = urllib.request.Request(url)
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=3) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             models_list = data.get("data", [])
@@ -99,6 +114,20 @@ def get_loaded_models(endpoint: Optional[str] = None) -> List[str]:
                     except Exception:
                         pass
             loaded = [m.get("id") for m in models_list if m.get("state") == "loaded"]
+            if loaded:
+                return loaded
+    except Exception:
+        pass
+
+    try:
+        m = re.match(r"(https?://[^/]+)", target)
+        base = m.group(1) if m else target
+        url = f"{base}/v1/models"
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models_list = data.get("data", [])
+            loaded = [m.get("id") for m in models_list if m.get("id")]
             if loaded:
                 return loaded
     except Exception:
@@ -148,10 +177,12 @@ def _matches_model_alias(requested: str, candidate: str) -> bool:
 def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> str:
     """Resolve which model to use, preventing JIT eviction on Tesla P100."""
     preferred_models = (
+        "gemma-4-12b-it-qat@q4_k_xl",
+        "gemma-4-12b-it-qat",
+        "google/gemma-4-12b-qat",
         "unsloth/gemma-4-26b-a4b-it@q2_k_x",
         "gemma-4-26b-a4b-it@q2_k_xl",
         "gemma-4-26b-a4b-it@q2_k_x",
-        "google/gemma-4-12b-qat",
         "google/gemma-3-12b-it",
         "qwen/qwen3.5-9b",
     )
@@ -184,7 +215,7 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
         return fallback
 
     if not requested_model or requested_model.lower() == "auto":
-        return "unsloth/gemma-4-26b-a4b-it@q2_k_x"
+        return "gemma-4-12b-it-qat@q4_k_xl"
 
     for preferred in preferred_models:
         if _matches_model_alias(requested_model, preferred):
@@ -227,7 +258,7 @@ def build_vision_payload(
     model: str,
     prompt: str,
     image_url_or_data: str,
-    max_tokens: int = 500,
+    max_tokens: int = 4096,
     temperature: float = 0.2,
     system_prompt: str = SYSTEM_PROMPT,
 ) -> Dict[str, Any]:
@@ -261,14 +292,22 @@ def call_local(
     system_prompt: str = SYSTEM_PROMPT,
     timeout: int = 180,
     retries: int = 2,
+    api_key: Optional[str] = None,
 ) -> str:
     """Call local OpenAI-compatible API for text generation."""
     payload = build_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
     data_bytes = json.dumps(payload).encode("utf-8")
+    api_key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
     req = urllib.request.Request(
         endpoint,
         data=data_bytes,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
 
@@ -280,9 +319,10 @@ def call_local(
 
             msg = data["choices"][0]["message"]
             content = msg.get("content", "").strip()
+            reasoning = msg.get("reasoning_content") or msg.get("reasoning")
 
-            if not content and msg.get("reasoning_content"):
-                rc = msg["reasoning_content"]
+            if not content and reasoning:
+                rc = reasoning.strip()
                 if "ส่วนที่" in rc or "════" in rc:
                     content = rc
                 else:
@@ -307,18 +347,26 @@ def call_vision(
     model: str,
     prompt: str,
     image_path: Union[str, Path],
-    max_tokens: int = 500,
+    max_tokens: int = 4096,
     temperature: float = 0.2,
     timeout: int = 180,
+    api_key: Optional[str] = None,
 ) -> str:
     """Call local LM Studio vision endpoint with an image file."""
     data_uri = encode_image_base64(image_path)
     payload = build_vision_payload(model, prompt, data_uri, max_tokens, temperature)
     data_bytes = json.dumps(payload).encode("utf-8")
+    api_key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
     req = urllib.request.Request(
         endpoint,
         data=data_bytes,
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
 
@@ -326,6 +374,7 @@ def call_vision(
         data = json.loads(resp.read().decode("utf-8"))
     msg = data["choices"][0]["message"]
     content = msg.get("content", "").strip()
-    if not content and msg.get("reasoning_content"):
-        content = msg["reasoning_content"].strip()
+    reasoning = msg.get("reasoning_content") or msg.get("reasoning")
+    if not content and reasoning:
+        content = reasoning.strip()
     return content

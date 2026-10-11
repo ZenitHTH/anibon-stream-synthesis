@@ -40,6 +40,8 @@ flowchart TD
 6. **Generative AI Outputs vs Hyperbolic Roasting**: Streamer generates images/videos with AI or evaluates creative tools, and uses hyperbolic political/satirical roasts (e.g. *"นี่มันพรรคคอมมิวนิสต์ชนะเลือกตั้งเหรอ"*, *"อย่างกับรัฐบาลจีน"*, *"หลอนเป็นเปรต"*).
    - **Iron Rule:** NEVER report the streamer's hyperbolic roast as literal image content (e.g., do NOT write *"TH AI เจนภาพ... กลายเป็นคณะรัฐบาลคอมมิวนิสต์"*).
    - **Action:** Extract the targeted frame via `slice_stream_frame.py` or inspect storyboard frames, ground what is literally depicted (e.g. *"สาวไซเบอร์ผมขาว ยืนคู่บุคคลในชุดสูท"*), and clearly frame the streamer's reaction as a roast under `[Reaction]`.
+7. **WatchParty / Showcase Chapter Misattribution**: Streamer reads English event, chapter, or expansion titles phonetically or in colloquial Thai (e.g. *"Promise of Snow คำสัญญาแห่งดินแดนหิมะ"*).
+   - **Iron Rule:** When the streamer is watchpartying/reacting to an official stream or showcase, inspect on-screen video player title, channel badge, and lower-third banners. Never hallucinate a brand-new standalone game or franchise when the on-screen content is an update, season, or expansion of the primary game being showcased (e.g. *Chaos Zero Nightmare Season 2 "A Promise Upon the Snow"*).
 
 ### When NOT to Use:
 - Static podcast/radio segments where the streamer merely chats over a static background image or webcam.
@@ -74,14 +76,22 @@ python3 <skill-dir>/scripts/slice_stream_frame.py \
 
 ### Manual CLI Alternative
 ```bash
-# 1. Download targeted 720p clip (instant ~2-3s download via Chrome cookies)
+# Method A: Direct Video Slice (fast, requires valid cookies/unrestricted IP)
 yt-dlp --cookies-from-browser chrome \
   --download-sections "*00:14:15-00:15:15" \
   -f "bestvideo[height<=720]+bestaudio/best[height<=720]" \
   -o "target_slice.mp4" "https://www.youtube.com/watch?v=VIDEO_ID"
 
-# 2. Extract exact frame at offset
+# Extract exact frame at offset
 ffmpeg -ss 00:00:30 -i target_slice.mp4.webm -frames:v 1 -q:v 2 target_frame.jpg -y
+
+# Method B: Zero-Cookie Storyboard Fallback (Always works, immune to HTTP 403 / macOS TCC)
+# 1. Download storyboard MHTML (sb0 = 960x540 grid, sb3 = 1080p+ grid)
+yt-dlp -f "sb0" "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/sb0.mhtml"
+
+# 2. Extract slide: slide_idx = int(target_sec / duration_per_slide)
+# Duration is listed in storyboard.mhtml or calculate ~90s/slide for sb0
+# 3. Crop 3x3 tile grid corresponding to the exact second
 ```
 
 ---
@@ -142,7 +152,8 @@ Agents under pressure find excuses to avoid visual inspection. Every excuse belo
 | Mistake | Prevention / Fix |
 | :--- | :--- |
 | **Downloading full stream video** | Always pass `--download-sections "*START-END"` to yt-dlp. |
-| **HTTP 403 Forbidden on video stream** | Always pass `--cookies-from-browser chrome` to authenticate yt-dlp. |
+| **HTTP 403 Forbidden on video stream** | Try `--cookies-from-browser chrome`. If blocked by macOS TCC or 403 persists, fall back immediately to storyboard: `yt-dlp -f sb0 ... -o frames/sb0.mhtml` (zero-auth, 100% reliable). |
+| **WatchParty Chapter/Season Misattribution** | When streamer translates on-screen chapter/expansion titles (e.g. *"Promise of Snow"*), check the video title and channel badge. It is an update for the game being watchpartied (*Chaos Zero Nightmare*), not a new game. |
 | **Subagents hallucinating from fluffed speech** | Inject extracted frame OCR keywords into subagent prompts before timestamping. |
 | **Ignoring LiveChat correction timestamps** | Cross-reference LiveChat comments within ±30 seconds of the controversial statement. |
 

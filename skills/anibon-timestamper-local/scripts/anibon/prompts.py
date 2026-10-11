@@ -181,6 +181,7 @@ def build_recursive_prompt(
     vision_context: str = "",
     entity_context: str = "",
     glossary: Optional[dict] = None,
+    keyframes: Optional[list] = None,
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
@@ -206,6 +207,16 @@ def build_recursive_prompt(
     entity_section = f"{entity_context}\n" if entity_context else ""
 
     context_extras = []
+    if keyframes:
+        kf_lines = [f"- Frame {i+1} at timestamp {ts_str}" for i, (ts_str, _, _) in enumerate(keyframes)]
+        context_extras.append(
+            "ON-SCREEN MULTIMODAL KEYFRAMES (ATTACHED IMAGES):\n"
+            + "\n".join(kf_lines)
+            + "\nCRITICAL GROUND-TRUTH RULES FOR IMAGES:\n"
+            + "1. Cross-reference spoken dialogue with the on-screen images.\n"
+            + "2. If watching an official game showcase/livestream, chapter/season/event subtitles (e.g. 'A Promise Upon the Snow', 'Rose White') belong to the game being showcased, NOT new standalone games. Never invent names like 'Kasmir' or 'Promise of Snow' as standalone games.\n"
+            + "3. Check YouTube player title and channel badge to confirm game identity."
+        )
     if mood:
         context_extras.append(f"Viewer Reaction: {mood}")
     if activity:
