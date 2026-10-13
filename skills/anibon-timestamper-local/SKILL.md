@@ -1,6 +1,6 @@
 ---
 name: anibon-timestamper-local
-description: Use when generating YouTube timestamps and topic summaries for long livestreams locally on a single GPU (such as NVIDIA Tesla P100 16GB) without cloud API costs.
+description: Use when generating YouTube timestamps and topic summaries for long livestreams locally on a single GPU (such as NVIDIA Tesla P100 16GB, LM Studio, Ollama) without cloud API costs. For cloud/frontier models (Claude 3.5 Sonnet, Gemini Pro) with parallel subagents, use anibon-timestamper.
 ---
 
 # Anibon Timestamper (Local P100 Edition)
@@ -8,6 +8,11 @@ description: Use when generating YouTube timestamps and topic summaries for long
 ## Overview
 
 Local processing pipeline for generating YouTube timestamps and summaries from long livestreams via Dynamic Recursive Rolling Summary state-machines (`--mode recursive`) or group batching (`--mode group`), multi-modal context fusion, automatic tag normalization, and two-pass YouTube comment formatting.
+
+## When to Use
+
+- When processing livestreams locally on a single GPU (e.g. NVIDIA Tesla P100 16GB, Apple Silicon Metal, LM Studio, Ollama) without incurring cloud API costs.
+- **For Cloud / Frontier Models**: If the user has cloud API access and wants high-concurrency subagent orchestration (Claude 3.5 Sonnet, Gemini 2.0 Pro), use **`anibon-timestamper`** instead.
 
 ## Companion Skills & Required Sub-Skills
 
@@ -17,15 +22,15 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 ## Pipeline Architecture
 
-| Stage | Tool / Script | Input / Output | Function |
-| :--- | :--- | :--- | :--- |
 | **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `anibon/` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **0.5 Knowledge Self-Reading** | `anibon/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
 | **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
-| **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth. |
+| **1.5 LiveChat & Mood Detection** | `anibon/parity_gates.py` (`analyze_555.py`) | `livechat/` → `mood_555.json` | Auto-detects 555/laugh bursts and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
+| **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
 | **2.5 Vision Ground Truth (Optional)** | `anibon/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
-| **3. Summarizer & Assembly (Pass 2)** | `anibon/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into comment blocks (<3,500 bytes) with Thai headers. |
+| **3. Summarizer & Assembly (Pass 2)** | `anibon/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
 | **4. Garbled Collector & Whisper Ground Truth** | `whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
+| **5. Deterministic Parity Gates** | `anibon/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `audit_gaps.py` (enforces NO GAPS > 10m) and `check_sections.py` (audits byte sizes and ASR garble patterns; report-only). |
 
 ### Modular Library Architecture (`scripts/anibon/`)
 
@@ -36,7 +41,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 - `anibon/lmstudio.py`: LM Studio & OpenAI-compatible client (TokenMe, vLLM, Ollama), model resolution (defaults to `gemma-4-12b-it-qat@q4_k_xl` or `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, Bearer auth, Cloudflare bypass, and multi-modal Vision API (`image_url` data URIs for Gemma 4 Vision, Qwen-VL).
 - `anibon/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
 - `anibon/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
-- `anibon/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and YouTube comment block assembly (<3,500 bytes).
+- `anibon/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and macro-thematic part assembly (typically 4–6 parts).
 - `anibon/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
 
 ### Multi-Layer Anti-Hallucination & Verification Architecture (4-Layer Defense)
@@ -71,7 +76,7 @@ Pu Boat's discussions follow organic content flow rather than clock boundaries. 
 - **`SAME_TOPIC`**: If Chunk $N$ continues the ongoing topic, it merges into the rolling summary without emitting a timestamp (0 timestamps).
   - **Long-Form Talk/News Exception**: If a monologue or societal debate continues across multiple chunks (>8–10 minutes without a stamp), the model MUST extract a distinct sub-angle or specific policy critique (1 timestamp) rather than leaving long blanks.
 - **`TOPIC_SHIFT` / Highlights**: When the topic shifts, it flushes previous context and stamps the shift. Emits 1 timestamp by default, 2 MAX per chunk ($\ge$45s apart).
-- **Thematic Part Grouping**: Pass 2 summarizer groups timestamps strictly by overarching thematic category into sequential integer parts (ส่วนที่ 1, 2, 3...) without artificial byte splits (no 1.1, 1.2 or 3,500-byte slicing). Consecutive same-game grinding is consolidated within 10 minutes while talk/news sub-topics use a 4-minute window.
+- **Thematic Part Grouping**: Pass 2 summarizer groups timestamps by overarching thematic category into sequential integer parts (`ส่วนที่ 1, 2, 3...` typically 4–6 parts total) using `find_best_boundary` to snap part borders to streamer transition cues (e.g. `สรุป... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`). Over-splitting into 10–18 micro-parts is disallowed; cohesive topic discussions (e.g. complete series reviews or gaming sessions) remain unified in a single part for viewer navigation convenience. Consecutive same-game grinding is consolidated within 10 minutes while talk/news sub-topics use a 4-minute window.
 
 ### Mode 2: Fixed Window Groups (`--mode group`, Alternative)
 Combines 4 chunks (~16–20 min) per group with chronological loop-breakers and collision guards.
@@ -222,7 +227,7 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 - Attempting to run timestamper before transcript recovery pipeline is 100% complete and validated (`whisper-corruption-recovery`).
 - Output file contains 35+ timestamps for a 2-hour stream (micro-stamping symptom).
 - Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).
-- Sections exceed 3,500 bytes (YouTube comment limit violation).
+- Over-splitting topics into excessive micro-parts (>6–8 parts for a stream). Viewer navigation and thematic cohesion take precedence over artificial comment byte limits.
 - Script crashes with `UnicodeEncodeError: 'charmap'` (forgot `-X utf8`).
 - Outro omitted when ending chunk is marked continuation. Always verify final 5 minutes for closing stamp.
 - Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
@@ -234,9 +239,20 @@ In `--mode recursive`, long unbroken gameplay or concluding sessions must not al
 The final 5 minutes of transcript must always be checked for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `เจอกัน`, `บ๊ายบาย`) and emit:
 `HH:MM:SS - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม`
 
-### YouTube Comment Byte-Cap Invariant
-Strict 4,500 byte limit per comment. Target ceiling: 2,500–3,500 bytes per part.
-If a long discussion or topic spans over 3,500 bytes, split into sequential logical sub-parts (`ส่วนที่ 1`, `ส่วนที่ 2`) rather than exceeding comment limits.
+### Macro-Thematic Part Grouping Invariant (No 3,500-Byte Cap Over-Splitting)
+Timestamps are grouped strictly into broad, cohesive macro-thematic parts (typically 4–6 parts for a long stream).
+Prioritize viewer navigation and thematic cohesion: keep related discussions (such as an entire series review, media watchparty, or gaming session) unified in a single part rather than arbitrarily slicing into 10–18 micro-parts to fit single-comment byte limits.
+`assemble_parts()` and `run_local_summarizer_pass()` do not enforce byte caps by default. `enforce_byte_cap()` is retained as an opt-in utility only if single-comment splitting is explicitly requested.
+
+### Macro-Topic Boundary Snapping Invariant
+Major domain/topic transitions (e.g. Thai Politics → Anime/Series review, Gaming → SuperChat Q&A) MUST NOT begin with 1–4 straggler stamps at the tail of an unrelated topic section.
+`assemble_parts()` automatically snaps partition boundaries to transition markers (`สรุปการพูดคุย... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`, `เตรียมเข้าสู่ช่วง`) using `find_best_boundary()`. This ensures viewer-friendly, clean topical grouping without stragglers.
+
+### Timestamp Lead-in & Analogy Attribution Invariant
+1. **Lead-in Anchor**: เวลาเริ่มต้นของ Timestamp ต้องมาร์กที่ "ประโยคเปิดหัวข้อ" เสมอ ห้ามมาร์ก ณ วินาทีที่พูดคีย์เวิร์ดกลางประโยคหรือหลังคีย์เวิร์ด เพื่อป้องกันผู้ชมกดลิงก์แล้วพลาดบริบทสำคัญที่เพิ่งพูดไป 10–20 วินาที
+2. **Off-hand Analogy Rule**: ห้ามยกชื่อผลงาน บุคคล หรือสถานที่ที่สตรีมเมอร์เอ่ยถึงสั้นๆ แบบเปรียบเปรย (1–2 ประโยค) มาตั้งเป็นชื่อหัวข้อหลักของ Timestamp เด็ดขาด
+   - *ตัวอย่างผิด*: `เปรียบเทียบมาตรฐาน... กับ Frieren` (ทั้งที่พูดถึงดราม่า One Punch Man ภาค 3 และแซะ Frieren แค่ประโยคเดียว)
+   - *ตัวอย่างถูก*: `ชำแหละดราม่า One Punch Man ภาค 3 กับวาทกรรม 'พอดูได้' ของค่าย J.C.Staff (แซะถ้าไม่เอามาตรฐานโปรเจกต์ยักษ์อย่าง Frieren มาเทียบ)`
 
 ### World Identity Audit Invariant
 NEVER deliver the final timestamp output without performing an `anibon-world-identity` audit on all proper nouns, game titles, and character names. Thai Whisper outputs are phonetic; local LLMs hallucinate well-known games (Genshin, Dota) when hearing unfamiliar ones (CZN, Deadlock). Local references (`references/*.md`) and card/entity databases (`atlas_fgo.db`, `pokemon.db`) take strict precedence over model memory. `process_chunks_local.py` automatically audits generated `anibon_timestamps.md` against `<workspace>/entity_glossary.json` upon completion to replace confirmed phonetic variants.

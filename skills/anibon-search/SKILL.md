@@ -5,7 +5,7 @@ description: Search the ANIBON livestream archive for topics, games, news, or mo
 
 # ANIBON Search Skill
 
-## 1. Overview & Principles
+## Overview & Principles
 
 ### Purpose
 

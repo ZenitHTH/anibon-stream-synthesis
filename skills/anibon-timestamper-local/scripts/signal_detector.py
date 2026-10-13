@@ -19,11 +19,11 @@ def load_knowledge(knowledge_path: Optional[Path] = None) -> dict:
     if knowledge_path and knowledge_path.exists():
         p = knowledge_path
     else:
-        # Fallback to local resources or sibling timestamper resources
+        # Prioritize master plugin resources, falling back to local skill resources
         script_dir = Path(__file__).resolve().parent
         candidates = [
+            script_dir.parent.parent.parent / "resources" / "knowledge.json",
             script_dir.parent / "resources" / "knowledge.json",
-            script_dir.parent.parent / "anibon-timestamper" / "resources" / "knowledge.json",
         ]
         p = next((c for c in candidates if c.exists()), None)
 
@@ -42,8 +42,8 @@ def load_mappings(mappings_path: Optional[Path] = None) -> list[dict]:
     else:
         script_dir = Path(__file__).resolve().parent
         candidates = [
+            script_dir.parent.parent.parent / "resources" / "default_mappings.json",
             script_dir.parent / "resources" / "default_mappings.json",
-            script_dir.parent.parent / "anibon-timestamper" / "resources" / "default_mappings.json",
         ]
         p = next((c for c in candidates if c.exists()), None)
 
@@ -73,7 +73,7 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
         candidates = [
             # master plugin resources (most up-to-date)
             script_dir.parent.parent.parent / "resources" / "garbled_replacements.json",
-            script_dir.parent.parent / "anibon-timestamper" / "resources" / "garbled_replacements.json",
+            script_dir.parent / "resources" / "garbled_replacements.json",
             # common local paths used by whisper_dispatcher
             home / ".gemini" / "config" / "plugins" / "anibon-stream-synthesis" / "resources" / "garbled_replacements.json",
         ]

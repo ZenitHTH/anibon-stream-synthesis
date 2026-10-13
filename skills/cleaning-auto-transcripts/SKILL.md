@@ -122,6 +122,13 @@ Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an
 ### Anti-Cascade & Ground-Truth Cross-Checking (MANDATORY)
 1. **Raw Transcript Cross-Check**: When extracting garbled notes from chunks or subagents, NEVER trust post-cleaned text blindly. Always cross-check the timestamp against `raw_transcript.th-orig.json3` to confirm the exact original ASR string.
 2. **Cleaner Artifact Purge**: If a candidate garbled string contains a known multi-word English game/anime title (e.g. `Yuri on Ice`, `Chaos Zero Nightmare`, `Where Winds Meet`, `SLAPP`) embedded inside Thai text (e.g. `pYuri on Iceshิ`, `SLAPPอย`), it is an artifact of a broad regex cleaner collision. Do NOT save the multi-word title as a pattern. Clean the raw ASR form (`punishิ`, `สปอยล์`) instead.
+3. **Anti-Prefix Mangle Invariant (Garbled Dictionary Guard)**:
+   - NEVER register a pure Thai prefix or truncated Thai root (e.g. `โปรดักชั`) as a pattern to be replaced by an English word (e.g. `Production`).
+   - Mangle risk: When clean Thai loanwords appear (e.g. `โปรดักชั่น`), matching the truncated prefix mangles natural Thai word morphology into corrupt hybrid tokens (e.g. `Production่น`).
+   - Allowed patterns for English word targets must be:
+     a. Actual corrupted Thai-Latin hybrids (e.g. `adดapt` → `Adapt`, `prชเชอร์` → `เพรสเชอร์`).
+     b. Full phonetic Thai transliterations where unambiguous (e.g. `ไฟนอล` → `Final`).
+     c. NEVER substrings that are valid morphological prefixes of natural Thai words or loanwords.
 
 ### Local Audio-Slice Whisper Verification (Metal GPU) & Storyboard Grounding
 When ambiguous loanwords, brand names, or proper nouns cannot be confidently resolved from transcript context:

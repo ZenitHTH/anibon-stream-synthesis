@@ -1,6 +1,6 @@
 # Anibon Stream Synthesis — Skills Index & Sitemap
 
-This document lists all 20 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
+This document lists all 23 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
 
 ## 1. Orchestrator Skills
 
@@ -25,7 +25,6 @@ Specialized handlers loaded by signal triggers or fallback logic:
 - anibon-livechat-analysis — Parses YouTube LiveChat replays for SuperChats, meme peaks, and Q&As.
 - livestream-scene-selection — Selects timeline boundaries for highlight editing.
 - antigravity-vision-proxy — Inspects video frames via ffmpeg + view_file when vision ground truth is needed.
-- anibon-stream-activity — Tracks on-screen game activity and webcam presence for visual grounding during timestamping.
 - verifying-stream-ground-truth — Extracts targeted video frames to verify disputed numbers, campaign banners, and proper nouns that ASR misspeaks.
 - edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, and audio sync fixing.
 - anibon-stream-synthesis-ffmpeg — Advanced FFmpeg editing skill for seamless narrative flows.
@@ -38,6 +37,8 @@ Document creation, CLI tool building, and research utilities:
 - synthesizing-knowledge — Synthesizes multi-source markdown research documents with citation links.
 - building-reusable-cli-tools — Guidance for writing modular, testable Python processing utilities.
 - writing-plugin-readme — Guidelines for writing professional README documentation.
+- anibon-search — Deterministic hybrid lexical and semantic search over the ANIBON livestream archive.
+- backing-up-timestamps — Workspaces and archive management for timestamped livestream outputs.
 
 ## 4. Named Subagents (Wired into the timestamper pipeline)
 

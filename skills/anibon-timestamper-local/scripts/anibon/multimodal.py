@@ -85,14 +85,119 @@ def sec_to_ts(sec: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+INCOMPLETE_CONTEXT_CUES = (
+    "ดูอันนี้", "ดูนี่", "อันนี้", "ตัวนี้", "แบบนี้", "หน้านี้", "รูปนี้", "คลิปนี้",
+    "ภาพนี้", "หน้าตา", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "จุดนี้", "นี่ไง",
+    "ดูคลิป", "ตัวละครนี้", "สกินนี้", "การ์ดนี้", "เกมนี้", "ใครเนี่ย", "อะไรเนี่ย",
+    "โอ้โห", "เฮ้ย", "โห", "ดูดิ", "เนี่ย", "[?]"
+)
+
+
+def select_target_seconds(
+    start_sec: int,
+    end_sec: int,
+    min_frames: int = 3,
+    max_frames: int = 5,
+    items: Optional[List[dict]] = None,
+    num_frames: Optional[int] = None,
+) -> List[int]:
+    """Select keyframe timestamps based on transcript context completeness.
+
+    1. Incomplete Context: If items contain deictic pronouns, visual pointers, or
+       exclamatory reactions where text alone lacks grounding, sample frames directly
+       at those cue timestamps to visually fill in the missing context.
+    2. Dynamic Count: Sends at least min_frames (default 3), but expands up to max_frames (default 5)
+       if multiple distinct visual moments/cues need grounding in this chunk.
+    3. Full/Self-Contained Context: If text is complete, sample frames from the most
+       interesting moments (longest statements, topic shifts, emphasis) distributed
+       across the chunk.
+    """
+    if num_frames is not None:
+        min_frames = num_frames
+        max_frames = num_frames
+
+    if not items:
+        if min_frames <= 1:
+            return [(start_sec + end_sec) // 2]
+        if min_frames == 2:
+            return [start_sec + 25, end_sec - 25]
+        return [start_sec + 25, (start_sec + end_sec) // 2, max(start_sec + 30, end_sec - 25)]
+
+    # 1. Search for incomplete context cues
+    cue_candidates: List[Tuple[float, int]] = []
+    for it in items:
+        txt = it.get("text", "")
+        sec = int(it.get("start", 0))
+        if sec < start_sec or sec > end_sec:
+            continue
+
+        score = 0
+        for cue in INCOMPLETE_CONTEXT_CUES:
+            if cue in txt:
+                score += 2 if cue in ("ดูอันนี้", "ดูนี่", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "[?]") else 1
+
+        if score > 0:
+            cue_candidates.append((score, sec))
+
+    # Pick top cues with temporal spacing guard (>= 25s apart) up to max_frames
+    selected_secs: List[int] = []
+    cue_candidates.sort(key=lambda x: x[0], reverse=True)
+    for _, sec in cue_candidates:
+        if all(abs(sec - s) >= 25 for s in selected_secs):
+            selected_secs.append(sec)
+            if len(selected_secs) == max_frames:
+                break
+
+    # 2. If chunk has fewer than min_frames, supplement from interesting context
+    if len(selected_secs) < min_frames:
+        interesting_candidates: List[Tuple[float, int]] = []
+        for it in items:
+            txt = it.get("text", "")
+            sec = int(it.get("start", 0))
+            if sec < start_sec or sec > end_sec:
+                continue
+
+            int_score = len(txt) / 10.0
+            if any(p in txt for p in ("!", "?", "555", "แต่ว่า", "เพราะว่า", "คือ")):
+                int_score += 2.0
+            interesting_candidates.append((int_score, sec))
+
+        interesting_candidates.sort(key=lambda x: x[0], reverse=True)
+        for _, sec in interesting_candidates:
+            if all(abs(sec - s) >= 25 for s in selected_secs):
+                selected_secs.append(sec)
+                if len(selected_secs) >= min_frames:
+                    break
+
+    # 3. Fill any remaining slots up to min_frames evenly across chunk bounds
+    fallback_pool = [
+        start_sec + 25,
+        (start_sec + end_sec) // 2,
+        max(start_sec + 30, end_sec - 25),
+        start_sec + 80,
+        end_sec - 80,
+    ]
+    for fb in fallback_pool:
+        if len(selected_secs) >= min_frames:
+            break
+        if all(abs(fb - s) >= 20 for s in selected_secs):
+            selected_secs.append(fb)
+
+    selected_secs.sort()
+    return selected_secs[:max_frames]
+
+
 def sample_chunk_keyframes(
     start_sec: int,
     end_sec: int,
     slides_dir: Path,
     out_dir: Path,
-    num_frames: int = 3,
+    min_frames: int = 3,
+    max_frames: int = 5,
     sec_per_slide: float = 88.94,
     sec_per_tile: float = 9.88,
+    items: Optional[List[dict]] = None,
+    num_frames: Optional[int] = None,
 ) -> List[Tuple[str, Path, str]]:
     """Sample keyframes across chunk bounds and crop 320x180 tiles.
 
@@ -109,17 +214,9 @@ def sample_chunk_keyframes(
 
     max_slide_idx = len(available_slides) - 1
 
-    dur = max(1, end_sec - start_sec)
-    if num_frames == 1:
-        target_secs = [(start_sec + end_sec) // 2]
-    elif num_frames == 2:
-        target_secs = [start_sec + 25, end_sec - 25]
-    else:
-        target_secs = [
-            start_sec + 25,
-            (start_sec + end_sec) // 2,
-            max(start_sec + 30, end_sec - 25),
-        ]
+    target_secs = select_target_seconds(
+        start_sec, end_sec, min_frames=min_frames, max_frames=max_frames, items=items, num_frames=num_frames
+    )
 
     results = []
     for sec in target_secs:
@@ -155,9 +252,17 @@ def sample_chunk_keyframes(
 
 
 def build_multimodal_content(prompt_text: str, keyframes: List[Tuple[str, Path, str]]) -> List[dict]:
-    """Construct standard OpenAI multi-modal messages content list."""
+    """Construct standard OpenAI multi-modal messages content list.
+
+    Pairs each image with explicit text stating its exact timestamp and instructing
+    the model to save/emit that timestamp if the visual marks a key event/shift.
+    """
     content: List[dict] = [{"type": "text", "text": prompt_text}]
-    for ts_str, _, b64_data in keyframes:
+    for i, (ts_str, _, b64_data) in enumerate(keyframes):
+        content.append({
+            "type": "text",
+            "text": f"[Attached Frame {i+1} at timestamp {ts_str} — Save and use this exact timestamp {ts_str} when referencing this visual event in your output]:"
+        })
         content.append({
             "type": "image_url",
             "image_url": {"url": f"data:image/jpeg;base64,{b64_data}"}

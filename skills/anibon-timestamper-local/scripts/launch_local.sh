@@ -65,6 +65,9 @@ EXTRA_ARGS=()
 if [[ -n "$VIDEO_URL" ]]; then
     EXTRA_ARGS+=(--video-url "$VIDEO_URL")
 fi
+if [[ $# -ge 7 ]]; then
+    EXTRA_ARGS+=("${@:7}")
+fi
 
 nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \

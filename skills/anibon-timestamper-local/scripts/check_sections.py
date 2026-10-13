@@ -1,1 +1,1 @@
-../../anibon-timestamper/scripts/check_sections.py
+../../../scripts/check_sections.py

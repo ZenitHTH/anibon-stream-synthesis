@@ -208,14 +208,17 @@ def build_recursive_prompt(
 
     context_extras = []
     if keyframes:
-        kf_lines = [f"- Frame {i+1} at timestamp {ts_str}" for i, (ts_str, _, _) in enumerate(keyframes)]
+        kf_lines = [f"- Frame {i+1} at timestamp [{ts_str}]" for i, (ts_str, _, _) in enumerate(keyframes)]
         context_extras.append(
-            "ON-SCREEN MULTIMODAL KEYFRAMES (ATTACHED IMAGES):\n"
+            "ON-SCREEN MULTIMODAL KEYFRAMES (ATTACHED IMAGES WITH TIMESTAMPS):\n"
             + "\n".join(kf_lines)
             + "\nCRITICAL GROUND-TRUTH RULES FOR IMAGES:\n"
-            + "1. Cross-reference spoken dialogue with the on-screen images.\n"
-            + "2. If watching an official game showcase/livestream, chapter/season/event subtitles (e.g. 'A Promise Upon the Snow', 'Rose White') belong to the game being showcased, NOT new standalone games. Never invent names like 'Kasmir' or 'Promise of Snow' as standalone games.\n"
-            + "3. Check YouTube player title and channel badge to confirm game identity."
+            + "1. Each attached frame image has its exact timestamp labeled directly above it in the message.\n"
+            + "2. INCOMPLETE CONTEXT: If spoken dialogue has incomplete context (e.g. deictic pointers like 'อันนี้', 'ตัวนี้', 'ดูนี่', 'เกมนี้', 'ในจอ'), inspect the corresponding frame to identify the actual on-screen subject/entity, and SAVE/EMIT that frame's exact timestamp.\n"
+            + "3. FULL CONTEXT: If spoken dialogue is self-contained and complete, frames capture interesting visual highlights/shifts — use them to visually verify game, UI, or topic transitions.\n"
+            + "4. When creating a timestamp line for an event visible on screen, preserve and use the frame's exact timestamp [{ts_str}].\n"
+            + "5. If watching an official game showcase/livestream, chapter/season/event subtitles belong to the game being showcased, NOT new standalone games.\n"
+            + "6. Check YouTube player title and channel badge to confirm game identity."
         )
     if mood:
         context_extras.append(f"Viewer Reaction: {mood}")

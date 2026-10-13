@@ -94,6 +94,7 @@ from anibon.summarizer import (
     run_local_summarizer_pass,
     assemble_parts,
 )
+from anibon.parity_gates import run_parity_gates
 
 from anibon.vision_verify import apply_vision_verify
 
@@ -382,7 +383,7 @@ def run_recursive_mode(
             items = chunk.get("items", [])
             st_sec = items[0].get("start", 0) if items else ch_num * 270
             en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
-            keyframes = sample_chunk_keyframes(int(st_sec), int(en_sec), slides_dir, tiles_dir)
+            keyframes = sample_chunk_keyframes(int(st_sec), int(en_sec), slides_dir, tiles_dir, items=items)
 
         prompt = build_recursive_prompt(
             chunk=chunk,
@@ -404,8 +405,12 @@ def run_recursive_mode(
         try:
             api_key = getattr(args, "api_key", None) if args else None
             if keyframes:
-                content_list = build_multimodal_content(prompt, keyframes)
-                raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, api_key=api_key)
+                try:
+                    content_list = build_multimodal_content(prompt, keyframes)
+                    raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, timeout=120, api_key=api_key)
+                except Exception as ex:
+                    print(f"\n[multimodal] fallback to text-only for {chunk_idx}: {ex}", flush=True)
+                    raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
             else:
                 raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
             text = raw
@@ -554,6 +559,7 @@ def run_recursive_mode(
     if glossary:
         audit_timestamps_against_glossary(out_md, glossary)
     print(f"[done] Final timestamps: {out_md}")
+    run_parity_gates(workspace, out_md)
 
     is_finished = (not max_chunks or processed_count >= total)
     save_state(workspace, {
@@ -727,6 +733,7 @@ def run_group_mode(
     if glossary:
         audit_timestamps_against_glossary(out_md, glossary)
     print(f"[done] Final timestamps: {out_md}")
+    run_parity_gates(workspace, out_md)
 
     save_state(workspace, {
         "current_group": num_groups,
@@ -772,7 +779,7 @@ def run_garbled_collector(
                 except Exception:
                     pass
             if not target.is_file() or target == _SCRIPT_DIR / "whisper_dispatcher.py":
-                fallback = _SCRIPT_DIR.parent.parent / "anibon-timestamper" / "scripts" / "whisper_dispatcher.py"
+                fallback = _SCRIPT_DIR.parent.parent.parent / "scripts" / "whisper_dispatcher.py"
                 if fallback.is_file():
                     target = fallback
             if target.is_file():
@@ -874,6 +881,8 @@ def main() -> None:
 
     args.endpoint = resolve_endpoint(args.endpoint)
     model = resolve_model(args.model, args.endpoint, force=args.force_model)
+    from anibon.parity_gates import ensure_mood_555
+    ensure_mood_555(workspace)
 
     # ── Summarize-only Shortcut ──────────────────────────────────────────────
     if args.summarize_only:
@@ -902,6 +911,7 @@ def main() -> None:
                 except Exception:
                     pass
         print(f"✅ Assembly complete: {out_md}")
+        run_parity_gates(workspace, out_md)
 
         from anibon.transcript_source import is_youtube_auto_transcript
         if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:

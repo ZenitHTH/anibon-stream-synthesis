@@ -1,15 +1,16 @@
 ---
 name: anibon-timestamper
-description: Use when generating detailed timestamps or topic summaries for long-form live streams and videos featuring speaker "Boat" (Pu Boat) from Anibon Official. This is the orchestrator skill.
+description: Use when generating detailed timestamps or topic summaries for long-form live streams and videos featuring speaker "Boat" (Pu Boat) using Frontier / Cloud models (Claude 3.5 Sonnet, Gemini Pro) via parallel subagents. For local single-GPU/LM Studio models without API costs, use anibon-timestamper-local.
 ---
 
-# Anibon Timestamper (Orchestrator)
+# Anibon Timestamper (Frontier / Cloud Orchestrator)
 
-A routing skill for analyzing live stream transcripts to generate timestamps in YouTube format. Dynamically detects stream type and delegates to specialized sub-skills.
+A routing orchestrator skill for analyzing live stream transcripts using cloud/frontier LLMs to generate timestamps in YouTube format. Dynamically detects stream type and delegates to specialized subagents in parallel.
 
 ## When to Use
 
-Streams or videos by "Boat" from Anibon Official that need timed topic labels.
+- Streams or videos by "Boat" from Anibon Official that need timed topic labels using **Frontier / Cloud models** with parallel subagents (`anibon-chunk-timestamper`, `anibon-summarizer`, `anibon-garbled-notes`).
+- **If running locally** on a single GPU (NVIDIA Tesla P100, LM Studio, Ollama, local VLM) without cloud API costs, use **`anibon-timestamper-local`** instead.
 
 ## Sub-Skills & Permissions
 
@@ -245,6 +246,11 @@ Each `anibon-chunk-timestamper` returns plain-text timestamp lines (typically 2�
 > 2. What the AI model actually rendered on screen (or if it failed/refused).
 > 3. The streamer's comedic, political, or hyperbolic satirical roasts.
 > NEVER take satirical roasts (e.g., *"กลายเป็นคอมมิวนิสต์"*, *"เหมือนสลิ่ม"*, *"หลอนเป็นเปรต"*) as literal descriptions of the generated image. Always use `[Reaction]` and attribute the roast clearly (e.g. `ปู่โบ๊ตเหวอ TH-AI ไม่รู้จัก Jane Doe เจนเป็นสาวไซเบอร์ยืนคู่ ครม. แซวยังกะรัฐบาลจีน`).
+
+> [!IMPORTANT]
+> **Timestamp Lead-in & Off-hand Analogy Guard**:
+> 1. **Lead-in Anchor**: Always anchor timestamp start to the *opening sentence* of a discussion topic. Never stamp mid-sentence after key proper nouns have already been uttered (prevents viewers from clicking and missing context).
+> 2. **Off-hand Analogy Rule**: Never elevate passing 1–2 sentence analogies or sarcastic roasts (e.g. comparing a show's budget to *Frieren*) into the primary timestamp title. Always describe the core topic (e.g. *One Punch Man S3 & J.C.Staff drama*) and relegate passing comparisons to parentheticals.
 
 ### 8. Merge Timestamps
 

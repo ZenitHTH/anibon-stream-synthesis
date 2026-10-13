@@ -1,1 +1,1 @@
-../../anibon-timestamper/scripts/pack_timestamps.py
+../../../scripts/pack_timestamps.py

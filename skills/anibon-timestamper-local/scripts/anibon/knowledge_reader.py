@@ -150,12 +150,13 @@ def resolve_reference_file(
 
     # Standard plugin reference directories
     script_dir = Path(__file__).resolve().parent
+    plugin_dir = script_dir.parent.parent.parent.parent
     standard_dirs = [
-        script_dir.parent.parent.parent / "anibon-world-identity" / "references",
+        plugin_dir / "references" / "stream",
+        plugin_dir / "references",
+        plugin_dir / "skills" / "anibon-world-identity" / "references",
         script_dir.parent.parent / "references" / "stream",
         script_dir.parent.parent / "references",
-        script_dir.parent.parent.parent / "anibon-timestamper" / "references" / "stream",
-        script_dir.parent.parent.parent / "anibon-timestamper" / "references",
     ]
     for d in standard_dirs:
         if d.is_dir() and d not in candidates:

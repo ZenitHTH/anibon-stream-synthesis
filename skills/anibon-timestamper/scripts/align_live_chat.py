@@ -40,16 +40,31 @@ def load_chunk_windows(chunks_dir: Path) -> list[tuple[str, int, int]]:
     candidates = sorted(chunks_dir.glob("chunk_*.json"), key=chunk_sort_key)
     if not candidates:
         candidates = sorted(chunks_dir.glob("chunk_*.xml"), key=chunk_sort_key)
+    if not candidates:
+        candidates = sorted(chunks_dir.glob("chunk_*.txt"), key=chunk_sort_key)
     windows = []
     for p in candidates:
         if p.suffix == ".json":
             import json as _json
             data = _json.loads(p.read_text(encoding="utf-8"))
             windows.append((p.stem, int(data.get("start_sec", 0)), int(data.get("end_sec", 0))))
-        else:
+        elif p.suffix == ".xml":
             import xml.etree.ElementTree as ET
             root = ET.parse(p).getroot()
             windows.append((p.stem, int(root.get("start_sec", 0)), int(root.get("end_sec", 0))))
+        elif p.suffix == ".txt":
+            import re
+            lines = p.read_text(encoding="utf-8").splitlines()
+            start_sec, end_sec = 0, 0
+            if lines:
+                m = re.search(r"(\d{2}:\d{2}:\d{2})[–-](\d{2}:\d{2}:\d{2})", lines[0])
+                if m:
+                    def _pts(ts):
+                        parts = [int(x) for x in ts.split(":")]
+                        return parts[0] * 3600 + parts[1] * 60 + parts[2]
+                    start_sec = _pts(m.group(1))
+                    end_sec = _pts(m.group(2))
+            windows.append((p.stem, start_sec, end_sec))
     windows.sort(key=lambda w: w[1])
     return windows
 

@@ -38,17 +38,33 @@ def save_state(workspace: Path, state: dict) -> None:
         print(f"[warn] Failed to save state: {e}")
 
 
-def load_chunk_livechat(workspace: Path, chunk_idx: str) -> str:
-    """Return top chat snippet for this chunk if available."""
+def load_chunk_livechat(workspace: Path, chunk_idx: str, max_lines: int = 10) -> str:
+    """Return top chat snippet for this chunk, prioritizing donations and key viewer questions."""
     lc_file = workspace / "livechat" / f"livechat_{chunk_idx}.txt"
-    if lc_file.exists():
-        try:
-            lines = [l.strip() for l in lc_file.read_text(encoding="utf-8").splitlines() if l.strip()]
-            if lines:
-                return "\n".join(lines[:6])
-        except Exception:
-            pass
-    return ""
+    if not lc_file.exists():
+        return ""
+    try:
+        lines = [l.strip() for l in lc_file.read_text(encoding="utf-8").splitlines() if l.strip()]
+        if not lines:
+            return ""
+        if len(lines) <= max_lines:
+            return "\n".join(lines)
+
+        # Prioritize high-value lines: SuperChats, direct questions to Pu Boat, and reaction peaks
+        high_val = []
+        regular = []
+        for l in lines:
+            if any(k in l for k in ("SUPERCHAT", "ปู่", "?", "มั้ย", "ไหม", "ทำไม", "เกมอะไร")):
+                high_val.append(l)
+            else:
+                regular.append(l)
+
+        picked = high_val[:max_lines]
+        if len(picked) < max_lines:
+            picked += regular[:max_lines - len(picked)]
+        return "\n".join(picked)
+    except Exception:
+        return ""
 
 
 def load_chunk_activity(workspace: Path, chunk_idx: str) -> str:

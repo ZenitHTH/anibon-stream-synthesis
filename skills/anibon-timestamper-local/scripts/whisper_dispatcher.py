@@ -1,1 +1,1 @@
-../../anibon-timestamper/scripts/whisper_dispatcher.py
+../../../scripts/whisper_dispatcher.py

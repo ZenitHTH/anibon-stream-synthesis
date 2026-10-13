@@ -1,1 +1,1 @@
-../../anibon-timestamper/scripts/audit_gaps.py
+../../../scripts/audit_gaps.py
