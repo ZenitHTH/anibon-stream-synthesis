@@ -135,7 +135,7 @@ TIMESTAMPS:
                 curr_part_num += 1
 
             if rendered_parts:
-                return "\n\n".join(rendered_parts)
+                return enforce_byte_cap("\n\n".join(rendered_parts))
     except Exception as e:
         print(f"[summarizer] Warning: local summarizer call failed ({e}). Falling back to heuristic assembly.")
     return None

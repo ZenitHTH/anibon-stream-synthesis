@@ -99,6 +99,7 @@ from anibon.summarizer import (
     generate_part_summary,
     run_local_summarizer_pass,
     assemble_parts,
+    enforce_byte_cap,
 )
 from anibon.parity_gates import run_parity_gates
 
@@ -294,6 +295,7 @@ def finalize_and_assemble_timestamps(
     if not assembled:
         print("[assemble] Using heuristic double-border part assembly.")
         assembled = assemble_parts(deduped, workspace, block_size)
+    assembled = enforce_byte_cap(assembled)
     out_md = workspace / "anibon_timestamps.md"
     out_md.write_text(assembled, encoding="utf-8")
     if glossary:

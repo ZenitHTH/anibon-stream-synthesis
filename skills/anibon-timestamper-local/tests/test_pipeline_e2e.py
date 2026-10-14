@@ -101,6 +101,29 @@ class TestPipelineE2E(unittest.TestCase):
         from process_chunks_local import finalize_and_assemble_timestamps
         self.assertTrue(callable(finalize_and_assemble_timestamps))
 
+    def test_finalize_and_assemble_enforces_3500_byte_cap(self):
+        import tempfile
+        from pathlib import Path
+        from process_chunks_local import finalize_and_assemble_timestamps
+
+        stamps = [f"00:{i:02d}:00 - [Talk] " + ("ข" * 120) for i in range(30)]
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            out_md, _ = finalize_and_assemble_timestamps(
+                workspace=ws,
+                all_timestamps=stamps,
+                endpoint="http://127.0.0.1:1234",
+                model="test-model",
+                temperature=0.1,
+                block_size=2400,
+                no_summarizer_pass=True,
+            )
+            content = out_md.read_text(encoding="utf-8")
+            for block in content.split("\n\n"):
+                if block.strip():
+                    self.assertLessEqual(len(block.encode("utf-8")), 3500)
+
 
 if __name__ == "__main__":
     unittest.main()
+

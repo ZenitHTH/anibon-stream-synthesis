@@ -131,7 +131,24 @@ class TestSummarizer(unittest.TestCase):
         self.assertGreaterEqual(len(parts), 4)
         self.assertLessEqual(len(parts), 6)
 
+    def test_run_local_summarizer_pass_enforces_byte_cap(self):
+        from unittest.mock import patch
+        from anibon.summarizer import run_local_summarizer_pass
+
+        stamps = [f"00:{i:02d}:00 - [Talk] " + ("ก" * 120) for i in range(25)]
+        fake_llm_output = (
+            "Part 1: 00:00:00\nSummary: เปิดสตรีมคุยข่าวใหญ่\n\n"
+            "Part 2: 00:20:00\nSummary: ปิดท้ายสตรีม\n"
+        )
+        with patch("anibon.summarizer.call_local", return_value=fake_llm_output):
+            md = run_local_summarizer_pass("http://127.0.0.1:1234", "test-model", stamps)
+
+        self.assertIsNotNone(md)
+        for part in md.split("\n\n"):
+            self.assertLessEqual(len(part.encode("utf-8")), 3500)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
