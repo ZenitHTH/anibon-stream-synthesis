@@ -14,22 +14,14 @@ from pathlib import Path
 from typing import Optional
 
 
+from anibon.resources import resource_path
+
+
 def load_knowledge(knowledge_path: Optional[Path] = None) -> dict:
     """Load knowledge.json entries mapping keywords -> domain files."""
-    if knowledge_path and knowledge_path.exists():
-        p = knowledge_path
-    else:
-        # Prioritize master plugin resources, falling back to local skill resources
-        script_dir = Path(__file__).resolve().parent
-        candidates = [
-            script_dir.parent.parent.parent / "resources" / "knowledge.json",
-            script_dir.parent / "resources" / "knowledge.json",
-        ]
-        p = next((c for c in candidates if c.exists()), None)
-
-    if not p or not p.exists():
+    p = knowledge_path if (knowledge_path and Path(knowledge_path).exists()) else resource_path("knowledge.json")
+    if not p or not Path(p).exists():
         return {}
-
     with open(p, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("entries", {})
@@ -37,49 +29,18 @@ def load_knowledge(knowledge_path: Optional[Path] = None) -> dict:
 
 def load_mappings(mappings_path: Optional[Path] = None) -> list[dict]:
     """Load phonetic entity mappings from default_mappings.json."""
-    if mappings_path and mappings_path.exists():
-        p = mappings_path
-    else:
-        script_dir = Path(__file__).resolve().parent
-        candidates = [
-            script_dir.parent.parent.parent / "resources" / "default_mappings.json",
-            script_dir.parent / "resources" / "default_mappings.json",
-        ]
-        p = next((c for c in candidates if c.exists()), None)
-
-    if not p or not p.exists():
+    p = mappings_path if (mappings_path and Path(mappings_path).exists()) else resource_path("default_mappings.json")
+    if not p or not Path(p).exists():
         return []
-
     with open(p, encoding="utf-8") as f:
         data = json.load(f)
     return data.get("mappings", [])
 
 
 def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
-    """Load confirmed ground-truth corrections from garbled_replacements.json.
-
-    garbled_replacements.json format (inverse of default_mappings):
-        { "correct_name": ["garbled_variant1", "garbled_variant2", ...], ... }
-
-    Returns a list[dict] in the same shape as load_mappings() output so that
-    normalize_transcript() can consume both sources with a single call:
-        [{"correct": "...", "patterns": ["...", ...]}, ...]
-    """
-    if path and path.exists():
-        p = path
-    else:
-        script_dir = Path(__file__).resolve().parent
-        home = Path.home()
-        candidates = [
-            # master plugin resources (most up-to-date)
-            script_dir.parent.parent.parent / "resources" / "garbled_replacements.json",
-            script_dir.parent / "resources" / "garbled_replacements.json",
-            # common local paths used by whisper_dispatcher
-            home / ".gemini" / "config" / "plugins" / "anibon-stream-synthesis" / "resources" / "garbled_replacements.json",
-        ]
-        p = next((c for c in candidates if c.exists()), None)
-
-    if not p or not p.exists():
+    """Load confirmed ground-truth corrections from garbled_replacements.json."""
+    p = path if (path and Path(path).exists()) else resource_path("garbled_replacements.json")
+    if not p or not Path(p).exists():
         return []
 
     with open(p, encoding="utf-8") as f:
@@ -94,9 +55,8 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
             elif isinstance(garbled_variants, str):
                 result.append({"correct": garbled_variants, "patterns": [correct]})
 
-    # Also handle root-level entries added from notes/spotter (flat garbled -> correct)
     for k, v in data.items():
-        if k in ("version", "description", "note", "mappings"):
+        if k in ("version", "description", "note", "mappings", "replacements"):
             continue
         if isinstance(v, str):
             result.append({"correct": v, "patterns": [k]})
@@ -207,6 +167,32 @@ def clean_transcript_noise(text: str) -> str:
     return _MULTI_SPACE_RE.sub(" ", cleaned).strip()
 
 
+_REGEX_META_RE = re.compile(r"\\b|\\B|\\d|\\w|\\s|[\[\]()^$?*+{|]")
+_NORMALIZER_CACHE: dict[int, list[tuple[re.Pattern, str]]] = {}
+
+
+def _get_compiled_mappings(mappings: list[dict]) -> list[tuple[re.Pattern, str]]:
+    key = id(mappings)
+    if key in _NORMALIZER_CACHE:
+        return _NORMALIZER_CACHE[key]
+    compiled = []
+    for item in mappings:
+        correct = item.get("correct")
+        patterns = item.get("patterns", [])
+        if not correct or not patterns:
+            continue
+        for pat in patterns:
+            if not pat:
+                continue
+            expr = pat if _REGEX_META_RE.search(pat) else re.escape(pat)
+            try:
+                compiled.append((re.compile(expr, re.IGNORECASE), correct))
+            except re.error:
+                continue
+    _NORMALIZER_CACHE[key] = compiled
+    return compiled
+
+
 def normalize_transcript(text: str, mappings: list[dict]) -> str:
     """Normalize phonetically garbled names and clean noise in transcript text."""
     if not text:
@@ -218,16 +204,8 @@ def normalize_transcript(text: str, mappings: list[dict]) -> str:
     if not mappings:
         return normalized
 
-    for item in mappings:
-        correct = item.get("correct")
-        patterns = item.get("patterns", [])
-        if not correct or not patterns:
-            continue
-        for pat in patterns:
-            if not pat:
-                continue
-            # Replace pattern case-insensitively
-            normalized = re.sub(re.escape(pat), correct, normalized, flags=re.IGNORECASE)
+    for pattern, replacement in _get_compiled_mappings(mappings):
+        normalized = pattern.sub(replacement, normalized)
     return normalized
 
 

@@ -19,71 +19,15 @@ Pipeline:
   prepare_video.py  →  clean_garbled_english.py  →  detect_signals.py
 """
 
-import sys, json, re, xml.etree.ElementTree as ET
+import json
+import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from anibon.resources import resource_path
-
-
-def load_replacements() -> list[tuple[re.Pattern, str]]:
-    """Load garbled→correct replacements from JSON config (supports v1 and v2 schemas)."""
-    path = resource_path("garbled_replacements.json")
-    data = json.loads(path.read_text(encoding="utf-8"))
-    compiled = []
-
-    # Version 2 schema: "mappings": { "CanonicalWord": ["pat1", "pat2"] }
-    if "mappings" in data and isinstance(data["mappings"], dict):
-        pairs = []
-        for target, patterns in data["mappings"].items():
-            pats = patterns if isinstance(patterns, list) else [patterns]
-            for p in pats:
-                p_str = str(p).strip()
-                if p_str:
-                    pairs.append((p_str, str(target).strip()))
-
-        # Sort by pattern length descending (more specific patterns match first)
-        pairs.sort(key=lambda x: len(x[0]), reverse=True)
-        for pat, rep in pairs:
-            try:
-                compiled.append((re.compile(pat, re.IGNORECASE), rep))
-            except re.error as err:
-                print(f"[!] Warning: failed to compile pattern '{pat}': {err}", file=sys.stderr)
-        return compiled
-
-    # Version 1 schema fallback: "replacements": [ {"pattern": "...", "replacement": "..."} ]
-    for entry in data.get("replacements", []):
-        try:
-            compiled.append((re.compile(entry["pattern"], re.IGNORECASE), entry["replacement"]))
-        except re.error as err:
-            print(f"[!] Warning: failed to compile pattern '{entry.get('pattern')}': {err}", file=sys.stderr)
-    return compiled
-
+from anibon.cleaner import clean_chunk, clean_text, load_replacements
 
 # Compiled regex cache — loaded once at import time
 _COMPILED = load_replacements()
-
-
-def clean_text(text: str) -> str:
-    """Apply all garbled-English replacements to a single text string."""
-    for pattern, replacement in _COMPILED:
-        text = pattern.sub(replacement, text)
-    return text
-
-
-def clean_chunk(data: dict) -> list[tuple[str, str]]:
-    """Clean all item['text'] fields in a chunk JSON structure."""
-    changes = []
-    for item in data.get("items", []):
-        orig = item.get("text", "")
-        cleaned = clean_text(orig)
-        if cleaned != orig:
-            changes.append((orig, cleaned))
-            item["text"] = cleaned
-    return changes
-
-
-def _escape_xml(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def _clean_xml_chunk(path: Path, dry_run: bool = False) -> list[tuple[str, str]]:
@@ -94,10 +38,10 @@ def _clean_xml_chunk(path: Path, dry_run: bool = False) -> list[tuple[str, str]]
     changes = []
     for item in root.iter("item"):
         orig = item.text or ""
-        cleaned = clean_text(orig.strip())
+        cleaned = clean_text(orig.strip(), _COMPILED)
         if cleaned != orig.strip():
             changes.append((orig.strip(), cleaned))
-            item.text = _escape_xml(cleaned)
+            item.text = cleaned
             changed = True
     if not dry_run and changed:
         tree.write(path, encoding="utf-8", xml_declaration=False)
@@ -111,7 +55,7 @@ def process_file(path: Path, dry_run: bool = False) -> int:
     else:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        changes = clean_chunk(data)
+        changes = clean_chunk(data, _COMPILED)
         if not dry_run:
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)

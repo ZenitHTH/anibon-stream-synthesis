@@ -138,6 +138,32 @@ def run_knowledge_discovery(
     return out_file
 
 
+_REGEX_META_RE = re.compile(r"\\b|\\B|\\d|\\w|\\s|[\[\]()^$?*+{|]")
+_GARBLED_CACHE: dict[int, list[tuple[re.Pattern, str]]] = {}
+
+
+def _get_compiled_garbled(garbled: list[dict]) -> list[tuple[re.Pattern, str]]:
+    key = id(garbled)
+    if key in _GARBLED_CACHE:
+        return _GARBLED_CACHE[key]
+    compiled = []
+    for entry in garbled:
+        correct = entry.get("correct")
+        patterns = entry.get("patterns", [])
+        if not correct or not patterns:
+            continue
+        for pat in patterns:
+            if not pat:
+                continue
+            expr = pat if _REGEX_META_RE.search(pat) else re.escape(pat)
+            try:
+                compiled.append((re.compile(expr, re.IGNORECASE), correct))
+            except re.error:
+                continue
+    _GARBLED_CACHE[key] = compiled
+    return compiled
+
+
 def sanitize_and_audit_timestamps(
     content: str,
     glossary: Optional[dict] = None,
@@ -154,24 +180,13 @@ def sanitize_and_audit_timestamps(
     garbled = garbled or []
 
     # 1. Deterministic Speaker Scrubbing: Ensure 'ปู่บอท', 'ลุงบอท', 'ปู่โบต' become 'ปู่โบ๊ต'
-    speaker_matches = len(re.findall(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", cleaned))
-    if speaker_matches:
-        cleaned = re.sub(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", cleaned)
-        corrections_applied += speaker_matches
+    cleaned, speaker_matches = re.subn(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", cleaned)
+    corrections_applied += speaker_matches
 
     # 2. Apply Confirmed Garbled Replacements (e.g. Archen -> Arcane, Victor -> Viktor)
-    for entry in garbled:
-        correct = entry.get("correct")
-        patterns = entry.get("patterns", [])
-        if not correct or not patterns:
-            continue
-        for pat in patterns:
-            if not pat:
-                continue
-            matches = len(re.findall(re.escape(pat), cleaned, flags=re.IGNORECASE))
-            if matches:
-                cleaned = re.sub(re.escape(pat), correct, cleaned, flags=re.IGNORECASE)
-                corrections_applied += matches
+    for pattern, replacement in _get_compiled_garbled(garbled):
+        cleaned, n = pattern.subn(replacement, cleaned)
+        corrections_applied += n
 
     # 3. Glossary Alias Replacements
     for en_key, meta in glossary.items():

@@ -126,36 +126,8 @@ def find_whisper_model(custom_path: Optional[str] = None) -> Optional[str]:
 
 def load_master_dictionary_matcher() -> List[Tuple[re.Pattern, str]]:
     """Load compiled patterns from garbled_replacements.json to pre-resolve known tokens."""
-    home = os.path.expanduser("~")
-    search_paths = [
-        os.path.join(home, ".gemini/config/plugins/anibon-stream-synthesis/resources/garbled_replacements.json"),
-        os.path.join(home, "abss-dev/resources/garbled_replacements.json"),
-    ]
-    compiled = []
-    for sp in search_paths:
-        if os.path.isfile(sp):
-            try:
-                with open(sp, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                mappings = data.get("mappings", {})
-                pairs = []
-                for target, patterns in mappings.items():
-                    pats = patterns if isinstance(patterns, list) else [patterns]
-                    for p in pats:
-                        p_str = str(p).strip()
-                        if p_str:
-                            pairs.append((p_str, str(target).strip()))
-                pairs.sort(key=lambda x: len(x[0]), reverse=True)
-                for pat, rep in pairs:
-                    try:
-                        compiled.append((re.compile(pat, re.IGNORECASE), rep))
-                    except re.error:
-                        pass
-                if compiled:
-                    break
-            except Exception:
-                pass
-    return compiled
+    from anibon.cleaner import load_replacements
+    return load_replacements()
 
 
 # ==============================================================================
