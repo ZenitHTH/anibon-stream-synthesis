@@ -223,8 +223,20 @@ class TestSkillStructure(unittest.TestCase):
         self.assertIn("from __future__ import annotations", txt)
         self.assertRegex(txt, r"from typing import [^\n]*\bAny\b")
 
+    def test_no_unguarded_pil_imports(self):
+        offenders = []
+        for folder in ("lib", "scripts", "skills", "tests"):
+            for p in (PLUGIN_ROOT / folder).rglob("*.py"):
+                if p.is_symlink():
+                    continue
+                txt = p.read_text(encoding="utf-8")
+                if re.search(r"^from PIL import\b", txt, re.MULTILINE):
+                    offenders.append(str(p.relative_to(PLUGIN_ROOT)))
+        self.assertEqual(offenders, [], f"Unguarded top-level PIL imports found: {offenders}")
+
 
 if __name__ == "__main__":
+
 
     unittest.main()
 

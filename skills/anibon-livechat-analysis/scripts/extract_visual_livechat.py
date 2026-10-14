@@ -16,7 +16,12 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from PIL import Image, ImageFilter, ImageStat
+
+try:
+    from PIL import Image, ImageFilter, ImageStat
+except ImportError:
+    Image = ImageFilter = ImageStat = None  # type: ignore[assignment]
+
 
 # Resilient imports for module or standalone script execution
 try:
@@ -143,6 +148,8 @@ def parse_gemini_chat_json(raw_text: str) -> list[dict]:
 
 def probe_chat_layout_from_image(image: Image.Image) -> str:
     """Analyze a PIL Image to determine whether chat is in bottom-right or left ROI."""
+    if Image is None or image is None:
+        return "bottom-right"
     w, h = image.size
     roi_br = get_chat_roi("bottom-right", w, h)
     roi_left = get_chat_roi("left", w, h)
@@ -196,7 +203,7 @@ def probe_chat_layout(video_path: str | Path, sample_sec: int = 0) -> str:
             str(temp_frame),
         ]
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
-        if res.returncode == 0 and temp_frame.exists() and temp_frame.stat().st_size > 0:
+        if Image is not None and res.returncode == 0 and temp_frame.exists() and temp_frame.stat().st_size > 0:
             with Image.open(temp_frame) as img:
                 return probe_chat_layout_from_image(img)
     except Exception:

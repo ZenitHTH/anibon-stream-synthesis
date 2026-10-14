@@ -10,7 +10,12 @@ import argparse
 import glob
 import os
 import sys
-from PIL import Image
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None  # type: ignore[assignment]
+
 
 
 def extract_slides_from_mhtml_bytes(data: bytes, output_dir: str) -> list[str]:
@@ -82,6 +87,9 @@ def crop_frame_at_second(
 
     slide_idx = tile_global_idx // tiles_per_slide
     tile_in_slide = tile_global_idx % tiles_per_slide
+
+    if Image is None:
+        raise RuntimeError("Pillow is required for crop_frame_at_second. Install with: pip install Pillow")
 
     chosen_slide_path = slide_paths[min(slide_idx, len(slide_paths) - 1)]
     with Image.open(chosen_slide_path) as img:

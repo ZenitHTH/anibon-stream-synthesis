@@ -1,16 +1,23 @@
 """anibon/multimodal.py — Storyboard keyframe extraction and multi-image chunk analysis."""
+from __future__ import annotations
 
 import base64
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-from PIL import Image
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None  # type: ignore[assignment]
+
 
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
@@ -234,9 +241,21 @@ def sample_chunk_keyframes(
             row, col = tile_idx // 3, tile_idx % 3
 
             try:
-                im = Image.open(slide_file)
-                tile = im.crop((col * 320, row * 180, (col + 1) * 320, (row + 1) * 180))
-                tile.save(out_tile, quality=95)
+                if Image is not None:
+                    im = Image.open(slide_file)
+                    tile = im.crop((col * 320, row * 180, (col + 1) * 320, (row + 1) * 180))
+                    tile.save(out_tile, quality=95)
+                else:
+                    subprocess.run(
+                        [
+                            "ffmpeg", "-y", "-i", str(slide_file),
+                            "-vf", f"crop=320:180:{col * 320}:{row * 180}",
+                            "-frames:v", "1", "-q:v", "2", str(out_tile),
+                        ],
+                        capture_output=True,
+                        check=True,
+                        timeout=15,
+                    )
             except Exception as e:
                 print(f"[multimodal] tile crop error at {sec}s: {e}", file=sys.stderr)
                 continue

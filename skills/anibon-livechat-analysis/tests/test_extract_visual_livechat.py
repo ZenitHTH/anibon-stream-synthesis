@@ -3,7 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from PIL import Image, ImageDraw
+try:
+    from PIL import Image, ImageDraw
+except ImportError:
+    Image = ImageDraw = None  # type: ignore[assignment]
+
 
 _test_dir = Path(__file__).resolve().parent
 if str(_test_dir) not in sys.path:
@@ -81,6 +85,7 @@ class TestExtractVisualLivechat(unittest.TestCase):
         layout = detect_chat_layout("non_existent_file.mp4", force_pos="auto")
         self.assertEqual(layout, "bottom-right")
 
+    @unittest.skipIf(Image is None, "Pillow not installed")
     def test_probe_chat_layout_from_image(self):
         w, h = 1280, 720
 

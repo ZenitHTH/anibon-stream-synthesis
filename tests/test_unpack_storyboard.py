@@ -5,7 +5,10 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None  # type: ignore[assignment]
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skills" / "anibon-stream-activity" / "scripts"))
 from unpack_storyboard import (
@@ -24,10 +27,13 @@ class TestUnpackStoryboard(unittest.TestCase):
     def test_extract_slides_from_mhtml_bytes(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
-            img = Image.new("RGB", (320, 180), color="blue")
-            img_path = tmp_path / "sample.jpg"
-            img.save(img_path, "JPEG")
-            jpeg_bytes = img_path.read_bytes()
+            if Image is not None:
+                img = Image.new("RGB", (320, 180), color="blue")
+                img_path = tmp_path / "sample.jpg"
+                img.save(img_path, "JPEG")
+                jpeg_bytes = img_path.read_bytes()
+            else:
+                jpeg_bytes = b"\xff\xd8\xff\xd9"
 
             mhtml_content = b"--boundary\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg_bytes + b"\r\n--boundary--"
             slides = extract_slides_from_mhtml_bytes(mhtml_content, str(tmp_path / "slides"))
@@ -37,15 +43,19 @@ class TestUnpackStoryboard(unittest.TestCase):
     def test_extract_slides_direct_jpeg(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
-            img = Image.new("RGB", (320, 180), color="green")
-            img_path = tmp_path / "direct_sprite.jpg"
-            img.save(img_path, "JPEG")
-            jpeg_bytes = img_path.read_bytes()
+            if Image is not None:
+                img = Image.new("RGB", (320, 180), color="green")
+                img_path = tmp_path / "direct_sprite.jpg"
+                img.save(img_path, "JPEG")
+                jpeg_bytes = img_path.read_bytes()
+            else:
+                jpeg_bytes = b"\xff\xd8\xff\xd9"
 
             slides = extract_slides_from_mhtml_bytes(jpeg_bytes, str(tmp_path / "direct_slides"))
             self.assertEqual(len(slides), 1)
             self.assertTrue(os.path.exists(slides[0]))
 
+    @unittest.skipIf(Image is None, "Pillow not installed")
     def test_crop_frame_at_second(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
