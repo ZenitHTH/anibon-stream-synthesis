@@ -53,7 +53,7 @@ python3 scripts/enrich_uncertain_with_vision.py recovered_transcript.json stream
 python3 scripts/enrich_uncertain_with_vision.py recovered_transcript.json video_360p.mp4 -o frames_uncertain
 
 # Run Gemini Vision analysis to fulfill [?] text context
-agy --model "Gemini 3.6 Flash (Medium)" --dangerously-skip-permissions `
+agy --model "Gemini 3.8 Flash (High)" --dangerously-skip-permissions `
   --print "Identify per frame: 1) Game/Screen State 2) On-screen text/dialogue 3) Fulfill [?] speech context" `
   --add-dir frames_uncertain
 ```

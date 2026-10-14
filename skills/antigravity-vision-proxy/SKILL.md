@@ -93,7 +93,7 @@ ffmpeg -y -ss 00:01:15 -i target_slice.mp4 -frames:v 1 -q:v 2 target_frame.jpg
 ## Invoke agy
 
 ```powershell
-agy --model "Gemini 3.6 Flash" --dangerously-skip-permissions `
+agy --model "Gemini 3.8 Flash (High)" --dangerously-skip-permissions `
   --print "Identify per frame: 1) Game 2) Heroes/characters 3) Gameplay/menu/cutscene 4) Notable events" `
   --add-dir frames
 ```
@@ -116,6 +116,5 @@ For parseable output, request JSON in the prompt:
 
 | Model | Cost | Use |
 |-------|------|-----|
-| Gemini 3.6 Flash | Default | Bulk game scanning |
-| Gemini 3.6 Flash (High) | Moderate | Hero/UI text identification |
+| Gemini 3.8 Flash (High) | Default | Bulk game scanning & Hero/UI text identification |
 | Gemini 3.1 Pro (Low) | Moderate | When Flash misidentifies |

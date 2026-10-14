@@ -17,7 +17,7 @@ Correct behavior: After `anibon-analyzer.py` passes, the next step is **always**
 
 ## agy Model Rule
 
-When using `agy` for vision proxy, always use the newest model. Never pin to an older version like Gemini 3.5. Old models have context/quality limitations that cause failures. Current: `Gemini 3.6 Flash`.
+When using `agy` for vision proxy, always use the newest model. Never pin to an older version like Gemini 3.5. Old models have context/quality limitations that cause failures. Current: `Gemini 3.8 Flash (High)`.
 
 ## Streamer Identity & Local Anti-Hallucination Invariants
 

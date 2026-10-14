@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Extract On-Screen Burned-In LiveChat via Vision Proxy (Gemini 3.6 Flash).
+Extract On-Screen Burned-In LiveChat via Vision Proxy (Gemini 3.8 Flash (High)).
 
 Crops the burned-in chat region from video slices, runs vision OCR with channel
 emote mapping via `agy`, deduplicates scrolling messages, and outputs raw event feeds.
@@ -351,11 +351,11 @@ def extract_chat_frames(
     return result
 
 
-def run_agy_vision_ocr(frames_dir: Path) -> str:
-    """Invoke agy with Gemini 3.6 Flash (Medium) to extract live chat messages from frames."""
+def run_agy_vision_ocr(frames_dir: Path, model: str = "Gemini 3.8 Flash (High)") -> str:
+    """Invoke agy with Gemini 3.8 Flash (High) to extract live chat messages from frames."""
     cmd = [
         "agy",
-        "--model", "Gemini 3.6 Flash (Medium)",
+        "--model", model,
         "--dangerously-skip-permissions",
         "--print", VISION_PROMPT,
         "--add-dir", str(frames_dir),

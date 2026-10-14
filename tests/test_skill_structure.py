@@ -182,6 +182,20 @@ class TestSkillStructure(unittest.TestCase):
         for rel in symlinked:
             self.assertTrue((PLUGIN_ROOT / rel).is_symlink(), f"Expected symlink at {rel}")
 
+    def test_agy_model_pinned_to_gemini_3_8_flash_high(self):
+        targets = [
+            PLUGIN_ROOT / "GEMINI.md",
+            PLUGIN_ROOT / "skills/anibon-livechat-analysis/scripts/extract_visual_livechat.py",
+            PLUGIN_ROOT / "skills/anibon-livechat-analysis/SKILL.md",
+            PLUGIN_ROOT / "skills/antigravity-vision-proxy/SKILL.md",
+            PLUGIN_ROOT / "skills/whisper-corruption-recovery/SKILL.md",
+            PLUGIN_ROOT / "docs/REFERENCE.md",
+        ]
+        for path in targets:
+            content = path.read_text(encoding="utf-8")
+            self.assertNotIn("Gemini 3.6 Flash", content, f"Stale Gemini 3.6 Flash pin in {path.relative_to(PLUGIN_ROOT)}")
+            self.assertIn("Gemini 3.8 Flash (High)", content, f"Missing Gemini 3.8 Flash (High) in {path.relative_to(PLUGIN_ROOT)}")
+
 
 if __name__ == "__main__":
     unittest.main()
