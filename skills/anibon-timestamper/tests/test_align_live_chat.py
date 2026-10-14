@@ -1,108 +1,102 @@
 """Tests for align_live_chat.py — slice livechat events to transcript chunk windows."""
-import sys
+import json
 import pathlib
+import sys
 import tempfile
+import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "scripts"))
 from align_live_chat import load_events, load_chunk_windows, slice_events, align
 
 
-# ─────────────────────────────────────────────────────────────
-# slicing primitives
-# ─────────────────────────────────────────────────────────────
+class TestAlignLiveChat(unittest.TestCase):
+    def test_load_events_parses_seconds_and_skips_bad_lines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            feed = tmp_path / "events.txt"
+            feed.write_text(
+                "0\t[00:00:00] a: hi\n"
+                "145\t[00:02:25] a: mid\n"
+                "460\t[00:07:40] b: late\n"
+                "notanumber\tgarbage\n", encoding="utf-8")
+            events = load_events(feed)
+            self.assertEqual(events, [(0, "[00:00:00] a: hi"), (145, "[00:02:25] a: mid"), (460, "[00:07:40] b: late")])
 
-def test_load_events_parses_seconds_and_skips_bad_lines(tmp_path):
-    feed = tmp_path / "events.txt"
-    feed.write_text(
-        "0\t[00:00:00] a: hi\n"
-        "145\t[00:02:25] a: mid\n"
-        "460\t[00:07:40] b: late\n"
-        "notanumber\tgarbage\n", encoding="utf-8")
-    events = load_events(feed)
-    assert events == [(0, "[00:00:00] a: hi"), (145, "[00:02:25] a: mid"), (460, "[00:07:40] b: late")]
+    def test_load_events_sorts_unsorted_feed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            f = tmp_path / "e.txt"
+            f.write_text("300\t[00:05:00] b: z\n10\t[00:00:10] a: y\n", encoding="utf-8")
+            events = load_events(f)
+            self.assertEqual(events, [(10, "[00:00:10] a: y"), (300, "[00:05:00] b: z")])
+
+    def test_slice_events_half_open_window(self):
+        events = [(0, "e0"), (145, "e145"), (300, "e300"), (599, "e599"), (600, "e600")]
+        self.assertEqual(slice_events(events, 0, 300), ["e0", "e145"])
+        self.assertEqual(slice_events(events, 300, 600), ["e300", "e599"])
+        self.assertEqual(slice_events(events, 600, 900), ["e600"])
+
+    def test_load_chunk_windows_from_xml(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            chunks = tmp_path / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.xml").write_text(
+                '<chunk id="0" start_sec="0" end_sec="300"><item>t</item></chunk>', encoding="utf-8")
+            (chunks / "chunk_01.xml").write_text(
+                '<chunk id="1" start_sec="300" end_sec="600"><item>t</item></chunk>', encoding="utf-8")
+            windows = load_chunk_windows(chunks)
+            self.assertEqual(windows, [("chunk_00", 0, 300), ("chunk_01", 300, 600)])
+
+    def test_align_writes_per_chunk_logs_and_index(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            feed = tmp_path / "events.txt"
+            feed.write_text(
+                "0\t[00:00:00] a: intro\n"
+                "145\t[00:02:25] a: still early\n"
+                "300\t[00:05:00] b: chunk two\n"
+                "9000\t[02:30:00] c: far later\n", encoding="utf-8")
+            chunks = tmp_path / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.xml").write_text(
+                '<chunk id="0" start_sec="0" end_sec="300"><item>t</item></chunk>', encoding="utf-8")
+            (chunks / "chunk_01.xml").write_text(
+                '<chunk id="1" start_sec="300" end_sec="600"><item>t</item></chunk>', encoding="utf-8")
+            out = tmp_path / "out"
+
+            align(feed, chunks, out)
+
+            self.assertEqual((out / "livechat_chunk_00.txt").read_text(encoding="utf-8"), "[00:00:00] a: intro\n[00:02:25] a: still early\n")
+            self.assertEqual((out / "livechat_chunk_01.txt").read_text(encoding="utf-8"), "[00:05:00] b: chunk two\n")
+            self.assertNotEqual((out / "livechat_chunk_01.txt").read_text(encoding="utf-8"), "[02:30:00] c: far later\n")
+
+            index = json.loads((out / "livechat_index.json").read_text(encoding="utf-8"))
+            self.assertEqual(index["chunk_00"]["count"], 2)
+            self.assertEqual(index["chunk_01"]["count"], 1)
+
+    def test_align_with_visual_livechat_format(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = pathlib.Path(tmp)
+            feed = tmp_path / "visual_events.txt"
+            feed.write_text(
+                "600\t[00:10:00] @nekoalter4231: ไปคุมให้หมดก็ยึดได้แล้ว\n"
+                "600\t[00:10:00] @infinity8078: :_Nerd: :_Nerd:\n"
+                "610\t[00:10:10] @infinity8078: the almighty\n",
+                encoding="utf-8",
+            )
+            chunks = tmp_path / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_02.json").write_text(
+                '{"start_sec": 600, "end_sec": 900, "text": "bleach talk"}', encoding="utf-8"
+            )
+            out = tmp_path / "out"
+            align(feed, chunks, out)
+            self.assertTrue((out / "livechat_chunk_02.txt").exists())
+            lines = (out / "livechat_chunk_02.txt").read_text(encoding="utf-8").strip().splitlines()
+            self.assertEqual(len(lines), 3)
+            self.assertIn("@infinity8078: :_Nerd: :_Nerd:", lines[1])
 
 
-def test_load_events_sorts_unsorted_feed():
-    events = load_events_feed(["300\t[00:05:00] b: z", "10\t[00:00:10] a: y"])
-    assert events == [(10, "[00:00:10] a: y"), (300, "[00:05:00] b: z")]
-
-
-def load_events_feed(lines):
-    import tempfile
-    tmp = pathlib.Path(tempfile.mkdtemp()) / "e.txt"
-    tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return load_events(tmp)
-
-
-def test_slice_events_half_open_window():
-    events = [(0, "e0"), (145, "e145"), (300, "e300"), (599, "e599"), (600, "e600")]
-    assert slice_events(events, 0, 300) == ["e0", "e145"]
-    assert slice_events(events, 300, 600) == ["e300", "e599"]
-    assert slice_events(events, 600, 900) == ["e600"]
-
-
-def test_load_chunk_windows_from_xml(tmp_path):
-    chunks = tmp_path / "chunks"
-    chunks.mkdir()
-    (chunks / "chunk_00.xml").write_text(
-        '<chunk id="0" start_sec="0" end_sec="300"><item>t</item></chunk>', encoding="utf-8")
-    (chunks / "chunk_01.xml").write_text(
-        '<chunk id="1" start_sec="300" end_sec="600"><item>t</item></chunk>', encoding="utf-8")
-    windows = load_chunk_windows(chunks)
-    assert windows == [("chunk_00", 0, 300), ("chunk_01", 300, 600)]
-
-
-# ─────────────────────────────────────────────────────────────
-# end-to-end align
-# ─────────────────────────────────────────────────────────────
-
-def test_align_writes_per_chunk_logs_and_index(tmp_path):
-    feed = tmp_path / "events.txt"
-    feed.write_text(
-        "0\t[00:00:00] a: intro\n"
-        "145\t[00:02:25] a: still early\n"
-        "300\t[00:05:00] b: chunk two\n"
-        "9000\t[02:30:00] c: far later\n", encoding="utf-8")
-    chunks = tmp_path / "chunks"
-    chunks.mkdir()
-    (chunks / "chunk_00.xml").write_text(
-        '<chunk id="0" start_sec="0" end_sec="300"><item>t</item></chunk>', encoding="utf-8")
-    (chunks / "chunk_01.xml").write_text(
-        '<chunk id="1" start_sec="300" end_sec="600"><item>t</item></chunk>', encoding="utf-8")
-    out = tmp_path / "out"
-
-    align(feed, chunks, out)
-
-    assert (out / "livechat_chunk_00.txt").read_text(encoding="utf-8") == "[00:00:00] a: intro\n[00:02:25] a: still early\n"
-    assert (out / "livechat_chunk_01.txt").read_text(encoding="utf-8") == "[00:05:00] b: chunk two\n"
-    assert (out / "livechat_chunk_01.txt").read_text(encoding="utf-8") != "[02:30:00] c: far later\n"
-
-    index = json_load(out / "livechat_index.json")
-    assert index["chunk_00"]["count"] == 2
-    assert index["chunk_01"]["count"] == 1
-
-
-def json_load(p):
-    import json
-    return json.loads(p.read_text(encoding="utf-8"))
-
-
-def test_align_with_visual_livechat_format(tmp_path):
-    feed = tmp_path / "visual_events.txt"
-    feed.write_text(
-        "600\t[00:10:00] @nekoalter4231: ไปคุมให้หมดก็ยึดได้แล้ว\n"
-        "600\t[00:10:00] @infinity8078: :_Nerd: :_Nerd:\n"
-        "610\t[00:10:10] @infinity8078: the almighty\n",
-        encoding="utf-8",
-    )
-    chunks = tmp_path / "chunks"
-    chunks.mkdir()
-    (chunks / "chunk_02.json").write_text(
-        '{"start_sec": 600, "end_sec": 900, "text": "bleach talk"}', encoding="utf-8"
-    )
-    out = tmp_path / "out"
-    align(feed, chunks, out)
-    assert (out / "livechat_chunk_02.txt").exists()
-    lines = (out / "livechat_chunk_02.txt").read_text(encoding="utf-8").strip().splitlines()
-    assert len(lines) == 3
-    assert "@infinity8078: :_Nerd: :_Nerd:" in lines[1]
+if __name__ == "__main__":
+    unittest.main()

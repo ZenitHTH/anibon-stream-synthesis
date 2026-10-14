@@ -1,38 +1,46 @@
 import json
-import pytest
+import tempfile
+import unittest
 from pathlib import Path
+from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
 
-def test_detect_youtube_auto_transcript_by_json3(tmp_path):
-    from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
-    
-    (tmp_path / "raw_transcript.th.json3").write_text("{}", encoding="utf-8")
-    assert detect_transcript_source(tmp_path) == "youtube-auto"
-    assert is_youtube_auto_transcript(tmp_path) is True
 
-def test_detect_youtube_auto_transcript_by_wiremagic(tmp_path):
-    from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
-    
-    (tmp_path / "raw_transcript.json").write_text('{"wireMagic": "pb3", "events": []}', encoding="utf-8")
-    assert detect_transcript_source(tmp_path) == "youtube-auto"
-    assert is_youtube_auto_transcript(tmp_path) is True
+class TestTranscriptSource(unittest.TestCase):
+    def test_detect_youtube_auto_transcript_by_json3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "raw_transcript.th.json3").write_text("{}", encoding="utf-8")
+            self.assertEqual(detect_transcript_source(tmp_path), "youtube-auto")
+            self.assertTrue(is_youtube_auto_transcript(tmp_path))
 
-def test_detect_whisper_source(tmp_path):
-    from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
-    
-    (tmp_path / "whisper_output.json").write_text('[]', encoding="utf-8")
-    assert detect_transcript_source(tmp_path) == "whisper"
-    assert is_youtube_auto_transcript(tmp_path) is False
+    def test_detect_youtube_auto_transcript_by_wiremagic(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "raw_transcript.json").write_text('{"wireMagic": "pb3", "events": []}', encoding="utf-8")
+            self.assertEqual(detect_transcript_source(tmp_path), "youtube-auto")
+            self.assertTrue(is_youtube_auto_transcript(tmp_path))
 
-def test_detect_whisper_by_audio_recovery(tmp_path):
-    from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
-    
-    (tmp_path / "audio_recovered.json").write_text('[]', encoding="utf-8")
-    assert detect_transcript_source(tmp_path) == "whisper"
-    assert is_youtube_auto_transcript(tmp_path) is False
+    def test_detect_whisper_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "whisper_output.json").write_text('[]', encoding="utf-8")
+            self.assertEqual(detect_transcript_source(tmp_path), "whisper")
+            self.assertFalse(is_youtube_auto_transcript(tmp_path))
 
-def test_detect_source_by_info_json(tmp_path):
-    from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
-    
-    (tmp_path / "info.json").write_text(json.dumps({"transcript_source": "whisper"}), encoding="utf-8")
-    assert detect_transcript_source(tmp_path) == "whisper"
-    assert is_youtube_auto_transcript(tmp_path) is False
+    def test_detect_whisper_by_audio_recovery(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "audio_recovered.json").write_text('[]', encoding="utf-8")
+            self.assertEqual(detect_transcript_source(tmp_path), "whisper")
+            self.assertFalse(is_youtube_auto_transcript(tmp_path))
+
+    def test_detect_source_by_info_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            (tmp_path / "info.json").write_text(json.dumps({"transcript_source": "whisper"}), encoding="utf-8")
+            self.assertEqual(detect_transcript_source(tmp_path), "whisper")
+            self.assertFalse(is_youtube_auto_transcript(tmp_path))
+
+
+if __name__ == "__main__":
+    unittest.main()

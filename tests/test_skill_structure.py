@@ -196,6 +196,15 @@ class TestSkillStructure(unittest.TestCase):
             self.assertNotIn("Gemini 3.6 Flash", content, f"Stale Gemini 3.6 Flash pin in {path.relative_to(PLUGIN_ROOT)}")
             self.assertIn("Gemini 3.8 Flash (High)", content, f"Missing Gemini 3.8 Flash (High) in {path.relative_to(PLUGIN_ROOT)}")
 
+    def test_zero_pytest_imports_across_repo(self):
+        offenders = []
+        for p in list(PLUGIN_ROOT.glob("tests/**/*.py")) + list(PLUGIN_ROOT.glob("skills/*/tests/**/*.py")):
+            txt = p.read_text(encoding="utf-8")
+            if re.search(r"^\s*(?:import|from)\s+pytest\b", txt, re.MULTILINE):
+                offenders.append(str(p.relative_to(PLUGIN_ROOT)))
+        self.assertEqual(offenders, [], f"Test files still importing pytest: {offenders}")
+        self.assertFalse((PLUGIN_ROOT / "skills/anibon-timestamper-local/pytest.ini").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
