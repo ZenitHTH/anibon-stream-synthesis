@@ -285,15 +285,39 @@ def audit_timestamps_against_glossary(
 
 
 # ── Formatting & Time Helpers ────────────────────────────────────────────────
-
-def _fmt_ts(seconds: float) -> str:
-    s = int(seconds)
-    return f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
+from anibon.time import fmt_ts as _fmt_ts, parse_ts as ts_to_sec
 
 
-def ts_to_sec(ts: str) -> int:
-    h, m, s = ts.split(":")
-    return int(h) * 3600 + int(m) * 60 + int(s)
+def finalize_and_assemble_timestamps(
+    workspace: Path,
+    all_timestamps: List[str],
+    endpoint: str,
+    model: str,
+    temperature: float,
+    block_size: int,
+    no_summarizer_pass: bool,
+    args: Optional[argparse.Namespace] = None,
+    glossary: Optional[dict] = None,
+) -> Tuple[Path, List[str]]:
+    deduped = list(dict.fromkeys(all_timestamps))
+    raw_ts = workspace / "all_timestamps.txt"
+    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
+    print(f"[done] Raw timestamps: {raw_ts}")
+    if args:
+        deduped = apply_vision_verify(deduped, workspace, args, model)
+    assembled = None
+    if not no_summarizer_pass:
+        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
+    if not assembled:
+        print("[assemble] Using heuristic double-border part assembly.")
+        assembled = assemble_parts(deduped, workspace, block_size)
+    out_md = workspace / "anibon_timestamps.md"
+    out_md.write_text(assembled, encoding="utf-8")
+    if glossary:
+        audit_timestamps_against_glossary(out_md, glossary)
+    print(f"[done] Final timestamps: {out_md}")
+    run_parity_gates(workspace, out_md)
+    return out_md, deduped
 
 
 def _chunk_range(items: list) -> Tuple[str, str]:
@@ -546,35 +570,17 @@ def run_recursive_mode(
 
     # Assembly
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
-
-    deduped = []
-    seen = set()
-    for s in all_timestamps:
-        if s not in seen:
-            seen.add(s)
-            deduped.append(s)
-
-    raw_ts = workspace / "all_timestamps.txt"
-    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    print(f"[done] Raw timestamps: {raw_ts}")
-
-    if args:
-        deduped = apply_vision_verify(deduped, workspace, args, model)
-
-    assembled = None
-    if not no_summarizer_pass:
-        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
-
-    if not assembled:
-        print("[assemble] Using heuristic double-border part assembly.")
-        assembled = assemble_parts(deduped, workspace, block_size)
-
-    out_md = workspace / "anibon_timestamps.md"
-    out_md.write_text(assembled, encoding="utf-8")
-    if glossary:
-        audit_timestamps_against_glossary(out_md, glossary)
-    print(f"[done] Final timestamps: {out_md}")
-    run_parity_gates(workspace, out_md)
+    out_md, deduped = finalize_and_assemble_timestamps(
+        workspace=workspace,
+        all_timestamps=all_timestamps,
+        endpoint=endpoint,
+        model=model,
+        temperature=temperature,
+        block_size=block_size,
+        no_summarizer_pass=no_summarizer_pass,
+        args=args,
+        glossary=glossary,
+    )
 
     is_finished = (not max_chunks or processed_count >= total)
     save_state(workspace, {
@@ -720,35 +726,17 @@ def run_group_mode(
 
     # Assembly
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
-
-    deduped = []
-    seen = set()
-    for s in all_timestamps:
-        if s not in seen:
-            seen.add(s)
-            deduped.append(s)
-
-    raw_ts = workspace / "all_timestamps.txt"
-    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    print(f"[done] Raw timestamps: {raw_ts}")
-
-    if args:
-        deduped = apply_vision_verify(deduped, workspace, args, model)
-
-    assembled = None
-    if not no_summarizer_pass:
-        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
-
-    if not assembled:
-        print("[assemble] Using heuristic double-border part assembly.")
-        assembled = assemble_parts(deduped, workspace, block_size)
-
-    out_md = workspace / "anibon_timestamps.md"
-    out_md.write_text(assembled, encoding="utf-8")
-    if glossary:
-        audit_timestamps_against_glossary(out_md, glossary)
-    print(f"[done] Final timestamps: {out_md}")
-    run_parity_gates(workspace, out_md)
+    out_md, deduped = finalize_and_assemble_timestamps(
+        workspace=workspace,
+        all_timestamps=all_timestamps,
+        endpoint=endpoint,
+        model=model,
+        temperature=temperature,
+        block_size=block_size,
+        no_summarizer_pass=no_summarizer_pass,
+        args=args,
+        glossary=glossary,
+    )
 
     save_state(workspace, {
         "current_group": num_groups,
@@ -907,14 +895,7 @@ def main() -> None:
             sys.exit(1)
         stamps = [l.strip() for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
         print(f"[summarize-only] Loaded {len(stamps)} timestamps. Running assembly...")
-        stamps = apply_vision_verify(stamps, workspace, args, model)
-        assembled = None
-        if not args.no_summarizer_pass:
-            assembled = run_local_summarizer_pass(args.endpoint, model, stamps, workspace, args.temperature)
-        if not assembled:
-            assembled = assemble_parts(stamps, workspace, args.block_size)
-        out_md = workspace / "anibon_timestamps.md"
-        out_md.write_text(assembled, encoding="utf-8")
+        glossary = None
         if not args.no_knowledge_reader:
             sig_file = workspace / "signals.json"
             sig_map = json.loads(sig_file.read_text(encoding="utf-8")) if sig_file.exists() else {}
@@ -922,11 +903,21 @@ def main() -> None:
             if g_path.exists():
                 try:
                     with open(g_path, encoding="utf-8") as gf:
-                        audit_timestamps_against_glossary(out_md, json.load(gf))
+                        glossary = json.load(gf)
                 except Exception:
                     pass
+        out_md, deduped = finalize_and_assemble_timestamps(
+            workspace=workspace,
+            all_timestamps=stamps,
+            endpoint=args.endpoint,
+            model=model,
+            temperature=args.temperature,
+            block_size=args.block_size,
+            no_summarizer_pass=args.no_summarizer_pass,
+            args=args,
+            glossary=glossary,
+        )
         print(f"✅ Assembly complete: {out_md}")
-        run_parity_gates(workspace, out_md)
 
         from anibon.transcript_source import is_youtube_auto_transcript
         if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:

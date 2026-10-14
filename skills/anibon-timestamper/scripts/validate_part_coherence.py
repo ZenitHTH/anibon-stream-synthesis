@@ -33,20 +33,19 @@ from pathlib import Path
 from collections import Counter
 
 # ── Resources ────────────────────────────────────────────────────
-_SCRIPT_DIR = Path(__file__).resolve().parent
-_RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
+from anibon.resources import resource_path
 
 
 def load_tag_macros() -> dict[str, str]:
     """Load tag→macro mapping from JSON config."""
-    path = _RESOURCES_DIR / "tag_macros.json"
+    path = resource_path("tag_macros.json")
     data = json.loads(path.read_text(encoding="utf-8"))
     return data.get("mapping", {})
 
 
 def load_filename_game_map() -> dict[str, str]:
     """Load filename→game display name mapping from JSON config."""
-    path = _RESOURCES_DIR / "filename_game_map.json"
+    path = resource_path("filename_game_map.json")
     data = json.loads(path.read_text(encoding="utf-8"))
     return data.get("mapping", {})
 
