@@ -217,7 +217,14 @@ class TestSkillStructure(unittest.TestCase):
                     missing.append(str(p.relative_to(PLUGIN_ROOT)))
         self.assertEqual(missing, [], f"Modules using PEP 604/585 annotations without __future__.annotations: {missing}")
 
+    def test_all_local_anibon_modules_import_cleanly(self):
+        vf = PLUGIN_ROOT / "skills/anibon-timestamper-local/scripts/anibon/vision_verify.py"
+        txt = vf.read_text(encoding="utf-8")
+        self.assertIn("from __future__ import annotations", txt)
+        self.assertRegex(txt, r"from typing import [^\n]*\bAny\b")
+
 
 if __name__ == "__main__":
+
     unittest.main()
 

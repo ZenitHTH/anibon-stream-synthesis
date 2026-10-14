@@ -1,11 +1,12 @@
 """vision_verify.py — Ambiguous timestamp detection and visual ground truth verification."""
+from __future__ import annotations
 
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from anibon.lmstudio import call_vision
 
