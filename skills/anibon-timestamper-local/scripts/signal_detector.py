@@ -5,6 +5,8 @@ Scans transcript chunks against knowledge.json using corpus-level IDF (rarity)
 matching, normalizes phonetic entities with default_mappings.json, and provides
 domain-specific tags, prompt hints, and first-verbs.
 """
+from __future__ import annotations
+
 
 import json
 import math

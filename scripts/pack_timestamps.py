@@ -25,6 +25,8 @@ Options:
     --title TITLE       Document title (default: "วิดีโอสตรีม ANIBON")
     --parts-json FILE   Output parts.json path (default: same stem + _parts.json)
 """
+from __future__ import annotations
+
 import re
 import sys
 import json

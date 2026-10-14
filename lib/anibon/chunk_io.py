@@ -5,6 +5,8 @@ Consumers (before extraction):
   write_chunk_*   — _chunker.py:21-39
   chunk_sort_key  — detect_signals.py:108
 """
+from __future__ import annotations
+
 import json
 import glob
 import os

@@ -9,6 +9,8 @@ Output:  livechat/<idx>.txt per chunk (events whose sec falls in [start_sec, end
 Purpose: give each timestamper subagent the watchers' chat for its own 5-minute
 chunk, so it can infer situation + emotion of the live from both sides.
 """
+from __future__ import annotations
+
 import argparse
 import json
 import sys

@@ -5,6 +5,8 @@ Consumers (before extraction):
   parse_timestamps()     — pack_timestamps.py (2 variants)
   parse_timestamp_line() — merge_timestamps.py:11
 """
+from __future__ import annotations
+
 import re
 from anibon.time import parse_ts
 

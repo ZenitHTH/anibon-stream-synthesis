@@ -16,6 +16,8 @@ when `confidence` is clear — never glue a knowledge file to a bare substring h
 # ponytail: pure stdlib local IDF / keyword matching; no Thai tokenizer needed
 # (weight computed over the well-defined Keyword set in knowledge.json).
 """
+from __future__ import annotations
+
 
 import argparse
 import json

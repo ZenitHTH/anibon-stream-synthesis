@@ -28,6 +28,8 @@ Usage:
   # Re-sync and validate dictionary files across plugin locations
   python3 update_garbled_dictionary.py --sync-only
 """
+from __future__ import annotations
+
 
 import os
 import sys

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # lib/anibon/vision.py
 import json
 import os

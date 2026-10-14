@@ -18,6 +18,8 @@ Usage:
 Pipeline:
   prepare_video.py  →  clean_garbled_english.py  →  detect_signals.py
 """
+from __future__ import annotations
+
 
 import json
 import sys

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 # scripts/plan_highlight.py
 # Parses a livestream-scene-selection markdown file and writes a JSON cut plan.
 # AI passes only file paths — never reads the JSON output.

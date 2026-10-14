@@ -205,6 +205,19 @@ class TestSkillStructure(unittest.TestCase):
         self.assertEqual(offenders, [], f"Test files still importing pytest: {offenders}")
         self.assertFalse((PLUGIN_ROOT / "skills/anibon-timestamper-local/pytest.ini").exists())
 
+    def test_future_annotations_in_pep604_modules(self):
+        missing = []
+        type_re = re.compile(r"(->\s*[^:\n]*\|)|(:[^=\n]*\|\s*(?:None|int|float|str|list|dict|tuple|Path))|(\b(?:list|dict|tuple|set)\[)")
+        for folder in ("lib", "scripts", "skills"):
+            for p in (PLUGIN_ROOT / folder).rglob("*.py"):
+                if p.is_symlink() or "/tests/" in str(p):
+                    continue
+                txt = p.read_text(encoding="utf-8")
+                if type_re.search(txt) and "from __future__ import annotations" not in txt:
+                    missing.append(str(p.relative_to(PLUGIN_ROOT)))
+        self.assertEqual(missing, [], f"Modules using PEP 604/585 annotations without __future__.annotations: {missing}")
+
 
 if __name__ == "__main__":
     unittest.main()
+

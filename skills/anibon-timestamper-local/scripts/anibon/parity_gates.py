@@ -6,6 +6,8 @@ Mirrors anibon-timestamper deterministic steps that need no LLM:
   10   check_sections.py -> byte cap + ASR garble scan
 Report-only: gates print findings and never abort the run.
 """
+from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path

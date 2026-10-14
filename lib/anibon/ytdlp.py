@@ -7,6 +7,8 @@ Consumers (before extraction):
   download_video        — _vision.py:11, cut_highlight.py (direct subprocess)
   probe_metadata        — plan_highlight.py:147
 """
+from __future__ import annotations
+
 import json
 import shutil
 import subprocess

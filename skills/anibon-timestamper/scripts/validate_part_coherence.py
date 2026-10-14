@@ -25,6 +25,8 @@ Options:
     --chunks DIR     Chunk directory for richer cross-reference
     --verbose        Print per-part details even for passing parts
 """
+from __future__ import annotations
+
 
 import re
 import sys

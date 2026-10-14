@@ -3,6 +3,8 @@
 Unpack YouTube Storyboard MHTML into clean JPEG slides and slice high-resolution tile frames.
 Supports dynamic grid sizes (3x3, 5x5, 10x10) and prevents blur/pixelation.
 """
+from __future__ import annotations
+
 
 import argparse
 import glob

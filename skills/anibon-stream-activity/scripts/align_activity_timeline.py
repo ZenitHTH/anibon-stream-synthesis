@@ -3,6 +3,8 @@
 Align activity_timeline.json intervals to transcript chunk windows.
 Emits per-chunk visual context files (activity_chunk_NN.txt) for subagent prompt injection.
 """
+from __future__ import annotations
+
 
 import argparse
 import glob

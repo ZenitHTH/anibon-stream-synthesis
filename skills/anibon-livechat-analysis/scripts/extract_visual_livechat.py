@@ -5,6 +5,8 @@ Extract On-Screen Burned-In LiveChat via Vision Proxy (Gemini 3.8 Flash (High)).
 Crops the burned-in chat region from video slices, runs vision OCR with channel
 emote mapping via `agy`, deduplicates scrolling messages, and outputs raw event feeds.
 """
+from __future__ import annotations
+
 
 import argparse
 import json

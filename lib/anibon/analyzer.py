@@ -5,6 +5,8 @@ Consumers (before extraction):
   detect_timeline_gaps      — anibon_analyzer_core.py:79
   calculate_youtube_blocks  — anibon_analyzer_core.py:100
 """
+from __future__ import annotations
+
 
 KEYWORDS: dict[str, list[str]] = {
     "tokusatsu": [

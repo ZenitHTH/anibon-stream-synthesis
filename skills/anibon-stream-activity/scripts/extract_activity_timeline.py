@@ -3,6 +3,8 @@
 Extract continuous activity and webcam timeline from storyboard frames.
 Merges frame-by-frame visual classifications into activity_timeline.json.
 """
+from __future__ import annotations
+
 
 import argparse
 import glob

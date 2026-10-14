@@ -1,4 +1,6 @@
 """ROI calculation and ffmpeg filter generation for live chat overlays."""
+from __future__ import annotations
+
 
 ROI_PRESETS = {
     "bottom-right": {

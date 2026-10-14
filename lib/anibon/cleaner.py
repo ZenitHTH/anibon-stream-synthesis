@@ -6,6 +6,8 @@ Consumers:
   scan_garbles        — check_sections.py
   load_replacements   — clean_garbled_english.py, whisper_dispatcher.py
 """
+from __future__ import annotations
+
 import json
 import re
 from pathlib import Path
