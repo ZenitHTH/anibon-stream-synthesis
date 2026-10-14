@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default async ({ client } = {}) => {
   const pluginSkillsDir = path.resolve(__dirname, '../../skills');
-  const pluginAgentsDir = path.resolve(__dirname, '../agents');
+  const pluginAgentsDir = path.resolve(__dirname, '../../agents');
 
   return {
     config: async (config) => {

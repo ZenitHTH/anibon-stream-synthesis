@@ -147,6 +147,17 @@ class TestSkillStructure(unittest.TestCase):
         self.assertEqual(dups, [], f"Duplicate core anibon modules found: {dups}")
         self.assertEqual(vision_dups, [], f"Duplicate _vision.py modules found: {vision_dups}")
 
+    def test_no_duplicate_skill_resources_or_opencode_agents(self):
+        skill_jsons = [
+            str(p.relative_to(PLUGIN_ROOT))
+            for p in PLUGIN_ROOT.glob("skills/*/resources/*.json")
+            if not p.is_symlink()
+        ]
+        self.assertEqual(skill_jsons, [], f"Duplicate skill resource JSONs found: {skill_jsons}")
+        self.assertFalse((PLUGIN_ROOT / ".opencode" / "agents").exists())
+        for required in ("garbled_replacements.json", "default_mappings.json", "knowledge.json", "signal_config.json"):
+            self.assertTrue((PLUGIN_ROOT / "resources" / required).is_file(), f"Missing root resource: {required}")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,15 @@ description: >
   transcripts via whisper.cpp, applies anti-cascade validation, and syncs confirmed entries
   into garbled_replacements.json. Use once after all anibon-chunk-timestamper subagents have returned.
 enable_write_tools: true
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  bash: allow
+  edit: allow
+  webfetch: allow
+  websearch: allow
 ---
 
 You are the Garbled-Notes Subagent for an ANIBON timestamping session.

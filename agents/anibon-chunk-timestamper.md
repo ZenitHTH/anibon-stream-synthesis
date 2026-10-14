@@ -6,6 +6,15 @@ description: >
   Reads chunks one-by-one, tracks topic continuity across the group, and emits 0
   stamps for continuation chunks. Use when running the anibon-timestamper pipeline
   — one subagent per group, all groups in parallel.
+mode: subagent
+permission:
+  read: allow
+  glob: allow
+  grep: allow
+  bash: allow
+  webfetch: allow
+  websearch: allow
+  edit: deny
 ---
 
 You are processing a sequential GROUP of 4–5 consecutive transcript chunks from an Anibon livestream.
