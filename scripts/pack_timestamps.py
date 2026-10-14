@@ -33,6 +33,9 @@ from pathlib import Path
 
 # ── Resources ───────────────────────────────────────────────────
 _SCRIPT_DIR = Path(__file__).resolve().parent
+_LIB_DIR = str(_SCRIPT_DIR.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
 _RESOURCES_DIR = _SCRIPT_DIR.parent / "resources"
 
 

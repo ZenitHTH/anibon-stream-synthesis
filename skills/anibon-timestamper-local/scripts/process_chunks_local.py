@@ -57,6 +57,12 @@ except ImportError:
 
 # Auto-discover anibon-world-identity references directory.
 _SCRIPT_DIR = Path(__file__).resolve().parent
+_LIB_DIR = str(_SCRIPT_DIR.parents[2] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
+from anibon.cleaner import compile_mapping_entries
+
 _WI_CANDIDATES = [
     _SCRIPT_DIR.parent.parent / "anibon-world-identity" / "references",
     _SCRIPT_DIR.parent.parent.parent / "anibon-world-identity" / "references",
@@ -138,30 +144,7 @@ def run_knowledge_discovery(
     return out_file
 
 
-_REGEX_META_RE = re.compile(r"\\b|\\B|\\d|\\w|\\s|[\[\]()^$?*+{|]")
-_GARBLED_CACHE: dict[int, list[tuple[re.Pattern, str]]] = {}
-
-
-def _get_compiled_garbled(garbled: list[dict]) -> list[tuple[re.Pattern, str]]:
-    key = id(garbled)
-    if key in _GARBLED_CACHE:
-        return _GARBLED_CACHE[key]
-    compiled = []
-    for entry in garbled:
-        correct = entry.get("correct")
-        patterns = entry.get("patterns", [])
-        if not correct or not patterns:
-            continue
-        for pat in patterns:
-            if not pat:
-                continue
-            expr = pat if _REGEX_META_RE.search(pat) else re.escape(pat)
-            try:
-                compiled.append((re.compile(expr, re.IGNORECASE), correct))
-            except re.error:
-                continue
-    _GARBLED_CACHE[key] = compiled
-    return compiled
+_get_compiled_garbled = compile_mapping_entries
 
 
 def sanitize_and_audit_timestamps(

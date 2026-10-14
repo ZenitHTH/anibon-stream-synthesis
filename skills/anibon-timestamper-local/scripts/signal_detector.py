@@ -10,10 +10,15 @@ import json
 import math
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Optional
 
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
 
+from anibon.cleaner import compile_mapping_entries
 from anibon.resources import resource_path
 
 
@@ -167,30 +172,7 @@ def clean_transcript_noise(text: str) -> str:
     return _MULTI_SPACE_RE.sub(" ", cleaned).strip()
 
 
-_REGEX_META_RE = re.compile(r"\\b|\\B|\\d|\\w|\\s|[\[\]()^$?*+{|]")
-_NORMALIZER_CACHE: dict[int, list[tuple[re.Pattern, str]]] = {}
-
-
-def _get_compiled_mappings(mappings: list[dict]) -> list[tuple[re.Pattern, str]]:
-    key = id(mappings)
-    if key in _NORMALIZER_CACHE:
-        return _NORMALIZER_CACHE[key]
-    compiled = []
-    for item in mappings:
-        correct = item.get("correct")
-        patterns = item.get("patterns", [])
-        if not correct or not patterns:
-            continue
-        for pat in patterns:
-            if not pat:
-                continue
-            expr = pat if _REGEX_META_RE.search(pat) else re.escape(pat)
-            try:
-                compiled.append((re.compile(expr, re.IGNORECASE), correct))
-            except re.error:
-                continue
-    _NORMALIZER_CACHE[key] = compiled
-    return compiled
+_get_compiled_mappings = compile_mapping_entries
 
 
 def normalize_transcript(text: str, mappings: list[dict]) -> str:

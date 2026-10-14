@@ -30,7 +30,12 @@ import subprocess
 import sys
 import threading
 import time
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+_LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
 
 
 # ==============================================================================

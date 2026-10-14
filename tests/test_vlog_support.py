@@ -11,6 +11,7 @@ WORLD_ID_DIR = SKILLS_DIR / "anibon-world-identity"
 ACTIVITY_DIR = SKILLS_DIR / "anibon-stream-activity"
 
 # Import validate_tags functions
+sys.path.insert(0, str(PLUGIN_ROOT / "lib"))
 sys.path.insert(0, str(TIMESTAMPER_DIR / "scripts"))
 from validate_tags import parse_line, suggest_retag
 from validate_part_coherence import check_tag_diversity

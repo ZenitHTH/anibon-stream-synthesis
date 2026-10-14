@@ -32,6 +32,10 @@ import json
 from pathlib import Path
 from collections import Counter
 
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
 # ── Resources ────────────────────────────────────────────────────
 from anibon.resources import resource_path
 

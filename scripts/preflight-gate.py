@@ -12,6 +12,11 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+_LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
 from anibon.time import parse_ts
 
 REQUIRED_CHECKS = [
@@ -80,9 +85,9 @@ def check_timestamps(timestamp_path):
 
 def main():
     """CLI: python3 preflight-gate.py <workspace_dir>"""
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
         print("Usage: python3 preflight-gate.py <workspace_dir>", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(0 if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help") else 1)
 
     workspace = sys.argv[1]
     skill_base = os.environ.get(

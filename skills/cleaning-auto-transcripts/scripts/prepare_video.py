@@ -2,6 +2,10 @@
 import sys, argparse
 from pathlib import Path
 
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
 from anibon import ytdlp, cleaner
 from anibon.resources import load_default_mappings
 from anibon.chunk_io import write_chunk_json, write_chunk_xml, write_chunk_txt

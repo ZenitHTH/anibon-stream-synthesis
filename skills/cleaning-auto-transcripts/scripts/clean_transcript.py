@@ -5,6 +5,10 @@ import re
 import argparse
 from pathlib import Path
 
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
 from anibon.ytdlp import flatten_json3
 from anibon.cleaner import correct_transcript
 

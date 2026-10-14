@@ -14,11 +14,52 @@ from anibon.resources import resource_path
 _REGEX_META_RE = re.compile(r"\\b|\\B|\\d|\\w|\\s|[\[\]()^$?*+{|]")
 _SPEAKER_SCRUB_RE = re.compile(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)")
 _CACHE: dict[Path, list[tuple[re.Pattern, str]]] = {}
+_MAPPINGS_CACHE: dict[tuple, list[tuple[re.Pattern, str]]] = {}
 
 
-def _compile_pattern(pat: str) -> re.Pattern:
+def compile_pattern(pat: str, flags: int = re.IGNORECASE) -> re.Pattern:
+    """Compile a pattern string, preserving regex metacharacters (\b, etc.) or escaping literals."""
     expr = pat if _REGEX_META_RE.search(pat) else re.escape(pat)
-    return re.compile(expr, re.IGNORECASE)
+    return re.compile(expr, flags)
+
+
+_compile_pattern = compile_pattern
+
+
+def compile_mapping_entries(mappings: list[dict] | tuple) -> list[tuple[re.Pattern, str]]:
+    """Compile mapping entries [{"correct": str, "patterns": [str, ...]}] into regex pairs.
+
+    Safe caching keyed by contents rather than object identity.
+    """
+    if not mappings:
+        return []
+
+    key_items = []
+    for item in mappings:
+        c = item.get("correct") or ""
+        pats = tuple(item.get("patterns") or ())
+        key_items.append((c, pats))
+    cache_key = tuple(key_items)
+
+    if cache_key in _MAPPINGS_CACHE:
+        return _MAPPINGS_CACHE[cache_key]
+
+    compiled: list[tuple[re.Pattern, str]] = []
+    for item in mappings:
+        correct = item.get("correct")
+        patterns = item.get("patterns", [])
+        if not correct or not patterns:
+            continue
+        for pat in patterns:
+            if not pat:
+                continue
+            try:
+                compiled.append((compile_pattern(pat), correct))
+            except re.error:
+                continue
+
+    _MAPPINGS_CACHE[cache_key] = compiled
+    return compiled
 
 
 def load_replacements(path: Path | None = None) -> list[tuple[re.Pattern, str]]:
@@ -113,8 +154,8 @@ def correct_transcript(transcript: list, mappings: dict) -> list:
     precompiled = []
     for mapping in mappings.get("mappings", []):
         correct = mapping.get("correct", "")
-        excludes = [re.compile(re.escape(ex), re.I) for ex in mapping.get("exclude_if_contains", [])]
-        pats = [re.compile(re.escape(pat), re.I) for pat in mapping.get("patterns", [])]
+        excludes = [compile_pattern(ex) for ex in mapping.get("exclude_if_contains", []) if ex]
+        pats = [compile_pattern(pat) for pat in mapping.get("patterns", []) if pat]
         precompiled.append((pats, correct, excludes))
 
     for item in transcript:

@@ -12,6 +12,12 @@ audit gaps. Blocks if quality criteria unmet.
 import json
 import os
 import sys
+from pathlib import Path
+
+_LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
 from anibon.time import parse_ts
 
 
@@ -82,9 +88,9 @@ def audit_gaps(stamps, max_gap_min=15):
 
 def main():
     """CLI: python3 assembly-gate.py <anibon_timestamps.md>"""
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
         print("Usage: python3 assembly-gate.py <anibon_timestamps.md>", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(0 if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help") else 1)
 
     md_path = sys.argv[1]
     with open(md_path, encoding='utf-8') as f:
