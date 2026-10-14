@@ -7,11 +7,16 @@ Consumers (before extraction):
   download_video        — _vision.py:11, cut_highlight.py (direct subprocess)
   probe_metadata        — plan_highlight.py:147
 """
-import sys
-import subprocess
 import json
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 from anibon.time import fmt_ts
+
+
+def ytdlp_cmd() -> list[str]:
+    return ["yt-dlp"] if shutil.which("yt-dlp") else [sys.executable, "-m", "yt_dlp"]
 
 
 def download_transcript(url: str, workspace: Path) -> None:
@@ -28,7 +33,7 @@ def download_transcript(url: str, workspace: Path) -> None:
     print("[*] Downloading transcript via yt-dlp...", file=sys.stderr)
     subprocess.run(
         [
-            sys.executable, "-m", "yt_dlp", "-P", str(workspace),
+            *ytdlp_cmd(), "-P", str(workspace),
             "--write-auto-subs", "--sub-lang", "th-orig,th",
             "--sub-format", "json3", "--skip-download",
             "--ignore-no-formats-error", "-o", "raw_transcript", url,
@@ -60,7 +65,7 @@ def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<
     print(f"[*] Downloading video via yt-dlp...", file=sys.stderr)
     try:
         subprocess.run(
-            [sys.executable, "-m", "yt_dlp", "-f", format_spec, "-o", str(output), url],
+            [*ytdlp_cmd(), "-f", format_spec, "-o", str(output), url],
             capture_output=False,
             check=True,
         )
@@ -107,7 +112,7 @@ def probe_metadata(url: str) -> dict | None:
     """
     try:
         res = subprocess.run(
-            ["yt-dlp", "--dump-json", url],
+            [*ytdlp_cmd(), "--dump-json", url],
             capture_output=True,
             text=True,
             check=True,

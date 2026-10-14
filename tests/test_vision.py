@@ -3,9 +3,8 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch, MagicMock
 
-# Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "skills" / "antigravity-vision-proxy" / "scripts"))
-import _vision
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+from anibon import vision as _vision
 
 def test_keywords_filter():
     # Test that the keywords correctly match target Thai and English terms

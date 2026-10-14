@@ -71,7 +71,7 @@ def main():
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
 
     if args.vision and args.format in ["json", "xml"]:
-        import _vision
+        from anibon import vision as _vision
         _vision.run(workspace, url)
 
     print(f"[*] Done! Wrote {n} chunks ({args.format}) to {workspace}/chunks/")
