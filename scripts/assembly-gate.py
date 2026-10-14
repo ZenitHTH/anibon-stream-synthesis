@@ -9,8 +9,10 @@ Fix: deduplicate adjacent stamps, rewrite caveman headers, merge undersized part
 audit gaps. Blocks if quality criteria unmet.
 """
 
-import json, sys, os
-from datetime import datetime
+import json
+import os
+import sys
+from anibon.time import parse_ts
 
 
 def parse_timestamps(text):
@@ -40,13 +42,7 @@ def deduplicate(stamps):
     result = [stamps[0]]
     for s in stamps[1:]:
         prev = result[-1]
-
-        # Parse times
-        def to_sec(t):
-            p = t.split(':')
-            return int(p[0])*3600 + int(p[1])*60 + int(p[2])
-
-        gap = to_sec(s['time']) - to_sec(prev['time'])
+        gap = parse_ts(s['time']) - parse_ts(prev['time'])
 
         # Get tag
         prev_tag = prev['rest'].split(']')[0].split('[')[-1] if '[' in prev['rest'] else ''
@@ -68,60 +64,11 @@ def compute_section_bytes(lines):
     return len('\n'.join(lines).encode('utf-8'))
 
 
-def rewrite_section_headers(sections):
-    """Rewrite section headers with caveman summaries (not first timestamp text)."""
-    import re
-    for i, sec in enumerate(sections):
-        # Extract first timestamp description for context
-        stamps = [l for l in sec if l.strip() and l[0].isdigit() and ' - ' in l]
-        if not stamps:
-            continue
-
-        # Derive theme from all stamps
-        tags = set()
-        topics = []
-        for s in stamps:
-            tag_match = re.search(r'\[(\w+)\]', s)
-            if tag_match:
-                tags.add(tag_match.group(1))
-            desc = s.split('] ')[-1] if '] ' in s else ''
-            topics.append(desc[:20])
-
-        # Build caveman summary
-        first_ts = stamps[0].split(' - ')[0]
-
-        if 'WatchParty' in tags or 'Story' in tags:
-            theme = "ดูเนื้อเรื่อง Penacony"
-            if any('จบ' in t or 'สรุป' in t for t in topics):
-                theme = "บทสรุป Penacony ปิดท้าย"
-        elif 'Gacha' in tags or any('กาชา' in t for t in topics):
-            theme = "ถกเกมกาชา FGO vs HSR"
-        elif 'Gameplay' in tags and not any('กาชา' in t for t in topics):
-            theme = "เล่น HSR จัดทีมสู้"
-        elif 'Greeting' in tags:
-            theme = "เปิดสตรีม กลับมาเล่น HSR"
-        else:
-            theme = "คุยเกม วิเคราะห์เมต้า"
-
-        # Write header line (first non-header, non-empty line)
-        header = f" ส่วนที่ {i+1}: {theme} (⏱ เริ่ม: {first_ts})"
-        for j, line in enumerate(sec):
-            if 'ส่วนที่' in line:
-                sec[j] = header
-                break
-
-    return sections
-
-
 def audit_gaps(stamps, max_gap_min=15):
     """Find gaps > max_gap_min between consecutive stamps."""
     issues = []
     for i in range(1, len(stamps)):
-        def to_sec(t):
-            p = t.split(':')
-            return int(p[0])*3600 + int(p[1])*60 + int(p[2])
-
-        gap = to_sec(stamps[i]['time']) - to_sec(stamps[i-1]['time'])
+        gap = parse_ts(stamps[i]['time']) - parse_ts(stamps[i-1]['time'])
         if gap > max_gap_min * 60:
             issues.append({
                 'from': stamps[i-1]['time'],
@@ -131,46 +78,6 @@ def audit_gaps(stamps, max_gap_min=15):
             })
 
     return issues
-
-
-def merge_undersized_sections(sections, stamps_list, min_stamps=4, byte_limit=4200):
-    """
-    Merge sections with < min_stamps into neighbor, unless byte cap prevents.
-    """
-    if len(sections) < 2:
-        return sections, stamps_list
-
-    merged = False
-    new_sections = []
-    new_stamps_list = []
-
-    for i in range(len(sections)):
-        if not new_sections:
-            new_sections.append(sections[i])
-            new_stamps_list.append(stamps_list[i])
-            continue
-
-        prev_stamps = new_stamps_list[-1]
-        curr_stamps = stamps_list[i]
-
-        # Check if previous section is undersized
-        if len(prev_stamps) < min_stamps:
-            # Estimate combined bytes
-            combined = '\n'.join(new_sections[-1]).encode('utf-8') + b'\n' + '\n'.join(sections[i]).encode('utf-8')
-            if len(combined) < byte_limit:
-                # Merge prev and curr
-                merged_section = new_sections[-1][:-1] + [""] + sections[i][1:]
-                new_sections[-1] = merged_section
-                new_stamps_list[-1].extend(curr_stamps)
-                merged = True
-                continue
-
-        new_sections.append(sections[i])
-        new_stamps_list.append(curr_stamps)
-
-    if merged:
-        return new_sections, new_stamps_list
-    return sections, stamps_list
 
 
 def main():

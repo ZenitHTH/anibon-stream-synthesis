@@ -7,13 +7,19 @@ Gaps >10min undetected. Wrong sub-skills loaded. Garbage in → garbage out.
 Fix: This script enforces the pre-flight checklist. Blocks spawn if criteria unmet.
 """
 
-import json, sys, os, subprocess
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from anibon.time import parse_ts
 
 REQUIRED_CHECKS = [
     "anibon-analyzer.py — detects timeline gaps >10min",
-    "detect_topics.py — keyword scan for sub-skill routing",
+    "detect_signals.py — TF-IDF keyword scan for sub-skill routing",
     "macro-density override — block=600 overlap=60 for talk-heavy",
 ]
+
 
 def run_check(name, cmd, cwd):
     """Run a check command and return (passed: bool, output: str)."""
@@ -65,11 +71,7 @@ def check_timestamps(timestamp_path):
         prev_ts = prev_parts[0]
         curr_ts = curr_parts[0]
 
-        def to_sec(t):
-            parts = t.split(':')
-            return int(parts[0])*3600 + int(parts[1])*60 + int(parts[2])
-
-        gap = to_sec(curr_ts) - to_sec(prev_ts)
+        gap = parse_ts(curr_ts) - parse_ts(prev_ts)
         if gap > 900:  # 15min
             issues.append(f"GAP {prev_ts} → {curr_ts}: {gap//60}min (max 15min)")
 
@@ -85,7 +87,7 @@ def main():
     workspace = sys.argv[1]
     skill_base = os.environ.get(
         "ANIBON_SKILL_BASE",
-        os.path.join(workspace, "..", "skills", "anibon-timestamper")
+        str(Path(__file__).resolve().parent.parent / "skills" / "anibon-timestamper")
     )
 
     print("=" * 60)

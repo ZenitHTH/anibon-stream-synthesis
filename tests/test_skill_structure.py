@@ -158,6 +158,30 @@ class TestSkillStructure(unittest.TestCase):
         for required in ("garbled_replacements.json", "default_mappings.json", "knowledge.json", "signal_config.json"):
             self.assertTrue((PLUGIN_ROOT / "resources" / required).is_file(), f"Missing root resource: {required}")
 
+    def test_no_dead_or_divergent_script_copies(self):
+        dead_paths = [
+            "skills/cleaning-auto-transcripts/scripts/whisper_dispatcher.py",
+            "skills/anibon-timestamper-local/scripts/anibon/websearch.py",
+            "skills/anibon-local-transcription/scripts/benchmark_check.py",
+            "skills/anibon-local-transcription/scripts/detect_hallucinations.py",
+            "skills/cleaning-auto-transcripts/scripts/clean_garbled_dictionary.py",
+            "scripts/subagent-prompt-builder.py",
+            "skills/anibon-timestamper/scripts/test_analyze_555_emoji.py",
+        ]
+        for rel in dead_paths:
+            self.assertFalse((PLUGIN_ROOT / rel).exists(), f"Dead/divergent file still exists: {rel}")
+
+        symlinked = [
+            "skills/anibon-timestamper/scripts/process_chunks_local.py",
+            "skills/anibon-timestamper/scripts/pack_timestamps.py",
+            "skills/anibon-timestamper/scripts/check_sections.py",
+            "skills/anibon-timestamper/scripts/whisper_dispatcher.py",
+            "skills/anibon-timestamper-local/scripts/fetch_fgo_db.py",
+            "skills/anibon-timestamper-local/scripts/fetch_ygo_db.py",
+        ]
+        for rel in symlinked:
+            self.assertTrue((PLUGIN_ROOT / rel).is_symlink(), f"Expected symlink at {rel}")
+
 
 if __name__ == "__main__":
     unittest.main()
