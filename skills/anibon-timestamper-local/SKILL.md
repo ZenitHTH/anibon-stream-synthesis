@@ -58,9 +58,9 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
    - Applies phonetic mappings from `default_mappings.json` before passing text to the LLM prompt.
 
 3. **Layer 3: Anti-Guessing & Invariant Prompt Directives (`prompts.py`)**
-   - Enforces `STREAMER IDENTITY` invariant: `สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท'`.
-   - Enforces `ANTI-GUESSING CONSTRAINT`: `ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่`.
-   - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'`.
+   - Enforces `STREAMER IDENTITY` invariant: The streamer is exclusively `'ปู่โบ๊ต' (Boat)`. Never write `'ปู่บอท'`, `'ลุงบอท'`, or `'ปู่โบต'`.
+   - Enforces `ANTI-GUESSING CONSTRAINT`: Never arbitrarily translate Thai phonetic loanwords into novel English spellings. If not found in `VERIFIED DOMAIN ENTITIES`, write phonetic Thai or describe the action in Thai. Never invent novel English proper nouns.
+   - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'` (Thai community/official name followed by English name in parentheses).
 
 4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
    - Automatically executes `sanitize_and_audit_timestamps()` during Pass 2 summary assembly.
@@ -244,21 +244,21 @@ Timestamps are grouped strictly into broad, cohesive macro-thematic parts (typic
 Prioritize viewer navigation and thematic cohesion: keep related discussions (such as an entire series review, media watchparty, or gaming session) unified in a single part rather than arbitrarily slicing into 10–18 micro-parts to fit single-comment byte limits.
 `assemble_parts()` and `run_local_summarizer_pass()` do not enforce byte caps by default. `enforce_byte_cap()` is retained as an opt-in utility only if single-comment splitting is explicitly requested.
 
-### Essential Curated Timestamps Selection Invariant (คัดเลือกเฉพาะที่จำเป็น)
-เมื่อสร้าง Timestamp จากสตรีมยาว (4–8 ชั่วโมง) ให้มีระเบียบปฏิบัติดังนี้:
-1. **Primary Output Focus**: นำเสนอผลลัพธ์หลักเป็นฉบับคัดเฉพาะที่จำเป็น (~40–60 จุด สำหรับสตรีมยาว 7–8 ชม. หรือประมาณ 8–15 จุดต่อหนึ่งหมวดหมู่ใหญ่)
-2. **เกณฑ์การคัดเลือกจุดสำคัญ (Essential Criteria)**:
-   - จุดเริ่มต้นประเด็นใหญ่ หรือจุดเปลี่ยนหัวข้อ (Topic Shift / Pivot)
-   - ข่าวสารทางการ หรือการประกาศสำคัญ (Official News, Releases, Data)
-   - สาระสำคัญและข้อสรุปบทวิเคราะห์ (In-depth Analysis & Core Takeaways)
-   - จุดสำคัญของเกมเพลย์ (เริ่มโหมดฝึกสอน, สำรวจตัวละครใหม่, คราฟต์ไอเทมสำคัญ, บอสเกิด, ไฟต์ไฮไลต์, ชนะ/ตาย)
-   - กล่าวขอบคุณและปิดสตรีม (Stream Outro)
-3. **ตัดทอนจุดที่ไม่จำเป็น (Pruning Micro-Stamps)**:
-   - ตัดจุดคุยย่อยที่พูดประเด็นเดิมวนซ้ำในช่วงเวลาสั้นๆ (เช่น สตรีมเมอร์ขยี้ประเด็นเดิม 5–10 นาที ไม่ต้องลงสแตมป์ทุก 2 นาที)
-   - ตัดการตอบแชทจิปาถะหรือมุกแซะสั้นๆ ที่ไม่เกิดผลต่อเนื้อหาหลัก
-4. **การจัดเก็บไฟล์คู่ขนาน**:
-   - บันทึกไฟล์คัดกรองเฉพาะที่จำเป็นลงใน `anibon_timestamps_essential.md` (หรือ `anibon_timestamps.md`)
-   - เก็บไฟล์ฉบับเต็มละเอียดทุกจุดไว้ใน `anibon_timestamps_full.md` (และ `all_timestamps.txt`) เพื่อใช้เป็นฐานข้อมูลสืบค้นย้อนหลัง
+### Essential Curated Timestamps Selection Invariant
+When generating timestamps from long livestreams (4–8 hours), follow these operating standards:
+1. **Primary Output Focus**: Present the primary result as a curated essential edition (~40–60 timestamps for a 7–8 hour stream, or approximately 8–15 stamps per macro-thematic part).
+2. **Essential Selection Criteria**:
+   - Major topic starts or pivot points (Topic Shift / Pivot).
+   - Official news, announcements, releases, or statistical data (Official News, Releases, Data).
+   - In-depth analytical conclusions and core takeaways (In-depth Analysis & Core Takeaways).
+   - Key gameplay milestones (tutorial start, exploring new characters/skills, key item crafting, boss spawns, highlight fights, victory/defeat).
+   - Stream outro and closing thanks (Stream Outro).
+3. **Pruning Micro-Stamps**:
+   - Prune micro-talk stamps repeating the same talking point within a short window (e.g. if the streamer dissects a point for 5–10 minutes, do not place stamps every 2 minutes).
+   - Prune casual chat chatter, minor jokes, or banter that does not impact the core narrative.
+4. **Dual-File Storage**:
+   - Save the curated essential timestamps file to `anibon_timestamps_essential.md` (or `anibon_timestamps.md`).
+   - Retain the exhaustive, full chronological timestamp log in `anibon_timestamps_full.md` (and `all_timestamps.txt`) for reference and archival lookup.
 
 ### Macro-Topic Boundary Snapping Invariant
 
@@ -266,10 +266,11 @@ Major domain/topic transitions (e.g. Thai Politics → Anime/Series review, Gami
 `assemble_parts()` automatically snaps partition boundaries to transition markers (`สรุปการพูดคุย... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`, `เตรียมเข้าสู่ช่วง`) using `find_best_boundary()`. This ensures viewer-friendly, clean topical grouping without stragglers.
 
 ### Timestamp Lead-in & Analogy Attribution Invariant
-1. **Lead-in Anchor**: เวลาเริ่มต้นของ Timestamp ต้องมาร์กที่ "ประโยคเปิดหัวข้อ" เสมอ ห้ามมาร์ก ณ วินาทีที่พูดคีย์เวิร์ดกลางประโยคหรือหลังคีย์เวิร์ด เพื่อป้องกันผู้ชมกดลิงก์แล้วพลาดบริบทสำคัญที่เพิ่งพูดไป 10–20 วินาที
-2. **Off-hand Analogy Rule**: ห้ามยกชื่อผลงาน บุคคล หรือสถานที่ที่สตรีมเมอร์เอ่ยถึงสั้นๆ แบบเปรียบเปรย (1–2 ประโยค) มาตั้งเป็นชื่อหัวข้อหลักของ Timestamp เด็ดขาด
-   - *ตัวอย่างผิด*: `เปรียบเทียบมาตรฐาน... กับ Frieren` (ทั้งที่พูดถึงดราม่า One Punch Man ภาค 3 และแซะ Frieren แค่ประโยคเดียว)
-   - *ตัวอย่างถูก*: `ชำแหละดราม่า One Punch Man ภาค 3 กับวาทกรรม 'พอดูได้' ของค่าย J.C.Staff (แซะถ้าไม่เอามาตรฐานโปรเจกต์ยักษ์อย่าง Frieren มาเทียบ)`
+1. **Lead-in Anchor**: The start time of a timestamp must always anchor to the opening sentence of the topic. Never mark the timestamp at or after the keyword appears mid-sentence, ensuring viewers who click the link do not miss critical context spoken 10–20 seconds earlier.
+2. **Off-hand Analogy Rule**: Never use the name of a work, person, or place mentioned only briefly in passing (1–2 sentences) as an analogy or rhetorical comparison as the main title of a timestamp.
+   - *Incorrect*: `Comparing standards... with Frieren` (when the topic is a critique of One Punch Man Season 3 and Frieren was only mentioned in a single comparative sentence).
+   - *Correct*: `Critiquing One Punch Man Season 3 and J.C.Staff's 'watchable' standard (noted that it cannot compare to major productions like Frieren)`.
+
 
 ### World Identity Audit Invariant
 NEVER deliver the final timestamp output without performing an `anibon-world-identity` audit on all proper nouns, game titles, and character names. Thai Whisper outputs are phonetic; local LLMs hallucinate well-known games (Genshin, Dota) when hearing unfamiliar ones (CZN, Deadlock). Local references (`references/*.md`) and card/entity databases (`atlas_fgo.db`, `pokemon.db`) take strict precedence over model memory. `process_chunks_local.py` automatically audits generated `anibon_timestamps.md` against `<workspace>/entity_glossary.json` upon completion to replace confirmed phonetic variants.
