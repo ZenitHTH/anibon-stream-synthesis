@@ -828,6 +828,14 @@
   "คาเซนา": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
+  "eternal return": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Eternal_Return.md"
+  },
+  "black survival": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Eternal_Return.md"
   }
  },
  "_discovered": {

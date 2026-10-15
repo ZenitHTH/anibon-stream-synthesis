@@ -306,3 +306,8 @@ NEVER deliver the final timestamp output without performing an `anibon-world-ide
    - *Symptom*: Output timestamp stops 30–60 minutes before video end, missing streamer's closing remarks.
    - *Cause*: `is_continuation=True` in recursive rolling mode treated the final session as unbroken gameplay, discarding outro.
    - *Fix*: Outro invariant — final 5 minutes must always be scanned for `[Ending]` / farewell stamps.
+
+7. **Storyboard MHTML with WebP Content-Type**:
+   - *Symptom*: `prepare_storyboard_slides()` extracts 0 slides despite `storyboard.mhtml` being downloaded (20MB+).
+   - *Cause*: YouTube's `yt-dlp` often packages multipart storyboard slides with `Content-type: image/webp` (`RIFF...WEBP`) rather than `image/jpeg`.
+   - *Fix*: `anibon/multimodal.py` checks both `image/jpeg` and `image/webp`. FFmpeg crops tiles from either format to high-res JPEG output without requiring PIL.

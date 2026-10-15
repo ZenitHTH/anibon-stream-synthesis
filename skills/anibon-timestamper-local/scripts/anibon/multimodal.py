@@ -46,7 +46,7 @@ def unpack_mhtml_storyboard(mhtml_path: Path, out_dir: Path) -> int:
     parts = data.split(boundary)
     count = 0
     for p in parts:
-        if b"image/jpeg" in p:
+        if b"image/jpeg" in p or b"image/webp" in p:
             header_end = p.find(b"\r\n\r\n")
             if header_end != -1:
                 body = p[header_end + 4 :]

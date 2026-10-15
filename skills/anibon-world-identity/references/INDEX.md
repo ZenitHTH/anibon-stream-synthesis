@@ -8,6 +8,7 @@ Game reference files live alongside this index in `references/`.
 - [Chaos Zero Nightmare Reference](Chaos_Zero_Nightmare.md)
 - [Deadlock Reference](Deadlock.md)
 - [Dinoblade Reference](Dinoblade.md)
+- [Eternal Return Reference](Eternal_Return.md)
 - [Genshin Impact Reference](Genshin_Impact.md)
 - [Heartopia Reference](Heartopia.md)
 - [Honkai Impact 3rd Reference](Honkai_Impact_3.md)
