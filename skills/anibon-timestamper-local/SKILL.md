@@ -244,7 +244,24 @@ Timestamps are grouped strictly into broad, cohesive macro-thematic parts (typic
 Prioritize viewer navigation and thematic cohesion: keep related discussions (such as an entire series review, media watchparty, or gaming session) unified in a single part rather than arbitrarily slicing into 10–18 micro-parts to fit single-comment byte limits.
 `assemble_parts()` and `run_local_summarizer_pass()` do not enforce byte caps by default. `enforce_byte_cap()` is retained as an opt-in utility only if single-comment splitting is explicitly requested.
 
+### Essential Curated Timestamps Selection Invariant (คัดเลือกเฉพาะที่จำเป็น)
+เมื่อสร้าง Timestamp จากสตรีมยาว (4–8 ชั่วโมง) ให้มีระเบียบปฏิบัติดังนี้:
+1. **Primary Output Focus**: นำเสนอผลลัพธ์หลักเป็นฉบับคัดเฉพาะที่จำเป็น (~40–60 จุด สำหรับสตรีมยาว 7–8 ชม. หรือประมาณ 8–15 จุดต่อหนึ่งหมวดหมู่ใหญ่)
+2. **เกณฑ์การคัดเลือกจุดสำคัญ (Essential Criteria)**:
+   - จุดเริ่มต้นประเด็นใหญ่ หรือจุดเปลี่ยนหัวข้อ (Topic Shift / Pivot)
+   - ข่าวสารทางการ หรือการประกาศสำคัญ (Official News, Releases, Data)
+   - สาระสำคัญและข้อสรุปบทวิเคราะห์ (In-depth Analysis & Core Takeaways)
+   - จุดสำคัญของเกมเพลย์ (เริ่มโหมดฝึกสอน, สำรวจตัวละครใหม่, คราฟต์ไอเทมสำคัญ, บอสเกิด, ไฟต์ไฮไลต์, ชนะ/ตาย)
+   - กล่าวขอบคุณและปิดสตรีม (Stream Outro)
+3. **ตัดทอนจุดที่ไม่จำเป็น (Pruning Micro-Stamps)**:
+   - ตัดจุดคุยย่อยที่พูดประเด็นเดิมวนซ้ำในช่วงเวลาสั้นๆ (เช่น สตรีมเมอร์ขยี้ประเด็นเดิม 5–10 นาที ไม่ต้องลงสแตมป์ทุก 2 นาที)
+   - ตัดการตอบแชทจิปาถะหรือมุกแซะสั้นๆ ที่ไม่เกิดผลต่อเนื้อหาหลัก
+4. **การจัดเก็บไฟล์คู่ขนาน**:
+   - บันทึกไฟล์คัดกรองเฉพาะที่จำเป็นลงใน `anibon_timestamps_essential.md` (หรือ `anibon_timestamps.md`)
+   - เก็บไฟล์ฉบับเต็มละเอียดทุกจุดไว้ใน `anibon_timestamps_full.md` (และ `all_timestamps.txt`) เพื่อใช้เป็นฐานข้อมูลสืบค้นย้อนหลัง
+
 ### Macro-Topic Boundary Snapping Invariant
+
 Major domain/topic transitions (e.g. Thai Politics → Anime/Series review, Gaming → SuperChat Q&A) MUST NOT begin with 1–4 straggler stamps at the tail of an unrelated topic section.
 `assemble_parts()` automatically snaps partition boundaries to transition markers (`สรุปการพูดคุย... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`, `เตรียมเข้าสู่ช่วง`) using `find_best_boundary()`. This ensures viewer-friendly, clean topical grouping without stragglers.
 

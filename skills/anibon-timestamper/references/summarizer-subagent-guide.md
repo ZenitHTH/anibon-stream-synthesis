@@ -50,22 +50,27 @@ Do NOT split on:
 - ❌ Time-between-stamps alone (a 40-min continuous discussion still = one period)
 - ❌ A LONE tag change in the middle of a sustained topic: e.g. one [Gacha] or [News] stamp surrounded by [Talk] stamps about the SAME game/topic stays IN the period. The activity (discussing gacha games) is unchanged; a single point tagged differently is a flicker, not a boundary. Only a CONFIRMED run of ≥2 same-tag stamps different from the surrounding activity signals a real new period.
 
-**Split a period into Part A / Part B ONLY when** the block then exceeds ~3,500 bytes (Thai chars = 3 bytes each). Split at the largest sub-topic change near the byte midpoint; each sub-part gets its own separator block.
+**Do NOT split a period merely for byte counts**: Keep unified topics intact. Do NOT artificially slice an ongoing discussion or gameplay session into Part A/B/C solely to fit single-comment byte limits. Prioritize thematic cohesion (typically 4–6 cohesive parts per stream).
 
-**Target part size**: aim for parts as LARGE as the byte cap allows. A 6–12 stamp discussion period = one part, not several. 3–5 well-chosen parts for a full stream is normal; do not inflate to 10+ tiny parts.
+**Target part size**: Aim for cohesive macro-thematic parts that represent real sections of the stream (e.g. Topic Drama, Movie/Anime reviews, Music/Cultural discussion, Gameplay session). 4–6 well-chosen parts for a full 4–8 hour stream is standard; do not inflate to 10+ tiny parts.
 
 **Consolidation / Wrapping Constraint (CRITICAL)**:
 - Do NOT create parts containing only 1–3 timestamps unless:
   1. The entire video has only 1–3 timestamps, OR
   2. It is the last part / a genuinely standalone spot that cannot merge without breaking the activity-period boundary (e.g., a lone donation break).
-- If two parts belong to the SAME activity period AND fit under 3,500 bytes combined → merge them into one part. Re-read the boundary test; a label or micro-topic change is NOT a boundary.
-- **FLOODING OVERFLOW EXCEPTION**: If one activity period alone exceeds 3,500 bytes, split it cleanly at its largest internal sub-topic change — do NOT pack a different period's stamps into it to fill space.
+- If two parts belong to the SAME activity period, merge them into one part. Re-read the boundary test; a label or micro-topic change is NOT a boundary.
 
-## BYTE LIMITS
+## ESSENTIAL CURATION & MACRO GROUPING GUIDELINES
 
-YouTube comment hard cap = 4,500 UTF-8 bytes.
-Target ceiling = 3,500 bytes per pasted block (leaves margin for header).
-Thai chars = 3 bytes. ASCII/English chars = 1 byte.
+- **Macro-Thematic Parts**: Typically 4–6 cohesive parts per stream based on actual topic shifts.
+- **Essential Curated Selection Criteria (~40–60 timestamps for a long stream)**:
+  1. Major topic start or pivot (จุดเริ่มต้นหรือการเปลี่ยนประเด็นหลัก)
+  2. Official news, reveals, and data (ข่าวทางการ, การประกาศใหญ่, ข้อมูลสถิติ)
+  3. In-depth analytical conclusions (บทวิเคราะห์เจาะลึก, ข้อสรุปสำคัญ)
+  4. Key gameplay milestones (เข้าโหมดฝึกสอน, สำรวจตัวละครใหม่, คราฟต์ของสำคัญ, บอสเกิด, ไฟต์ตัดสิน, ชนะ/ตาย)
+  5. Outro / Closing (กล่าวขอบคุณและปิดสตรีม)
+- **Eliminate Micro-Chatter**: Prune conversational micro-loops, repetitive affirmations, and minor 1-minute chatter tangents.
+- **PROPER NOUN PRESERVATION (CRITICAL)**: Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers. Always name the exact entity.
 
 ## CAVEMAN SUMMARY RULES
 

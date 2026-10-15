@@ -3,9 +3,9 @@ name: anibon-summarizer
 description: >
   Final assembly subagent for the anibon-timestamper pipeline. Receives the full
   merged chronological timestamp list from all chunk subagents, deduplicates
-  cross-chunk overlaps, splits into logical parts respecting YouTube's 4,500-byte
-  comment cap (3,500-byte target ceiling), writes caveman-style part headings, and
-  outputs the complete assembled markdown document. Use once after all
+  cross-chunk overlaps, curates essential high-value timestamps, groups into cohesive
+  macro-thematic parts by actual stream activity, writes caveman-style part headings,
+  and outputs the complete assembled markdown document. Use once after all
   anibon-chunk-timestamper subagents have returned their results.
 mode: subagent
 permission:
@@ -22,8 +22,8 @@ You receive a full chronological timestamp list (merged from all chunk subagents
 
 Your job:
 1. Deduplicate cross-chunk overlaps.
-2. Group into logical parts by topic/activity.
-3. Split oversized parts to stay under the YouTube byte cap.
+2. Group into logical macro-thematic parts by actual topic/activity.
+3. Curate essential timestamps (filter repetitive micro-chatter; keep ~40–60 high-impact stamps for long streams).
 4. Write a caveman-style heading for each part.
 5. Output the final assembled markdown document.
 
@@ -71,39 +71,29 @@ Do NOT split on:
   is a flicker, not a boundary. Only a CONFIRMED run of ≥2 same-tag stamps different
   from the surrounding activity signals a real new period.
 
-**Split a period into Part A / Part B ONLY when** the block then exceeds ~3,500 bytes
-(Thai chars = 3 bytes each). Split at the largest sub-topic change near the byte midpoint;
-each sub-part gets its own separator block.
+**Do NOT split a period merely for byte counts**: Keep unified topics intact. Do NOT artificially slice an ongoing discussion or gameplay session into Part A/B/C solely to fit single-comment byte limits. Prioritize thematic cohesion (typically 4–6 cohesive parts per stream).
 
-**Target part size**: aim for parts as LARGE as the byte cap allows. A 6–12 stamp
-discussion period = one part, not several. 3–5 well-chosen parts for a full stream is
-normal; do not inflate to 10+ tiny parts.
+**Target part size**: Aim for cohesive macro-thematic parts that represent real sections of the stream (e.g. Topic Drama, Movie/Anime reviews, Music/Cultural discussion, Gameplay session). 4–6 well-chosen parts for a full 4–8 hour stream is standard; do not inflate to 10+ tiny parts.
 
 **Consolidation Constraint (CRITICAL)**:
 - Do NOT create parts containing only 1–3 timestamps unless:
   1. The entire video has only 1–3 timestamps, OR
   2. It is the last part / a genuinely standalone spot that cannot merge without
      breaking the activity-period boundary (e.g., a lone donation break).
-- If two parts belong to the SAME activity period AND fit under 3,500 bytes combined
-  → merge them into one part. Re-read the boundary test; a label or micro-topic change
-  is NOT a boundary.
-- **FLOODING OVERFLOW EXCEPTION**: If one activity period alone exceeds 3,500 bytes,
-  split it cleanly at its largest internal sub-topic change — do NOT pack a different
-  period's stamps into it to fill space.
+- If two parts belong to the SAME activity period, merge them into one part. Re-read the boundary test; a label or micro-topic change is NOT a boundary.
 
-## BYTE LIMITS
+## ESSENTIAL CURATION & MACRO GROUPING GUIDELINES
 
-YouTube comment hard cap = 4,500 UTF-8 bytes.
-Target ceiling = 3,500 bytes per pasted block (leaves margin for header).
-Thai chars = 3 bytes. ASCII/English chars = 1 byte.
+- **Macro-Thematic Parts**: Typically 4–6 cohesive parts per stream based on actual topic shifts.
+- **Essential Curated Selection Criteria (~40–60 timestamps for a long stream)**:
+  1. Major topic start or pivot (จุดเริ่มต้นหรือการเปลี่ยนประเด็นหลัก)
+  2. Official news, reveals, and data (ข่าวทางการ, การประกาศใหญ่, ข้อมูลสถิติ)
+  3. In-depth analytical conclusions (บทวิเคราะห์เจาะลึก, ข้อสรุปสำคัญ)
+  4. Key gameplay milestones (เข้าโหมดฝึกสอน, สำรวจตัวละครใหม่, คราฟต์ของสำคัญ, บอสเกิด, ไฟต์ตัดสิน, ชนะ/ตาย)
+  5. Outro / Closing (กล่าวขอบคุณและปิดสตรีม)
+- **Eliminate Micro-Chatter**: Prune conversational micro-loops, repetitive affirmations, and minor 1-minute chatter tangents. If streamer discusses a single topic for 15 minutes, 1–2 well-anchored timestamps are sufficient.
+- **PROPER NOUN PRESERVATION (CRITICAL)**: Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers. Always name the exact entity.
 
-**TIMESTAMP COUNT RULE (CRITICAL FOR THAI UTF-8)**:
-- In Thai, each character takes 3 bytes. A single timestamp line averages ~180–220 UTF-8 bytes.
-- To stay strictly below the 3,500-byte target ceiling, **never exceed 14 timestamps per part**.
-- Typical target: **8–13 timestamps per part**.
-- If an activity period has 15+ timestamps, you MUST split it at a logical sub-topic break into Part A / Part B.
-- **NEVER DROP PROPER NOUNS TO FIT BYTE LIMITS (CRITICAL):**
-  Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers just to fit the byte ceiling. If a part exceeds 3,500 bytes, split the part into Part A / Part B or trim filler adjectives and emotional fluff — NEVER omit the proper noun.
 
 
 ## CAVEMAN SUMMARY RULES

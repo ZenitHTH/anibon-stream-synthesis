@@ -342,7 +342,7 @@ The dictionary is shared (`resource_path()` walks up to plugin root), so every f
 
 ### 9. Final Assembly — `anibon-summarizer` (Replaces wrap + pack)
 
-Pass the full sorted `all_timestamps.txt` to the **`anibon-summarizer`** subagent. It deduplicates cross-chunk overlaps, groups by topic coherence, enforces the 3,500-byte YouTube cap, writes caveman part headings, and produces the final markdown.
+Pass the full sorted `all_timestamps.txt` to the **`anibon-summarizer`** subagent. It deduplicates cross-chunk overlaps, groups by macro-thematic coherence (without 3,500-byte cap over-splitting), curates essential timestamps (~40–60 stamps for long streams), writes caveman part headings, and produces the final markdown.
 
 ```python
 with open("all_timestamps.txt") as f:
@@ -357,10 +357,7 @@ invoke_subagent(
 The subagent outputs the complete `output.md` directly. Save it to `~/youtube_<id>_workspace/output.md`.
 
 > [!NOTE]
-> `pack_timestamps.py` is still available for offline/scripted runs or when the subagent cannot be invoked. In interactive orchestrator sessions, always prefer `anibon-summarizer` — it applies semantic deduplication that the script cannot.
->
-> **Byte-Cap Overflow & Streaming Fallback (pack_timestamps.py)**:
-> If `anibon-summarizer` output has sections exceeding 3,500 bytes (flagged `⚠️ WARN` by `check_sections.py`) or encounters network stream drops:
+> `pack_timestamps.py` is still available for offline/scripted runs or when single-comment byte splitting is explicitly requested. In standard sessions, prioritize macro-thematic grouping and essential curated timestamps to preserve topical cohesion. If single-comment byte limits are explicitly requested:
 > ```bash
 > python3 scripts/pack_timestamps.py ~/youtube_<id>_workspace/all_timestamps.txt \
 >   --byte-limit 2900 \
@@ -368,7 +365,7 @@ The subagent outputs the complete `output.md` directly. Save it to `~/youtube_<i
 >   --output ~/youtube_<id>_workspace/output.md
 > python3 scripts/check_sections.py ~/youtube_<id>_workspace/output.md
 > ```
-> Setting `--byte-limit 2900` guarantees every section stays safely below YouTube's 3,500-byte comment warning threshold with headers included (all sections marked ✅ OK).
+
 
 ### 10. Validate Sections
 
@@ -483,5 +480,6 @@ HH:MM:SS - [Tag] Description
 - **NON-SPOILER GACHA POLICY** — Never spoil whether the streamer won or lost a gacha pull in the timestamp description. Focus on anticipation, the featured banner/character, and chat interactions.
 - **18+ / RULE 34 TONE INTEGRITY** — Do not trivialize adult fanart or Rule 34 commentary under generic comedic tags (`[Reaction] ฮา...`). Use `[Talk]` with mature, direct, and accurate summaries.
 - **PROPER NOUN & GAME TITLE INTEGRITY** — When processing garbled notes (Step 8.6), NEVER map legitimate external game titles (e.g. *MARVEL Tōkon: Fighting Souls*, *Alien: Isolation*, *TMNT: The Last Ronin*), brand names, or common English phrases (e.g. *where we meet*) as noise patterns. Unconfirmed proper nouns must remain `correct: null` for human review rather than being forced into generic Thai terms.
-- **PROPER NOUN IN EVERY STAMP** — Every timestamp must name its specific proper noun (e.g. *Wuthering Waves*, *Zelda*, *น้องเนเน่ AGT*, *Bleach*). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit the 3,500-byte comment limit; trim adjectives or emotional filler instead.
+- **PROPER NOUN IN EVERY STAMP** — Every timestamp must name its specific proper noun (e.g. *Wuthering Waves*, *Zelda*, *น้องเนเน่ AGT*, *Bleach*). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns; trim adjectives or emotional filler instead.
+
 
