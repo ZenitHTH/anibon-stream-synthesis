@@ -126,7 +126,9 @@ from anibon.config import (
     STAMP_COLLISION_SEC,
     MULTIMODAL_TIMEOUT_SEC,
     DEFAULT_MULTIMODAL_CHUNKS,
+    cfg_bool,
 )
+
 
 
 from anibon.multimodal import (
@@ -635,7 +637,11 @@ def run_group_mode(
     total_chunks = len(chunk_files)
     num_groups = (total_chunks + group_size - 1) // group_size
 
+    if args and getattr(args, "multimodal_chunks", False):
+        print("[group] Note: Multimodal storyboard chunk analysis is optimized for --mode recursive; running group mode with text context.")
+
     if not no_resume and all_timestamps:
+
         print(f"[resume] {len(all_timestamps)} timestamps already recorded")
 
     groups_processed = 0
@@ -884,13 +890,15 @@ def main() -> None:
                     help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
     ap.add_argument("--vision-verify", action="store_true",
                     help="Inspect video frames with local vision model for ambiguous timestamps before Pass 2 summary")
+    default_multimodal = cfg_bool("multimodal_chunks", True)
     ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks",
-                    action="store_true", default=DEFAULT_MULTIMODAL_CHUNKS,
-                    help=f"Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes (default: {DEFAULT_MULTIMODAL_CHUNKS})")
+                    action="store_true", default=default_multimodal,
+                    help=f"Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes (default: {default_multimodal})")
     ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks",
                     action="store_false",
                     help="Disable Storyboard keyframe multimodal analysis and run in text-only mode")
     ap.add_argument("--video-file", default=None,
+
                     help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
 
     ap.add_argument("--vision-model", default=None,

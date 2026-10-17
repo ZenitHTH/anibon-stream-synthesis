@@ -115,7 +115,26 @@ class TestMultimodal(unittest.TestCase):
                 self.assertIsNotNone(res)
                 self.assertEqual(res.name, "slides_clean")
 
+    def test_download_storyboard_does_not_skip_download_and_guards_empty_dir(self):
+        import tempfile
+        from anibon.ytdlp import download_storyboard
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            # Create an empty frames/slides_clean dir
+            empty_slides = ws / "frames" / "slides_clean"
+            empty_slides.mkdir(parents=True, exist_ok=True)
+
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = MagicMock(returncode=0)
+                download_storyboard("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ws)
+
+                self.assertTrue(mock_run.called)
+                cmd = mock_run.call_args[0][0]
+                self.assertNotIn("--skip-download", cmd)
+
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

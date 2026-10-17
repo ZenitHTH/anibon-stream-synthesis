@@ -61,22 +61,26 @@ def download_storyboard(url: str, workspace: Path) -> Path | None:
     frames_dir = Path(workspace) / "frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
 
-    for p in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "slides_clean"]:
-        if p.exists():
+    for p in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml"]:
+        if p.is_file():
             return p
+    clean_dir = frames_dir / "slides_clean"
+    if clean_dir.is_dir() and any(clean_dir.glob("slide_*.jpg")):
+        return clean_dir
 
     print("[*] Downloading storyboard via yt-dlp...", file=sys.stderr)
     try:
         subprocess.run(
             [
                 *ytdlp_cmd(), "-P", str(frames_dir),
-                "-f", "sb0/sb1/sb2/sb3", "--skip-download",
+                "-f", "sb0/sb1/sb2/sb3",
                 "--ignore-no-formats-error", "-o", "storyboard.%(ext)s", url,
             ],
             capture_output=True,
             check=False,
             timeout=120,
         )
+
         for m in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "sb1.mhtml"]:
             if m.is_file():
                 return m

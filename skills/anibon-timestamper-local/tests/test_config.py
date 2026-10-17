@@ -144,8 +144,32 @@ class TestConfig(unittest.TestCase):
         self.assertIn("--no-multimodal", res.stdout)
         self.assertIn("--text-only", res.stdout)
 
+    def test_process_chunks_config_file_overrides_multimodal_chunks(self):
+        import subprocess, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ws = tmp_path / "ws"
+            ws.mkdir()
+            (ws / "chunks").mkdir()
+            (ws / "chunks" / "chunk_00.txt").write_text("dummy", encoding="utf-8")
+            custom_cfg = tmp_path / "custom.json"
+            custom_cfg.write_text(json.dumps({"multimodal_chunks": False}), encoding="utf-8")
+
+            res = subprocess.run(
+                [
+                    "python3", "scripts/process_chunks_local.py",
+                    str(ws), "--config", str(custom_cfg), "--dry-run"
+                ],
+                capture_output=True,
+                text=True,
+                cwd=str(SKILL_CONFIG_PATH.parent),
+            )
+            self.assertEqual(res.returncode, 0)
+            self.assertIn("multimodal  : disabled (text-only)", res.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 
