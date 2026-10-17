@@ -40,6 +40,57 @@ def generate_part_summary(stamps: List[str]) -> str:
     return f"{t1}, {t2} และ {t3}"
 
 
+def prune_essential(
+    endpoint: str,
+    model: str,
+    stamps: List[str],
+    temperature: float = 0.1,
+    min_input: int = 60,
+) -> List[str]:
+    """Filter timestamps to ~40-60 essential ones via local LLM before part grouping."""
+    if not stamps or len(stamps) <= min_input:
+        return stamps
+
+    target = max(40, min(60, len(stamps) // 4))
+    prompt = f"""Below are {len(stamps)} livestream timestamps. Select ONLY the ~{target} most essential ones:
+topic starts/pivots, official news/releases, key gameplay milestones, core conclusions, the stream ending.
+Drop repeats of the same talking point and casual banter. Copy selected lines EXACTLY, one per line, chronological, nothing else.
+
+{"\n".join(stamps)}"""
+
+    print(f"[prune] Calling local model to prune {len(stamps)} timestamps to ~{target} essential ones...")
+    try:
+        content = call_local(endpoint, model, prompt, max_tokens=4000, temperature=temperature, timeout=600)
+        source_set = set(stamps)
+        kept_lines = []
+        seen = set()
+        for line in content.splitlines():
+            l = line.strip()
+            if l in source_set and l not in seen:
+                seen.add(l)
+                kept_lines.append(l)
+
+        if len(kept_lines) < target // 2:
+            print(f"[prune] Warning: model returned only {len(kept_lines)} valid stamps (target {target}). Falling back to full list.")
+            return stamps
+
+        # Always re-add first timestamp and any [Ending] stamps
+        if stamps[0] not in seen:
+            seen.add(stamps[0])
+            kept_lines.append(stamps[0])
+        for s in stamps:
+            if "[Ending]" in s and s not in seen:
+                seen.add(s)
+                kept_lines.append(s)
+
+        result = sorted(kept_lines, key=lambda l: parse_ts(l[:8]))
+        print(f"[prune] {len(stamps)} -> {len(result)}")
+        return result
+    except Exception as e:
+        print(f"[prune] Warning: local model pruning failed ({e}). Falling back to full list.")
+        return stamps
+
+
 def run_local_summarizer_pass(
     endpoint: str,
     model: str,

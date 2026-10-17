@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from anibon.summarizer import (
     generate_part_summary,
     assemble_parts,
@@ -145,6 +146,51 @@ class TestSummarizer(unittest.TestCase):
         parts = md.split("\n\n")
         self.assertEqual(len(parts), 2)
         self.assertTrue(any(len(part.encode("utf-8")) > 3500 for part in parts))
+
+    @patch("anibon.summarizer.call_local")
+    def test_prune_drops_non_verbatim(self, mock_call):
+        from anibon.summarizer import prune_essential
+        stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
+        reply_lines = stamps[10:50] + ["00:05:00 - [Talk] แต่งเอง"]
+        mock_call.return_value = "\n".join(reply_lines)
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertNotIn("00:05:00 - [Talk] แต่งเอง", out)
+        self.assertTrue(set(out) <= set(stamps))
+
+    @patch("anibon.summarizer.call_local")
+    def test_prune_falls_back_when_too_few(self, mock_call):
+        from anibon.summarizer import prune_essential
+        stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
+        mock_call.return_value = "\n".join(stamps[:3])
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertEqual(out, stamps)
+
+    @patch("anibon.summarizer.call_local")
+    def test_prune_falls_back_on_error(self, mock_call):
+        from anibon.summarizer import prune_essential
+        stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
+        mock_call.side_effect = RuntimeError("endpoint timeout")
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertEqual(out, stamps)
+
+    @patch("anibon.summarizer.call_local")
+    def test_prune_keeps_first_and_ending(self, mock_call):
+        from anibon.summarizer import prune_essential
+        from anibon.time import parse_ts
+        stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
+        mock_call.return_value = "\n".join(stamps[10:50])
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertIn(stamps[0], out)
+        self.assertIn(stamps[-1], out)
+        self.assertEqual(out, sorted(out, key=lambda l: parse_ts(l[:8])))
+
+    @patch("anibon.summarizer.call_local")
+    def test_prune_skips_short_input(self, mock_call):
+        from anibon.summarizer import prune_essential
+        stamps = [f"00:{i:02d}:00 - [Talk] หัวข้อ {i}" for i in range(30)]
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        mock_call.assert_not_called()
+        self.assertEqual(out, stamps)
 
 
 if __name__ == "__main__":

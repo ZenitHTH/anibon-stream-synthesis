@@ -97,6 +97,7 @@ from anibon.prompts import (
 
 from anibon.summarizer import (
     generate_part_summary,
+    prune_essential,
     run_local_summarizer_pass,
     assemble_parts,
     enforce_byte_cap,
@@ -292,6 +293,8 @@ def finalize_and_assemble_timestamps(
     print(f"[done] Raw timestamps: {raw_ts}")
     if args:
         deduped = apply_vision_verify(deduped, workspace, args, model)
+    if not no_summarizer_pass:
+        deduped = prune_essential(endpoint, model, deduped, temperature)
     assembled = None
     if not no_summarizer_pass:
         assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
