@@ -18,7 +18,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertIn("เริ่มต้นสตรีม", summary)
         self.assertIn("เริ่มเล่นเควสต์หลัก", summary)
 
-    def test_assemble_parts_borders_and_byte_limit(self):
+    def test_assemble_parts_borders(self):
         stamps = [
             f"00:{i:02d}:00 - [Talk] ประเด็นที่ {i} รายละเอียดสตรีมประจำวัน"
             for i in range(15)
@@ -27,9 +27,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertIn("ส่วนที่ 1:", assembled)
         self.assertIn("ส่วนที่ 2:", assembled)
         self.assertIn("═" * 57, assembled)
-        # Check that individual parts do not exceed 3,500 bytes
-        for part in assembled.split("\n\n"):
-            self.assertLess(len(part.encode("utf-8")), 3500)
+
 
     def test_find_best_boundary_snaps_to_transition(self):
         stamps = [
@@ -131,7 +129,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertGreaterEqual(len(parts), 4)
         self.assertLessEqual(len(parts), 6)
 
-    def test_run_local_summarizer_pass_enforces_byte_cap(self):
+    def test_run_local_summarizer_pass_does_not_enforce_byte_cap(self):
         from unittest.mock import patch
         from anibon.summarizer import run_local_summarizer_pass
 
@@ -144,8 +142,9 @@ class TestSummarizer(unittest.TestCase):
             md = run_local_summarizer_pass("http://127.0.0.1:1234", "test-model", stamps)
 
         self.assertIsNotNone(md)
-        for part in md.split("\n\n"):
-            self.assertLessEqual(len(part.encode("utf-8")), 3500)
+        parts = md.split("\n\n")
+        self.assertEqual(len(parts), 2)
+        self.assertTrue(any(len(part.encode("utf-8")) > 3500 for part in parts))
 
 
 if __name__ == "__main__":

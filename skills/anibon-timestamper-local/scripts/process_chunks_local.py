@@ -282,7 +282,10 @@ def finalize_and_assemble_timestamps(
     no_summarizer_pass: bool,
     args: Optional[argparse.Namespace] = None,
     glossary: Optional[dict] = None,
+    byte_cap: bool = False,
 ) -> Tuple[Path, List[str]]:
+    if args and getattr(args, "byte_cap", False):
+        byte_cap = True
     deduped = list(dict.fromkeys(all_timestamps))
     raw_ts = workspace / "all_timestamps.txt"
     raw_ts.write_text("\n".join(deduped), encoding="utf-8")
@@ -295,7 +298,8 @@ def finalize_and_assemble_timestamps(
     if not assembled:
         print("[assemble] Using heuristic double-border part assembly.")
         assembled = assemble_parts(deduped, workspace, block_size)
-    assembled = enforce_byte_cap(assembled)
+    if byte_cap:
+        assembled = enforce_byte_cap(assembled)
     out_md = workspace / "anibon_timestamps.md"
     out_md.write_text(assembled, encoding="utf-8")
     if glossary:
@@ -826,6 +830,8 @@ def main() -> None:
                     help="Chunks per group in --mode group (default 4 = ~16-20 min)")
     ap.add_argument("--no-summarizer-pass", action="store_true",
                     help="Disable LLM summarizer pass; use heuristic assembly")
+    ap.add_argument("--byte-cap", action="store_true",
+                    help="Split parts >3500 bytes (single-comment mode)")
     ap.add_argument("--summarize-only", action="store_true",
                     help="Skip chunk loop and run summarizer pass on all_timestamps.txt")
     ap.add_argument("--no-resume", action="store_true")
