@@ -102,7 +102,7 @@ class TestConfig(unittest.TestCase):
             config.DEDUP_MIN_GAP_SEC,
         )
 
-    def test_process_chunks_has_env_file_flag(self):
+    def test_process_chunks_has_config_flag(self):
         import subprocess
         res = subprocess.run(
             ["python3", "scripts/process_chunks_local.py", "--help"],
@@ -111,6 +111,7 @@ class TestConfig(unittest.TestCase):
             cwd=str(SKILL_CONFIG_PATH.parent),
         )
         self.assertEqual(res.returncode, 0)
+        self.assertIn("--config", res.stdout)
         self.assertIn("--env-file", res.stdout)
 
 

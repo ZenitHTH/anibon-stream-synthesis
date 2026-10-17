@@ -171,10 +171,11 @@ scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25
 > - Remote models like `nvidia/Gemma-4-26B-A4B-NVFP4` support multimodal vision inspection via base64 `image_url` payloads out-of-the-box.
 
 > [!TIP]
-> **Environment Configuration (`.env` and `--env-file`)**:
-> Numeric constants, token limits, timeouts, temperatures, pruning bounds, and default endpoints are managed via `skills/anibon-timestamper-local/.env` and loaded automatically by `anibon/config.py` with zero dependencies.
-> - To customize parameters for a specific run or hardware setup, copy or create an `.env` file and pass `--env-file /path/to/.env`.
-> - Supported keys include: `ANIBON_PRIMARY_HOST`, `ANIBON_PORT`, `ANIBON_DEFAULT_MODEL`, `ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_CHUNK_TIMEOUT_SEC`, `ANIBON_MULTIMODAL_TIMEOUT_SEC`, `ANIBON_PRUNE_MAX_TOKENS`, `ANIBON_PRUNE_TIMEOUT_SEC`, `ANIBON_SUMMARIZER_MAX_TOKENS`, `ANIBON_SUMMARIZER_TIMEOUT_SEC`, `ANIBON_TEMPERATURE`, `ANIBON_VISION_TEMPERATURE`, `ANIBON_MAX_RETRIES`, `ANIBON_PRUNE_MIN_INPUT`, `ANIBON_PRUNE_TARGET_MIN`, `ANIBON_PRUNE_TARGET_MAX`, `ANIBON_DEDUP_MIN_GAP_SEC`, `ANIBON_DEDUP_MAX_GAP_SEC`, `ANIBON_STAMP_COLLISION_SEC`, `ANIBON_GROUP_SIZE`, `ANIBON_BLOCK_SIZE`, `ANIBON_BYTE_CAP_LIMIT`.
+> **Configuration (`config.json` and `--config`)**:
+> Numeric constants, token limits, timeouts, temperatures, pruning bounds, and default endpoints are managed via `skills/anibon-timestamper-local/config.json` and loaded automatically by `anibon/config.py` with zero dependencies.
+> - Secrets (like `TOKENME_API_KEY` or `LM_API_KEY`) belong in `.env` (which is gitignored).
+> - To customize parameters for a specific run or hardware setup, copy or create a JSON config file and pass `--config /path/to/config.json` (or `--env-file` for backward compatibility).
+> - Environment variables (`ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_TEMPERATURE`, etc.) seamlessly override `config.json` values without touching files.
 
 #### 4. Garbled Collector & Whisper Ground Truth (Automatic Post-Pass)
 After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio and update `garbled_replacements.json`.

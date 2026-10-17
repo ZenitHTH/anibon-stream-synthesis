@@ -113,6 +113,7 @@ from anibon.knowledge_reader import (
 )
 
 from anibon.config import (
+    load_config,
     load_dotenv,
     reload_config,
     PRIMARY_HOST,
@@ -834,10 +835,10 @@ def run_garbled_collector(
 
 def main() -> None:
     temp_ap = argparse.ArgumentParser(add_help=False)
-    temp_ap.add_argument("--env-file", default=None)
+    temp_ap.add_argument("--config", "--env-file", dest="config_file", default=None)
     temp_args, _ = temp_ap.parse_known_args()
-    if temp_args.env_file:
-        load_dotenv(Path(temp_args.env_file), override=True)
+    if temp_args.config_file:
+        load_config(Path(temp_args.config_file), override=True)
         reload_config()
 
     ap = argparse.ArgumentParser(description="P100 Single-GPU Timestamper (Recursive & Group Modes).")
@@ -865,8 +866,8 @@ def main() -> None:
     ap.add_argument("--max-groups", type=int, default=None,
                     help="Max groups to process in group mode")
     ap.add_argument("--block-size", type=int, default=DEFAULT_BLOCK_SIZE)
-    ap.add_argument("--env-file", default=None,
-                    help="Path to custom .env file (overrides default skills/anibon-timestamper-local/.env)")
+    ap.add_argument("--config", "--env-file", dest="config_file", default=None,
+                    help="Path to custom config.json (or legacy .env) file (overrides default skills/anibon-timestamper-local/config.json)")
     ap.add_argument("--world-identity-dir", default=None,
                     help="Path to anibon-world-identity/references/ (auto-discovered if omitted)")
     ap.add_argument("--video-url", default=None,
