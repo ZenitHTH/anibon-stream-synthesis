@@ -13,6 +13,12 @@ import urllib.request
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
+from anibon.config import (
+    CHUNK_MAX_TOKENS,
+    DEFAULT_TEMPERATURE,
+    MULTIMODAL_TIMEOUT_SEC,
+)
+
 try:
     from PIL import Image
 except ImportError:
@@ -293,9 +299,9 @@ def call_multimodal(
     endpoint: str,
     model: str,
     content_list: List[dict],
-    max_tokens: int = 4096,
-    temperature: float = 0.1,
-    timeout: int = 120,
+    max_tokens: int = CHUNK_MAX_TOKENS,
+    temperature: float = DEFAULT_TEMPERATURE,
+    timeout: int = MULTIMODAL_TIMEOUT_SEC,
     api_key: Optional[str] = None,
 ) -> str:
     """Send multimodal payload to OpenAI-compatible VLM endpoint."""

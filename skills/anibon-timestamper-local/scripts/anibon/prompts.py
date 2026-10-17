@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Tuple
 
 from anibon.time import fmt_ts
 from anibon.timestamps import TAGS
+from anibon.config import ENTITY_CONTEXT_MAX_TOKENS
 from signal_detector import get_domain_guidance
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -92,7 +93,7 @@ def load_world_identity_context(
 def build_chunk_entity_context(
     chunk_text: str,
     glossary: Optional[dict] = None,
-    max_tokens: int = 300,
+    max_tokens: int = ENTITY_CONTEXT_MAX_TOKENS,
 ) -> str:
     """Filter entity glossary to entities relevant to the current chunk text.
 

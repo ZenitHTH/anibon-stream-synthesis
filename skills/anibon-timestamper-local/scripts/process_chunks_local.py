@@ -112,6 +112,20 @@ from anibon.knowledge_reader import (
     enrich_with_sqlite_databases,
 )
 
+from anibon.config import (
+    load_dotenv,
+    reload_config,
+    PRIMARY_HOST,
+    DEFAULT_PORT,
+    DEFAULT_CHAT_PATH,
+    CHUNK_MAX_TOKENS,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_GROUP_SIZE,
+    DEFAULT_BLOCK_SIZE,
+    STAMP_COLLISION_SEC,
+    MULTIMODAL_TIMEOUT_SEC,
+)
+
 from anibon.multimodal import (
     prepare_storyboard_slides,
     sample_chunk_keyframes,
@@ -438,7 +452,7 @@ def run_recursive_mode(
             if keyframes:
                 try:
                     content_list = build_multimodal_content(prompt, keyframes)
-                    raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, timeout=120, api_key=api_key)
+                    raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, timeout=MULTIMODAL_TIMEOUT_SEC, api_key=api_key)
                 except Exception as ex:
                     print(f"\n[multimodal] fallback to text-only for {chunk_idx}: {ex}", flush=True)
                     raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
@@ -482,7 +496,7 @@ def run_recursive_mode(
                 prev_s = -1
                 for s in sorted(v_ts, key=_sec):
                     sec_val = _sec(s)
-                    if prev_s == -1 or (sec_val - prev_s) >= 45:
+                    if prev_s == -1 or (sec_val - prev_s) >= STAMP_COLLISION_SEC:
                         v_ts_sorted.append(s)
                         prev_s = sec_val
 
@@ -819,18 +833,25 @@ def run_garbled_collector(
 # ── Main Controller ──────────────────────────────────────────────────────────
 
 def main() -> None:
+    temp_ap = argparse.ArgumentParser(add_help=False)
+    temp_ap.add_argument("--env-file", default=None)
+    temp_args, _ = temp_ap.parse_known_args()
+    if temp_args.env_file:
+        load_dotenv(Path(temp_args.env_file), override=True)
+        reload_config()
+
     ap = argparse.ArgumentParser(description="P100 Single-GPU Timestamper (Recursive & Group Modes).")
     ap.add_argument("workspace", help="Path to youtube_VIDEOID_workspace directory")
     ap.add_argument("--mode", default="recursive", choices=["recursive", "group"],
                     help="Execution mode: recursive (dynamic topic state-machine) or group (fixed 4-chunk groups)")
-    ap.add_argument("--endpoint", default="http://100.115.25.30:1234/v1/chat/completions")
+    ap.add_argument("--endpoint", default=f"http://{PRIMARY_HOST}:{DEFAULT_PORT}{DEFAULT_CHAT_PATH}")
     ap.add_argument("--model", default="auto")
     ap.add_argument("--force-model", action="store_true")
     ap.add_argument("--lang", default="th", choices=["th", "en"])
-    ap.add_argument("--max-tokens", type=int, default=4096)
-    ap.add_argument("--temperature", type=float, default=0.1)
-    ap.add_argument("--group-size", type=int, default=4,
-                    help="Chunks per group in --mode group (default 4 = ~16-20 min)")
+    ap.add_argument("--max-tokens", type=int, default=CHUNK_MAX_TOKENS)
+    ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
+    ap.add_argument("--group-size", type=int, default=DEFAULT_GROUP_SIZE,
+                    help=f"Chunks per group in --mode group (default {DEFAULT_GROUP_SIZE} = ~16-20 min)")
     ap.add_argument("--no-summarizer-pass", action="store_true",
                     help="Disable LLM summarizer pass; use heuristic assembly")
     ap.add_argument("--byte-cap", action="store_true",
@@ -843,7 +864,9 @@ def main() -> None:
                     help="Max chunks to process in recursive mode")
     ap.add_argument("--max-groups", type=int, default=None,
                     help="Max groups to process in group mode")
-    ap.add_argument("--block-size", type=int, default=2400)
+    ap.add_argument("--block-size", type=int, default=DEFAULT_BLOCK_SIZE)
+    ap.add_argument("--env-file", default=None,
+                    help="Path to custom .env file (overrides default skills/anibon-timestamper-local/.env)")
     ap.add_argument("--world-identity-dir", default=None,
                     help="Path to anibon-world-identity/references/ (auto-discovered if omitted)")
     ap.add_argument("--video-url", default=None,

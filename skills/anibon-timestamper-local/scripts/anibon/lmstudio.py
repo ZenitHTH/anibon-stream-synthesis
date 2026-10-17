@@ -19,19 +19,30 @@ from pathlib import Path
 from typing import List, Optional, Union, Dict, Any
 from urllib.parse import urlparse, urlunparse
 
+from anibon.config import (
+    PRIMARY_HOST,
+    DEFAULT_PORT as CONFIG_DEFAULT_PORT,
+    DEFAULT_MODEL,
+    PROBE_TIMEOUT_SEC,
+    CHUNK_MAX_TOKENS,
+    CHUNK_TIMEOUT_SEC,
+    VISION_TEMPERATURE,
+    MAX_RETRIES,
+)
+
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
 CRITICAL INSTRUCTION: Keep your internal thinking under 2 sentences. \
 Do NOT list items or transcribe text in your thinking. \
 Proceed immediately to outputting the final decision."""
 
-DEFAULT_PRIMARY_HOST = "100.115.25.30"
+DEFAULT_PRIMARY_HOST = PRIMARY_HOST
 DEFAULT_FALLBACK_HOST = "127.0.0.1"
-DEFAULT_PORT = 1234
+DEFAULT_PORT = CONFIG_DEFAULT_PORT
 DEFAULT_CHAT_PATH = "/v1/chat/completions"
 
 
-def is_host_reachable(host: str, port: int, timeout: float = 1.0) -> bool:
+def is_host_reachable(host: str, port: int, timeout: float = PROBE_TIMEOUT_SEC) -> bool:
     """Test TCP connectivity to host:port."""
     try:
         with socket.create_connection((host, port), timeout=timeout):
@@ -40,7 +51,7 @@ def is_host_reachable(host: str, port: int, timeout: float = 1.0) -> bool:
         return False
 
 
-def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = 1.0) -> str:
+def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = PROBE_TIMEOUT_SEC) -> str:
     """Resolve endpoint URL with automatic fallback from 100.115.25.30 to 127.0.0.1.
 
     When targeting 100.115.25.30, tests TCP reachability first. If unreachable (e.g.
@@ -215,7 +226,7 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
         return fallback
 
     if not requested_model or requested_model.lower() == "auto":
-        return "gemma-4-12b-it-qat@q4_k_xl"
+        return DEFAULT_MODEL
 
     for preferred in preferred_models:
         if _matches_model_alias(requested_model, preferred):
@@ -258,8 +269,8 @@ def build_vision_payload(
     model: str,
     prompt: str,
     image_url_or_data: str,
-    max_tokens: int = 4096,
-    temperature: float = 0.2,
+    max_tokens: int = CHUNK_MAX_TOKENS,
+    temperature: float = VISION_TEMPERATURE,
     system_prompt: str = SYSTEM_PROMPT,
 ) -> Dict[str, Any]:
     """Construct standard OpenAI multi-modal vision payload."""
@@ -290,8 +301,8 @@ def call_local(
     max_tokens: int,
     temperature: float,
     system_prompt: str = SYSTEM_PROMPT,
-    timeout: int = 180,
-    retries: int = 2,
+    timeout: int = CHUNK_TIMEOUT_SEC,
+    retries: int = MAX_RETRIES,
     api_key: Optional[str] = None,
 ) -> str:
     """Call local OpenAI-compatible API for text generation."""
@@ -347,9 +358,9 @@ def call_vision(
     model: str,
     prompt: str,
     image_path: Union[str, Path],
-    max_tokens: int = 4096,
-    temperature: float = 0.2,
-    timeout: int = 180,
+    max_tokens: int = CHUNK_MAX_TOKENS,
+    temperature: float = VISION_TEMPERATURE,
+    timeout: int = CHUNK_TIMEOUT_SEC,
     api_key: Optional[str] = None,
 ) -> str:
     """Call local LM Studio vision endpoint with an image file."""

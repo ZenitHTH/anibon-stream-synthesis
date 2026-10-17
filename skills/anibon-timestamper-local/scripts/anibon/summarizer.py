@@ -11,9 +11,19 @@ from typing import List, Optional
 
 from anibon.time import parse_ts, fmt_ts
 from anibon.lmstudio import call_local
-
-
 from anibon.timestamps import deduplicate_consecutive_timestamps
+from anibon.config import (
+    DEFAULT_TEMPERATURE,
+    PRUNE_MIN_INPUT,
+    PRUNE_TARGET_MIN,
+    PRUNE_TARGET_MAX,
+    PRUNE_MAX_TOKENS,
+    PRUNE_TIMEOUT_SEC,
+    SUMMARIZER_MAX_TOKENS,
+    SUMMARIZER_TIMEOUT_SEC,
+    DEFAULT_BLOCK_SIZE,
+    BYTE_CAP_LIMIT,
+)
 
 
 def generate_part_summary(stamps: List[str]) -> str:
@@ -42,14 +52,14 @@ def prune_essential(
     endpoint: str,
     model: str,
     stamps: List[str],
-    temperature: float = 0.1,
-    min_input: int = 60,
+    temperature: float = DEFAULT_TEMPERATURE,
+    min_input: int = PRUNE_MIN_INPUT,
 ) -> List[str]:
     """Filter timestamps to ~40-60 essential ones via local LLM before part grouping."""
     if not stamps or len(stamps) <= min_input:
         return stamps
 
-    target = max(40, min(60, len(stamps) // 4))
+    target = max(PRUNE_TARGET_MIN, min(PRUNE_TARGET_MAX, len(stamps) // 4))
     prompt = f"""Below are {len(stamps)} livestream timestamps. Select ONLY the ~{target} most essential ones:
 topic starts/pivots, official news/releases, key gameplay milestones, core conclusions, the stream ending.
 Drop repeats of the same talking point and casual banter. Copy selected lines EXACTLY, one per line, chronological, nothing else.
@@ -58,7 +68,7 @@ Drop repeats of the same talking point and casual banter. Copy selected lines EX
 
     print(f"[prune] Calling local model to prune {len(stamps)} timestamps to ~{target} essential ones...")
     try:
-        content = call_local(endpoint, model, prompt, max_tokens=4000, temperature=temperature, timeout=600)
+        content = call_local(endpoint, model, prompt, max_tokens=PRUNE_MAX_TOKENS, temperature=temperature, timeout=PRUNE_TIMEOUT_SEC)
         source_set = set(stamps)
         kept_lines = []
         seen = set()
@@ -97,8 +107,8 @@ def run_local_summarizer_pass(
     model: str,
     all_stamps: List[str],
     workspace: Optional[Path] = None,
-    temperature: float = 0.1,
-    max_tokens: int = 4096,
+    temperature: float = DEFAULT_TEMPERATURE,
+    max_tokens: int = SUMMARIZER_MAX_TOKENS,
 ) -> Optional[str]:
     """Call local LLM to partition timestamps into macro-thematic Parts with Caveman summaries."""
     if not all_stamps:
@@ -153,7 +163,7 @@ TIMESTAMPS:
 """
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
-        content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=600)
+        content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=SUMMARIZER_TIMEOUT_SEC)
         raw_matches = re.findall(
             r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+(.+?)(?=\n\s*\n|\n\s*Part\s+\d+|\Z)",
             content,
@@ -222,7 +232,7 @@ def find_best_boundary(stamps: List[str], target_idx: int, window: int = 4) -> i
 def assemble_parts(
     all_stamps: List[str],
     workspace: Optional[Path] = None,
-    block_size: int = 2400,
+    block_size: int = DEFAULT_BLOCK_SIZE,
     deduplicate: bool = True,
     enforce_byte_limit: bool = False,
 ) -> str:
@@ -280,7 +290,7 @@ def assemble_parts(
 _PART_NUM_RE = re.compile(r"ส่วนที่ \d+:")
 
 
-def enforce_byte_cap(md: str, limit: int = 3500) -> str:
+def enforce_byte_cap(md: str, limit: int = BYTE_CAP_LIMIT) -> str:
     """Split any part over `limit` bytes (front-tier anibon-summarizer cap), then renumber.
 
     Split point prefers a topic transition near the middle (find_best_boundary).

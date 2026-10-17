@@ -112,6 +112,7 @@ def env_float(key: str, default: float) -> float:
 # ── Configuration Constants ──────────────────────────────────────────────────
 PRIMARY_HOST: str = "100.115.25.30"
 DEFAULT_PORT: int = 1234
+DEFAULT_CHAT_PATH: str = "/v1/chat/completions"
 DEFAULT_MODEL: str = "gemma-4-12b-it-qat@q4_k_xl"
 PROBE_TIMEOUT_SEC: float = 1.0
 

@@ -7,6 +7,11 @@ import re
 from typing import List, Tuple
 
 from anibon.time import fmt_ts, parse_ts
+from anibon.config import (
+    DEDUP_MIN_GAP_SEC,
+    DEDUP_MAX_GAP_SEC,
+    STAMP_COLLISION_SEC,
+)
 
 TAGS = (
     "[Greeting]", "[Talk]", "[News]", "[Chat]", "[Donation]",
@@ -126,8 +131,8 @@ def is_continuation(raw: str) -> bool:
 
 def deduplicate_consecutive_timestamps(
     stamps: List[str],
-    min_gap_sec: int = 120,
-    max_dedup_gap_sec: int = 600,
+    min_gap_sec: int = DEDUP_MIN_GAP_SEC,
+    max_dedup_gap_sec: int = DEDUP_MAX_GAP_SEC,
 ) -> List[str]:
     """Deduplicate consecutive timestamps following anibon-summarizer rules.
 
@@ -174,8 +179,8 @@ def deduplicate_consecutive_timestamps(
         curr_sec = parse_ts(curr_stamp[:8])
         gap = curr_sec - prev_sec
 
-        # Never keep stamps < 45 seconds apart
-        if gap < 45:
+        # Never keep stamps < STAMP_COLLISION_SEC apart
+        if gap < STAMP_COLLISION_SEC:
             continue
 
         prev_desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", prev_stamp).strip()

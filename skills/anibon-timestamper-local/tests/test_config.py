@@ -72,6 +72,50 @@ class TestConfig(unittest.TestCase):
             finally:
                 os.environ.pop("TEST_OVER", None)
 
+    def test_modules_use_config_defaults(self):
+        import inspect
+        from anibon import config, summarizer, lmstudio, prompts, multimodal, timestamps
+
+        self.assertEqual(
+            inspect.signature(summarizer.run_local_summarizer_pass).parameters["max_tokens"].default,
+            config.SUMMARIZER_MAX_TOKENS,
+        )
+        self.assertEqual(
+            inspect.signature(summarizer.prune_essential).parameters["min_input"].default,
+            config.PRUNE_MIN_INPUT,
+        )
+        self.assertEqual(
+            inspect.signature(summarizer.enforce_byte_cap).parameters["limit"].default,
+            config.BYTE_CAP_LIMIT,
+        )
+        self.assertEqual(
+            inspect.signature(lmstudio.call_local).parameters["timeout"].default,
+            config.CHUNK_TIMEOUT_SEC,
+        )
+        self.assertEqual(
+            inspect.signature(prompts.build_chunk_entity_context).parameters["max_tokens"].default,
+            config.ENTITY_CONTEXT_MAX_TOKENS,
+        )
+        self.assertEqual(
+            inspect.signature(multimodal.call_multimodal).parameters["timeout"].default,
+            config.MULTIMODAL_TIMEOUT_SEC,
+        )
+        self.assertEqual(
+            inspect.signature(timestamps.deduplicate_consecutive_timestamps).parameters["min_gap_sec"].default,
+            config.DEDUP_MIN_GAP_SEC,
+        )
+
+    def test_process_chunks_has_env_file_flag(self):
+        import subprocess
+        res = subprocess.run(
+            ["python3", "scripts/process_chunks_local.py", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=str(SKILL_DOTENV_PATH.parent),
+        )
+        self.assertEqual(res.returncode, 0)
+        self.assertIn("--env-file", res.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
