@@ -29,5 +29,7 @@
 
   "group_size": 4,
   "block_size": 2400,
-  "byte_cap_limit": 3500
+  "byte_cap_limit": 3500,
+
+  "multimodal_chunks": true
 }

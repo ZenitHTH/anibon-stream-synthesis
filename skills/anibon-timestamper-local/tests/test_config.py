@@ -114,6 +114,25 @@ class TestConfig(unittest.TestCase):
         self.assertIn("--config", res.stdout)
         self.assertIn("--env-file", res.stdout)
 
+    def test_cfg_bool_and_default_multimodal_chunks(self):
+        from anibon.config import cfg_bool, DEFAULT_MULTIMODAL_CHUNKS
+        self.assertTrue(DEFAULT_MULTIMODAL_CHUNKS)
+        self.assertTrue(cfg_bool("multimodal_chunks", False))
+
+        os.environ["ANIBON_MULTIMODAL_CHUNKS"] = "false"
+        try:
+            self.assertFalse(cfg_bool("multimodal_chunks", True))
+        finally:
+            os.environ.pop("ANIBON_MULTIMODAL_CHUNKS", None)
+
+        os.environ["ANIBON_MULTIMODAL_CHUNKS"] = "invalid_bool"
+        try:
+            self.assertTrue(cfg_bool("multimodal_chunks", True))
+            self.assertFalse(cfg_bool("multimodal_chunks", False))
+        finally:
+            os.environ.pop("ANIBON_MULTIMODAL_CHUNKS", None)
+
 
 if __name__ == "__main__":
     unittest.main()
+

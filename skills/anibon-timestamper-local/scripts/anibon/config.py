@@ -62,10 +62,28 @@ def cfg_float(key: str, default: float) -> float:
         return default
 
 
+def cfg_bool(key: str, default: bool) -> bool:
+    """Retrieve boolean configuration value or return default on error/empty."""
+    val = _get_val(key, default)
+    if val is None or val == "":
+        return default
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, (int, float)):
+        return bool(val)
+    s = str(val).strip().lower()
+    if s in ("1", "true", "t", "yes", "y", "on"):
+        return True
+    if s in ("0", "false", "f", "no", "n", "off"):
+        return False
+    return default
+
+
 # Aliases for backward compatibility
 env_str = cfg_str
 env_int = cfg_int
 env_float = cfg_float
+env_bool = cfg_bool
 
 
 def load_config(path: Optional[Path] = None, override: bool = False) -> Dict[str, Any]:
@@ -183,6 +201,8 @@ DEFAULT_GROUP_SIZE: int = 4
 DEFAULT_BLOCK_SIZE: int = 2400
 BYTE_CAP_LIMIT: int = 3500
 
+DEFAULT_MULTIMODAL_CHUNKS: bool = True
+
 
 def reload_config() -> None:
     """Reload all module constants from active _CONFIG and os.environ."""
@@ -193,6 +213,7 @@ def reload_config() -> None:
     global PRUNE_MIN_INPUT, PRUNE_TARGET_MIN, PRUNE_TARGET_MAX
     global DEDUP_MIN_GAP_SEC, DEDUP_MAX_GAP_SEC, STAMP_COLLISION_SEC
     global DEFAULT_GROUP_SIZE, DEFAULT_BLOCK_SIZE, BYTE_CAP_LIMIT
+    global DEFAULT_MULTIMODAL_CHUNKS
 
     PRIMARY_HOST = cfg_str("primary_host", "100.115.25.30")
     DEFAULT_PORT = cfg_int("port", 1234)
@@ -228,6 +249,9 @@ def reload_config() -> None:
     DEFAULT_BLOCK_SIZE = cfg_int("block_size", 2400)
     BYTE_CAP_LIMIT = cfg_int("byte_cap_limit", 3500)
 
+    DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
+
 
 # Initialize from default config.json
 load_config(SKILL_CONFIG_PATH, override=False)
+
