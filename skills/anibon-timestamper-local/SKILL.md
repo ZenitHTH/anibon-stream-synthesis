@@ -131,12 +131,16 @@ Inspect on-screen video frames for ambiguous or vague timestamps (deictic pronou
 python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th --vision-verify
 ```
 
-#### 2.2 Multimodal Chunk Analysis with Storyboard Keyframes (`--multimodal-chunks`)
-Samples 3 high-resolution Storyboard keyframes per chunk directly into the VLM (e.g. Gemma 4 12B Vision) alongside the transcript text during Pass 1. Eliminates game title misattribution and grounds event/chapter subtitles in real time:
+#### 2.2 Multimodal Chunk Analysis with Storyboard Keyframes (Default: Enabled)
+Samples high-resolution Storyboard keyframes per chunk directly into the VLM (e.g. Gemma 4 12B Vision, Qwen-VL) alongside the transcript text during Pass 1. Enabled by default via `config.json` (`"multimodal_chunks": true`). Eliminates game title misattribution and grounds event/chapter subtitles in real time:
 ```bash
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
-    --mode recursive --lang th --multimodal-chunks
+# Enabled by default:
+python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
+
+# To disable and run in text-only mode:
+python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th --no-multimodal
 ```
+
 
 #### 3. Detached Background Launch (3 OS Families)
 Runs inference detached in background so agent sessions or timeouts do not kill the run.

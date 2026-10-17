@@ -132,7 +132,20 @@ class TestConfig(unittest.TestCase):
         finally:
             os.environ.pop("ANIBON_MULTIMODAL_CHUNKS", None)
 
+    def test_process_chunks_multimodal_default_and_opt_out_flag(self):
+        import subprocess
+        res = subprocess.run(
+            ["python3", "scripts/process_chunks_local.py", "--help"],
+            capture_output=True,
+            text=True,
+            cwd=str(SKILL_CONFIG_PATH.parent),
+        )
+        self.assertEqual(res.returncode, 0)
+        self.assertIn("--no-multimodal", res.stdout)
+        self.assertIn("--text-only", res.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

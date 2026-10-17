@@ -125,7 +125,9 @@ from anibon.config import (
     DEFAULT_BLOCK_SIZE,
     STAMP_COLLISION_SEC,
     MULTIMODAL_TIMEOUT_SEC,
+    DEFAULT_MULTIMODAL_CHUNKS,
 )
+
 
 from anibon.multimodal import (
     prepare_storyboard_slides,
@@ -383,13 +385,15 @@ def run_recursive_mode(
     slides_dir = None
     tiles_dir = workspace / "frames" / "chunk_tiles"
     if is_multimodal:
-        slides_dir = prepare_storyboard_slides(workspace)
+        video_url = getattr(args, "video_url", None) if args else None
+        slides_dir = prepare_storyboard_slides(workspace, video_url=video_url)
         if slides_dir:
             tiles_dir.mkdir(parents=True, exist_ok=True)
             print(f"[multimodal] Enabled: Grounding chunks with Storyboard keyframes from {slides_dir.name}")
         else:
             print("[multimodal] Warning: No storyboard slides found in workspace/frames, falling back to text-only mode.")
             is_multimodal = False
+
 
     processed_count = 0
     for i, chunk_path in enumerate(chunk_files):
@@ -880,10 +884,15 @@ def main() -> None:
                     help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
     ap.add_argument("--vision-verify", action="store_true",
                     help="Inspect video frames with local vision model for ambiguous timestamps before Pass 2 summary")
-    ap.add_argument("--multimodal-chunks", "--multimodal", action="store_true",
-                    help="Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes")
+    ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks",
+                    action="store_true", default=DEFAULT_MULTIMODAL_CHUNKS,
+                    help=f"Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes (default: {DEFAULT_MULTIMODAL_CHUNKS})")
+    ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks",
+                    action="store_false",
+                    help="Disable Storyboard keyframe multimodal analysis and run in text-only mode")
     ap.add_argument("--video-file", default=None,
                     help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
+
     ap.add_argument("--vision-model", default=None,
                     help="Model name for vision calls (default: same as resolved --model)")
     ap.add_argument("--no-knowledge-reader", action="store_true",
@@ -960,7 +969,9 @@ def main() -> None:
     print(f"[init] model       : {model}")
     print(f"[init] endpoint    : {args.endpoint}")
     print(f"[init] mode        : {args.mode}")
+    print(f"[init] multimodal  : {'enabled' if getattr(args, 'multimodal_chunks', False) else 'disabled (text-only)'}")
     print(f"[init] total chunks: {total_chunks}")
+
     print(f"[init] lang        : {args.lang}")
 
     # Resolve world identity references directory
