@@ -359,7 +359,11 @@ def call_multimodal(
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
-    req = urllib.request.Request(endpoint, data=data_bytes, headers=headers, method="POST")
+    url = endpoint.rstrip("/")
+    if not url.endswith("/v1/chat/completions"):
+        url = f"{url}/v1/chat/completions"
+
+    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
 
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read().decode("utf-8"))
