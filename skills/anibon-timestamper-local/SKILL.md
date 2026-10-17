@@ -75,6 +75,7 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
 Pu Boat's discussions follow organic content flow rather than clock boundaries. A topic may last 3 minutes or 25 minutes.
 - **`SAME_TOPIC`**: If Chunk $N$ continues the ongoing topic, it merges into the rolling summary without emitting a timestamp (0 timestamps).
   - **Long-Form Talk/News Exception**: If a monologue or societal debate continues across multiple chunks (>8–10 minutes without a stamp), the model MUST extract a distinct sub-angle or specific policy critique (1 timestamp) rather than leaving long blanks.
+  - **Unbounded Chaining Summary Invariant**: `build_recursive_prompt()` and state persistence (`anibon_timestamper_state.json`, `recursive_outputs/chunk_XX.json`) must pass the full `rolling_summary` and `chunk_summary` text without hardcoded character truncation so multi-chunk topic context is never clipped.
 - **`TOPIC_SHIFT` / Highlights**: When the topic shifts, it flushes previous context and stamps the shift. Emits 1 timestamp by default, 2 MAX per chunk ($\ge$45s apart).
 - **Thematic Part Grouping**: Pass 2 summarizer groups timestamps by overarching thematic category into sequential integer parts (`ส่วนที่ 1, 2, 3...` typically 4–6 parts total) using `find_best_boundary` to snap part borders to streamer transition cues (e.g. `สรุป... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`). Over-splitting into 10–18 micro-parts is disallowed; cohesive topic discussions (e.g. complete series reviews or gaming sessions) remain unified in a single part for viewer navigation convenience. Consecutive same-game grinding is consolidated within 10 minutes while talk/news sub-topics use a 4-minute window.
 
@@ -139,6 +140,17 @@ python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode re
 
 # To disable and run in text-only mode:
 python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th --no-multimodal
+```
+
+**Re-running an Existing Workspace while Preserving Previous Results (e.g. Text-Only → Multimodal):**
+```bash
+cd ~/youtube_<VIDEO_ID>_workspace
+cp -a . ~/youtube_<VIDEO_ID>_workspace_text_backup
+cp anibon_timestamps.md anibon_timestamps_text_only.md
+cp all_timestamps.txt all_timestamps_text_only.txt
+mv recursive_outputs recursive_outputs_text_only && mkdir -p recursive_outputs
+cp anibon_timestamper_state.json anibon_timestamper_state_text_only.json
+rm -f anibon_timestamper_state.json all_timestamps.txt anibon_timestamps.md timestamper.pid
 ```
 
 
@@ -328,3 +340,13 @@ NEVER deliver the final timestamp output without performing an `anibon-world-ide
    - *Symptom*: `prepare_storyboard_slides()` extracts 0 slides despite `storyboard.mhtml` being downloaded (20MB+).
    - *Cause*: YouTube's `yt-dlp` often packages multipart storyboard slides with `Content-type: image/webp` (`RIFF...WEBP`) rather than `image/jpeg`.
    - *Fix*: `anibon/multimodal.py` checks both `image/jpeg` and `image/webp`. FFmpeg crops tiles from either format to high-res JPEG output without requiring PIL.
+
+8. **`yt-dlp` Storyboard `--skip-download` Trap & Empty Slide Directories**:
+   - *Symptom*: `download_storyboard()` exits 0 but produces no `.mhtml` file, or `prepare_storyboard_slides()` returns an empty `slides_clean/` directory.
+   - *Cause*: Unlike `--write-auto-subs --skip-download`, storyboard (`-f sb0/sb1/sb2/sb3`) is the primary format; passing `--skip-download` skips downloading it entirely. Checking `clean_dir.exists()` without globbing `slide_*.jpg` also false-positives on empty directories.
+   - *Fix*: Never pass `--skip-download` when downloading `-f sb0/sb1/sb2/sb3`, and always verify `clean_dir.is_dir() and any(clean_dir.glob("slide_*.jpg"))`.
+
+9. **Multimodal Endpoint Missing `/v1/chat/completions` (`KeyError: 'choices'`)**:
+   - *Symptom*: `call_multimodal()` raises `KeyError: 'choices'` when passed a bare `http://host:1234` endpoint.
+   - *Cause*: `urllib.request` hits the LM Studio root endpoint instead of `/v1/chat/completions`.
+   - *Fix*: Always normalize `url` in `call_multimodal()` to append `/v1/chat/completions` if not already present.
