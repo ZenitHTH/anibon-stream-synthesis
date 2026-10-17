@@ -192,6 +192,27 @@ class TestSummarizer(unittest.TestCase):
         mock_call.assert_not_called()
         self.assertEqual(out, stamps)
 
+    @patch("anibon.summarizer.call_local")
+    def test_run_local_summarizer_pass_preserves_full_multiline_summary(self, mock_call):
+        from anibon.summarizer import run_local_summarizer_pass
+        stamps = [
+            "00:00:00 - [Talk] วิเคราะห์การเมืองไทยเรื่องประกันสังคม",
+            "00:10:00 - [Talk] เจาะลึกซีรีส์ Lanterns ของ James Gunn",
+        ]
+        fake_llm_output = (
+            "Part 1: 00:00:00\n"
+            "Summary: วิเคราะห์การเมืองไทยอย่างเข้มข้นเรื่องกองทุนประกันสังคมและการบริหารจัดการงบประมาณ.\n"
+            "ชำแหละกลยุทธ์ของพรรคการเมืองและผลกระทบต่อผู้ประกันตนอย่างครบถ้วน.\n\n"
+            "Part 2: 00:10:00\n"
+            "Summary: เจาะลึกซีรีส์ Lanterns ของ James Gunn วิเคราะห์งานสร้าง CG และทิศทางจักรวาล DC.\n"
+            "ถกประเด็นความสมจริงของซูเปอร์ฮีโร่เทียบกับคอมมิคต้นฉบับ.\n"
+        )
+        mock_call.return_value = fake_llm_output
+        md = run_local_summarizer_pass("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertIsNotNone(md)
+        self.assertIn("ชำแหละกลยุทธ์ของพรรคการเมืองและผลกระทบต่อผู้ประกันตนอย่างครบถ้วน.", md)
+        self.assertIn("ถกประเด็นความสมจริงของซูเปอร์ฮีโร่เทียบกับคอมมิคต้นฉบับ.", md)
+
 
 if __name__ == "__main__":
     unittest.main()

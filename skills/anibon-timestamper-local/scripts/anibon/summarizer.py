@@ -21,10 +21,8 @@ def generate_part_summary(stamps: List[str]) -> str:
     topics = []
     for s in stamps:
         desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", s).strip()
-        # Clean speaker prefixes and trailing punctuation
-        clean = re.sub(r"^(ปู่โบ๊ต|ปู่บอร์ด|พูดถึง|วิเคราะห์|คุยเรื่อง|ดู|รับชม|เปิดดู|เล่าข่าว|บ่นเรื่อง|ถกประเด็น)\s*", "", desc)
-        clean = re.sub(r"^(และ|หรือ|กับ|เรื่อง)\s*", "", clean).strip()
-        clean = clean.strip(". ")
+        # Clean speaker prefixes and trailing punctuation (keep action verbs intact)
+        clean = re.sub(r"^(ปู่โบ๊ต|ปู่บอร์ด)\s*", "", desc).strip(". ")
         if clean and clean not in topics:
             topics.append(clean)
 
@@ -100,7 +98,7 @@ def run_local_summarizer_pass(
     all_stamps: List[str],
     workspace: Optional[Path] = None,
     temperature: float = 0.1,
-    max_tokens: int = 1500,
+    max_tokens: int = 4096,
 ) -> Optional[str]:
     """Call local LLM to partition timestamps into macro-thematic Parts with Caveman summaries."""
     if not all_stamps:
@@ -135,7 +133,7 @@ CRITICAL GROUPING & CONSOLIDATION RULES:
    - Number parts sequentially as integers ONLY (Part 1, Part 2, Part 3, etc.). NEVER create sub-parts like 1.1, 1.2.
    - Consolidation: Do NOT create tiny parts containing only 1-2 timestamps (unless standalone closing/donation).
 3. CAVEMAN SUMMARY HEADERS:
-   - Punchy Thai summary header (2-3 short, dense sentences in Thai, active voice, zero fluff, highlighting major drama, news, or gameplay).
+   - Punchy Thai summary header (2-3 complete, dense sentences in Thai, active voice, zero fluff, highlighting major drama, news, or gameplay). Write FULL complete sentences—never cut or abbreviate mid-sentence.
    - NEVER drop proper nouns (game titles, character names, people).
    - Never use vague pronouns ("เกมนี้", "เรื่องนั้น"); name the specific title/person.
 
@@ -145,19 +143,19 @@ For each part, specify:
 
 Format strictly as:
 Part 1: 00:00:00
-Summary: [Thai Summary 2-3 sentences]
+Summary: [Thai Summary 2-3 complete sentences on one line]
 
 Part 2: HH:MM:SS
-Summary: [Thai Summary 2-3 sentences]
+Summary: [Thai Summary 2-3 complete sentences on one line]
 
 TIMESTAMPS:
 {raw_list}
 """
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
-        content = call_local(endpoint, model, prompt, max_tokens, temperature)
+        content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=600)
         raw_matches = re.findall(
-            r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+([^\n\r]+)",
+            r"Part\s+(\d+)[:\s]+(\d{2}:\d{2}:\d{2}).*?Summary[:\s]+(.+?)(?=\n\s*\n|\n\s*Part\s+\d+|\Z)",
             content,
             flags=re.DOTALL,
         )
@@ -170,7 +168,7 @@ TIMESTAMPS:
                 continue
             seen_nums.add(p_num)
             prev_sec = sec
-            matches.append((p_num, p_start, p_sum))
+            matches.append((p_num, p_start, " ".join(p_sum.split())))
 
         if len(matches) >= 2:
             border = "═" * 57
