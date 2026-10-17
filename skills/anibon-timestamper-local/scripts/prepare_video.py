@@ -55,6 +55,8 @@ def main():
                     help="Chunk overlap in seconds (default: 30)")
     ap.add_argument("--vision", action="store_true",
                     help="Extract and annotate visual frames for ambiguous pronoun cues")
+    ap.add_argument("--no-storyboard", action="store_true",
+                    help="Skip downloading YouTube storyboard mhtml slides")
     ap.add_argument("--workspace", "-o", default=None,
                     help="Target workspace directory (default: ~/youtube_<video_id>_workspace)")
     args = ap.parse_args()
@@ -72,7 +74,10 @@ def main():
 
     (workspace / ".video_url").write_text(url.strip(), encoding="utf-8")
     ytdlp.download_transcript(url, workspace)
+    if not args.no_storyboard:
+        ytdlp.download_storyboard(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
+
 
     if args.vision and args.format in ["json", "xml"]:
         from anibon import vision as _vision

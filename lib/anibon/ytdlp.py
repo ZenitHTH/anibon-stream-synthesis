@@ -53,6 +53,41 @@ def download_transcript(url: str, workspace: Path) -> None:
         sys.exit(1)
 
 
+def download_storyboard(url: str, workspace: Path) -> Path | None:
+    """Download storyboard images/mhtml via yt-dlp into workspace/frames/.
+
+    Skips if storyboard file or unpacked slides already exist.
+    """
+    frames_dir = Path(workspace) / "frames"
+    frames_dir.mkdir(parents=True, exist_ok=True)
+
+    for p in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "slides_clean"]:
+        if p.exists():
+            return p
+
+    print("[*] Downloading storyboard via yt-dlp...", file=sys.stderr)
+    try:
+        subprocess.run(
+            [
+                *ytdlp_cmd(), "-P", str(frames_dir),
+                "-f", "sb0/sb1/sb2/sb3", "--skip-download",
+                "--ignore-no-formats-error", "-o", "storyboard.%(ext)s", url,
+            ],
+            capture_output=True,
+            check=False,
+            timeout=120,
+        )
+        for m in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "sb1.mhtml"]:
+            if m.is_file():
+                return m
+        found = list(frames_dir.glob("*.mhtml"))
+        return found[0] if found else None
+    except Exception as e:
+        print(f"[!] Failed to download storyboard: {e}", file=sys.stderr)
+        return None
+
+
+
 def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best") -> Path | None:
     """Download a video (or section) via yt-dlp.
 

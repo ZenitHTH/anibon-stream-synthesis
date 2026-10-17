@@ -24,6 +24,12 @@ try:
 except ImportError:
     Image = None  # type: ignore[assignment]
 
+try:
+    from anibon.ytdlp import download_storyboard
+except ImportError:
+    download_storyboard = None
+
+
 
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
@@ -69,8 +75,12 @@ def unpack_mhtml_storyboard(mhtml_path: Path, out_dir: Path) -> int:
     return count
 
 
-def prepare_storyboard_slides(workspace: Path) -> Optional[Path]:
-    """Find or unpack storyboard slide sheets in workspace."""
+def prepare_storyboard_slides(workspace: Path, video_url: Optional[str] = None) -> Optional[Path]:
+    """Find or unpack storyboard slide sheets in workspace.
+
+    If no slides exist and video_url or .video_url is present, automatically
+    downloads storyboard images via yt-dlp before unpacking.
+    """
     workspace = Path(workspace)
     frames_dir = workspace / "frames"
 
@@ -87,7 +97,28 @@ def prepare_storyboard_slides(workspace: Path) -> Optional[Path]:
             if count > 0:
                 return clean_dir
 
+    # 3. Auto-download storyboard if URL is available
+    resolved_url = video_url
+    if not resolved_url and (workspace / ".video_url").is_file():
+        try:
+            resolved_url = (workspace / ".video_url").read_text(encoding="utf-8").strip()
+        except Exception:
+            resolved_url = None
+
+    if resolved_url and download_storyboard is not None:
+        downloaded = download_storyboard(resolved_url, workspace)
+        clean_dir = frames_dir / "slides_clean"
+        if clean_dir.is_dir() and len(list(clean_dir.glob("slide_*.jpg"))) > 10:
+            return clean_dir
+
+        if downloaded and Path(downloaded).is_file():
+            count = unpack_mhtml_storyboard(Path(downloaded), clean_dir)
+            if count > 0:
+                return clean_dir
+
+
     return None
+
 
 
 def sec_to_ts(sec: int) -> str:

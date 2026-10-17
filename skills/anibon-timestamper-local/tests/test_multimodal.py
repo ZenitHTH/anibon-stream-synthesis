@@ -94,6 +94,28 @@ class TestMultimodal(unittest.TestCase):
         dummy_mhtml = Path("/tmp/dummy_non_existent.mhtml")
         self.assertEqual(unpack_mhtml_storyboard(dummy_mhtml, Path("/tmp")), 0)
 
+    def test_prepare_storyboard_slides_auto_downloads_when_video_url_present(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / ".video_url").write_text("https://www.youtube.com/watch?v=dQw4w9WgXcQ", encoding="utf-8")
+
+            def fake_download(url, workspace):
+                frames = Path(workspace) / "frames"
+                frames.mkdir(parents=True, exist_ok=True)
+                slides = frames / "slides_clean"
+                slides.mkdir(parents=True, exist_ok=True)
+                for i in range(1, 15):
+                    (slides / f"slide_{i:04d}.jpg").write_bytes(b"jpeg")
+                return frames / "storyboard.mhtml"
+
+            with patch("anibon.multimodal.download_storyboard", side_effect=fake_download) as mock_dl:
+                res = prepare_storyboard_slides(ws)
+                mock_dl.assert_called_once_with("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ws)
+                self.assertIsNotNone(res)
+                self.assertEqual(res.name, "slides_clean")
+
 
 if __name__ == "__main__":
     unittest.main()
+
