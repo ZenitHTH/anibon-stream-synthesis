@@ -67,6 +67,7 @@ package-lock.json
 # Scratch & temporary pipeline directories
 .superpowers/
 audio_slices/
-garbled_notes_raw/
-
-
+# Secrets & environment files
+.env
+*.env
+.env.*

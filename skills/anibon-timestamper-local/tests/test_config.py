@@ -1,13 +1,14 @@
+import json
 import os
 import tempfile
 import unittest
 from pathlib import Path
 from anibon.config import (
-    load_dotenv,
-    env_int,
-    env_float,
-    env_str,
-    SKILL_DOTENV_PATH,
+    load_config,
+    cfg_int,
+    cfg_float,
+    cfg_str,
+    SKILL_CONFIG_PATH,
     CHUNK_MAX_TOKENS,
     SUMMARIZER_MAX_TOKENS,
     PRUNE_MAX_TOKENS,
@@ -16,61 +17,57 @@ from anibon.config import (
 
 
 class TestConfig(unittest.TestCase):
-    def test_skill_dotenv_file_exists_and_loads_defaults(self):
-        self.assertTrue(SKILL_DOTENV_PATH.is_file())
+    def tearDown(self):
+        if SKILL_CONFIG_PATH.is_file():
+            load_config(SKILL_CONFIG_PATH, override=True)
+
+    def test_skill_config_json_exists_and_loads_defaults(self):
+        self.assertTrue(SKILL_CONFIG_PATH.is_file())
         self.assertEqual(CHUNK_MAX_TOKENS, 4096)
         self.assertEqual(SUMMARIZER_MAX_TOKENS, 4096)
         self.assertEqual(PRUNE_MAX_TOKENS, 4000)
         self.assertEqual(BYTE_CAP_LIMIT, 3500)
 
-    def test_dotenv_parses_quotes_comments_and_export(self):
+    def test_load_config_parses_json_values(self):
         with tempfile.TemporaryDirectory() as tmp:
-            env_file = Path(tmp) / ".env"
-            env_file.write_text(
-                "# Comment line\n"
-                "export TEST_HOST=\"100.115.25.30\" # inline comment\n"
-                "TEST_TOKENS=2048 # token limit\n"
-                "TEST_TEMP='0.25'\n",
+            cfg_file = Path(tmp) / "config.json"
+            cfg_file.write_text(
+                json.dumps({
+                    "primary_host": "192.168.1.50",
+                    "chunk_max_tokens": 2048,
+                    "temperature": 0.25,
+                }),
                 encoding="utf-8",
             )
-            parsed = load_dotenv(env_file, override=True)
-            self.assertEqual(parsed["TEST_HOST"], "100.115.25.30")
-            self.assertEqual(env_int("TEST_TOKENS", 100), 2048)
-            self.assertAlmostEqual(env_float("TEST_TEMP", 0.1), 0.25)
-            for k in ("TEST_HOST", "TEST_TOKENS", "TEST_TEMP"):
-                os.environ.pop(k, None)
+            parsed = load_config(cfg_file, override=True)
+            self.assertEqual(parsed["primary_host"], "192.168.1.50")
+            self.assertEqual(cfg_str("primary_host", "100.115.25.30"), "192.168.1.50")
+            self.assertEqual(cfg_int("chunk_max_tokens", 4096), 2048)
+            self.assertAlmostEqual(cfg_float("temperature", 0.1), 0.25)
 
-    def test_malformed_or_empty_env_falls_back_to_default(self):
-        os.environ["TEST_BAD_INT"] = "not_a_number"
-        os.environ["TEST_EMPTY_FLOAT"] = ""
+    def test_malformed_json_or_bad_types_fall_back_to_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            bad_file = Path(tmp) / "bad.json"
+            bad_file.write_text("{invalid json", encoding="utf-8")
+            self.assertEqual(load_config(bad_file, override=True), {})
+
+            type_file = Path(tmp) / "types.json"
+            type_file.write_text(
+                json.dumps({"chunk_max_tokens": "not_a_number", "temperature": ""}),
+                encoding="utf-8",
+            )
+            load_config(type_file, override=True)
+            self.assertEqual(cfg_int("chunk_max_tokens", 4096), 4096)
+            self.assertAlmostEqual(cfg_float("temperature", 0.1), 0.1)
+
+    def test_os_environ_overrides_config_json_when_not_forced(self):
+        os.environ["ANIBON_CHUNK_MAX_TOKENS"] = "8192"
         try:
-            self.assertEqual(env_int("TEST_BAD_INT", 4096), 4096)
-            self.assertAlmostEqual(env_float("TEST_EMPTY_FLOAT", 0.1), 0.1)
+            if SKILL_CONFIG_PATH.is_file():
+                load_config(SKILL_CONFIG_PATH, override=False)
+            self.assertEqual(cfg_int("chunk_max_tokens", 4096), 8192)
         finally:
-            os.environ.pop("TEST_BAD_INT", None)
-            os.environ.pop("TEST_EMPTY_FLOAT", None)
-
-    def test_os_environ_takes_precedence_over_dotenv(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            env_file = Path(tmp) / ".env"
-            env_file.write_text("TEST_PREC=100\n", encoding="utf-8")
-            os.environ["TEST_PREC"] = "999"
-            try:
-                load_dotenv(env_file, override=False)
-                self.assertEqual(env_int("TEST_PREC", 0), 999)
-            finally:
-                os.environ.pop("TEST_PREC", None)
-
-    def test_load_dotenv_override_updates_values(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            env_file = Path(tmp) / ".env"
-            env_file.write_text("TEST_OVER=555\n", encoding="utf-8")
-            os.environ["TEST_OVER"] = "111"
-            try:
-                load_dotenv(env_file, override=True)
-                self.assertEqual(env_int("TEST_OVER", 0), 555)
-            finally:
-                os.environ.pop("TEST_OVER", None)
+            os.environ.pop("ANIBON_CHUNK_MAX_TOKENS", None)
 
     def test_modules_use_config_defaults(self):
         import inspect
@@ -111,7 +108,7 @@ class TestConfig(unittest.TestCase):
             ["python3", "scripts/process_chunks_local.py", "--help"],
             capture_output=True,
             text=True,
-            cwd=str(SKILL_DOTENV_PATH.parent),
+            cwd=str(SKILL_CONFIG_PATH.parent),
         )
         self.assertEqual(res.returncode, 0)
         self.assertIn("--env-file", res.stdout)

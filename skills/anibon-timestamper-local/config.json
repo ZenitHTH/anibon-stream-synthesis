@@ -1,0 +1,33 @@
+{
+  "primary_host": "100.115.25.30",
+  "port": 1234,
+  "chat_path": "/v1/chat/completions",
+  "default_model": "gemma-4-12b-it-qat@q4_k_xl",
+  "probe_timeout_sec": 1.0,
+
+  "chunk_max_tokens": 4096,
+  "prune_max_tokens": 4000,
+  "summarizer_max_tokens": 4096,
+  "entity_context_max_tokens": 300,
+
+  "chunk_timeout_sec": 180,
+  "multimodal_timeout_sec": 120,
+  "prune_timeout_sec": 600,
+  "summarizer_timeout_sec": 600,
+
+  "temperature": 0.1,
+  "vision_temperature": 0.2,
+  "max_retries": 2,
+
+  "prune_min_input": 60,
+  "prune_target_min": 40,
+  "prune_target_max": 60,
+
+  "dedup_min_gap_sec": 120,
+  "dedup_max_gap_sec": 600,
+  "stamp_collision_sec": 45,
+
+  "group_size": 4,
+  "block_size": 2400,
+  "byte_cap_limit": 3500
+}
