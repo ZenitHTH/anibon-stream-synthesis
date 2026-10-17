@@ -118,8 +118,8 @@ class TestKnowledgeReader(unittest.TestCase):
             ref_dir.mkdir(parents=True)
             stream_dir = tmp_path / "anibon-timestamper-local" / "references" / "stream"
             stream_dir.mkdir(parents=True)
-            (stream_dir / "gaming-stream.md").write_text(
-                "# Gaming Stream\n\n"
+            (stream_dir / "gaming-knowledge.md").write_text(
+                "# Gaming Knowledge\n\n"
                 "| คำศัพท์ | ความหมาย |\n"
                 "| :--- | :--- |\n"
                 "| **Joy-Con** | จอยสติ๊ก Switch |\n",
@@ -128,12 +128,53 @@ class TestKnowledgeReader(unittest.TestCase):
 
             signals_map = {
                 "chunk_01": {
-                    "best_file": "references/stream/gaming-stream.md",
-                    "weighted_files": [{"file": "references/stream/gaming-stream.md", "score": 10.0}]
+                    "best_file": "references/stream/gaming-knowledge.md",
+                    "weighted_files": [{"file": "references/stream/gaming-knowledge.md", "score": 10.0}]
                 }
             }
             glossary = extract_entity_glossary(signals_map, ref_dir, extra_ref_dirs=[stream_dir])
             self.assertIn("Joy-Con", glossary)
+
+    def test_rule_docs_excluded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            stream_dir = tmp_path / "stream"
+            stream_dir.mkdir()
+            (stream_dir / "talk-stream.md").write_text(
+                "- **Core Strategy**: Identify which topics the speaker flows into.\n\n"
+                "| Guideline | Details | Action |\n"
+                "| :--- | :--- | :--- |\n"
+                "| **Direct royal naming** | โบ๊ทพูดถึง ร.10 | Mask immediately |\n",
+                encoding="utf-8"
+            )
+            signals_map = {
+                "chunk_00": {
+                    "best_file": "talk-stream.md",
+                    "weighted_files": [{"file": "talk-stream.md", "score": 10.0}]
+                }
+            }
+            g = extract_entity_glossary(signals_map, ref_dir=stream_dir)
+            self.assertNotIn("Core Strategy", g)
+            self.assertNotIn("Direct royal naming", g)
+
+    def test_stream_knowledge_files_still_parsed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            stream_dir = tmp_path / "stream"
+            stream_dir.mkdir()
+            (stream_dir / "fgo-knowledge.md").write_text(
+                "# FGO Knowledge\n\n"
+                "- **Ashiya Douman (อาชิยะ โดมัน)**: Caster / Alter Ego servant\n",
+                encoding="utf-8"
+            )
+            signals_map = {
+                "chunk_00": {
+                    "best_file": "fgo-knowledge.md",
+                    "weighted_files": [{"file": "fgo-knowledge.md", "score": 10.0}]
+                }
+            }
+            g = extract_entity_glossary(signals_map, ref_dir=stream_dir)
+            self.assertIn("Ashiya Douman", g)
 
 
 if __name__ == "__main__":

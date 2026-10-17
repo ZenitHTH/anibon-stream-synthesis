@@ -179,6 +179,11 @@ def resolve_reference_file(
     return None
 
 
+def is_rule_doc(path: Path) -> bool:
+    """Return True if path is a stream format/behavior rule doc, not a knowledge/entity doc."""
+    return path.parent.name == "stream" and not path.stem.endswith("-knowledge")
+
+
 def extract_entity_glossary(
     signals_map: Dict[str, Any],
     ref_dir: Optional[Path] = None,
@@ -211,6 +216,8 @@ def extract_entity_glossary(
     for target in targets:
         candidate = resolve_reference_file(target, search_dirs)
         if candidate and candidate.is_file():
+            if is_rule_doc(candidate):
+                continue
             try:
                 content = candidate.read_text(encoding="utf-8")
                 parsed = parse_markdown_entities(content)
