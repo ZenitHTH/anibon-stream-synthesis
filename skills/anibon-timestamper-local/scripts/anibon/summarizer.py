@@ -74,10 +74,13 @@ Drop repeats of the same talking point and casual banter. Copy selected lines EX
             print(f"[prune] Warning: model returned only {len(kept_lines)} valid stamps (target {target}). Falling back to full list.")
             return stamps
 
-        # Always re-add first timestamp and any [Ending] stamps
+        # Always re-add first timestamp, last timestamp, and any [Ending] stamps
         if stamps[0] not in seen:
             seen.add(stamps[0])
             kept_lines.append(stamps[0])
+        if stamps[-1] not in seen:
+            seen.add(stamps[-1])
+            kept_lines.append(stamps[-1])
         for s in stamps:
             if "[Ending]" in s and s not in seen:
                 seen.add(s)

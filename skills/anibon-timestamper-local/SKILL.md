@@ -120,6 +120,11 @@ python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace"
 python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
 ```
 
+> [!TIP]
+> **Single Comment Byte Limit (`--byte-cap`)**:
+> Pass `--byte-cap` if you need each part strictly under 3,500 bytes for YouTube single-comment pasting. By default, byte-capping is disabled to preserve cohesive macro-thematic grouping (4–6 parts).
+
+
 #### 2.1 In-Pipeline Vision Verification (Optional)
 Inspect on-screen video frames for ambiguous or vague timestamps (deictic pronouns, missing game names, `[?]` markers) using the local vision model before Pass 2 summary:
 ```powershell
@@ -247,6 +252,7 @@ Prioritize viewer navigation and thematic cohesion: keep related discussions (su
 ### Essential Curated Timestamps Selection Invariant
 When generating timestamps from long livestreams (4–8 hours), follow these operating standards:
 1. **Primary Output Focus**: Present the primary result as a curated essential edition (~40–60 timestamps for a 7–8 hour stream, or approximately 8–15 stamps per macro-thematic part).
+   - **Automated Essential Pruning (`prune_essential`)**: For streams yielding >60 timestamps, `finalize_and_assemble_timestamps()` automatically queries the local model to distill essential pivot points, news, gameplay milestones, and core conclusions down to ~40–60 stamps. The pipeline enforces strict verbatim matching against raw timestamps, guarantees retention of opening and `[Ending]` timestamps, and falls back cleanly if the LLM call fails.
 2. **Essential Selection Criteria**:
    - Major topic starts or pivot points (Topic Shift / Pivot).
    - Official news, announcements, releases, or statistical data (Official News, Releases, Data).
