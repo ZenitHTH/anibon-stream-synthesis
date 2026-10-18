@@ -44,7 +44,7 @@
   - `_get_tile_downsampled_bytes(tile_path: Path) -> Optional[bytes]` (with `.rgb` 432-byte sidecar persistence and memory caching)
   - `sample_chunk_keyframes(..., scene_dedup: bool = True, delta_threshold: float = SCENE_DELTA_THRESHOLD, text_tokens: Optional[int] = None, eval_batch_size: int = EVAL_BATCH_SIZE) -> List[Tuple[str, Path, str]]`
 
-- [ ] **Step 1: Write failing tests for `.rgb` sidecar caching, corrupted sidecar recovery, and `scene_dedup=True` default in `skills/anibon-timestamper-local/tests/test_multimodal.py`**
+- [x] **Step 1: Write failing tests for `.rgb` sidecar caching, corrupted sidecar recovery, and `scene_dedup=True` default in `skills/anibon-timestamper-local/tests/test_multimodal.py`**
 
 ```python
     def test_get_tile_downsampled_bytes_writes_and_reuses_rgb_sidecar(self):
@@ -77,12 +77,12 @@
             self.assertEqual(raw1, raw2)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_multimodal.py -v`
 Expected: FAIL with `ImportError: cannot import name '_THUMB_CACHE'`
 
-- [ ] **Step 3: Implement `_THUMB_CACHE`, `.rgb` sidecar persistence, `eval_batch_size` forwarding, and `scene_dedup: bool = True` default in `anibon/multimodal.py`**
+- [x] **Step 3: Implement `_THUMB_CACHE`, `.rgb` sidecar persistence, `eval_batch_size` forwarding, and `scene_dedup: bool = True` default in `anibon/multimodal.py`**
 
 1. Define `_THUMB_CACHE: dict[str, bytes] = {}` above `_get_tile_downsampled_bytes()`.
 2. In `_get_tile_downsampled_bytes(tile_path: Path) -> Optional[bytes]`:
@@ -94,12 +94,12 @@ Expected: FAIL with `ImportError: cannot import name '_THUMB_CACHE'`
    - Change default `scene_dedup: bool = True` and add `eval_batch_size: int = EVAL_BATCH_SIZE`.
    - Pass `eval_batch_size=eval_batch_size` to `compute_frame_budget(text_tokens if text_tokens is not None else 3000, eval_batch_size=eval_batch_size, max_frames=effective_max)`.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_multimodal.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/scripts/anibon/multimodal.py skills/anibon-timestamper-local/tests/test_multimodal.py
@@ -122,7 +122,7 @@ git commit -m "perf(multimodal): add 16x9 RGB sidecar cache and default scene_de
   - Multi-timestamp restoration from `saved_res.get("timestamps")` on resume
   - `keyframe_timestamps` and `keyframe_count` persisted in `recursive_outputs/chunk_XX.json`
 
-- [ ] **Step 1: Write failing tests in `skills/anibon-timestamper-local/tests/test_process_chunks_resume.py`**
+- [x] **Step 1: Write failing tests in `skills/anibon-timestamper-local/tests/test_process_chunks_resume.py`**
 
 ```python
 import json
@@ -215,12 +215,12 @@ class TestProcessChunksResumeAndCleanSlate(unittest.TestCase):
             )
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_process_chunks_resume.py -v`
 Expected: FAIL (`stale_file.exists()` is True, and only 1 timestamp restored instead of 2)
 
-- [ ] **Step 3: Implement clean-slate `--no-resume`, multi-stamp resume, CLI flags, and chunk keyframe telemetry in `process_chunks_local.py`**
+- [x] **Step 3: Implement clean-slate `--no-resume`, multi-stamp resume, CLI flags, and chunk keyframe telemetry in `process_chunks_local.py`**
 
 1. In `run_recursive_mode()`:
    - When `no_resume` is True, unlink all `output_dir.glob("chunk_*.json")`.
@@ -240,12 +240,12 @@ Expected: FAIL (`stale_file.exists()` is True, and only 1 timestamp restored ins
    - Add `--scene-delta-threshold` (`type=float, default=SCENE_DELTA_THRESHOLD`)
    - Add `--no-scene-dedup` (`action="store_true"`)
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest discover -s skills/anibon-timestamper-local/tests -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/scripts/process_chunks_local.py skills/anibon-timestamper-local/tests/test_process_chunks_resume.py
@@ -263,18 +263,18 @@ git commit -m "feat(timestamper-local): clean-slate no-resume, multi-stamp resum
 - Consumes: CLI flags and config keys from Tasks 1–2
 - Produces: Updated `skills/anibon-timestamper-local/SKILL.md`
 
-- [ ] **Step 1: Update `skills/anibon-timestamper-local/SKILL.md` with Adaptive Scene-Change & Evaluation-Batch Keyframe Selector documentation**
+- [x] **Step 1: Update `skills/anibon-timestamper-local/SKILL.md` with Adaptive Scene-Change & Evaluation-Batch Keyframe Selector documentation**
 
 Update:
 1. Line 38 (`anibon/multimodal.py` summary): replace `3-keyframe sampling per chunk bounds` with `Adaptive scene-change & evaluation-batch keyframe selector (1–16 frames per chunk, 16×9 RGB sidecar caching, Thai deictic cue pinning)`.
 2. Section `2. Process Chunks`: document `--eval-batch-size` (`8192`), `--max-chunk-frames` (`16`), `--scene-delta-threshold` (`0.06`), and `--no-scene-dedup`.
 
-- [ ] **Step 2: Run full test suite to verify nothing is broken**
+- [x] **Step 2: Run full test suite to verify nothing is broken**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest discover -s skills/anibon-timestamper-local/tests -v`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/SKILL.md
