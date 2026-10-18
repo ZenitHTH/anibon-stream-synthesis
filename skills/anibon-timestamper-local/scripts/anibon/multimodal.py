@@ -17,6 +17,10 @@ from anibon.config import (
     CHUNK_MAX_TOKENS,
     DEFAULT_TEMPERATURE,
     MULTIMODAL_TIMEOUT_SEC,
+    EVAL_BATCH_SIZE,
+    TOKENS_PER_IMAGE,
+    SCENE_DELTA_THRESHOLD,
+    MAX_CHUNK_FRAMES,
 )
 
 try:
@@ -127,6 +131,59 @@ def sec_to_ts(sec: int) -> str:
     m = (sec % 3600) // 60
     s = sec % 60
     return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def compute_frame_budget(
+    text_tokens: int,
+    eval_batch_size: int = EVAL_BATCH_SIZE,
+    tokens_per_image: int = TOKENS_PER_IMAGE,
+    min_frames: int = 1,
+    max_frames: int = MAX_CHUNK_FRAMES,
+) -> int:
+    """Calculate maximum frames that fit within the Evaluation Batch Size window."""
+    avail = max(0, eval_batch_size - max(0, text_tokens))
+    fit = avail // max(1, tokens_per_image)
+    return max(min_frames, min(max_frames, fit))
+
+
+def _get_tile_downsampled_bytes(tile_path: Path) -> Optional[bytes]:
+    """Extract 16x9 24-bit raw RGB bytes (432 bytes) via PIL or ffmpeg."""
+    p = Path(tile_path)
+    if not p.is_file():
+        return None
+    if Image is not None:
+        try:
+            with Image.open(p) as im:
+                thumb = im.convert("RGB").resize((16, 9))
+                return thumb.tobytes()
+        except Exception:
+            pass
+
+    try:
+        res = subprocess.run(
+            ["ffmpeg", "-v", "error", "-i", str(p), "-vf", "scale=16:9", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+            capture_output=True,
+            timeout=10,
+        )
+        if res.returncode == 0 and len(res.stdout) == 432:
+            return res.stdout
+    except Exception:
+        pass
+    return None
+
+
+def compute_tile_visual_delta(tile_a: Path, tile_b: Path) -> float:
+    """Compute normalized mean absolute difference [0.0..1.0] between two 320x180 tiles.
+
+    Returns 1.0 if either tile cannot be read (treating unreadable/missing as distinct).
+    """
+    bytes_a = _get_tile_downsampled_bytes(tile_a)
+    bytes_b = _get_tile_downsampled_bytes(tile_b)
+    if not bytes_a or not bytes_b or len(bytes_a) != len(bytes_b):
+        return 1.0
+
+    total_diff = sum(abs(b1 - b2) for b1, b2 in zip(bytes_a, bytes_b))
+    return total_diff / (len(bytes_a) * 255.0)
 
 
 INCOMPLETE_CONTEXT_CUES = (

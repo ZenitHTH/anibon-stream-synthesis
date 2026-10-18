@@ -134,6 +134,35 @@ class TestMultimodal(unittest.TestCase):
 
 
 
+    def test_compute_frame_budget_scales_with_eval_batch(self):
+        from anibon.multimodal import compute_frame_budget
+        # 2500 text tokens in 8192 batch -> (8192 - 2500) // 260 = 21 -> capped at max_frames=16
+        self.assertEqual(compute_frame_budget(2500, eval_batch_size=8192, tokens_per_image=260, min_frames=1, max_frames=16), 16)
+        # 7500 text tokens in 8192 batch -> (8192 - 7500) // 260 = 2
+        self.assertEqual(compute_frame_budget(7500, eval_batch_size=8192, tokens_per_image=260, min_frames=1, max_frames=16), 2)
+        # Overflowing text tokens -> clamps to min_frames=1
+        self.assertEqual(compute_frame_budget(9000, eval_batch_size=8192, tokens_per_image=260, min_frames=1, max_frames=16), 1)
+
+    def test_compute_tile_visual_delta_identical_vs_distinct(self):
+        import shutil, subprocess, tempfile
+        from anibon.multimodal import compute_tile_visual_delta, Image
+        with tempfile.TemporaryDirectory() as tmp:
+            p1 = Path(tmp) / "black.jpg"
+            p2 = Path(tmp) / "black_copy.jpg"
+            p3 = Path(tmp) / "white.jpg"
+            if Image is not None:
+                Image.new("RGB", (320, 180), (10, 10, 10)).save(p1)
+                Image.new("RGB", (320, 180), (10, 10, 10)).save(p2)
+                Image.new("RGB", (320, 180), (240, 240, 240)).save(p3)
+            else:
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=black:s=320x180", "-frames:v", "1", str(p1)], check=True)
+                shutil.copyfile(p1, p2)
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=white:s=320x180", "-frames:v", "1", str(p3)], check=True)
+
+            self.assertLess(compute_tile_visual_delta(p1, p2), 0.01)
+            self.assertGreater(compute_tile_visual_delta(p1, p3), 0.80)
+
+
 if __name__ == "__main__":
     unittest.main()
 
