@@ -34,8 +34,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 ### Modular Library Architecture (`scripts/anibon/`)
 
-`process_chunks_local.py` is decomposed into single-responsibility, unit-tested modules:
-- `anibon/multimodal.py`: Storyboard slide unpacking, 3-keyframe sampling per chunk bounds, OpenAI-compatible multi-image payload construction, and VLM execution.
+- `anibon/multimodal.py`: Storyboard slide unpacking, adaptive scene-change & evaluation-batch keyframe selector (1–16 frames per chunk, 16×9 RGB sidecar caching, Thai deictic cue pinning), OpenAI-compatible multi-image payload construction, and VLM execution.
 - `anibon/knowledge_reader.py`: Automated domain knowledge discovery from `signals.json`, regex table/bullet entity parser, SQLite DB enricher (`atlas_fgo.db`, `pokemon.db`), and `entity_glossary.json` generator.
 - `anibon/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
 - `anibon/lmstudio.py`: LM Studio & OpenAI-compatible client (TokenMe, vLLM, Ollama), model resolution (defaults to `gemma-4-12b-it-qat@q4_k_xl` or `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, Bearer auth, Cloudflare bypass, and multi-modal Vision API (`image_url` data URIs for Gemma 4 Vision, Qwen-VL).
@@ -135,12 +134,28 @@ python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspa
 #### 2.2 Multimodal Chunk Analysis with Storyboard Keyframes (Default: Enabled)
 Samples high-resolution Storyboard keyframes per chunk directly into the VLM (e.g. Gemma 4 12B Vision, Qwen-VL) alongside the transcript text during Pass 1. Enabled by default via `config.json` (`"multimodal_chunks": true`). Eliminates game title misattribution and grounds event/chapter subtitles in real time:
 ```bash
-# Enabled by default:
+# Enabled by default (Adaptive Scene-Change Mode):
 python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
 
-# To disable and run in text-only mode:
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th --no-multimodal
+# To tune visual sensitivity or evaluation batch size:
+python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
+  --eval-batch-size 8192 \
+  --max-chunk-frames 16 \
+  --scene-delta-threshold 0.06
+
+# To disable adaptive scene deduplication (fallback to legacy fixed 3-5 frames):
+python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-scene-dedup
+
+# To disable all multimodal analysis and run in text-only mode:
+python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-multimodal
 ```
+
+**Adaptive Scene-Change Keyframe Selector (`scene_dedup=True`):**
+- **Static Screens**: Drops static talking-head / waiting screens down to 1–2 frames (saving physical batch compute and prompt tokens).
+- **Dynamic Action**: Automatically expands up to 16 frames per 5-min chunk whenever visual scene transitions occur, bounded by `--eval-batch-size` (default `8192`).
+- **Thai Deictic Cue Pinning**: Pins exact visual frames whenever Pu Boat uses deictic pointers (`"ดูอันนี้"`, `"ในจอ"`, `"ตรงนี้"`, `"[?]"`).
+- **RGB Sidecar Caching**: Automatically persists 16×9 432-byte downsampled buffers (`tile_XXXXXX.rgb`) alongside `.jpg` tiles, eliminating repeated `ffmpeg` subprocess overhead across comparisons and reruns.
+- **Clean-Slate `--no-resume`**: Passing `--no-resume` automatically unlinks stale `recursive_outputs/chunk_*.json` files to guarantee clean execution without leftover chunk contamination.
 
 **Re-running an Existing Workspace while Preserving Previous Results (e.g. Text-Only → Multimodal):**
 ```bash
