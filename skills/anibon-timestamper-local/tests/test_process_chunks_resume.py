@@ -87,6 +87,89 @@ class TestProcessChunksResumeAndCleanSlate(unittest.TestCase):
                 ["00:01:00 - [Talk] ประเด็นแรก", "00:03:00 - [News] ประเด็นสอง"],
             )
 
+    def test_no_resume_unlinks_state_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks_dir = ws / "chunks"
+            chunks_dir.mkdir()
+            (chunks_dir / "chunk_00.txt").write_text("[00:00:00] Test\n", encoding="utf-8")
+            state_file = ws / "anibon_timestamper_state.json"
+            state_file.write_text('{"phase": "prior"}', encoding="utf-8")
+
+            with patch.object(pcl, "call_local", return_value='{"is_continuation": true, "chunk_summary": "ok", "updated_summary": "ok"}'), \
+                 patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(ws / "anibon_timestamps.md", [])):
+                pcl.run_recursive_mode(
+                    workspace=ws,
+                    chunk_files=[chunks_dir / "chunk_00.txt"],
+                    endpoint="http://localhost:1234/v1/chat/completions",
+                    model="test-model",
+                    lang="th",
+                    max_tokens=500,
+                    temperature=0.2,
+                    signals_map={},
+                    mappings=[],
+                    no_resume=True,
+                    max_chunks=1,
+                    no_summarizer_pass=True,
+                    block_size=40,
+                )
+
+            # Newly saved state for chunk_00 should reflect chunk 1, not the stale prior state
+            self.assertTrue(state_file.exists())
+            saved = json.loads(state_file.read_text(encoding="utf-8"))
+            self.assertEqual(saved.get("current_chunk"), 1)
+
+    def test_cli_flags_forwarded_to_sample_chunk_keyframes(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks_dir = ws / "chunks"
+            chunks_dir.mkdir()
+            (chunks_dir / "chunk_00.txt").write_text("[00:00:00] Test\n", encoding="utf-8")
+            slides_dir = ws / "frames" / "slides_clean"
+            slides_dir.mkdir(parents=True)
+            (slides_dir / "slide_0001.jpg").write_bytes(b"dummy")
+
+            fake_args = argparse.Namespace(
+                multimodal_chunks=True,
+                no_scene_dedup=True,
+                scene_delta_threshold=0.12,
+                max_chunk_frames=8,
+                eval_batch_size=4096,
+                video_url=None,
+            )
+
+            captured_kwargs = {}
+            def fake_sample(*args, **kwargs):
+                captured_kwargs.update(kwargs)
+                return [("00:00:00", Path("/tmp/t.jpg"), "b64")]
+
+            with patch.object(pcl, "sample_chunk_keyframes", side_effect=fake_sample), \
+                 patch.object(pcl, "prepare_storyboard_slides", return_value=slides_dir), \
+                 patch.object(pcl, "call_multimodal", return_value='{"is_continuation": true, "chunk_summary": "ok", "updated_summary": "ok"}'), \
+                 patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(ws / "anibon_timestamps.md", [])):
+                pcl.run_recursive_mode(
+                    workspace=ws,
+                    chunk_files=[chunks_dir / "chunk_00.txt"],
+                    endpoint="http://localhost:1234/v1/chat/completions",
+                    model="test-model",
+                    lang="th",
+                    max_tokens=500,
+                    temperature=0.2,
+                    signals_map={},
+                    mappings=[],
+                    no_resume=True,
+                    max_chunks=1,
+                    no_summarizer_pass=True,
+                    block_size=40,
+                    args=fake_args,
+                )
+
+            self.assertFalse(captured_kwargs.get("scene_dedup"))
+            self.assertEqual(captured_kwargs.get("delta_threshold"), 0.12)
+            self.assertEqual(captured_kwargs.get("num_frames"), 8)
+            self.assertEqual(captured_kwargs.get("eval_batch_size"), 4096)
+
 
 if __name__ == "__main__":
     unittest.main()

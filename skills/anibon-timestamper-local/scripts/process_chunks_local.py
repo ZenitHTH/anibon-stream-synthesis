@@ -378,6 +378,7 @@ def run_recursive_mode(
     if no_resume:
         for stale in output_dir.glob("chunk_*.json"):
             stale.unlink(missing_ok=True)
+        (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
 
     state = load_state(workspace)
     all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
@@ -656,6 +657,7 @@ def run_group_mode(
     if no_resume:
         for stale in output_dir.glob("group_*_output.md"):
             stale.unlink(missing_ok=True)
+        (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
 
     state = load_state(workspace)
     all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
