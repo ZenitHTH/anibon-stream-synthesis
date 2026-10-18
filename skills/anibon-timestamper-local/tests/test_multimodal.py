@@ -234,6 +234,56 @@ class TestMultimodal(unittest.TestCase):
             )
             self.assertEqual(len(res_capped), 1)
 
+    def test_get_tile_downsampled_bytes_writes_and_reuses_rgb_sidecar(self):
+        import subprocess, tempfile
+        from anibon.multimodal import _get_tile_downsampled_bytes, _THUMB_CACHE, Image
+        with tempfile.TemporaryDirectory() as tmp:
+            tile_path = Path(tmp) / "tile_000010.jpg"
+            sidecar = Path(tmp) / "tile_000010.rgb"
+            if Image is not None:
+                Image.new("RGB", (320, 180), (30, 60, 90)).save(tile_path)
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=0x1e3c5a:s=320x180", "-frames:v", "1", str(tile_path)],
+                    check=True,
+                )
+
+            # Write corrupted 10-byte sidecar first -> must be ignored and overwritten with 432 bytes
+            sidecar.write_bytes(b"corrupted!")
+            _THUMB_CACHE.clear()
+
+            raw1 = _get_tile_downsampled_bytes(tile_path)
+            self.assertIsNotNone(raw1)
+            self.assertEqual(len(raw1), 432)
+            self.assertTrue(sidecar.is_file())
+            self.assertEqual(sidecar.stat().st_size, 432)
+
+            # Clear memory cache -> should load directly from valid .rgb sidecar
+            _THUMB_CACHE.clear()
+            raw2 = _get_tile_downsampled_bytes(tile_path)
+            self.assertEqual(raw1, raw2)
+
+    def test_sample_chunk_keyframes_default_scene_dedup_is_true(self):
+        import subprocess, tempfile
+        from anibon.multimodal import sample_chunk_keyframes, Image
+        with tempfile.TemporaryDirectory() as tmp:
+            slides_dir = Path(tmp) / "slides"
+            out_dir = Path(tmp) / "tiles"
+            slides_dir.mkdir()
+            slide_file = slides_dir / "slide_0001.jpg"
+            if Image is not None:
+                slide = Image.new("RGB", (960, 540), (20, 20, 20))
+                slide.save(slide_file)
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=0x141414:s=960x540", "-frames:v", "1", str(slide_file)],
+                    check=True,
+                )
+
+            # Without passing scene_dedup, default should be True -> static screen produces 1 frame
+            res = sample_chunk_keyframes(0, 50, slides_dir, out_dir, text_tokens=3000)
+            self.assertEqual(len(res), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -146,29 +146,58 @@ def compute_frame_budget(
     return max(min_frames, min(max_frames, fit))
 
 
+_THUMB_CACHE: Dict[str, bytes] = {}
+
+
 def _get_tile_downsampled_bytes(tile_path: Path) -> Optional[bytes]:
-    """Extract 16x9 24-bit raw RGB bytes (432 bytes) via PIL or ffmpeg."""
+    """Extract 16x9 24-bit raw RGB bytes (432 bytes) via PIL or ffmpeg with .rgb sidecar and memory cache."""
     p = Path(tile_path)
+    key = str(p.resolve())
+    if key in _THUMB_CACHE:
+        return _THUMB_CACHE[key]
+
+    sidecar = p.with_suffix(".rgb")
+    if sidecar.is_file() and sidecar.stat().st_size == 432:
+        try:
+            data = sidecar.read_bytes()
+            if len(data) == 432:
+                _THUMB_CACHE[key] = data
+                return data
+        except Exception:
+            pass
+
     if not p.is_file():
         return None
+
+    raw: Optional[bytes] = None
     if Image is not None:
         try:
             with Image.open(p) as im:
                 thumb = im.convert("RGB").resize((16, 9))
-                return thumb.tobytes()
+                raw = thumb.tobytes()
         except Exception:
             pass
 
-    try:
-        res = subprocess.run(
-            ["ffmpeg", "-v", "error", "-i", str(p), "-vf", "scale=16:9", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
-            capture_output=True,
-            timeout=10,
-        )
-        if res.returncode == 0 and len(res.stdout) == 432:
-            return res.stdout
-    except Exception:
-        pass
+    if raw is None or len(raw) != 432:
+        try:
+            res = subprocess.run(
+                ["ffmpeg", "-v", "error", "-i", str(p), "-vf", "scale=16:9", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                capture_output=True,
+                timeout=10,
+            )
+            if res.returncode == 0 and len(res.stdout) == 432:
+                raw = res.stdout
+        except Exception:
+            pass
+
+    if raw and len(raw) == 432:
+        try:
+            sidecar.write_bytes(raw)
+        except Exception:
+            pass
+        _THUMB_CACHE[key] = raw
+        return raw
+
     return None
 
 
@@ -306,9 +335,10 @@ def sample_chunk_keyframes(
     sec_per_tile: float = 9.88,
     items: Optional[List[dict]] = None,
     num_frames: Optional[int] = None,
-    scene_dedup: bool = False,
+    scene_dedup: bool = True,
     delta_threshold: float = SCENE_DELTA_THRESHOLD,
     text_tokens: Optional[int] = None,
+    eval_batch_size: int = EVAL_BATCH_SIZE,
 ) -> List[Tuple[str, Path, str]]:
     """Sample keyframes across chunk bounds and crop 320x180 tiles.
 
@@ -366,7 +396,11 @@ def sample_chunk_keyframes(
 
     if scene_dedup:
         effective_max = num_frames if num_frames is not None else MAX_CHUNK_FRAMES
-        budget = compute_frame_budget(text_tokens if text_tokens is not None else 3000, max_frames=effective_max)
+        budget = compute_frame_budget(
+            text_tokens if text_tokens is not None else 3000,
+            eval_batch_size=eval_batch_size,
+            max_frames=effective_max,
+        )
 
         anchor_sec = start_sec
         pinned_secs = []
