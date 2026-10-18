@@ -168,6 +168,15 @@ class TestConfig(unittest.TestCase):
             self.assertIn("multimodal  : disabled (text-only)", res.stdout)
 
 
+    def test_multimodal_batch_and_scene_config_defaults(self):
+        import anibon.config as cfg
+        cfg.load_config(override=True)
+        self.assertEqual(cfg.EVAL_BATCH_SIZE, 8192)
+        self.assertEqual(cfg.TOKENS_PER_IMAGE, 260)
+        self.assertAlmostEqual(cfg.SCENE_DELTA_THRESHOLD, 0.06)
+        self.assertEqual(cfg.MAX_CHUNK_FRAMES, 16)
+
+
 if __name__ == "__main__":
     unittest.main()
 

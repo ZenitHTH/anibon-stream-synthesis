@@ -31,5 +31,9 @@
   "block_size": 2400,
   "byte_cap_limit": 3500,
 
-  "multimodal_chunks": true
+  "multimodal_chunks": true,
+  "eval_batch_size": 8192,
+  "tokens_per_image": 260,
+  "scene_delta_threshold": 0.06,
+  "max_chunk_frames": 16
 }

@@ -202,6 +202,10 @@ DEFAULT_BLOCK_SIZE: int = 2400
 BYTE_CAP_LIMIT: int = 3500
 
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
+EVAL_BATCH_SIZE: int = 8192
+TOKENS_PER_IMAGE: int = 260
+SCENE_DELTA_THRESHOLD: float = 0.06
+MAX_CHUNK_FRAMES: int = 16
 
 
 def reload_config() -> None:
@@ -213,7 +217,7 @@ def reload_config() -> None:
     global PRUNE_MIN_INPUT, PRUNE_TARGET_MIN, PRUNE_TARGET_MAX
     global DEDUP_MIN_GAP_SEC, DEDUP_MAX_GAP_SEC, STAMP_COLLISION_SEC
     global DEFAULT_GROUP_SIZE, DEFAULT_BLOCK_SIZE, BYTE_CAP_LIMIT
-    global DEFAULT_MULTIMODAL_CHUNKS
+    global DEFAULT_MULTIMODAL_CHUNKS, EVAL_BATCH_SIZE, TOKENS_PER_IMAGE, SCENE_DELTA_THRESHOLD, MAX_CHUNK_FRAMES
 
     PRIMARY_HOST = cfg_str("primary_host", "100.115.25.30")
     DEFAULT_PORT = cfg_int("port", 1234)
@@ -250,6 +254,10 @@ def reload_config() -> None:
     BYTE_CAP_LIMIT = cfg_int("byte_cap_limit", 3500)
 
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
+    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 8192)
+    TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
+    SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.06)
+    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 16)
 
 
 # Initialize from default config.json
