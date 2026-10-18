@@ -126,6 +126,9 @@ from anibon.config import (
     STAMP_COLLISION_SEC,
     MULTIMODAL_TIMEOUT_SEC,
     DEFAULT_MULTIMODAL_CHUNKS,
+    EVAL_BATCH_SIZE,
+    MAX_CHUNK_FRAMES,
+    SCENE_DELTA_THRESHOLD,
     cfg_bool,
 )
 
@@ -372,6 +375,9 @@ def run_recursive_mode(
     """Dynamic rolling summary state-machine execution."""
     output_dir = workspace / "recursive_outputs"
     output_dir.mkdir(exist_ok=True)
+    if no_resume:
+        for stale in output_dir.glob("chunk_*.json"):
+            stale.unlink(missing_ok=True)
 
     state = load_state(workspace)
     all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
@@ -396,7 +402,6 @@ def run_recursive_mode(
             print("[multimodal] Warning: No storyboard slides found in workspace/frames, falling back to text-only mode.")
             is_multimodal = False
 
-
     processed_count = 0
     for i, chunk_path in enumerate(chunk_files):
         m = re.search(r"chunk_(\d+)", chunk_path.stem)
@@ -409,9 +414,10 @@ def run_recursive_mode(
                 saved_res = json.loads(out_path.read_text(encoding="utf-8"))
                 current_topic_title = saved_res.get("current_topic_title", current_topic_title)
                 rolling_summary = saved_res.get("rolling_summary", rolling_summary)
-                saved_ts = saved_res.get("timestamp") or saved_res.get("new_timestamp")
-                if saved_ts and saved_ts not in all_timestamps:
-                    all_timestamps.append(saved_ts)
+                saved_ts_list = saved_res.get("timestamps") or ([saved_res.get("timestamp")] if saved_res.get("timestamp") else [])
+                for st in saved_ts_list:
+                    if st and st not in all_timestamps:
+                        all_timestamps.append(st)
                 print(f"[skip] {chunk_idx} (already processed)", flush=True)
                 continue
             except Exception:
@@ -436,14 +442,21 @@ def run_recursive_mode(
             st_sec = items[0].get("start", 0) if items else ch_num * 270
             en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
             est_text_tokens = (len(rolling_summary) + len(chunk.get("text", ""))) // 4 + 800
+            scene_dedup = not getattr(args, "no_scene_dedup", False) if args else True
+            delta_threshold = getattr(args, "scene_delta_threshold", SCENE_DELTA_THRESHOLD) if args else SCENE_DELTA_THRESHOLD
+            max_chunk_frames = getattr(args, "max_chunk_frames", None) if args else None
+            eval_batch_size = getattr(args, "eval_batch_size", EVAL_BATCH_SIZE) if args else EVAL_BATCH_SIZE
             keyframes = sample_chunk_keyframes(
                 int(st_sec),
                 int(en_sec),
                 slides_dir,
                 tiles_dir,
                 items=items,
-                scene_dedup=True,
+                num_frames=max_chunk_frames,
+                scene_dedup=scene_dedup,
+                delta_threshold=delta_threshold,
                 text_tokens=est_text_tokens,
+                eval_batch_size=eval_batch_size,
             )
 
         prompt = build_recursive_prompt(
@@ -569,6 +582,8 @@ def run_recursive_mode(
                     "chunk_summary": ch_sum,
                     "rolling_summary": rolling_summary,
                     "current_topic_title": current_topic_title,
+                    "keyframe_count": len(keyframes),
+                    "keyframe_timestamps": [kf[0] for kf in keyframes],
                 }, ensure_ascii=False, indent=2), encoding="utf-8")
             else:
                 print(f"[warn] JSON parse failed, raw: {text[:100]}")
@@ -638,6 +653,9 @@ def run_group_mode(
     """Group-based execution across fixed windows of chunks."""
     output_dir = workspace / "group_outputs"
     output_dir.mkdir(exist_ok=True)
+    if no_resume:
+        for stale in output_dir.glob("group_*_output.md"):
+            stale.unlink(missing_ok=True)
 
     state = load_state(workspace)
     all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
@@ -906,6 +924,14 @@ def main() -> None:
     ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks",
                     action="store_false",
                     help="Disable Storyboard keyframe multimodal analysis and run in text-only mode")
+    ap.add_argument("--eval-batch-size", type=int, default=EVAL_BATCH_SIZE,
+                    help=f"Evaluation batch size ceiling in tokens for multimodal frame budgeting (default: {EVAL_BATCH_SIZE})")
+    ap.add_argument("--max-chunk-frames", type=int, default=None,
+                    help=f"Maximum keyframes per chunk (default: MAX_CHUNK_FRAMES = {MAX_CHUNK_FRAMES} in scene_dedup mode, or 5 in legacy mode)")
+    ap.add_argument("--scene-delta-threshold", type=float, default=SCENE_DELTA_THRESHOLD,
+                    help=f"Visual difference threshold [0.0..1.0] for scene transition detection (default: {SCENE_DELTA_THRESHOLD})")
+    ap.add_argument("--no-scene-dedup", action="store_true",
+                    help="Disable adaptive visual scene deduplication and fall back to legacy fixed 3-5 frame selection")
     ap.add_argument("--video-file", default=None,
 
                     help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
