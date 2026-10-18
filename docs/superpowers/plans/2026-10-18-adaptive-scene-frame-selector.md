@@ -44,7 +44,7 @@
   - `SCENE_DELTA_THRESHOLD: float = 0.06`
   - `MAX_CHUNK_FRAMES: int = 16`
 
-- [ ] **Step 1: Write failing test in `skills/anibon-timestamper-local/tests/test_config.py`**
+- [x] **Step 1: Write failing tests in `skills/anibon-timestamper-local/tests/test_config.py`**
 
 ```python
     def test_multimodal_batch_and_scene_config_defaults(self):
@@ -56,12 +56,12 @@
         self.assertEqual(cfg.MAX_CHUNK_FRAMES, 16)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_config.py -v`
 Expected: FAIL with `AttributeError: module 'anibon.config' has no attribute 'EVAL_BATCH_SIZE'`
 
-- [ ] **Step 3: Add config keys to `config.json` and `anibon/config.py`**
+- [x] **Step 3: Add config keys to `config.json` and `anibon/config.py`**
 
 In `skills/anibon-timestamper-local/config.json`, add:
 - `"eval_batch_size": 8192`
@@ -71,12 +71,12 @@ In `skills/anibon-timestamper-local/config.json`, add:
 
 In `skills/anibon-timestamper-local/scripts/anibon/config.py`, declare module-level constants `EVAL_BATCH_SIZE`, `TOKENS_PER_IMAGE`, `SCENE_DELTA_THRESHOLD`, `MAX_CHUNK_FRAMES` and bind them inside `reload_config()`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_config.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/config.json skills/anibon-timestamper-local/scripts/anibon/config.py skills/anibon-timestamper-local/tests/test_config.py
@@ -97,7 +97,7 @@ git commit -m "feat(config): add eval_batch_size, tokens_per_image, and scene_de
   - `compute_frame_budget(text_tokens: int, eval_batch_size: int = EVAL_BATCH_SIZE, tokens_per_image: int = TOKENS_PER_IMAGE, min_frames: int = 1, max_frames: int = MAX_CHUNK_FRAMES) -> int`
   - `compute_tile_visual_delta(tile_a: Path, tile_b: Path) -> float`
 
-- [ ] **Step 1: Write failing tests in `skills/anibon-timestamper-local/tests/test_multimodal.py`**
+- [x] **Step 1: Write failing tests in `skills/anibon-timestamper-local/tests/test_multimodal.py`**
 
 ```python
     def test_compute_frame_budget_scales_with_eval_batch(self):
@@ -125,12 +125,12 @@ git commit -m "feat(config): add eval_batch_size, tokens_per_image, and scene_de
             self.assertGreater(compute_tile_visual_delta(p1, p3), 0.80)
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_multimodal.py -v`
 Expected: FAIL with `ImportError: cannot import name 'compute_frame_budget'`
 
-- [ ] **Step 3: Implement `compute_frame_budget` and `compute_tile_visual_delta` in `anibon/multimodal.py`**
+- [x] **Step 3: Implement `compute_frame_budget` and `compute_tile_visual_delta` in `anibon/multimodal.py`**
 
 1. `compute_frame_budget(text_tokens, eval_batch_size=EVAL_BATCH_SIZE, tokens_per_image=TOKENS_PER_IMAGE, min_frames=1, max_frames=MAX_CHUNK_FRAMES) -> int`:
    - `avail = max(0, eval_batch_size - max(0, text_tokens))`
@@ -140,12 +140,12 @@ Expected: FAIL with `ImportError: cannot import name 'compute_frame_budget'`
    - Downsample both images to `16x9` RGB via `Image.open(p).convert("RGB").resize((16, 9))` and compute `sum(abs(c1 - c2)) / (16 * 9 * 3 * 255.0)`.
    - On missing `PIL` or exception, fallback to comparing raw file byte histograms or return `1.0` if file is unreadable.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_multimodal.py -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/scripts/anibon/multimodal.py skills/anibon-timestamper-local/tests/test_multimodal.py
@@ -166,7 +166,7 @@ git commit -m "feat(multimodal): add compute_frame_budget and compute_tile_visua
 - Produces:
   - Updated `sample_chunk_keyframes(..., scene_dedup: bool = False, delta_threshold: float = SCENE_DELTA_THRESHOLD, text_tokens: Optional[int] = None) -> List[Tuple[str, Path, str]]`
 
-- [ ] **Step 1: Write failing tests for scene-change deduplication and cue pinning in `tests/test_multimodal.py`**
+- [x] **Step 1: Write failing tests for scene-change deduplication and cue pinning in `tests/test_multimodal.py`**
 
 ```python
     def test_sample_chunk_keyframes_scene_dedup_drops_static_and_keeps_changes(self):
@@ -196,12 +196,12 @@ git commit -m "feat(multimodal): add compute_frame_budget and compute_tile_visua
             self.assertGreaterEqual(len(res_change), 2)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_multimodal.py -v`
 Expected: FAIL (`TypeError: sample_chunk_keyframes() got an unexpected keyword argument 'scene_dedup'`)
 
-- [ ] **Step 3: Implement adaptive scene-change scanning in `sample_chunk_keyframes()` and wire into `process_chunks_local.py`**
+- [x] **Step 3: Implement adaptive scene-change scanning in `sample_chunk_keyframes()` and wire into `process_chunks_local.py`**
 
 1. In `anibon/multimodal.py`:
    - Define `STRONG_VISUAL_CUES = ("ดูอันนี้", "ดูนี่", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "จุดนี้", "นี่ไง", "ดูคลิป", "ตัวละครนี้", "สกินนี้", "การ์ดนี้", "เกมนี้", "หน้านี้", "รูปนี้", "คลิปนี้", "ภาพนี้", "[?]")` (excluding generic filler like `"เนี่ย"`, `"โห"`).
@@ -214,12 +214,12 @@ Expected: FAIL (`TypeError: sample_chunk_keyframes() got an unexpected keyword a
    - Estimate base text tokens from `rolling_summary` + `chunk` text (`est_text_tokens = (len(rolling_summary) + len(chunk.get("text", ""))) // 4 + 800`).
    - Call `sample_chunk_keyframes(int(st_sec), int(en_sec), slides_dir, tiles_dir, items=items, scene_dedup=True, text_tokens=est_text_tokens)`.
 
-- [ ] **Step 4: Run full test suite to verify all tests pass**
+- [x] **Step 4: Run full test suite to verify all tests pass**
 
 Run: `PYTHONPATH="skills/anibon-timestamper-local/scripts:lib" python3 -m unittest discover -s skills/anibon-timestamper-local/tests -v`
 Expected: PASS (all existing + new unit tests green)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/anibon-timestamper-local/scripts/anibon/multimodal.py skills/anibon-timestamper-local/scripts/process_chunks_local.py skills/anibon-timestamper-local/tests/test_multimodal.py
