@@ -196,6 +196,44 @@ class TestMultimodal(unittest.TestCase):
             )
             self.assertGreaterEqual(len(res_change), 2)
 
+    def test_compute_tile_visual_delta_unreadable_fallback(self):
+        from anibon.multimodal import compute_tile_visual_delta
+        # Missing file should gracefully return 1.0
+        delta = compute_tile_visual_delta(Path("/tmp/nonexistent_1.jpg"), Path("/tmp/nonexistent_2.jpg"))
+        self.assertEqual(delta, 1.0)
+
+    def test_sample_chunk_keyframes_pinned_cues_and_budget_cap(self):
+        import subprocess, tempfile
+        from anibon.multimodal import sample_chunk_keyframes, Image
+        with tempfile.TemporaryDirectory() as tmp:
+            slides_dir = Path(tmp) / "slides"
+            out_dir = Path(tmp) / "tiles"
+            slides_dir.mkdir()
+            slide_file = slides_dir / "slide_0001.jpg"
+            if Image is not None:
+                slide = Image.new("RGB", (960, 540), (20, 20, 20))
+                slide.save(slide_file)
+            else:
+                subprocess.run(
+                    ["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=c=0x141414:s=960x540", "-frames:v", "1", str(slide_file)],
+                    check=True,
+                )
+
+            # Static slide with 1 pinned cue at 30s -> keeps anchor + pinned cue (2 frames)
+            items = [{"start": 30, "text": "ดูอันนี้สิในจอ"}]
+            res = sample_chunk_keyframes(
+                0, 60, slides_dir, out_dir, items=items, scene_dedup=True, delta_threshold=0.06, text_tokens=3000
+            )
+            self.assertEqual(len(res), 2)
+            self.assertEqual(res[0][0], "00:00:00")
+            self.assertEqual(res[1][0], "00:00:30")
+
+            # With strict budget num_frames=1, anchor and pinned cannot exceed 1 frame
+            res_capped = sample_chunk_keyframes(
+                0, 60, slides_dir, out_dir, items=items, scene_dedup=True, num_frames=1, delta_threshold=0.06, text_tokens=3000
+            )
+            self.assertEqual(len(res_capped), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -366,14 +366,14 @@ def sample_chunk_keyframes(
 
     if scene_dedup:
         effective_max = num_frames if num_frames is not None else MAX_CHUNK_FRAMES
-        budget = compute_frame_budget(text_tokens or 3000, max_frames=effective_max)
+        budget = compute_frame_budget(text_tokens if text_tokens is not None else 3000, max_frames=effective_max)
 
         anchor_sec = start_sec
         pinned_secs = []
         for it in (items or []):
             sec = int(it.get("start", 0))
             if start_sec <= sec <= end_sec and any(c in it.get("text", "") for c in STRONG_VISUAL_CUES):
-                if all(abs(sec - p) >= 15 for p in pinned_secs):
+                if abs(sec - anchor_sec) >= 10 and all(abs(sec - p) >= 15 for p in pinned_secs):
                     pinned_secs.append(sec)
 
         step = max(5, int(round(sec_per_tile)))
@@ -416,9 +416,12 @@ def sample_chunk_keyframes(
         if len(kept) > budget:
             must_keep = [x for x in kept if x[3]]  # anchor and pinned
             others = [x for x in kept if not x[3]]
-            others.sort(key=lambda x: x[2], reverse=True)
-            remaining_slots = max(0, budget - len(must_keep))
-            selected_items = must_keep + others[:remaining_slots]
+            if len(must_keep) > budget:
+                selected_items = must_keep[:budget]
+            else:
+                others.sort(key=lambda x: x[2], reverse=True)
+                remaining_slots = max(0, budget - len(must_keep))
+                selected_items = must_keep + others[:remaining_slots]
             kept = sorted(selected_items, key=lambda x: x[0])
 
         target_secs = [x[0] for x in kept]
