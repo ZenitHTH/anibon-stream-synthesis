@@ -162,6 +162,40 @@ class TestMultimodal(unittest.TestCase):
             self.assertLess(compute_tile_visual_delta(p1, p2), 0.01)
             self.assertGreater(compute_tile_visual_delta(p1, p3), 0.80)
 
+    def test_sample_chunk_keyframes_scene_dedup_drops_static_and_keeps_changes(self):
+        import shutil, subprocess, tempfile
+        from anibon.multimodal import sample_chunk_keyframes, Image
+        with tempfile.TemporaryDirectory() as tmp:
+            slides_dir = Path(tmp) / "slides"
+            out_dir = Path(tmp) / "tiles"
+            slides_dir.mkdir()
+            slide_file = slides_dir / "slide_0001.jpg"
+            if Image is not None:
+                slide = Image.new("RGB", (960, 540), (20, 20, 20))
+                red_tile = Image.new("RGB", (320, 180), (240, 20, 20))
+                slide.paste(red_tile, (0, 360))
+                slide.save(slide_file)
+            else:
+                cmd = [
+                    "ffmpeg", "-v", "error", "-y", "-f", "lavfi",
+                    "-i", "color=c=0x141414:s=960x540",
+                    "-vf", "drawbox=x=0:y=360:w=320:h=180:color=red@1.0:t=fill",
+                    "-frames:v", "1", str(slide_file)
+                ]
+                subprocess.run(cmd, check=True)
+
+            # Static chunk (0..50s, all dark gray tiles) -> only 1 frame kept
+            res_static = sample_chunk_keyframes(
+                0, 50, slides_dir, out_dir, scene_dedup=True, delta_threshold=0.06, text_tokens=3000
+            )
+            self.assertEqual(len(res_static), 1)
+
+            # Chunk spanning 0..80s (includes red tile at ~60s) -> keeps anchor + red scene change
+            res_change = sample_chunk_keyframes(
+                0, 80, slides_dir, out_dir, scene_dedup=True, delta_threshold=0.06, text_tokens=3000
+            )
+            self.assertGreaterEqual(len(res_change), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

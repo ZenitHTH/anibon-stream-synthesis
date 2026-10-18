@@ -288,6 +288,13 @@ def select_target_seconds(
     return selected_secs[:max_frames]
 
 
+STRONG_VISUAL_CUES = (
+    "ดูอันนี้", "ดูนี่", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "จุดนี้", "นี่ไง",
+    "ดูคลิป", "ตัวละครนี้", "สกินนี้", "การ์ดนี้", "เกมนี้", "หน้านี้", "รูปนี้",
+    "คลิปนี้", "ภาพนี้", "[?]"
+)
+
+
 def sample_chunk_keyframes(
     start_sec: int,
     end_sec: int,
@@ -299,8 +306,15 @@ def sample_chunk_keyframes(
     sec_per_tile: float = 9.88,
     items: Optional[List[dict]] = None,
     num_frames: Optional[int] = None,
+    scene_dedup: bool = False,
+    delta_threshold: float = SCENE_DELTA_THRESHOLD,
+    text_tokens: Optional[int] = None,
 ) -> List[Tuple[str, Path, str]]:
     """Sample keyframes across chunk bounds and crop 320x180 tiles.
+
+    If scene_dedup is True, adaptively detects visual scene transitions, drops duplicate
+    static screens down to 1-2 frames, pins strong deictic cues, and scales up to the
+    Evaluation Batch Size budget (up to MAX_CHUNK_FRAMES).
 
     Returns:
         List of tuples: (timestamp_string, tile_file_path, base64_encoded_image)
@@ -315,51 +329,115 @@ def sample_chunk_keyframes(
 
     max_slide_idx = len(available_slides) - 1
 
-    target_secs = select_target_seconds(
-        start_sec, end_sec, min_frames=min_frames, max_frames=max_frames, items=items, num_frames=num_frames
-    )
+    def _ensure_tile(sec: int) -> Optional[Path]:
+        out_tile = out_dir / f"tile_{sec:06d}.jpg"
+        if out_tile.exists():
+            return out_tile
+
+        slide_idx = min(max_slide_idx, max(0, int(sec / sec_per_slide)))
+        slide_file = slides_dir / f"slide_{slide_idx + 1:04d}.jpg"
+        if not slide_file.exists():
+            slide_file = available_slides[min(slide_idx, max_slide_idx)]
+
+        offset = sec - slide_idx * sec_per_slide
+        tile_idx = min(8, max(0, int(offset / sec_per_tile)))
+        row, col = tile_idx // 3, tile_idx % 3
+
+        try:
+            if Image is not None:
+                im = Image.open(slide_file)
+                tile = im.crop((col * 320, row * 180, (col + 1) * 320, (row + 1) * 180))
+                tile.save(out_tile, quality=95)
+            else:
+                subprocess.run(
+                    [
+                        "ffmpeg", "-y", "-i", str(slide_file),
+                        "-vf", f"crop=320:180:{col * 320}:{row * 180}",
+                        "-frames:v", "1", "-q:v", "2", str(out_tile),
+                    ],
+                    capture_output=True,
+                    check=True,
+                    timeout=15,
+                )
+            return out_tile
+        except Exception as e:
+            print(f"[multimodal] tile crop error at {sec}s: {e}", file=sys.stderr)
+            return None
+
+    if scene_dedup:
+        effective_max = num_frames if num_frames is not None else MAX_CHUNK_FRAMES
+        budget = compute_frame_budget(text_tokens or 3000, max_frames=effective_max)
+
+        anchor_sec = start_sec
+        pinned_secs = []
+        for it in (items or []):
+            sec = int(it.get("start", 0))
+            if start_sec <= sec <= end_sec and any(c in it.get("text", "") for c in STRONG_VISUAL_CUES):
+                if all(abs(sec - p) >= 15 for p in pinned_secs):
+                    pinned_secs.append(sec)
+
+        step = max(5, int(round(sec_per_tile)))
+        grid_secs = list(range(start_sec, end_sec + 1, step))
+        candidate_secs = sorted(set([anchor_sec] + pinned_secs + grid_secs))
+
+        kept: List[Tuple[int, Path, float, bool]] = []
+        anchor_tile = _ensure_tile(anchor_sec)
+        if anchor_tile:
+            kept.append((anchor_sec, anchor_tile, 1.0, True))
+            last_kept_tile = anchor_tile
+            last_kept_sec = anchor_sec
+        else:
+            last_kept_tile = None
+            last_kept_sec = -999
+
+        for sec in candidate_secs:
+            if sec == anchor_sec:
+                continue
+            is_pinned = (sec in pinned_secs)
+            if not is_pinned and abs(sec - last_kept_sec) < 8:
+                continue
+
+            cand_tile = _ensure_tile(sec)
+            if not cand_tile:
+                continue
+
+            if last_kept_tile is None:
+                kept.append((sec, cand_tile, 1.0, is_pinned))
+                last_kept_tile = cand_tile
+                last_kept_sec = sec
+                continue
+
+            delta = compute_tile_visual_delta(last_kept_tile, cand_tile)
+            if is_pinned or delta >= delta_threshold:
+                kept.append((sec, cand_tile, delta, is_pinned))
+                last_kept_tile = cand_tile
+                last_kept_sec = sec
+
+        if len(kept) > budget:
+            must_keep = [x for x in kept if x[3]]  # anchor and pinned
+            others = [x for x in kept if not x[3]]
+            others.sort(key=lambda x: x[2], reverse=True)
+            remaining_slots = max(0, budget - len(must_keep))
+            selected_items = must_keep + others[:remaining_slots]
+            kept = sorted(selected_items, key=lambda x: x[0])
+
+        target_secs = [x[0] for x in kept]
+    else:
+        target_secs = select_target_seconds(
+            start_sec, end_sec, min_frames=min_frames, max_frames=max_frames, items=items, num_frames=num_frames
+        )
 
     results = []
     for sec in target_secs:
         ts_str = sec_to_ts(sec)
-        out_tile = out_dir / f"tile_{sec:06d}.jpg"
-
-        if not out_tile.exists():
-            slide_idx = min(max_slide_idx, max(0, int(sec / sec_per_slide)))
-            slide_file = slides_dir / f"slide_{slide_idx + 1:04d}.jpg"
-            if not slide_file.exists():
-                slide_file = available_slides[min(slide_idx, max_slide_idx)]
-
-            offset = sec - slide_idx * sec_per_slide
-            tile_idx = min(8, max(0, int(offset / sec_per_tile)))
-            row, col = tile_idx // 3, tile_idx % 3
-
+        out_tile = _ensure_tile(sec)
+        if out_tile and out_tile.exists():
             try:
-                if Image is not None:
-                    im = Image.open(slide_file)
-                    tile = im.crop((col * 320, row * 180, (col + 1) * 320, (row + 1) * 180))
-                    tile.save(out_tile, quality=95)
-                else:
-                    subprocess.run(
-                        [
-                            "ffmpeg", "-y", "-i", str(slide_file),
-                            "-vf", f"crop=320:180:{col * 320}:{row * 180}",
-                            "-frames:v", "1", "-q:v", "2", str(out_tile),
-                        ],
-                        capture_output=True,
-                        check=True,
-                        timeout=15,
-                    )
-            except Exception as e:
-                print(f"[multimodal] tile crop error at {sec}s: {e}", file=sys.stderr)
-                continue
-
-        try:
-            with open(out_tile, "rb") as f:
-                b64 = base64.b64encode(f.read()).decode("utf-8")
-            results.append((ts_str, out_tile, b64))
-        except Exception:
-            pass
+                with open(out_tile, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode("utf-8")
+                results.append((ts_str, out_tile, b64))
+            except Exception:
+                pass
 
     return results
 

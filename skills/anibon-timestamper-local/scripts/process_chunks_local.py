@@ -435,7 +435,16 @@ def run_recursive_mode(
             items = chunk.get("items", [])
             st_sec = items[0].get("start", 0) if items else ch_num * 270
             en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
-            keyframes = sample_chunk_keyframes(int(st_sec), int(en_sec), slides_dir, tiles_dir, items=items)
+            est_text_tokens = (len(rolling_summary) + len(chunk.get("text", ""))) // 4 + 800
+            keyframes = sample_chunk_keyframes(
+                int(st_sec),
+                int(en_sec),
+                slides_dir,
+                tiles_dir,
+                items=items,
+                scene_dedup=True,
+                text_tokens=est_text_tokens,
+            )
 
         prompt = build_recursive_prompt(
             chunk=chunk,
