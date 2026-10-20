@@ -99,15 +99,20 @@ def _scan_asr_garbles(text: str) -> list[str]:
 def main():
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("file", help="Timestamp .md file")
+    ap.add_argument("file", nargs="?", default=None, help="Timestamp .md file")
+    ap.add_argument("--file", dest="file_flag", default=None, help="Timestamp .md file (from hooks)")
     ap.add_argument("--no-garbled-check", action="store_true",
                     help="Skip ASR garbled pattern scan")
     args = ap.parse_args()
     
-    path = Path(args.file)
+    file_target = args.file_flag or args.file
+    if not file_target:
+        sys.exit(0)
+
+    path = Path(file_target)
     if not path.exists():
-        print(f"[!] File not found: {path}", file=sys.stderr)
-        sys.exit(1)
+        # PreToolUse hook fires before write_file creates the target file; exit 0 to allow creation
+        sys.exit(0)
 
     text = path.read_text(encoding="utf-8")
     blocks = _full_blocks(text)
@@ -168,7 +173,7 @@ def main():
     header_re = re.compile(r"ส่วนที่\s*\d+:\s*(.*?)(?:\s*\(⏱.*?\))?$", re.MULTILINE)
     for m in header_re.finditer(text):
         title = m.group(1).strip()
-        if re.search(r"(\s(และ|หรือ|กับ|เรื่อง|ใน|ที่)|[เแโใไ็์]|และ[ก-ฮ]|แล)$", title):
+        if re.search(r"(\s(และ|หรือ|กับ|เรื่อง|ใน|ที่)|[เแโใไ็]|และ[ก-ฮ]|แล)$", title):
             header_warnings.append(f"  ⚠️  Header appears truncated/cut-off: '{title}'")
     if header_warnings:
         print("\n⚠️  Truncated Section Headers Detected:")

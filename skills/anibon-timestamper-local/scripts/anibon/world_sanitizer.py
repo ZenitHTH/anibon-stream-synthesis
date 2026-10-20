@@ -71,6 +71,16 @@ def ensure_outro_timestamp(timestamps_text: str, last_chunk_text: str) -> str:
     if "[Ending]" in tail:
         return timestamps_text
 
+    # If the last timestamp line already has farewell keywords, normalize its tag to [Ending]
+    lines = timestamps_text.rstrip().splitlines()
+    for i in range(len(lines) - 1, -1, -1):
+        line = lines[i].strip()
+        if re.match(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[.*?\]", line):
+            if any(re.search(pat, line) for pat in FAREWELL_PATTERNS) or any(w in line for w in ["ปิดไลฟ์", "ปิดสตรีม", "บอกลา"]):
+                lines[i] = re.sub(r"\[(Greeting|Talk|Chat|Donation)\]", "[Ending]", line)
+                return "\n".join(lines) + "\n"
+            break
+
     # Check for farewell phrases in last chunk
     has_farewell = any(re.search(pat, last_chunk_text) for pat in FAREWELL_PATTERNS)
     if not has_farewell:

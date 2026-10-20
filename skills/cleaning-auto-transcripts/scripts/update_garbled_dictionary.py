@@ -204,6 +204,8 @@ def import_from_notes_json(mappings: dict[str, list[str]], notes_file: Path) -> 
     notes = data.get("notes", [])
     added = 0
     for item in notes:
+        if not isinstance(item, dict):
+            continue
         correct = item.get("correct")
         garbled = item.get("garbled")
         if correct and garbled:

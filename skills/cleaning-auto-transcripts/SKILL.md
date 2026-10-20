@@ -129,6 +129,13 @@ Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an
      a. Actual corrupted Thai-Latin hybrids (e.g. `adดapt` → `Adapt`, `prชเชอร์` → `เพรสเชอร์`).
      b. Full phonetic Thai transliterations where unambiguous (e.g. `ไฟนอล` → `Final`).
      c. NEVER substrings that are valid morphological prefixes of natural Thai words or loanwords.
+4. **Anti-Suffix & Short Substring Collision Invariant (Garbled Dictionary Guard)**:
+   - NEVER register unanchored patterns composed of a common Thai syllable/suffix (e.g. `รถ`, `การ`, `ความ`, `ตัว`, `ผล`, `คน`, `ไป`, `มา`) followed by a single Latin letter or space + Latin letter (e.g. `รถ M`, `การ C`, `ตัว B`).
+   - **Collision Risk**: In unsegmented Thai text, common Thai words like `สามารถ` or `ปรารถนา` followed by English loanwords (e.g. `สามารถ Move on`, `ปรารถนา Make sense`) match `รถ M`. Substring replacement destroys the Thai word root into broken fragments (`สามา<Replacement>ove on`).
+   - Allowed patterns for English acronyms or franchise names (e.g. `LoM`, `FGO`, `OPM`) must be:
+     a. Full phonetic Thai transliterations (e.g. `ลอร์ดออฟมิสเตอรีส์`, `หลอด Mystery`).
+     b. Strict regex word boundaries (e.g. `\bLord of My\b`, `\bLoM\b`).
+     c. NEVER short Thai suffixes glued or spaced to Latin characters.
 
 ### Local Audio-Slice Whisper Verification (Metal GPU) & Storyboard Grounding
 When ambiguous loanwords, brand names, or proper nouns cannot be confidently resolved from transcript context:

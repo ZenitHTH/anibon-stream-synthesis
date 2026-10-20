@@ -93,6 +93,8 @@ def load_replacements(path: Path | None = None) -> list[tuple[re.Pattern, str]]:
                     pairs.append((str(p).strip(), k.strip()))
 
     for entry in data.get("replacements", []):
+        if not isinstance(entry, dict):
+            continue
         pat = entry.get("pattern", "").strip()
         rep = entry.get("replacement", "").strip()
         if pat:

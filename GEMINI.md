@@ -43,3 +43,42 @@ Whenever processing, generating, auditing, or summarizing timestamps for Anibon 
    - **Drop 3,500-Byte Cap Over-Splitting**: Timestamps must be grouped strictly by cohesive macro-thematic activity periods (typically 4–6 parts for long streams). NEVER artificially slice a unified topic block into multiple sub-parts solely to satisfy a 3,500-byte comment ceiling. Single-comment byte limits are an optional export utility, not the structural grouping logic.
    - **Essential Timestamps Curation**: Prioritize high-impact, essential timestamps (~40–60 stamps for a 7–8 hour stream) as the primary user-facing output. Filter out conversational micro-loops, repetitive affirmations, and minor tangents while preserving major topic pivots, verified news, in-depth analysis, visual/gameplay highlights, and the stream outro. Keep the exhaustive chronological log in `all_timestamps.txt` / `anibon_timestamps_full.md` for ground-truth reference.
 
+## Knowledge Maintenance & Dictionary Invariants
+
+Whenever updating phonetic replacements or expanding domain knowledge in this plugin:
+
+1. **Dictionary Schema Preservation (Schema v2)**:
+   - **NEVER** perform raw `dict.update()` or write flat key-value pairs directly to `garbled_replacements.json`.
+   - `garbled_replacements.json` strictly follows Schema v2:
+     ```json
+     {
+       "version": 2,
+       "mappings": {
+         "CanonicalTarget": ["noise_pattern_1", "noise_pattern_2"]
+       }
+     }
+     ```
+   - **ALWAYS** update dictionary entries via the canonical CLI tool:
+     ```bash
+     python3 skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
+         --add "<CanonicalTarget>" "<noise_pattern_1>" "<noise_pattern_2>"
+     ```
+   - This ensures automatic normalization, regex safety checks, deduplication, and synchronization across both mirror copies (`resources/` and `skills/anibon-timestamper/resources/`).
+
+2. **Domain Knowledge File Lifecycle (`anibon-world-identity`)**:
+   - When a livestream covers a major franchise or topic lacking a reference file in `skills/anibon-world-identity/references/`, do not leave `signals.json` with 0 glossary matches.
+   - Scaffold `references/<Franchise>.md` using standard markdown tables or bold bullets recognizable by `anibon/knowledge_reader.py`:
+     - Format A (Table): `| English Name (Thai Name) | Role/Faction | Attribute/Note |`
+     - Format B (Bullets): `- **Name (English / Thai)**: Description`
+   - Register the file in `skills/anibon-world-identity/references/INDEX.md`.
+
+3. **Pre-Flight Domain Knowledge Verification**:
+   - Before launching chunk inference, check if video metadata (title, description) references an unindexed major franchise or game.
+   - If `signals.json` yields 0 glossary entries for a title with obvious major franchise entities, scaffold the reference file (`references/<Franchise>.md`) and register in `INDEX.md` *prior* to starting chunk processing.
+   - Never proceed into full inference with an empty glossary when domain entities are explicitly named in the stream title.
+
+4. **Prohibition on Ad-Hoc Dataset Mutation**:
+   - Always locate and use repository tools (`update_garbled_dictionary.py`, `fetch_*_db.py`) instead of writing raw Python scripts that append to JSON files.
+
+
+

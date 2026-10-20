@@ -38,12 +38,29 @@ Reference for Anibon Official streams discussing Tokusatsu news, Kamen Rider ser
 - **Key Items**: Omega Horn (เครื่องปลุกเขา), Egolgear (อีโกลเกียร์) ที่ผนึกพลัง Enkaku (เอ็นคาคุ - ราชันอสูรเขา)
 - **Notable Rivals & Characters**: Ibaru of Despair (絶暴のイバル / อิบารุแห่งความสิ้นหวัง)
 - **Thai License**: Heroes Cartoon Club / ฉายทางช่อง 9 MCOT HD (Super Hero Time Thailand) และ YouTube Cartoon Club
+- **DX Mecha / Toys**: DX Enkaku (เอ็นคาคุ - หุ่นยนต์ราชันอสูรเขาสีทองดำ) รวมร่างกับยาน Egol Gear (อีโกลเกียร์), ร่าง Super Activate / Power Suit, เชื่อมโยงกับองค์กรอวกาศ GCR
 
 ---
 
-## 3. Tokusatsu Community, Events & Model Terms
+## 3. Tsuburaya Productions & Co-Productions
+
+### A. Ultraman Teo (ウルトラマンテオ / อุลตร้าแมน เทโอ)
+- **Year / Studio**: 2026 / Tsuburaya Productions
+- **Broadcast / Stream**: Tsuburaya Official YouTube (JP/EN)
+- **Key Concepts**: อุลตร้าแมนยักษ์สีน้ำเงิน (เทโอ), การฟื้นคืนชีพของไคจูโบราณจากสภาวะโลกร้อน/การเปลี่ยนแปลงสภาพภูมิอากาศ
+- **Notable Episodes / Characters**: ตอนที่ 15 "Dragon's Lair" (ถ้ำมังกร), โบเวน (Bowen) ในตอนพิเศษ
+
+### B. Kaiju Decode (怪獣デコード / ไดราโนวะ)
+- **Co-production**: Tsuburaya Productions x Toei Animation
+- **Format / Premiere**: ภาพยนตร์อนิเมะ ฉายทาง Crunchyroll ปี 2027
+- **Production Team**: Express Paradise (งานภาพและดีไซน์สัตว์ประหลาด)
+
+---
+
+## 4. Tokusatsu Community, Events & Model Terms
 
 - **โมจีน (Mo-Jin)**: คำเรียกพลาสติกโมเดลคิทจากประเทศจีนที่มักมีดีไซน์ดัดแปลงคล้าย Gundam หรือหุ่นยนต์ญี่ปุ่น
+- **Blokees (บล็อกกี้)**: โมเดลคิทลิขสิทธิ์แท้แบบต่อประกอบ (Snap-fit) ซีรีส์ Tokusatsu เช่น Blokees Legend Edition Evil Tiga (จาก Ultraman Tiga)
 - **Wonder Festival (WF / วันเดอร์เฟสติวัล)**: งานมหกรรมแสดงของเล่น ฟิกเกอร์ และการออกร้านโมเดลระดับโลก (จัดทั้งที่ญี่ปุ่นและ WF Shanghai)
 - **Televi-kun (てれびくん / เทเลบิคุง)**: นิตยสารเด็กรายเดือนของ Shogakukan ที่แถมไอเทมเอ็กซ์คลูซีฟและดีวีดี Hyper Battle ของเล่นไรเดอร์
 - **Heroes Cartoon Club (การ์ตูนคลับ)**: ผู้ถือลิขสิทธิ์และฉาย Tokusatsu ในไทย (DEX / Flixer / Cartoon Club Channel)

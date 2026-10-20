@@ -4,6 +4,7 @@ Game reference files live alongside this index in `references/`.
 
 - [Arknights Reference](Arknights.md)
 - [Arknights: Endfield Reference](Arknights_Endfield.md)
+- [Bleach Reference](Bleach.md)
 - [Blue Archive Reference](Blue_Archive.md)
 - [Chaos Zero Nightmare Reference](Chaos_Zero_Nightmare.md)
 - [Deadlock Reference](Deadlock.md)

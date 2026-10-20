@@ -14,12 +14,16 @@ from anibon.config import (
 )
 
 TAGS = (
-    "[Greeting]", "[Talk]", "[News]", "[Chat]", "[Donation]",
+    "[Greeting]", "[Ending]", "[Talk]", "[News]", "[Chat]", "[Donation]",
     "[Gameplay]", "[Gacha]", "[Boss]", "[Death]", "[Victory]",
     "[WatchParty]", "[Reaction]", "[Story]", "[Lore]", "[Review]",
 )
 
 TAG_REMAP = {
+    "ปิดสตรีม": "Ending",
+    "ปิดไลฟ์": "Ending",
+    "จบไลฟ์": "Ending",
+    "กล่าวปิด": "Ending",
     "วิเคราะห์": "Talk",
     "เจาะลึก": "Talk",
     "ชำแหละ": "Talk",

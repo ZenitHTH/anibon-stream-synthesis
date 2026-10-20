@@ -280,7 +280,9 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 ### Stream Ending / Outro Invariant
 In `--mode recursive`, long unbroken gameplay or concluding sessions must not allow `is_continuation=True` to swallow the stream outro.
 The final 5 minutes of transcript must always be checked for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `เจอกัน`, `บ๊ายบาย`) and emit:
-`HH:MM:SS - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม`
+1. **SuperChat / Birthday Shoutouts**: Use `[Donation]` for reading donor lists, SuperChats, and member birthday blessings (`HH:MM:SS - [Donation] ปู่โบ๊ตขอบคุณผู้ชม ผู้สนับสนุนโดเนท และอวยพรวันเกิดสมาชิก`).
+2. **Closing Sign-off**: Use `[Ending]` for the final wrap-up statement and next-stream announcements (`HH:MM:SS - [Ending] ปู่โบ๊ตกล่าวปิดสตรีม...`).
+3. **Recurring Live Routine Guardrail**: Pu Boat frequently schedules a 22:00 Tokusatsu stream ("ไลฟ์โทกุ", "คอนเทนต์โทกุ 3 เรื่อง 3 รส"). Phonetic ASR artifacts (`โทกกู`, `ทั่วกุ`, `คอนเทนทุกคึ`) must strictly map to `โทคุซัตสึ (Tokusatsu)`, NEVER "Tokyo Ghoul".
 
 ### Macro-Thematic Part Grouping Invariant (No 3,500-Byte Cap Over-Splitting)
 Timestamps are grouped strictly into broad, cohesive macro-thematic parts (typically 4–6 parts for a long stream).
@@ -318,6 +320,11 @@ Major domain/topic transitions (e.g. Thai Politics → Anime/Series review, Gami
 
 ### World Identity Audit Invariant
 NEVER deliver the final timestamp output without performing an `anibon-world-identity` audit on all proper nouns, game titles, and character names. Thai Whisper outputs are phonetic; local LLMs hallucinate well-known games (Genshin, Dota) when hearing unfamiliar ones (CZN, Deadlock). Local references (`references/*.md`) and card/entity databases (`atlas_fgo.db`, `pokemon.db`) take strict precedence over model memory. `process_chunks_local.py` automatically audits generated `anibon_timestamps.md` against `<workspace>/entity_glossary.json` upon completion to replace confirmed phonetic variants.
+
+### Stream Title Token Grounding Invariant
+Proper nouns, mod names, and franchise titles in the stream's own YouTube metadata (`info.json` title, description) are ground-truth anchors.
+1. **Title Token Priority**: When an emitted timestamp description contains a phonetic near-match or truncated form of an entity present in the stream title (e.g. ASR transcribed `Vity` while the title explicitly specifies `Verity`, or `Nania` vs `Narnia`), the pipeline must deterministically snap to the title's canonical spelling.
+2. **Title vs. ASR Phonetic Drift**: Stream titles reflect the streamer's deliberate broadcast topic. ASR phonetic drift within the video must never overwrite or degrade entities verified in the title.
 
 ---
 
