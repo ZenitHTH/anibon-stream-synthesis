@@ -16,6 +16,7 @@ Game reference files live alongside this index in `references/`.
 - [Honkai Impact 3rd Part 2 Reference](Honkai_Impact_3_Part2.md)
 - [Honkai: Star Rail Reference](Honkai_Star_Rail.md)
 - [Limbus Company Reference](Limbus_Company.md)
+- [Minecraft: Cisco's Fantasy Medieval RPG Reference](Minecraft_Cisco.md)
 - [Pokémon Translation & Names Reference](Pokemon_Names.md)
 - [Pokémon PvP & Champions Reference](Pokemon_PvP.md)
 - [Pokémon Radical Red Reference](Pokemon_Radical_Red.md)

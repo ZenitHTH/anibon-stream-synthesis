@@ -78,3 +78,15 @@
 *   **เจ๊นกฟีนิกซ์:** ชื่อเรียกแทน **Changli** (เนื่องจากท่าไม้ตายและลักษณะสัญลักษณ์คือฟีนิกซ์ไฟ)
 *   **เซียงลี่เหยา / พี่ยักษ์สายฟ้า:** ตัวละคร **Xiangli Yao**
 *   **ยัยดอกบัวแดง:** ชื่อเรียกแทน **Camellya**
+
+---
+
+## ⚠️ ข้อควรระวังในการทำไทม์สแตมป์ (Anti-Hallucination Guard)
+
+*   **ระบบตัวละครซ้ำ (Duplicates):** ในเกม Wuthering Waves เรียกว่า **Resonance Chain (Sequence Node / S1 – S6)**
+    > [!WARNING]
+    > **ห้ามใช้คำว่า E1–E6 กับ Wuthering Waves เด็ดขาด**:
+    > หากได้ยินเสียงปู่โบ๊ตหรือช่องแชทพูดถึง "E1", "E2", หรือ "E6" ให้ตรวจสอบภาพบนหน้าจอทันที:
+    > - หากหน้าจอเป็นเกมแนว Roguelike Deckbuilder = **Ego Manifestation ใน Chaos Zero Nightmare**
+    > - หากหน้าจอเป็นเกม Turn-based Sci-Fi = **Eidolon ใน Honkai: Star Rail**
+    > - Wuthering Waves ไม่เคยใช้ตัวย่อ "E1–E6" ในการเรียกกลุ่มดาวหรือตัวซ้ำ
