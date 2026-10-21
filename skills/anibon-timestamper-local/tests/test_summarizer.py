@@ -192,6 +192,21 @@ class TestSummarizer(unittest.TestCase):
         mock_call.assert_not_called()
         self.assertEqual(out, stamps)
 
+    def test_fill_pruned_gaps_eliminates_gaps_over_threshold(self):
+        from anibon.summarizer import fill_pruned_gaps
+        from anibon.time import parse_ts
+        all_stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(0, 120, 2)]
+        kept_stamps = [
+            "00:00:00 - [Talk] หัวข้อ 0",
+            "00:30:00 - [Talk] หัวข้อ 30",
+            "01:20:00 - [Talk] หัวข้อ 80",
+        ]
+        filled = fill_pruned_gaps(kept_stamps, all_stamps, max_gap_sec=600)
+        filled_ts = [parse_ts(s[:8]) for s in filled]
+        for i in range(len(filled_ts) - 1):
+            self.assertLessEqual(filled_ts[i + 1] - filled_ts[i], 600)
+        self.assertTrue(set(filled) <= set(all_stamps))
+
     @patch("anibon.summarizer.call_local")
     def test_run_local_summarizer_pass_preserves_full_multiline_summary(self, mock_call):
         from anibon.summarizer import run_local_summarizer_pass

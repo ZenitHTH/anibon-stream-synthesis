@@ -123,6 +123,10 @@ When dispatching video frames to local VLMs (Gemma 4 VLM, Qwen-VL):
    - **Check Donation Overlay**: Inspect bottom screen corners for donation alerts, donor handles (e.g., `SymboliRudolf`), and currency tickers (`THB ...`).
    - **Cross-Reference Audio**: If the streamer reads a pun/joke, laughs, or says *"ขอบคุณมากนะครับ [ชื่อ] ที่โดเนทมา"*, classify as `[Donation]` or `[SuperChat]`, NEVER `[Talk] โชว์ฟิกเกอร์` or `[Review]`.
    - **Capture Joke / Lore Interaction**: Note the donor's joke and streamer/chat reaction (e.g., *มุกแป้กคนชงชารินชา จนแชท Mood Down*).
+   - **Anchor = Alert Onset**: Timestamp starts at the second the alert box appears / chime plays, NOT at the streamer's laugh or reaction. Scan frames backward from the reaction (1–2s step) until the overlay first appears.
+   - **Screen Text Beats Whisper**: Donation text MUST be transcribed from the frame (crop the alert box). Never reconstruct it from audio — viewers write bait jokes in romaji/karaoke/mixed scripts (e.g. `Wei wai wei wai zumigat nan damu kimi kwayt rayt`) that Whisper renders as nonsense Thai.
+   - **Bait-Joke Detection**: If donation text contains romaji/foreign syllables the streamer reads phonetically, followed by an instant outburst/laugh, it is a read-aloud trap. Record the bait syllable and the streamer's reaction in internal notes.
+   - **Non-Spoiler Title**: Public title teases without revealing the punchline or follow-on mishaps (e.g. `[Highlight] ข้อความโดเนทสุดล้ำจาก "ท่านประธาน Symboli Rudolf" และเหตุการณ์ไม่คาดคิดบนหน้าจอสตรีม`).
 
 ---
 
@@ -144,6 +148,8 @@ Agents under pressure find excuses to avoid visual inspection. Every excuse belo
 - Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
 - Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
 - Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
+- Donation stamp placed at the streamer's laugh instead of alert onset.
+- Quoting donation text from Whisper output instead of the on-screen alert box.
 
 ---
 

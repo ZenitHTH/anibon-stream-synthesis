@@ -48,6 +48,37 @@ def generate_part_summary(stamps: List[str]) -> str:
     return f"{t1}, {t2} และ {t3}"
 
 
+def fill_pruned_gaps(
+    kept_stamps: List[str],
+    all_stamps: List[str],
+    max_gap_sec: int = 600,
+) -> List[str]:
+    """Guarantee no gaps > max_gap_sec between consecutive pruned timestamps by backfilling intermediate candidates."""
+    if not kept_stamps or not all_stamps:
+        return kept_stamps
+
+    kept_tuples = [(parse_ts(s[:8]), s) for s in kept_stamps if parse_ts(s[:8]) is not None]
+    all_tuples = [(parse_ts(s[:8]), s) for s in all_stamps if parse_ts(s[:8]) is not None]
+    selected = {t: s for t, s in kept_tuples}
+
+    while True:
+        sorted_ts = sorted(selected.keys())
+        gap_found = False
+        for i in range(len(sorted_ts) - 1):
+            t1, t2 = sorted_ts[i], sorted_ts[i + 1]
+            if t2 - t1 > max_gap_sec:
+                mid = (t1 + t2) // 2
+                cands = [(abs(t - mid), t, s) for t, s in all_tuples if t1 < t < t2 and t not in selected]
+                if cands:
+                    cands.sort(key=lambda x: x[0])
+                    selected[cands[0][1]] = cands[0][2]
+                    gap_found = True
+                    break
+        if not gap_found:
+            break
+    return [selected[t] for t in sorted(selected.keys())]
+
+
 def prune_essential(
     endpoint: str,
     model: str,
@@ -94,6 +125,9 @@ Drop repeats of the same talking point and casual banter. Copy selected lines EX
                 seen.add(s)
                 kept_lines.append(s)
 
+        # Enforce NO GAPS rule (max 10 min) by backfilling intermediate candidates from original list
+        kept_lines = fill_pruned_gaps(kept_lines, stamps, max_gap_sec=600)
+
         result = sorted(kept_lines, key=lambda l: parse_ts(l[:8]))
         print(f"[prune] {len(stamps)} -> {len(result)}")
         return result
@@ -114,8 +148,8 @@ def run_local_summarizer_pass(
     if not all_stamps:
         return None
 
-    # Apply semantic & chronological deduplication first
-    stamps = deduplicate_consecutive_timestamps(all_stamps)
+    # Apply semantic & chronological deduplication first with gap protection
+    stamps = deduplicate_consecutive_timestamps(all_stamps, ensure_no_gaps=True)
     if not stamps:
         return None
 
@@ -240,7 +274,7 @@ def assemble_parts(
     if not all_stamps:
         return ""
 
-    stamps = deduplicate_consecutive_timestamps(all_stamps) if deduplicate else sorted(list(dict.fromkeys(all_stamps)), key=lambda l: parse_ts(l[:8]))
+    stamps = deduplicate_consecutive_timestamps(all_stamps, ensure_no_gaps=True) if deduplicate else sorted(list(dict.fromkeys(all_stamps)), key=lambda l: parse_ts(l[:8]))
     if not stamps:
         return ""
 

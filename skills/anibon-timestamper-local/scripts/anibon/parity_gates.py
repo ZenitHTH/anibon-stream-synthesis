@@ -45,8 +45,8 @@ def ensure_mood_555(workspace: Path) -> None:
 
 def run_parity_gates(workspace: Path, out_md: Path) -> None:
     """Front-tier Steps 8.5 + 10 on the finished run."""
-    raw = workspace / "all_timestamps.txt"
-    if raw.exists():
-        _run("audit_gaps.py", raw, "--chunks-dir", workspace / "chunks")
+    target_gap_file = out_md if (out_md and out_md.exists()) else (workspace / "all_timestamps.txt")
+    if target_gap_file.exists():
+        _run("audit_gaps.py", target_gap_file, "--chunks-dir", workspace / "chunks")
     if out_md.exists():
         _run("check_sections.py", out_md)

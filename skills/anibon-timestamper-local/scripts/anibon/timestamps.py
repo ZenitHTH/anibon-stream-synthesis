@@ -137,6 +137,8 @@ def deduplicate_consecutive_timestamps(
     stamps: List[str],
     min_gap_sec: int = DEDUP_MIN_GAP_SEC,
     max_dedup_gap_sec: int = DEDUP_MAX_GAP_SEC,
+    ensure_no_gaps: bool = False,
+    max_allowed_gap_sec: int = 600,
 ) -> List[str]:
     """Deduplicate consecutive timestamps following anibon-summarizer rules.
 
@@ -177,7 +179,7 @@ def deduplicate_consecutive_timestamps(
         return ""
 
     result: List[str] = [unique_stamps[0]]
-    for curr_stamp in unique_stamps[1:]:
+    for idx, curr_stamp in enumerate(unique_stamps[1:], 1):
         prev_stamp = result[-1]
         prev_sec = parse_ts(prev_stamp[:8])
         curr_sec = parse_ts(curr_stamp[:8])
@@ -210,13 +212,20 @@ def deduplicate_consecutive_timestamps(
         else:
             topic_dedup_gap = max_dedup_gap_sec
 
-        # Exception: Don't drop Boss / Death / Victory / Gacha / Donation milestones unless < 2 mins apart
-        is_milestone = bool(re.search(r"\[(Boss|Death|Victory|Gacha|Donation)\]", curr_stamp))
+        # Exception: Don't drop Boss / Death / Victory / Gacha / Donation / Highlight milestones unless < 2 mins apart
+        is_milestone = bool(re.search(r"\[(Boss|Death|Victory|Gacha|Donation|Highlight)\]", curr_stamp))
 
         # Filter out superficial reactions/off-hand micro-stamps (< 2.5 min apart from previous talk)
         is_reaction = bool(re.search(r"\[Reaction\]", curr_stamp))
         if is_reaction and gap < 150:
             continue
+
+        # Lookahead safety guard: NEVER drop if dropping would cause gap > max_allowed_gap_sec to next candidate
+        if ensure_no_gaps and idx + 1 < len(unique_stamps):
+            next_sec = parse_ts(unique_stamps[idx + 1][:8])
+            if next_sec is not None and (next_sec - prev_sec) > max_allowed_gap_sec:
+                result.append(curr_stamp)
+                continue
 
         if gap < min_gap_sec:
             # Micro-gap (< 2 min): drop duplicate/continuation unless critical milestone

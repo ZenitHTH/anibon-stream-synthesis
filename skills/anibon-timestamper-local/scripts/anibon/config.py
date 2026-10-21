@@ -194,7 +194,7 @@ PRUNE_TARGET_MIN: int = 40
 PRUNE_TARGET_MAX: int = 60
 
 DEDUP_MIN_GAP_SEC: int = 120
-DEDUP_MAX_GAP_SEC: int = 600
+DEDUP_MAX_GAP_SEC: int = 300
 STAMP_COLLISION_SEC: int = 45
 
 DEFAULT_GROUP_SIZE: int = 4
@@ -246,7 +246,7 @@ def reload_config() -> None:
     PRUNE_TARGET_MAX = cfg_int("prune_target_max", 60)
 
     DEDUP_MIN_GAP_SEC = cfg_int("dedup_min_gap_sec", 120)
-    DEDUP_MAX_GAP_SEC = cfg_int("dedup_max_gap_sec", 600)
+    DEDUP_MAX_GAP_SEC = cfg_int("dedup_max_gap_sec", 300)
     STAMP_COLLISION_SEC = cfg_int("stamp_collision_sec", 45)
 
     DEFAULT_GROUP_SIZE = cfg_int("group_size", 4)

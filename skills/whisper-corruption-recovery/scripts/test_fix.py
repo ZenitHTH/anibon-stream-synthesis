@@ -170,6 +170,22 @@ class TestPatternLoopScanner(unittest.TestCase):
         
         self.assertTrue(any("ผมคิดเร็วไป" in x["text"] for x in res))
 
+    @patch("subprocess.check_output")
+    def test_run_whisper_on_slice_server_mode(self, mock_subprocess):
+        """Server mode queries remote whisper-server via HTTP and formats offsets."""
+        mock_subprocess.return_value = json.dumps({
+            "segments": [
+                {"id": 0, "start": 0.5, "end": 2.5, "text": "ทดสอบเซิร์ฟเวอร์"}
+            ]
+        }).encode("utf-8")
+
+        fake_wav = pathlib.Path("/tmp/fake.wav")
+        res = fh.run_whisper_on_slice(fake_wav, "model.bin", temperature=0.0, endpoint="http://100.115.25.30:8080/v1/audio/transcriptions")
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["text"], "ทดสอบเซิร์ฟเวอร์")
+        self.assertEqual(res[0]["offsets"]["from"], 500)
+        self.assertEqual(res[0]["offsets"]["to"], 2500)
+
 if __name__ == "__main__":
     unittest.main()
 

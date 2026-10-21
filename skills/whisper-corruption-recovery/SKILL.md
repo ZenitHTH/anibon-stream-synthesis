@@ -22,9 +22,13 @@ python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 -w 
 
 # Dual-GPU Parallel (RX 7600 + Tesla P100 concurrently)
 python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 1 -w 4 -o recovered_transcript.json
+
+# Remote/Local Whisper Server Mode (HTTP OpenAI-compatible endpoint)
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --endpoint http://100.115.25.30:8080/v1/audio/transcriptions -w 2 -o recovered_transcript.json
 ```
 
 **Options**:
+- `--endpoint URL` — Remote or local whisper-server endpoint (e.g. `http://100.115.25.30:8080/v1/audio/transcriptions`).
 - `-dev` / `--devices` — GPU device ID(s) pool (e.g., `--devices 0` for single GPU or `--devices 0 1` for dual-GPU load balancing, default: `0`).
 - `-w 4` / `--workers 4` — Number of concurrent worker threads (default: `4`).
 - `-t 4` / `--threads 4` — CPU thread count per worker (default: `4`).
