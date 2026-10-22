@@ -73,6 +73,111 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
     return result
 
 
+GAME_SPECIAL_WORDS: dict[str, list[str]] = {
+    "Chaos_Zero_Nightmare.md": [
+        "chaos zero nightmare", "chaos zero", "czn", "คาเซน่า", "คาเซนา",
+        "เคอส", "เคออส", "ฝันร้าย",
+        "epiphany", "trauma code", "ทรอม่าโค้ด", "omega code", "โอเมก้าโค้ด",
+        "memory fragment", "เมมโมรี่แฟรกเมนต์", "พเนอร์", "พาร์ทเนอร์",
+        "rossweisse", "รอสไวส์", "รอซึวสึ", "sereniel", "เซรนิว", "เซรณี", "เซเรเนียล",
+        "nebia", "เนเบีย", "เนบีย", "renoir", "เรนัวร์", "เลนัว",
+    ],
+    "Wuthering_Waves.md": [
+        "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "changli", "yinlin",
+        "echo", "tacet field", "sonance sphere",
+    ],
+    "Zenless_Zone_Zero.md": [
+        "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
+        "hollow zero", "proxies", "proxy", "inter-knot",
+    ],
+    "Blue_Archive.md": [
+        "blue archive", "kivotos", "schale", "sensei", "halo festival", "total assault",
+    ],
+    "Honkai_Star_Rail.md": [
+        "honkai star rail", "star rail", "hsr", "astral express", "trailblazer",
+        "stellaron", "simulated universe",
+    ],
+    "Genshin_Impact.md": [
+        "genshin impact", "genshin", "teyvat", "archon", "primogem",
+        "spiral abyss", "paimon",
+    ],
+    "Fate_Grand_Order.md": [
+        "fate grand order", "fgo", "chaldea", "servant", "noble phantasm", "saint quartz",
+    ],
+    "Deadlock.md": [
+        "deadlock", "patron", "trooper", "mid boss", "flex slot", "spirit power",
+    ],
+    "Sekiro_Shadows_Die_Twice.md": [
+        "sekiro", "shadows die twice", "kusabimaru", "posture", "shinobi", "dragonrot",
+    ],
+    "Eternal_Return.md": [
+        "eternal return", "lumia island",
+    ],
+    "Yu_Gi_Oh.md": [
+        "yu-gi-oh", "yugioh", "master duel", "duel monsters",
+    ],
+    "Pokemon.md": [
+        "pokemon", "โปเกมอน", "pikachu", "pokedex",
+    ],
+    "Monster_Hunter_Wilds.md": [
+        "monster hunter wilds", "monster hunter", "mh wilds", "seikret", "focus mode",
+    ],
+}
+
+COMMON_CHARACTER_NAMES_BLACKLIST: set[str] = {
+    # Japanese common given names / popular gacha shared names
+    "yuki", "ยูกิ", "rin", "ริน", "mika", "มิกะ", "hoshino", "shiroko", "arona",
+    "lucy", "alice", "yvonne", "kuro", "emma", "chizuru", "miyabi", "yanagi",
+    "dante", "faust", "morgan", "arthur", "nero", "jeanne", "sakura", "ren",
+    "haru", "aoi", "sora", "hikari", "tsubasa", "kaito", "shiki", "shirou",
+    "shin", "kai", "jin", "rei", "maya", "sara", "elena", "maria", "clara",
+}
+
+AMBIGUOUS_SINGLE_TOKENS: set[str] = {
+    "blue", "thai", "japan", "dark", "super", "grand", "star", "night", "zero",
+    "shadow", "shadows", "impact", "zone", "order", "return", "hunter", "wilds",
+    "fair", "convention", "book", "stream", "online", "project", "chronicle",
+}
+
+GENERIC_GAMING_STANDING_WORDS: set[str] = {
+    "บอส", "กาชา", "เกลือ", "หลุดเรท", "โรล", "ตู้", "การันตี", "เพชร", "เหรียญ",
+    "ดาเมจ", "คริ", "atk", "def", "hp", "sp", "mp", "บัฟ", "ดีบัฟ", "สเตตัส",
+    "คอมโบ", "สตรีค", "แพตช์", "อัปเดต", "เนิร์ฟ", "เนิฟ", "บั๊ก", "แล็ก", "ปิง",
+    "solo", "parry", "dodge", "dash", "ultimate", "ult", "สกิล", "ท่าไม้ตาย",
+    "gacha", "boss", "damage", "crit", "buff", "debuff", "nerf", "patch", "roll",
+}
+
+DUPE_TIER_RE = re.compile(
+    r"\b(?:[CEce][0-6]|[Ss][0-6]|[Rr][1-5]|[Mm][0-6])\b|"
+    r"(?:ระดับ|ขั้น|ดาว|ก๊อปปี้|ปลด)\s*[0-6]"
+)
+
+
+def filter_standing_gaming_words(text: str) -> tuple[str, list[str]]:
+    """Extract and strip generic gaming standing words and dupe/eidolon tier codes from text.
+
+    Returns (cleaned_text, detected_standing_words).
+    """
+    found_standing = []
+    # 1. Dupe tier regex
+    for m in DUPE_TIER_RE.finditer(text):
+        found_standing.append(m.group(0).lower().strip())
+    cleaned = DUPE_TIER_RE.sub(" ", text)
+
+    # 2. Generic gaming words
+    for gw in sorted(GENERIC_GAMING_STANDING_WORDS, key=len, reverse=True):
+        if re.search(r"^[a-zA-Z0-9]+$", gw):
+            pattern = re.compile(rf"\b{re.escape(gw)}\b", re.IGNORECASE)
+        else:
+            pattern = re.compile(rf"{re.escape(gw)}", re.IGNORECASE)
+        if pattern.search(cleaned):
+            found_standing.append(gw.lower())
+            cleaned = pattern.sub(" ", cleaned)
+
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned, list(dict.fromkeys(found_standing))
+
+
 def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
     """Scan markdown knowledge files and return mapping of lowercase keywords -> relative file path."""
     if refs_dir is None:
@@ -87,14 +192,29 @@ def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
             continue
         stem = f.stem.lower()
         clean_name = stem.replace("_", " ")
-        discovered[clean_name] = f"../anibon-world-identity/references/{f.name}"
+        rel_path = f"../anibon-world-identity/references/{f.name}"
+
+        # Full filename phrase (if not ambiguous)
+        if clean_name not in AMBIGUOUS_SINGLE_TOKENS:
+            discovered[clean_name] = rel_path
+
         tokens = clean_name.split()
-        if tokens:
-            discovered[tokens[0]] = f"../anibon-world-identity/references/{f.name}"
-        if "chaos zero nightmare" in clean_name:
-            discovered["czn"] = f"../anibon-world-identity/references/{f.name}"
-            discovered["คาเซน่า"] = f"../anibon-world-identity/references/{f.name}"
-            discovered["คาเซนา"] = f"../anibon-world-identity/references/{f.name}"
+        if len(tokens) > 1:
+            first_tok = tokens[0]
+            if first_tok not in AMBIGUOUS_SINGLE_TOKENS and len(first_tok) >= 4:
+                discovered[first_tok] = rel_path
+
+        # Register GAME_SPECIAL_WORDS
+        if f.name in GAME_SPECIAL_WORDS:
+            for special in GAME_SPECIAL_WORDS[f.name]:
+                discovered[special.lower()] = rel_path
+
+    # Strip blocked single tokens, common character names, and generic words from Stage 1
+    blocked_stage1 = AMBIGUOUS_SINGLE_TOKENS | COMMON_CHARACTER_NAMES_BLACKLIST | GENERIC_GAMING_STANDING_WORDS
+    for blocked in list(discovered.keys()):
+        if blocked in blocked_stage1 or any(blocked == b.lower() for b in blocked_stage1):
+            discovered.pop(blocked, None)
+
     return discovered
 
 
@@ -350,6 +470,28 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
             "matched_keywords": matched_keywords,
             "weighted_files": sorted_files[:3],
         }
+
+    # Stream-level anchor: chunks with no game match inherit the stream's dominant game,
+    # so gameplay chunks without spoken title keywords still get the right reference.
+    game_totals = {}
+    for kw, meta in entries.items():
+        if meta.get("kind") == "game" and meta.get("file"):
+            kw_l = kw.lower()
+            game_totals[meta["file"]] = game_totals.get(meta["file"], 0.0) + meta_signals.get(kw_l, 0.0) * 10
+    for s in signals.values():
+        for m in s["matched_keywords"].values():
+            if m["kind"] == "game" and m["file"]:
+                game_totals[m["file"]] = game_totals.get(m["file"], 0.0) + m["count"] * m["weight"]
+    dominant = max(game_totals, key=game_totals.get) if game_totals else None
+    if dominant and game_totals[dominant] >= 0.4 * sum(game_totals.values()):
+        for s in signals.values():
+            # A single passing mention ("ยูกิ x1", "fgo x1") must not override the stream's game.
+            has_game = any(m["kind"] == "game" and (m["count"] >= 3 or m["file"] == dominant)
+                           for m in s["matched_keywords"].values())
+            if not has_game:
+                s["best_file"] = dominant
+                s["primary_topic"] = Path(dominant).stem.replace("_", " ") + " (stream anchor)"
+                s["weighted_files"] = [{"file": dominant, "score": 0.0}] + s["weighted_files"][:2]
 
     # Save to workspace/signals.json
     out_path = workspace / "signals.json"

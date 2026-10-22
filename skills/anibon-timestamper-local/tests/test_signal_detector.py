@@ -55,6 +55,36 @@ class TestSignalDetector(unittest.TestCase):
             self.assertIn("deadlock", discovered)
             self.assertIn("sekiro", discovered)
 
+    def test_filter_standing_gaming_words_strips_dupe_codes_and_generic_terms(self):
+        from signal_detector import filter_standing_gaming_words
+        raw = "เปิดกาชา ตัวใหม่ C5 E6 S1 บอส ดาเมจ รอซึวสึ พเนอร์ โอเมก้าโค้ด"
+        filtered, standing = filter_standing_gaming_words(raw)
+        self.assertIn("c5", standing)
+        self.assertIn("e6", standing)
+        self.assertIn("s1", standing)
+        self.assertNotIn(" c5 ", f" {filtered} ")
+        self.assertNotIn(" e6 ", f" {filtered} ")
+        self.assertIn("รอซึวสึ", filtered)
+        self.assertIn("พเนอร์", filtered)
+        self.assertIn("โอเมก้าโค้ด", filtered)
+
+    def test_discover_reference_games_registers_special_words_and_blocks_common_character_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            refs = Path(tmp) / "references"
+            refs.mkdir()
+            for fn in ("Blue_Archive.md", "Chaos_Zero_Nightmare.md", "Wuthering_Waves.md", "Zenless_Zone_Zero.md", "Eternal_Return.md", "Thai_Book_Fair_Convention.md"):
+                (refs / fn).write_text(f"# {fn}\n", encoding="utf-8")
+
+            discovered = discover_reference_games(refs)
+            for blocked in ("blue", "thai", "parry", "solo", "เกลือ", "yuki", "ยูกิ", "rin", "ริน", "mika", "มิกะ", "hoshino", "shiroko", "arona", "lucy", "alice", "yvonne", "kuro", "emma", "chizuru"):
+                self.assertNotIn(blocked, discovered)
+            for czn_kw in ("เคอส", "รอซึวสึ", "พเนอร์", "memory fragment", "โอเมก้าโค้ด", "เซรนิว"):
+                self.assertIn("chaos_zero_nightmare", discovered[czn_kw].lower())
+            self.assertIn("wuthering_waves", discovered["jinhsi"].lower())
+            self.assertIn("zenless_zone_zero", discovered["bangboo"].lower())
+            self.assertIn("blue_archive", discovered["kivotos"].lower())
+
+
 
 if __name__ == "__main__":
     unittest.main()

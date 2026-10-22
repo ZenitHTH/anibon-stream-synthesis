@@ -176,6 +176,25 @@ class TestKnowledgeReader(unittest.TestCase):
             g = extract_entity_glossary(signals_map, ref_dir=stream_dir)
             self.assertIn("Ashiya Douman", g)
 
+    def test_parse_markdown_entities_excludes_generic_standing_words_but_keeps_characters_for_stage2(self):
+        from anibon.knowledge_reader import parse_markdown_entities
+        md = (
+            "- **สมาชิก**: Maribell + Diana\n"
+            "- **กลไก**: ใช้โล่สะท้อนดาเมจ\n"
+            "- **เกลือ**: สุ่มไม่ติดหน้าตู้\n"
+            "- **Parry (ปัดป้อง)**: กดกันจังหวะศัตรูตี\n"
+            "- **Normal Mode**: โหมดปกติ\n"
+            "- **E1**: ปลดล็อคขั้น 1\n"
+            "- **Yuki (ยูกิ)**: ตัวละครสายโจมตี\n"
+            "- **Rossweisse (รอสไวส์)**: ตัวละครใหม่\n"
+        )
+        ents = parse_markdown_entities(md)
+        for generic in ("สมาชิก", "กลไก", "เกลือ", "Parry", "Normal Mode", "E1"):
+            self.assertNotIn(generic, ents)
+        self.assertIn("Yuki", ents)
+        self.assertIn("Rossweisse", ents)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,6 +14,30 @@ from typing import Dict, List, Optional, Set, Any
 DEFAULT_FGO_DB = Path(r"C:\Users\peter\.gemini\config\plugins\anibon-stream-synthesis\skills\reference\FGO and DATA\atlas_fgo.db")
 DEFAULT_POKEMON_DB = Path(r"C:\Users\peter\.gemini\config\plugins\anibon-stream-synthesis\skills\anibon-world-identity\references\Pokemon DATA\pokemon.db")
 
+ENTITY_STOPWORDS: Set[str] = {
+    "สมาชิก", "กลไก", "เกลือ", "หลุดเรท", "โรล", "ตู้", "การันตี", "เพชร", "เหรียญ",
+    "ดาเมจ", "คริ", "บัฟ", "ดีบัฟ", "สเตตัส", "คอมโบ", "สตรีค", "แพตช์", "อัปเดต",
+    "เนิร์ฟ", "เนิฟ", "บั๊ก", "แล็ก", "ปิง", "พากย์ไทย", "ซับไทย", "รีวิว",
+    "บอส", "solo", "parry", "dodge", "dash", "ultimate", "ult", "สกิล", "ท่าไม้ตาย",
+    "normal mode", "hard mode", "abyss", "challenge", "floor", "tier list",
+    "guild", "clan", "party", "coop", "pvp", "pve", "event", "banner",
+}
+
+DUPE_TIER_RE = re.compile(
+    r"\b(?:[CEce][0-6]|[Ss][0-6]|[Rr][1-5]|[Mm][0-6])\b|"
+    r"(?:ระดับ|ขั้น|ดาว|ก๊อปปี้|ปลด)\s*[0-6]"
+)
+
+
+def _is_entity_stopword(val: str) -> bool:
+    if not val:
+        return False
+    v = val.strip().lower()
+    if v in ENTITY_STOPWORDS or val.strip() in ENTITY_STOPWORDS:
+        return True
+    if DUPE_TIER_RE.fullmatch(val.strip()):
+        return True
+    return False
 
 
 def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
@@ -87,6 +111,8 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
         role = re.sub(r"[:\-\|]", "", role).strip()
 
         key = en_clean or th_clean
+        if _is_entity_stopword(key) or _is_entity_stopword(raw_name) or _is_entity_stopword(en_clean) or _is_entity_stopword(th_clean):
+            continue
         if key and len(key) >= 3:
             entities[key] = {
                 "en": en_clean,
@@ -105,6 +131,9 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
         raw_name = m_b.group(1).strip()
         desc = m_b.group(2).strip()
 
+        if _is_entity_stopword(raw_name):
+            continue
+
         m_paren = re.search(r"([^\(\)]+)\s*\(([^)]+)\)", raw_name)
         if m_paren:
             part1 = m_paren.group(1).strip()
@@ -120,6 +149,8 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
             th = m_th.group(0).strip() if m_th else ""
 
         key = en or th
+        if _is_entity_stopword(key) or _is_entity_stopword(en) or _is_entity_stopword(th):
+            continue
         if key and len(key) >= 3 and key not in entities:
             entities[key] = {
                 "en": en,
