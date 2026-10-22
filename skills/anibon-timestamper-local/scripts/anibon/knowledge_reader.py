@@ -256,6 +256,16 @@ def extract_entity_glossary(
                     if k not in glossary:
                         glossary[k] = v
                         glossary[k]["source_file"] = candidate.name
+                        glossary[k]["sources"] = [candidate.name]
+                    else:
+                        existing = glossary[k]
+                        existing_sources = existing.setdefault("sources", [existing.get("source_file", "")])
+                        if candidate.name not in existing_sources:
+                            existing_sources.append(candidate.name)
+                        variants = existing.setdefault("variants", {})
+                        v_copy = dict(v)
+                        v_copy["source_file"] = candidate.name
+                        variants[candidate.name] = v_copy
             except Exception:
                 continue
 

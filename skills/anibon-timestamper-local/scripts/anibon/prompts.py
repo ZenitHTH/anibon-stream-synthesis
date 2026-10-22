@@ -159,16 +159,24 @@ def build_chunk_entity_context(
         if not isinstance(meta, dict):
             continue
 
+        matching_source = None
         if allowed_sources is not None:
-            source_file = meta.get("source_file") or meta.get("file")
-            if source_file:
-                source_name = Path(source_file).name
-                if source_name not in allowed_sources and source_file not in allowed_sources:
-                    continue
+            raw_sources = meta.get("sources")
+            if not raw_sources:
+                single = meta.get("source_file") or meta.get("file") or meta.get("source")
+                raw_sources = [single] if single else []
+            source_candidates = [Path(s).name for s in raw_sources if s]
+            if not source_candidates or not any(s in allowed_sources for s in source_candidates):
+                continue
+            matching_source = next((s for s in source_candidates if s in allowed_sources), None)
 
-        en = str(meta.get("en") or (name if not re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
-        th = str(meta.get("th") or (name if re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
-        alias_th = str(meta.get("alias_th", "")).strip()
+        active_meta = meta
+        if matching_source and "variants" in meta and matching_source in meta["variants"]:
+            active_meta = meta["variants"][matching_source]
+
+        en = str(active_meta.get("en") or (name if not re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
+        th = str(active_meta.get("th") or (name if re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
+        alias_th = str(active_meta.get("alias_th", "")).strip()
 
         hit = False
         if en and len(en) >= 3 and en.lower() in text_lower:
@@ -187,8 +195,9 @@ def build_chunk_entity_context(
             seen.add(key_id)
 
             label = f"{en} ({th})" if (en and th) else (en or th or name)
-            role = meta.get("role") or meta.get("class")
-            extra = f" [{role}]" if role else ""
+            role = active_meta.get("role") or active_meta.get("class")
+            desc = active_meta.get("description", "")
+            extra = f" [{role}]" if role else (f" - {desc}" if desc else "")
             matched_lines.append(f"- {label}{extra}")
 
             if len(matched_lines) >= 15:
@@ -264,9 +273,10 @@ def build_recursive_prompt(
     if signal:
         allowed = set()
         for cand in signal.get("candidates", []):
-            f = cand.get("file")
-            if f:
-                allowed.add(Path(f).name)
+            if cand.get("prob", 0.0) >= 0.15:
+                f = cand.get("file")
+                if f:
+                    allowed.add(Path(f).name)
         if signal.get("best_file"):
             allowed.add(Path(signal["best_file"]).name)
         if allowed:
@@ -462,9 +472,10 @@ def build_group_prompt(
     if best_group_signal:
         allowed = set()
         for cand in best_group_signal.get("candidates", []):
-            f = cand.get("file")
-            if f:
-                allowed.add(Path(f).name)
+            if cand.get("prob", 0.0) >= 0.15:
+                f = cand.get("file")
+                if f:
+                    allowed.add(Path(f).name)
         if best_group_signal.get("best_file"):
             allowed.add(Path(best_group_signal["best_file"]).name)
         if allowed:

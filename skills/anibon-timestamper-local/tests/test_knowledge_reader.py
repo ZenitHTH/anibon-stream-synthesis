@@ -194,6 +194,29 @@ class TestKnowledgeReader(unittest.TestCase):
         self.assertIn("Yuki", ents)
         self.assertIn("Rossweisse", ents)
 
+    def test_extract_entity_glossary_supports_multi_source_entities_and_scoping(self):
+        from anibon.knowledge_reader import extract_entity_glossary
+        from anibon.prompts import build_chunk_entity_context
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            ref_dir = tmp_path / "references"
+            ref_dir.mkdir()
+            (ref_dir / "Blue_Archive.md").write_text("- **Mika (มิกะ)**: นักเรียนคิโวทอส\n", encoding="utf-8")
+            (ref_dir / "Chaos_Zero_Nightmare.md").write_text("- **Mika (มิกะ)**: ตัวละคร CZN ซัพพอร์ต AP\n", encoding="utf-8")
+
+            signals_map = {
+                "chunk_00": {
+                    "best_file": "Chaos_Zero_Nightmare.md",
+                    "candidates": [{"file": "Chaos_Zero_Nightmare.md", "prob": 0.95}],
+                    "weighted_files": [{"file": "Chaos_Zero_Nightmare.md", "score": 10.0}]
+                }
+            }
+            glossary = extract_entity_glossary(signals_map, ref_dir)
+            ctx = build_chunk_entity_context("มิกะ ใช้การ์ด AP", glossary, allowed_sources={"Chaos_Zero_Nightmare.md"})
+            self.assertIn("Mika", ctx)
+            self.assertIn("CZN", ctx)
+
+
 
 
 if __name__ == "__main__":

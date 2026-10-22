@@ -119,6 +119,22 @@ class TestSignalDetector(unittest.TestCase):
             self.assertIn("chaos_zero_nightmare", signals["chunk_00"]["best_file"].lower())
             self.assertIn("deadlock", signals["chunk_02"]["best_file"].lower())
 
+    def test_detect_signals_ignores_stream_rule_docs_as_game_candidates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "info.json").write_text(json.dumps({
+                "title": "สตรีมพูดคุย อนิเมะ และเล่น CZN",
+                "tags": ["anime", "อนิเมะ", "CZN"]
+            }, ensure_ascii=False), encoding="utf-8")
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text("สวัสดีครับ วันนี้มาเล่น Chaos Zero Nightmare", encoding="utf-8")
+            signals = detect_signals_for_chunks(ws)
+            for cand in signals["chunk_00"]["candidates"]:
+                self.assertNotIn("phuboat-anime-talking-style", cand["file"].lower())
+                self.assertNotIn("references/stream/", cand["file"].lower())
+
+
 
 
 

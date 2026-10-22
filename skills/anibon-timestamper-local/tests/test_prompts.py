@@ -140,6 +140,43 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("Yuki", ctx)
         self.assertNotIn("Hoshino", ctx)
 
+    def test_build_chunk_entity_context_filters_db_sources_with_source_attribute(self):
+        glossary = {
+            "Ashiya Douman": {"th": "อาชิยะ โดมัน", "class": "alterEgo", "source": "atlas_fgo.db"},
+            "Maribell": {"th": "มาริเบล", "role": "Vanguard", "source_file": "Chaos_Zero_Nightmare.md"},
+        }
+        ctx = build_chunk_entity_context("มาริเบล กับ อาชิยะ โดมัน", glossary, allowed_sources={"Chaos_Zero_Nightmare.md"})
+        self.assertIn("Maribell", ctx)
+        self.assertNotIn("Ashiya Douman", ctx)
+
+    def test_build_recursive_prompt_thresholds_allowed_sources(self):
+        chunk = {
+            "_idx": 17,
+            "items": [{"timestamp": "01:16:36", "start": 4596.0, "text": "ตัวใหม่ มาริเบล C5 โฮชิโนะ"}]
+        }
+        signal = {
+            "best_file": "Chaos_Zero_Nightmare.md",
+            "candidates": [
+                {"file": "Chaos_Zero_Nightmare.md", "prob": 0.95},
+                {"file": "Blue_Archive.md", "prob": 0.05},
+            ],
+        }
+        glossary = {
+            "Maribell": {"th": "มาริเบล", "role": "Vanguard", "source_file": "Chaos_Zero_Nightmare.md"},
+            "Hoshino": {"th": "โฮชิโนะ", "role": "Tank", "source_file": "Blue_Archive.md"},
+        }
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="Test",
+            rolling_summary="",
+            lang="th",
+            signal=signal,
+            glossary=glossary,
+        )
+        self.assertIn("Maribell", prompt)
+        self.assertNotIn("Hoshino", prompt)
+
+
 
 
 if __name__ == "__main__":

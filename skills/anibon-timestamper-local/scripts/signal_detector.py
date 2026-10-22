@@ -101,7 +101,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "genshin impact", "genshin", "teyvat", "archon", "primogem",
         "spiral abyss", "paimon",
     ],
-    "Fate_Grand_Order.md": [
+    "references/stream/fgo-knowledge.md": [
         "fate grand order", "fgo", "chaldea", "servant", "noble phantasm", "saint quartz",
     ],
     "Deadlock.md": [
@@ -113,24 +113,35 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Eternal_Return.md": [
         "eternal return", "lumia island",
     ],
-    "Yu_Gi_Oh.md": [
+    "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db": [
         "yu-gi-oh", "yugioh", "master duel", "duel monsters",
     ],
-    "Pokemon.md": [
-        "pokemon", "โปเกมอน", "pikachu", "pokedex",
+    "Pokemon_PvP.md": [
+        "pokemon", "โปเกมอน", "pikachu", "pokedex", "pvp",
     ],
-    "Monster_Hunter_Wilds.md": [
-        "monster hunter wilds", "monster hunter", "mh wilds", "seikret", "focus mode",
+    "Pokemon_Radical_Red.md": [
+        "radical red", "pokemon radical red",
+    ],
+    "Arknights.md": [
+        "arknights", "rhodes island", "oripathy", "originium", "doctor", "amiya", "อาร์คไนท์", "โรดส์",
+    ],
+    "Limbus_Company.md": [
+        "limbus company", "limbus", "dante", "golden bough", "mephistopheles", "sinners", "canto", "ลิมบัส", "แดนเต้",
     ],
 }
 
 COMMON_CHARACTER_NAMES_BLACKLIST: set[str] = {
     # Japanese common given names / popular gacha shared names
-    "yuki", "ยูกิ", "rin", "ริน", "mika", "มิกะ", "hoshino", "shiroko", "arona",
-    "lucy", "alice", "yvonne", "kuro", "emma", "chizuru", "miyabi", "yanagi",
-    "dante", "faust", "morgan", "arthur", "nero", "jeanne", "sakura", "ren",
-    "haru", "aoi", "sora", "hikari", "tsubasa", "kaito", "shiki", "shirou",
-    "shin", "kai", "jin", "rei", "maya", "sara", "elena", "maria", "clara",
+    "yuki", "ยูกิ", "rin", "ริน", "mika", "มิกะ", "hoshino", "โฮชิโนะ", "shiroko", "ชิโรโกะ",
+    "arona", "อาโรน่า", "lucy", "ลูซี่", "alice", "อลิส", "yvonne", "อีวอน", "อีวอนน์",
+    "kuro", "คุโระ", "emma", "เอ็มม่า", "chizuru", "ชิซุรุ", "miyabi", "มิยาบิ",
+    "yanagi", "ยานางิ", "dante", "แดนเต้", "faust", "เฟาสต์", "morgan", "มอร์แกน",
+    "arthur", "อาร์เธอร์", "nero", "เนโร", "jeanne", "ฌาน", "sakura", "ซากุระ",
+    "ren", "เรน", "haru", "ฮารุ", "aoi", "อาโออิ", "sora", "โซระ", "hikari", "ฮิคาริ",
+    "tsubasa", "ซึบาสะ", "kaito", "ไคโตะ", "shiki", "ชิกิ", "shirou", "ชิโร่",
+    "shin", "ชิน", "kai", "ไค", "jin", "จิน", "rei", "เรย์", "maya", "มายะ",
+    "sara", "ซาร่า", "elena", "เอเลน่า", "maria", "มาเรีย", "clara", "คลาร่า",
+    "diana", "ไดอาน่า",
 }
 
 AMBIGUOUS_SINGLE_TOKENS: set[str] = {
@@ -209,6 +220,12 @@ def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
             for special in GAME_SPECIAL_WORDS[f.name]:
                 discovered[special.lower()] = rel_path
 
+    # Register global stream/db special words that don't live in refs_dir directly
+    for target_key, words in GAME_SPECIAL_WORDS.items():
+        if target_key.startswith("references/stream/") or target_key.startswith("../"):
+            for special in words:
+                discovered[special.lower()] = target_key
+
     # Strip blocked single tokens, common character names, and generic words from Stage 1
     blocked_stage1 = AMBIGUOUS_SINGLE_TOKENS | COMMON_CHARACTER_NAMES_BLACKLIST | GENERIC_GAMING_STANDING_WORDS
     for blocked in list(discovered.keys()):
@@ -216,6 +233,15 @@ def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
             discovered.pop(blocked, None)
 
     return discovered
+
+
+def is_rule_doc(path: Path) -> bool:
+    """Check if file is a rule/style document that shouldn't be treated as a game candidate."""
+    s = str(path).replace("\\", "/").lower()
+    if "references/stream" in s:
+        if not s.endswith("-knowledge.md"):
+            return True
+    return False
 
 
 def extract_metadata_signals(workspace: Path) -> dict[str, float]:
@@ -433,6 +459,8 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
             if ekw.lower() == mkw_l and emeta.get("file"):
                 if emeta.get("kind") in specific_kinds:
                     f_ref = emeta["file"]
+                    if is_rule_doc(Path(f_ref)):
+                        continue
                     chained_game_weights[f_ref] = chained_game_weights.get(f_ref, 0.0) + mscore * 15.0
 
     # 4. Score each chunk sequentially with forward chaining weight
@@ -463,7 +491,7 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
                     "weight": round(weight, 4),
                 }
 
-                if file_ref and kind in specific_kinds:
+                if file_ref and kind in specific_kinds and not is_rule_doc(Path(file_ref)):
                     raw_specific_scores[file_ref] = raw_specific_scores.get(file_ref, 0.0) + score
                     special_keywords.append(kw)
 
