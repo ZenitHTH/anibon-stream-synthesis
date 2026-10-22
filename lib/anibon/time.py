@@ -7,6 +7,9 @@ Consumers (before extraction):
 """
 
 
+import re
+
+
 def fmt_ts(seconds: float) -> str:
     """Format float seconds → HH:MM:SS."""
     return f"{int(seconds // 3600):02d}:{int((seconds % 3600) // 60):02d}:{int(seconds % 60):02d}"
@@ -25,9 +28,10 @@ def parse_ts(ts_str: str) -> int:
     Handles both 3-part (HH:MM:SS) and 2-part (MM:SS) formats.
     Returns 0 on parse failure.
     """
-    parts = ts_str.strip().split(":")
-    if len(parts) == 3:
-        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-    elif len(parts) == 2:
-        return int(parts[0]) * 60 + int(parts[1])
+    m = re.match(r"^(\d{1,2}):(\d{2}):(\d{2})", ts_str.strip())
+    if m:
+        return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+    m = re.match(r"^(\d{1,2}):(\d{2})", ts_str.strip())
+    if m:
+        return int(m.group(1)) * 60 + int(m.group(2))
     return 0

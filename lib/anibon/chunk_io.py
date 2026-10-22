@@ -121,6 +121,10 @@ def _load_chunk_file(path: Path):
     return _load_chunk_json(path)
 
 
+load_chunk_json = _load_chunk_json
+load_chunk_xml = _load_chunk_xml
+
+
 def chunk_sort_key(f: Path) -> int:
     """Extract chunk index from filename (chunk_03.json → 3)."""
     try:

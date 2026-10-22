@@ -443,7 +443,7 @@ HH:MM:SS - [Tag] Description
 | `scripts/prepare_video.py` | Download + clean + chunk |
 | `scripts/dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
 | `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
-| `scripts/detect_signals.py` | TF-IDF signal + knowledge file matching |
+| `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/anibon/signal_detector.py`) |
 | `scripts/detect_boundaries.py` | Detect topic boundaries (feeds `--topic-json` in Step 9) |
 | `scripts/align_live_chat.py` | Slice LiveChat event feed to per-transcript-chunk logs (Step 3.5) |
 | `scripts/analyze_555.py` | Detect Thai-laugh/meme pulses from aligned LiveChat → per-chunk mood verdict (Step 3.7) |

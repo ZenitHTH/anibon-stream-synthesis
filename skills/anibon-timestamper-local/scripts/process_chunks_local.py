@@ -7,26 +7,21 @@ Two execution modes:
    Accumulates rolling context when topics continue, flushes summary when topics pivot.
 2. --mode group: Batched processing across groups of chunks (~16-20 min windows).
 
-Includes:
-- Multi-modal context fusion (LiveChat messages, 555 laugh pulses, Storyboard visual activity).
-- Corpus-level signal detection & dynamic domain prompt injection.
-- Tag whitelist enforcement & auto-normalization.
-- Two-pass architecture: Pass 1 (Topic Segmentation) -> Pass 2 (Local Summarizer for parts & Caveman headers).
+Architecture:
+- anibon.audit: Transcript cleaning, phonetic drift sanitization, and entity glossary auditing.
+- anibon.assembly: Markdown part assembly, pruning, and parity gate execution.
+- anibon.garbled_collector: Whisper ground-truth audio verification & dictionary sync.
+- anibon.runners: Modular execution runners (recursive state-machine & group windowing).
 """
 
+from __future__ import annotations
+
 import argparse
-import glob
-import io
 import json
 import os
-import re
-import subprocess
 import sys
-import urllib.error
-import urllib.request
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Optional, List, Dict, Tuple
+from typing import List, Optional, Tuple
 
 # Enforce UTF-8 encoding on standard streams to prevent Thai character truncation/corruption
 if hasattr(sys.stdout, "reconfigure"):
@@ -34,112 +29,92 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
-try:
-    from signal_detector import (
-        load_mappings,
-        load_garbled_replacements,
-        clean_transcript_noise,
-        normalize_transcript,
-        detect_signals_for_chunks,
-        get_domain_guidance,
-    )
-except ImportError:
-    from scripts.signal_detector import (
-        load_mappings,
-        load_garbled_replacements,
-        clean_transcript_noise,
-        normalize_transcript,
-        detect_signals_for_chunks,
-        get_domain_guidance,
-    )
+# ── Shared Library Path Resolution ──────────────────────────────────────────
+_SCRIPT_DIR = str(Path(__file__).resolve().parent)
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+for p in (_SCRIPT_DIR, _LIB_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
-# ── Constants ────────────────────────────────────────────────────────────────
-
-# Auto-discover anibon-world-identity references directory.
-_SCRIPT_DIR = Path(__file__).resolve().parent
-_LIB_DIR = str(_SCRIPT_DIR.parents[2] / "lib")
-if _LIB_DIR not in sys.path:
-    sys.path.insert(0, _LIB_DIR)
-
-from anibon.cleaner import compile_mapping_entries
-
-_WI_CANDIDATES = [
-    _SCRIPT_DIR.parent.parent / "anibon-world-identity" / "references",
-    _SCRIPT_DIR.parent.parent.parent / "anibon-world-identity" / "references",
-]
-WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir()), None)
-
-from anibon.timestamps import (
-    TAGS,
-    TAG_REMAP,
-    normalize_tag,
-    sanitize_timestamp_line,
-    parse_timestamps,
-    validate_timestamps,
-    is_continuation,
+from anibon.assembly import finalize_and_assemble_timestamps
+from anibon.audit import (
+    audit_timestamps_against_glossary,
+    sanitize_and_audit_timestamps,
 )
-
+from anibon.config import (
+    CHUNK_MAX_TOKENS,
+    DEFAULT_BLOCK_SIZE,
+    DEFAULT_CHAT_PATH,
+    DEFAULT_GROUP_SIZE,
+    DEFAULT_PORT,
+    DEFAULT_TEMPERATURE,
+    EVAL_BATCH_SIZE,
+    PRIMARY_HOST,
+    SCENE_DELTA_THRESHOLD,
+    cfg_bool,
+    load_config,
+    reload_config,
+)
+from anibon.garbled_collector import run_garbled_collector
+from anibon.knowledge_reader import (
+    enrich_with_sqlite_databases,
+    extract_entity_glossary,
+    save_entity_glossary,
+)
 from anibon.lmstudio import (
-    SYSTEM_PROMPT,
+    call_local,
+    call_vision,
     get_loaded_models,
     resolve_endpoint,
     resolve_model,
-    call_local,
-    call_vision,
 )
-
-from anibon.prompts import (
-    WORLD_IDENTITY_DIR,
-    load_world_identity_context,
-    build_recursive_prompt,
-    build_group_prompt,
-)
-
-from anibon.summarizer import (
-    generate_part_summary,
-    prune_essential,
-    run_local_summarizer_pass,
-    assemble_parts,
-    enforce_byte_cap,
-)
-from anibon.parity_gates import run_parity_gates
-
-from anibon.vision_verify import apply_vision_verify
-
-from anibon.knowledge_reader import (
-    extract_entity_glossary,
-    save_entity_glossary,
-    enrich_with_sqlite_databases,
-)
-
-from anibon.config import (
-    load_config,
-    load_dotenv,
-    reload_config,
-    PRIMARY_HOST,
-    DEFAULT_PORT,
-    DEFAULT_CHAT_PATH,
-    CHUNK_MAX_TOKENS,
-    DEFAULT_TEMPERATURE,
-    DEFAULT_GROUP_SIZE,
-    DEFAULT_BLOCK_SIZE,
-    STAMP_COLLISION_SEC,
-    MULTIMODAL_TIMEOUT_SEC,
-    DEFAULT_MULTIMODAL_CHUNKS,
-    EVAL_BATCH_SIZE,
-    MAX_CHUNK_FRAMES,
-    SCENE_DELTA_THRESHOLD,
-    cfg_bool,
-)
-
-
-
 from anibon.multimodal import (
     prepare_storyboard_slides,
     sample_chunk_keyframes,
-    build_multimodal_content,
     call_multimodal,
 )
+from anibon.parity_gates import ensure_mood_555
+from anibon.prompts import WORLD_IDENTITY_DIR
+from anibon.runners import run_group_mode, run_recursive_mode
+from anibon.signal_detector import (
+    detect_signals_for_chunks,
+    load_garbled_replacements,
+    load_mappings,
+)
+from anibon.state import discover_chunks
+from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
+
+# Re-exports for test compatibility
+__all__ = [
+    "run_knowledge_discovery",
+    "sanitize_and_audit_timestamps",
+    "audit_timestamps_against_glossary",
+    "finalize_and_assemble_timestamps",
+    "run_recursive_mode",
+    "run_group_mode",
+    "run_garbled_collector",
+    "build_argument_parser",
+    "main",
+    "call_local",
+    "call_multimodal",
+    "sample_chunk_keyframes",
+    "prepare_storyboard_slides",
+]
+
+
+# ── Domain Knowledge Discovery ──────────────────────────────────────────────
+
+
+def _load_signals_from_file(workspace: Path) -> dict:
+    """Read signals.json from workspace if present, or return empty dict."""
+    sig_file = workspace / "signals.json"
+    if not sig_file.is_file():
+        return {}
+    try:
+        with open(sig_file, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
 
 def run_knowledge_discovery(
@@ -150,15 +125,7 @@ def run_knowledge_discovery(
     """Auto-discover domain references, bootstrap DBs, and emit <workspace>/entity_glossary.json."""
     workspace = Path(workspace)
     if signals_map is None:
-        sig_file = workspace / "signals.json"
-        if sig_file.exists():
-            try:
-                with open(sig_file, encoding="utf-8") as f:
-                    signals_map = json.load(f)
-            except Exception:
-                signals_map = {}
-        else:
-            signals_map = {}
+        signals_map = _load_signals_from_file(workspace)
 
     ref_dir = world_identity_dir or WORLD_IDENTITY_DIR
     glossary = extract_entity_glossary(signals_map, ref_dir)
@@ -168,718 +135,12 @@ def run_knowledge_discovery(
     return out_file
 
 
-_get_compiled_garbled = compile_mapping_entries
+# ── Argument Parser & Main Controller ────────────────────────────────────────
 
 
-def sanitize_and_audit_timestamps(
-    content: str,
-    glossary: Optional[dict] = None,
-    signals: Optional[dict] = None,
-    garbled: Optional[list] = None,
-) -> Tuple[str, dict]:
-    """Deterministically sanitize timestamps, replace phonetic drifts, and audit hallucinations."""
-    if not content:
-        return "", {"corrections_applied": 0, "suspected_hallucinations": []}
-
-    cleaned = content
-    corrections_applied = 0
-    glossary = glossary or {}
-    garbled = garbled or []
-
-    # 1. Deterministic Speaker Scrubbing: Ensure 'ปู่บอท', 'ลุงบอท', 'ปู่โบต' become 'ปู่โบ๊ต'
-    cleaned, speaker_matches = re.subn(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", cleaned)
-    corrections_applied += speaker_matches
-
-    # 2. Apply Confirmed Garbled Replacements (e.g. Archen -> Arcane, Victor -> Viktor)
-    for pattern, replacement in _get_compiled_garbled(garbled):
-        cleaned, n = pattern.subn(replacement, cleaned)
-        corrections_applied += n
-
-    # 3. Glossary Alias Replacements
-    for en_key, meta in glossary.items():
-        if not isinstance(meta, dict):
-            continue
-        th = meta.get("th")
-        alias_th = meta.get("alias_th")
-        if alias_th and th and alias_th != th and alias_th in cleaned:
-            matches = cleaned.count(alias_th)
-            if matches:
-                cleaned = cleaned.replace(alias_th, th)
-                corrections_applied += matches
-
-    # 4. Hallucination Detection: Find unverified Latin capitalized words
-    whitelisted_latin = {
-        "talk", "gameplay", "gacha", "boss", "death", "victory", "watchparty",
-        "reaction", "story", "lore", "review", "news", "chat", "donation", "greeting",
-        "part", "switch", "dota", "lol", "fgo", "czn", "steam", "moba", "ps5", "pc",
-        "skill", "parry", "spirit", "mario", "kart", "zelda", "boat", "anibon", "extra", "class",
-        "arcane", "viktor", "abrams", "vindicta", "bebop", "shiv", "seven", "dynamo", "haze"
-    }
-    for k, meta in glossary.items():
-        whitelisted_latin.add(k.lower())
-        if isinstance(meta, dict) and meta.get("en"):
-            whitelisted_latin.add(str(meta.get("en")).lower())
-
-    suspected = []
-    for line in cleaned.splitlines():
-        line = line.strip()
-        m = re.match(r"^\d{2}:\d{2}:\d{2}\s*-\s*(?:\[.*?\])+\s*(.*)$", line)
-        if not m:
-            continue
-        desc = m.group(1)
-        for word in re.findall(r"\b[A-Z][a-zA-Z0-9'\-]+\b", desc):
-            w_lower = word.lower()
-            if w_lower not in whitelisted_latin:
-                suspected.append(word)
-
-    stats = {
-        "corrections_applied": corrections_applied,
-        "suspected_hallucinations": sorted(list(set(suspected))),
-    }
-    return cleaned, stats
-
-
-def audit_timestamps_against_glossary(
-    timestamps_file: Path,
-    glossary: dict,
-    signals: Optional[dict] = None,
-    garbled: Optional[list] = None,
-) -> int:
-    """Scan generated anibon_timestamps.md against entity_glossary.json and audit/replace mistranslations."""
-    timestamps_file = Path(timestamps_file)
-    if not timestamps_file.exists():
-        return 0
-
-    content = timestamps_file.read_text(encoding="utf-8")
-    if garbled is None:
-        try:
-            from anibon.transcript_source import is_youtube_auto_transcript
-            if is_youtube_auto_transcript(timestamps_file.parent):
-                garbled = load_garbled_replacements()
-            else:
-                garbled = []
-        except Exception:
-            garbled = []
-
-    cleaned, stats = sanitize_and_audit_timestamps(content, glossary=glossary, signals=signals, garbled=garbled)
-    replacements_count = stats.get("corrections_applied", 0)
-
-    # Stage 5 Deterministic World Sanitizer (Pokémon naming, token stutter, outro injection)
-    try:
-        from anibon.world_sanitizer import audit_and_sanitize_final_markdown
-        from anibon.topic_scanner import extract_macro_anchor
-        info_f = timestamps_file.parent / "info.json"
-        macro_anchor = None
-        if info_f.is_file():
-            try:
-                macro_anchor = extract_macro_anchor(json.loads(info_f.read_text(encoding="utf-8")))
-            except Exception:
-                pass
-        cleaned, ws_stats = audit_and_sanitize_final_markdown(cleaned, timestamps_file.parent, macro_anchor=macro_anchor)
-    except Exception as e:
-        print(f"[audit] World sanitizer notice: {e}")
-
-    if cleaned != content:
-        timestamps_file.write_text(cleaned, encoding="utf-8")
-        print(f"[audit] Applied {replacements_count} glossary/phonetic corrections to {timestamps_file.name}")
-
-    suspected = stats.get("suspected_hallucinations", [])
-    if suspected:
-        print(f"[audit] Warning: Suspected unverified entities in {timestamps_file.name}: {', '.join(suspected)}")
-
-    return replacements_count
-
-
-
-# ── Formatting & Time Helpers ────────────────────────────────────────────────
-from anibon.time import fmt_ts as _fmt_ts, parse_ts as ts_to_sec
-
-
-def finalize_and_assemble_timestamps(
-    workspace: Path,
-    all_timestamps: List[str],
-    endpoint: str,
-    model: str,
-    temperature: float,
-    block_size: int,
-    no_summarizer_pass: bool,
-    args: Optional[argparse.Namespace] = None,
-    glossary: Optional[dict] = None,
-    byte_cap: bool = False,
-) -> Tuple[Path, List[str]]:
-    if args and getattr(args, "byte_cap", False):
-        byte_cap = True
-    deduped = list(dict.fromkeys(all_timestamps))
-    raw_ts = workspace / "all_timestamps.txt"
-    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    print(f"[done] Raw timestamps: {raw_ts}")
-    if args:
-        deduped = apply_vision_verify(deduped, workspace, args, model)
-    if not no_summarizer_pass:
-        deduped = prune_essential(endpoint, model, deduped, temperature)
-    assembled = None
-    if not no_summarizer_pass:
-        assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
-    if not assembled:
-        print("[assemble] Using heuristic double-border part assembly.")
-        assembled = assemble_parts(deduped, workspace, block_size)
-    if byte_cap:
-        assembled = enforce_byte_cap(assembled)
-    out_md = workspace / "anibon_timestamps.md"
-    out_md.write_text(assembled, encoding="utf-8")
-    if glossary:
-        audit_timestamps_against_glossary(out_md, glossary)
-    print(f"[done] Final timestamps: {out_md}")
-    run_parity_gates(workspace, out_md)
-    return out_md, deduped
-
-
-def _chunk_range(items: list) -> Tuple[str, str]:
-    if not items:
-        return "00:00:00", "00:00:00"
-    start = items[0].get("start", 0)
-    last = items[-1]
-    end = last.get("start", 0) + last.get("duration", 5)
-    return _fmt_ts(start), _fmt_ts(end)
-
-from anibon.state import (
-    load_state,
-    save_state,
-    load_chunk_livechat,
-    load_chunk_activity,
-    load_chunk_mood,
-    discover_chunks,
-    load_chunk_file,
-)
-
-# ── Execution Engines ────────────────────────────────────────────────────────
-
-def run_recursive_mode(
-    workspace: Path,
-    chunk_files: List[Path],
-    endpoint: str,
-    model: str,
-    lang: str,
-    max_tokens: int,
-    temperature: float,
-    signals_map: dict,
-    mappings: Optional[list],
-    no_resume: bool,
-    max_chunks: Optional[int],
-    no_summarizer_pass: bool,
-    block_size: int,
-    world_identity_dir: Optional[Path] = None,
-    args: Optional[argparse.Namespace] = None,
-    glossary: Optional[dict] = None,
-) -> None:
-    """Dynamic rolling summary state-machine execution."""
-    output_dir = workspace / "recursive_outputs"
-    output_dir.mkdir(exist_ok=True)
-    if no_resume:
-        for stale in output_dir.glob("chunk_*.json"):
-            stale.unlink(missing_ok=True)
-        (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
-
-    state = load_state(workspace)
-    all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
-    current_topic_title: str = state.get("current_topic_title", "") if not no_resume else ""
-    rolling_summary: str = state.get("rolling_summary", "") if not no_resume else ""
-
-    total = len(chunk_files)
-    print(f"[recursive] Starting recursive rolling topic state-machine across {total} chunks...")
-    if not no_resume and all_timestamps:
-        print(f"[resume] Loaded {len(all_timestamps)} timestamps from state (Ongoing Topic: '{current_topic_title}')")
-
-    is_multimodal = bool(args and (getattr(args, "multimodal_chunks", False) or getattr(args, "multimodal", False)))
-    slides_dir = None
-    tiles_dir = workspace / "frames" / "chunk_tiles"
-    if is_multimodal:
-        video_url = getattr(args, "video_url", None) if args else None
-        slides_dir = prepare_storyboard_slides(workspace, video_url=video_url)
-        if slides_dir:
-            tiles_dir.mkdir(parents=True, exist_ok=True)
-            print(f"[multimodal] Enabled: Grounding chunks with Storyboard keyframes from {slides_dir.name}")
-        else:
-            print("[multimodal] Warning: No storyboard slides found in workspace/frames, falling back to text-only mode.")
-            is_multimodal = False
-
-    processed_count = 0
-    for i, chunk_path in enumerate(chunk_files):
-        m = re.search(r"chunk_(\d+)", chunk_path.stem)
-        ch_num = int(m.group(1)) if m else i
-        chunk_idx = f"chunk_{ch_num:02d}"
-        out_path = output_dir / f"{chunk_idx}.json"
-
-        if not no_resume and out_path.exists():
-            try:
-                saved_res = json.loads(out_path.read_text(encoding="utf-8"))
-                current_topic_title = saved_res.get("current_topic_title", current_topic_title)
-                rolling_summary = saved_res.get("rolling_summary", rolling_summary)
-                saved_ts_list = saved_res.get("timestamps") or ([saved_res.get("timestamp")] if saved_res.get("timestamp") else [])
-                for st in saved_ts_list:
-                    if st and st not in all_timestamps:
-                        all_timestamps.append(st)
-                print(f"[skip] {chunk_idx} (already processed)", flush=True)
-                continue
-            except Exception:
-                pass
-
-        try:
-            chunk = load_chunk_file(chunk_path, mappings=mappings)
-        except Exception as e:
-            print(f"[warn] failed to load {chunk_path.name}: {e}", file=sys.stderr)
-            continue
-
-        chunk["_idx"] = ch_num
-        sig = signals_map.get(chunk_idx)
-        lc = load_chunk_livechat(workspace, chunk_idx)
-        act = load_chunk_activity(workspace, chunk_idx)
-        mood = load_chunk_mood(workspace, chunk_idx)
-        wi_ref = load_world_identity_context(sig, world_identity_dir)
-
-        keyframes = []
-        if is_multimodal and slides_dir:
-            items = chunk.get("items", [])
-            st_sec = items[0].get("start", 0) if items else ch_num * 270
-            en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
-            est_text_tokens = (len(rolling_summary) + len(chunk.get("text", ""))) // 4 + 800
-            scene_dedup = not getattr(args, "no_scene_dedup", False) if args else True
-            delta_threshold = getattr(args, "scene_delta_threshold", SCENE_DELTA_THRESHOLD) if args else SCENE_DELTA_THRESHOLD
-            max_chunk_frames = getattr(args, "max_chunk_frames", None) if args else None
-            eval_batch_size = getattr(args, "eval_batch_size", EVAL_BATCH_SIZE) if args else EVAL_BATCH_SIZE
-            keyframes = sample_chunk_keyframes(
-                int(st_sec),
-                int(en_sec),
-                slides_dir,
-                tiles_dir,
-                items=items,
-                num_frames=max_chunk_frames,
-                scene_dedup=scene_dedup,
-                delta_threshold=delta_threshold,
-                text_tokens=est_text_tokens,
-                eval_batch_size=eval_batch_size,
-            )
-
-        prompt = build_recursive_prompt(
-            chunk=chunk,
-            current_topic=current_topic_title,
-            rolling_summary=rolling_summary,
-            lang=lang,
-            signal=sig,
-            livechat=lc,
-            activity=act,
-            mood=mood,
-            world_identity_ref=wi_ref,
-            glossary=glossary,
-            keyframes=keyframes if keyframes else None,
-        )
-        prompt_tokens = len(prompt) // 4
-        kf_info = f" + {len(keyframes)} frames" if keyframes else ""
-        print(f"[{chunk_idx}/{total-1}] ~{prompt_tokens} tokens{kf_info} → calling model ...", end=" ", flush=True)
-
-        try:
-            api_key = getattr(args, "api_key", None) if args else None
-            if keyframes:
-                try:
-                    content_list = build_multimodal_content(prompt, keyframes)
-                    raw = call_multimodal(endpoint, model, content_list, max_tokens, temperature, timeout=MULTIMODAL_TIMEOUT_SEC, api_key=api_key)
-                except Exception as ex:
-                    print(f"\n[multimodal] fallback to text-only for {chunk_idx}: {ex}", flush=True)
-                    raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
-            else:
-                raw = call_local(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
-            text = raw
-            jm = re.search(r'(\{[^{}]*"is_continuation"[^{}]*\})', text, re.DOTALL)
-            if not jm:
-                jm = re.search(r"(\{.*\})", text, re.DOTALL)
-
-            if jm:
-                res = json.loads(jm.group(1))
-                is_cont = res.get("is_continuation", False)
-                ch_sum = res.get("chunk_summary", "")
-                up_sum = res.get("updated_summary", "")
-                raw_ts = res.get("timestamps") or res.get("timestamp") or res.get("new_timestamp")
-                new_title = res.get("new_topic_title", "")
-
-                candidate_stamps: List[str] = []
-                if isinstance(raw_ts, list):
-                    for st in raw_ts:
-                        if st and isinstance(st, str):
-                            san = sanitize_timestamp_line(st)
-                            if san:
-                                candidate_stamps.append(san)
-                elif isinstance(raw_ts, str) and raw_ts.strip():
-                    san = sanitize_timestamp_line(raw_ts)
-                    if san:
-                        candidate_stamps.append(san)
-
-                c_start = chunk.get("start_sec", 0)
-                c_end = chunk.get("end_sec", 0)
-                v_ts = validate_timestamps(candidate_stamps, c_start, c_end)
-
-                # Deduplicate and sort chronologically within chunk
-                def _sec(s: str) -> int:
-                    m = re.match(r"(\d{2}):(\d{2}):(\d{2})", s)
-                    return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3)) if m else 0
-
-                v_ts_sorted: List[str] = []
-                prev_s = -1
-                for s in sorted(v_ts, key=_sec):
-                    sec_val = _sec(s)
-                    if prev_s == -1 or (sec_val - prev_s) >= STAMP_COLLISION_SEC:
-                        v_ts_sorted.append(s)
-                        prev_s = sec_val
-
-                if not is_cont:
-                    # MAJOR TOPIC SHIFT / FLUSH OLD
-                    if not v_ts_sorted:
-                        fallback_ts = f"{_fmt_ts(c_start)} - [Talk] {new_title or ch_sum}"
-                        v_ts_sorted = validate_timestamps([fallback_ts], c_start, c_end)
-
-                    for stamp in v_ts_sorted:
-                        all_timestamps.append(stamp)
-                        print(f"👉 MAJOR SHIFT: {stamp} ('{new_title or ch_sum}')", flush=True)
-
-                    if not v_ts_sorted:
-                        print(f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')", flush=True)
-
-                    current_topic_title = new_title or ch_sum
-                    rolling_summary = up_sum or ch_sum
-                else:
-                    # CONTINUATION (with optional sub-topic stamps)
-                    for stamp in v_ts_sorted:
-                        all_timestamps.append(stamp)
-                        print(f"📌 SUB-TOPIC:   {stamp}", flush=True)
-
-                    if not v_ts_sorted:
-                        print(f"🔄 CONTINUATION (no stamp)", flush=True)
-
-                    rolling_summary = up_sum or ch_sum or rolling_summary
-
-                garbled_notes = res.get("garbled_notes", [])
-                if isinstance(garbled_notes, list) and garbled_notes:
-                    raw_notes_dir = workspace / "garbled_notes_raw"
-                    raw_notes_dir.mkdir(exist_ok=True)
-                    gn_lines = []
-                    for gn in garbled_notes:
-                        if isinstance(gn, str) and gn.strip():
-                            val = gn.strip()
-                            if "@" in val and not val.startswith('"'):
-                                tok, rest = val.split("@", 1)
-                                val = f'"{tok.strip()}" @{rest}'
-                            gn_lines.append(f"- {val} ({chunk_idx})")
-                    if gn_lines:
-                        (raw_notes_dir / f"{chunk_idx}.txt").write_text(
-                            "GARBLED_NOTES:\n" + "\n".join(gn_lines) + "\n",
-                            encoding="utf-8",
-                        )
-
-                out_path.write_text(json.dumps({
-                    "chunk": chunk_idx,
-                    "is_continuation": is_cont,
-                    "timestamps": v_ts_sorted,
-                    "timestamp": (v_ts_sorted[0] if v_ts_sorted else None),
-                    "garbled_notes": garbled_notes,
-                    "chunk_summary": ch_sum,
-                    "rolling_summary": rolling_summary,
-                    "current_topic_title": current_topic_title,
-                    "keyframe_count": len(keyframes),
-                    "keyframe_timestamps": [kf[0] for kf in keyframes],
-                }, ensure_ascii=False, indent=2), encoding="utf-8")
-            else:
-                print(f"[warn] JSON parse failed, raw: {text[:100]}")
-
-        except Exception as e:
-            print(f"[error] {chunk_idx}: {e}", file=sys.stderr)
-
-        save_state(workspace, {
-            "current_chunk": i + 1,
-            "total_chunks": total,
-            "all_timestamps": all_timestamps,
-            "current_topic_title": current_topic_title,
-            "rolling_summary": rolling_summary,
-            "phase": "recursive_loop",
-        })
-
-        processed_count += 1
-        if max_chunks and processed_count >= max_chunks:
-            print(f"[pause] Reached --max-chunks {max_chunks}.")
-            break
-
-    # Assembly
-    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
-    out_md, deduped = finalize_and_assemble_timestamps(
-        workspace=workspace,
-        all_timestamps=all_timestamps,
-        endpoint=endpoint,
-        model=model,
-        temperature=temperature,
-        block_size=block_size,
-        no_summarizer_pass=no_summarizer_pass,
-        args=args,
-        glossary=glossary,
-    )
-
-    is_finished = (not max_chunks or processed_count >= total)
-    save_state(workspace, {
-        "current_chunk": total if is_finished else (processed_count),
-        "total_chunks": total,
-        "all_timestamps": deduped,
-        "current_topic_title": current_topic_title,
-        "rolling_summary": rolling_summary,
-        "phase": "complete" if is_finished else "paused",
-    })
-    print(f"\n✅ Recursive run complete: {out_md}")
-
-
-def run_group_mode(
-    workspace: Path,
-    chunk_files: List[Path],
-    endpoint: str,
-    model: str,
-    lang: str,
-    max_tokens: int,
-    temperature: float,
-    group_size: int,
-    signals_map: dict,
-    mappings: Optional[list],
-    no_resume: bool,
-    max_groups: Optional[int],
-    no_summarizer_pass: bool,
-    block_size: int,
-    world_identity_dir: Optional[Path] = None,
-    args: Optional[argparse.Namespace] = None,
-    glossary: Optional[dict] = None,
-) -> None:
-    """Group-based execution across fixed windows of chunks."""
-    output_dir = workspace / "group_outputs"
-    output_dir.mkdir(exist_ok=True)
-    if no_resume:
-        for stale in output_dir.glob("group_*_output.md"):
-            stale.unlink(missing_ok=True)
-        (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
-
-    state = load_state(workspace)
-    all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
-    prev_tail: str = state.get("prev_tail", "") if not no_resume else ""
-
-    total_chunks = len(chunk_files)
-    num_groups = (total_chunks + group_size - 1) // group_size
-
-    if args and getattr(args, "multimodal_chunks", False):
-        print("[group] Note: Multimodal storyboard chunk analysis is optimized for --mode recursive; running group mode with text context.")
-
-    if not no_resume and all_timestamps:
-
-        print(f"[resume] {len(all_timestamps)} timestamps already recorded")
-
-    groups_processed = 0
-    for g in range(num_groups):
-        group_idx = f"group_{g:02d}"
-        out_path = output_dir / f"{group_idx}_output.md"
-
-        if not no_resume and out_path.exists():
-            existing = out_path.read_text(encoding="utf-8")
-            for line in reversed(existing.splitlines()):
-                line = line.strip()
-                if re.match(r"\d{2}:\d{2}:\d{2}\s*-\s*\[", line):
-                    prev_tail = line
-                    break
-            print(f"[skip] {group_idx} (output exists)")
-            continue
-
-        g_files = chunk_files[g * group_size : (g + 1) * group_size]
-        g_chunks = []
-        for cf in g_files:
-            try:
-                ch = load_chunk_file(cf, mappings=mappings)
-                m = re.search(r"chunk_(\d+)", cf.stem)
-                ch["_idx"] = int(m.group(1)) if m else 0
-                g_chunks.append(ch)
-            except Exception as e:
-                print(f"[warn] failed to load {cf.name}: {e}", file=sys.stderr)
-
-        if not g_chunks:
-            continue
-
-        g_start_sec = g_chunks[0].get("start_sec", 0)
-        g_end_sec = g_chunks[-1].get("end_sec", 0)
-
-        prompt = build_group_prompt(
-            g_chunks,
-            g,
-            prev_tail,
-            lang,
-            signals_map,
-            workspace,
-            world_identity_dir,
-            livechat_loader=load_chunk_livechat,
-            activity_loader=load_chunk_activity,
-            mood_loader=load_chunk_mood,
-            glossary=glossary,
-        )
-        prompt_tokens = len(prompt) // 4
-        print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
-
-        try:
-            raw = call_local(endpoint, model, prompt, max_tokens, temperature)
-        except urllib.error.URLError as e:
-            print(f"\n[error] endpoint unreachable: {e}", file=sys.stderr)
-            save_state(workspace, {
-                "current_group": g,
-                "all_timestamps": all_timestamps,
-                "prev_tail": prev_tail,
-                "phase": "group_loop",
-            })
-            sys.exit(1)
-        except Exception as e:
-            print(f"\n[error] {group_idx}: {e}", file=sys.stderr)
-            continue
-
-        if is_continuation(raw):
-            stamps = []
-            result_label = "CONTINUATION"
-        else:
-            stamps = parse_timestamps(raw, max_stamps=4)
-            stamps = validate_timestamps(stamps, g_start_sec, g_end_sec)
-            result_label = f"{len(stamps)} stamp(s)" if stamps else "0 stamps (continuity)"
-
-        print(result_label)
-
-        if stamps:
-            md_lines = [f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} -->", ""]
-            md_lines.extend(stamps)
-            md_content = "\n".join(md_lines)
-            prev_tail = stamps[-1]
-            all_timestamps.extend(stamps)
-        else:
-            md_content = f"<!-- {group_idx} | {_fmt_ts(g_start_sec)} – {_fmt_ts(g_end_sec)} | CONTINUATION -->"
-
-        out_path.write_text(md_content + "\n", encoding="utf-8")
-
-        save_state(workspace, {
-            "current_group": g + 1,
-            "total_groups": num_groups,
-            "all_timestamps": all_timestamps,
-            "prev_tail": prev_tail,
-            "phase": "group_loop",
-        })
-
-        groups_processed += 1
-        if max_groups and groups_processed >= max_groups:
-            print(f"[pause] Reached --max-groups {max_groups}.")
-            break
-
-    # Assembly
-    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
-    out_md, deduped = finalize_and_assemble_timestamps(
-        workspace=workspace,
-        all_timestamps=all_timestamps,
-        endpoint=endpoint,
-        model=model,
-        temperature=temperature,
-        block_size=block_size,
-        no_summarizer_pass=no_summarizer_pass,
-        args=args,
-        glossary=glossary,
-    )
-
-    save_state(workspace, {
-        "current_group": num_groups,
-        "total_groups": num_groups,
-        "all_timestamps": deduped,
-        "prev_tail": prev_tail,
-        "phase": "complete",
-    })
-    print(f"\n✅ Group run complete: {out_md}")
-
-# ── Garbled Collector & Whisper Audio Ground Truth ───────────────────────────
-
-def run_garbled_collector(
-    workspace: Path,
-    video_url: Optional[str] = None,
-    whisper_bin: Optional[str] = None,
-    model: Optional[str] = None,
-) -> None:
-    """Run whisper_dispatcher.py to transcribe phonetic ground truth and sync dictionary."""
-    print("\n[garbled] Checking for garbled notes to collect...")
-    raw_dir = workspace / "garbled_notes_raw"
-    notes_json = workspace / "garbled_notes.json"
-
-    # Only run if raw candidates or notes exist
-    has_raw = raw_dir.is_dir() and any(raw_dir.glob("*.txt"))
-    has_notes = notes_json.is_file()
-
-    if not has_raw and not has_notes:
-        print("[garbled] No garbled candidates found in workspace. Skipping whisper.cpp verification.")
-        return
-
-    try:
-        def _load_whisper_dispatcher():
-            import importlib.util
-            target = _SCRIPT_DIR / "whisper_dispatcher.py"
-            if target.is_file():
-                try:
-                    txt = target.read_text(encoding="utf-8", errors="ignore").strip()
-                    if (txt.startswith("..") or txt.startswith(".")) and "\n" not in txt and txt.endswith(".py"):
-                        candidate = (target.parent / txt).resolve()
-                        if candidate.is_file():
-                            target = candidate
-                except Exception:
-                    pass
-            if not target.is_file() or target == _SCRIPT_DIR / "whisper_dispatcher.py":
-                fallback = _SCRIPT_DIR.parent.parent.parent / "scripts" / "whisper_dispatcher.py"
-                if fallback.is_file():
-                    target = fallback
-            if target.is_file():
-                spec = importlib.util.spec_from_file_location("whisper_dispatcher", target)
-                if spec and spec.loader:
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
-                    return mod
-            import whisper_dispatcher
-            return whisper_dispatcher
-
-        wd = _load_whisper_dispatcher()
-        dispatch_verification = wd.dispatch_verification
-
-        print("[garbled] Running whisper_dispatcher.py with local whisper.cpp...")
-        ret = dispatch_verification(
-            workspace=str(workspace),
-            raw_notes_dir=str(raw_dir),
-            video_url=video_url,
-            whisper_bin=whisper_bin,
-            model_bin=model,
-            output_json=str(notes_json),
-            verbose=False,
-        )
-
-        if ret == 0 and notes_json.is_file():
-            print("[garbled] Synchronizing resolved entries to garbled_replacements.json...")
-            dict_script = _SCRIPT_DIR.parent.parent / "cleaning-auto-transcripts" / "scripts" / "update_garbled_dictionary.py"
-            if dict_script.is_file():
-                subprocess.run([
-                    sys.executable,
-                    str(dict_script),
-                    "--from-notes", str(notes_json),
-                    "--workspace", str(workspace),
-                ], check=False)
-            print("✅ Garbled collection & dictionary sync complete.")
-        else:
-            print(f"[garbled] whisper_dispatcher returned status code {ret}.")
-    except Exception as e:
-        print(f"[garbled] Warning: Garbled collector encountered error ({e}).")
-
-# ── Main Controller ──────────────────────────────────────────────────────────
-
-def main() -> None:
-    temp_ap = argparse.ArgumentParser(add_help=False)
-    temp_ap.add_argument("--config", "--env-file", dest="config_file", default=None)
-    temp_args, _ = temp_ap.parse_known_args()
-    if temp_args.config_file:
-        load_config(Path(temp_args.config_file), override=True)
-        reload_config()
-
+def build_argument_parser() -> argparse.ArgumentParser:
+    """Build command line argument parser for local timestamper."""
+    default_multimodal = cfg_bool("multimodal_chunks", True)
     ap = argparse.ArgumentParser(description="P100 Single-GPU Timestamper (Recursive & Group Modes).")
     ap.add_argument("workspace", help="Path to youtube_VIDEOID_workspace directory")
     ap.add_argument("--mode", default="recursive", choices=["recursive", "group"],
@@ -890,136 +151,99 @@ def main() -> None:
     ap.add_argument("--lang", default="th", choices=["th", "en"])
     ap.add_argument("--max-tokens", type=int, default=CHUNK_MAX_TOKENS)
     ap.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
-    ap.add_argument("--group-size", type=int, default=DEFAULT_GROUP_SIZE,
-                    help=f"Chunks per group in --mode group (default {DEFAULT_GROUP_SIZE} = ~16-20 min)")
-    ap.add_argument("--no-summarizer-pass", action="store_true",
-                    help="Disable LLM summarizer pass; use heuristic assembly")
-    ap.add_argument("--byte-cap", action="store_true",
-                    help="Split parts >3500 bytes (single-comment mode)")
-    ap.add_argument("--summarize-only", action="store_true",
-                    help="Skip chunk loop and run summarizer pass on all_timestamps.txt")
+    ap.add_argument("--group-size", type=int, default=DEFAULT_GROUP_SIZE)
+    ap.add_argument("--no-summarizer-pass", action="store_true")
+    ap.add_argument("--byte-cap", action="store_true")
+    ap.add_argument("--summarize-only", action="store_true")
     ap.add_argument("--no-resume", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--max-chunks", type=int, default=None,
-                    help="Max chunks to process in recursive mode")
-    ap.add_argument("--max-groups", type=int, default=None,
-                    help="Max groups to process in group mode")
+    ap.add_argument("--max-chunks", type=int, default=None)
+    ap.add_argument("--max-groups", type=int, default=None)
     ap.add_argument("--block-size", type=int, default=DEFAULT_BLOCK_SIZE)
-    ap.add_argument("--config", "--env-file", dest="config_file", default=None,
-                    help="Path to custom config.json (or legacy .env) file (overrides default skills/anibon-timestamper-local/config.json)")
-    ap.add_argument("--world-identity-dir", default=None,
-                    help="Path to anibon-world-identity/references/ (auto-discovered if omitted)")
-    ap.add_argument("--video-url", default=None,
-                    help="YouTube URL for on-the-fly audio stream slicing in whisper_dispatcher")
-    ap.add_argument("--whisper-bin", default=None,
-                    help="Path to whisper-cli executable (auto-discovered if omitted)")
-    ap.add_argument("--whisper-model", default=None,
-                    help="Path to whisper GGML model binary (auto-discovered if omitted)")
-    ap.add_argument("--no-garbled-collector", action="store_true",
-                    help="Disable automatic garbled collector & whisper.cpp ground truth pass after summary")
-    ap.add_argument("--vision-verify", action="store_true",
-                    help="Inspect video frames with local vision model for ambiguous timestamps before Pass 2 summary")
-    default_multimodal = cfg_bool("multimodal_chunks", True)
-    ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks",
-                    action="store_true", default=default_multimodal,
-                    help=f"Enable multi-image visual ground truth analysis per chunk using Storyboard keyframes (default: {default_multimodal})")
-    ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks",
-                    action="store_false",
-                    help="Disable Storyboard keyframe multimodal analysis and run in text-only mode")
-    ap.add_argument("--eval-batch-size", type=int, default=EVAL_BATCH_SIZE,
-                    help=f"Evaluation batch size ceiling in tokens for multimodal frame budgeting (default: {EVAL_BATCH_SIZE})")
-    ap.add_argument("--max-chunk-frames", type=int, default=None,
-                    help=f"Maximum keyframes per chunk (default: MAX_CHUNK_FRAMES = {MAX_CHUNK_FRAMES} in scene_dedup mode, or 5 in legacy mode)")
-    ap.add_argument("--scene-delta-threshold", type=float, default=SCENE_DELTA_THRESHOLD,
-                    help=f"Visual difference threshold [0.0..1.0] for scene transition detection (default: {SCENE_DELTA_THRESHOLD})")
-    ap.add_argument("--no-scene-dedup", action="store_true",
-                    help="Disable adaptive visual scene deduplication and fall back to legacy fixed 3-5 frame selection")
-    ap.add_argument("--video-file", default=None,
+    ap.add_argument("--config", "--env-file", dest="config_file", default=None)
+    ap.add_argument("--world-identity-dir", default=None)
+    ap.add_argument("--video-url", default=None)
+    ap.add_argument("--whisper-bin", default=None)
+    ap.add_argument("--whisper-model", default=None)
+    ap.add_argument("--no-garbled-collector", action="store_true")
+    ap.add_argument("--vision-verify", action="store_true")
+    ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks", action="store_true", default=default_multimodal)
+    ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks", action="store_false")
+    ap.add_argument("--eval-batch-size", type=int, default=EVAL_BATCH_SIZE)
+    ap.add_argument("--max-chunk-frames", type=int, default=None)
+    ap.add_argument("--scene-delta-threshold", type=float, default=SCENE_DELTA_THRESHOLD)
+    ap.add_argument("--no-scene-dedup", action="store_true")
+    ap.add_argument("--video-file", default=None)
+    ap.add_argument("--vision-model", default=None)
+    ap.add_argument("--no-knowledge-reader", action="store_true")
+    ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"))
+    return ap
 
-                    help="Path to video file for frame extraction (default: <workspace>/video_360p.mp4 or <workspace>/video.mp4)")
 
-    ap.add_argument("--vision-model", default=None,
-                    help="Model name for vision calls (default: same as resolved --model)")
-    ap.add_argument("--no-knowledge-reader", action="store_true",
-                    help="Bypass automated entity glossary discovery and audit")
-    ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"),
-                    help="Bearer API key for remote endpoint (e.g. tokenme.limited)")
-    args = ap.parse_args()
+def _load_raw_timestamps_for_summary(workspace: Path) -> List[str]:
+    """Load existing timestamps file or exit if missing."""
+    raw_ts = workspace / "all_timestamps.txt"
+    if not raw_ts.exists():
+        print(f"ERROR: {raw_ts} not found for --summarize-only", file=sys.stderr)
+        sys.exit(1)
+    return [l.strip() for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
 
+
+def _discover_summary_glossary(workspace: Path, disabled: bool) -> Optional[dict]:
+    """Discover domain glossary for summarize-only run."""
+    if disabled:
+        return None
+    sig_map = _load_signals_from_file(workspace)
+    g_path = run_knowledge_discovery(workspace, sig_map, world_identity_dir=None)
+    if g_path.exists():
+        try:
+            with open(g_path, encoding="utf-8") as gf:
+                return json.load(gf)
+        except Exception:
+            return None
+    return None
+
+
+def _run_summarize_only(workspace: Path, model: str, args: argparse.Namespace) -> None:
+    """Execute Pass 2 summarizer pass on existing raw timestamps."""
+    stamps = _load_raw_timestamps_for_summary(workspace)
+    print(f"[summarize-only] Loaded {len(stamps)} timestamps. Running assembly...")
+
+    glossary = _discover_summary_glossary(workspace, args.no_knowledge_reader)
+    out_md, _ = finalize_and_assemble_timestamps(
+        workspace=workspace, all_timestamps=stamps, endpoint=args.endpoint, model=model,
+        temperature=args.temperature, block_size=args.block_size, no_summarizer_pass=args.no_summarizer_pass,
+        args=args, glossary=glossary,
+    )
+    print(f"✅ Assembly complete: {out_md}")
+
+    if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
+        run_garbled_collector(workspace=workspace, video_url=args.video_url, whisper_bin=args.whisper_bin, model=args.whisper_model)
+    elif not is_youtube_auto_transcript(workspace):
+        print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
+
+
+def _apply_early_config_override() -> None:
+    """Process --config / --env-file before full CLI argument parsing."""
+    temp_ap = argparse.ArgumentParser(add_help=False)
+    temp_ap.add_argument("--config", "--env-file", dest="config_file", default=None)
+    temp_args, _ = temp_ap.parse_known_args()
+    if temp_args.config_file:
+        load_config(Path(temp_args.config_file), override=True)
+        reload_config()
+
+
+def _resolve_runtime_targets(
+    args: argparse.Namespace,
+    workspace: Path,
+) -> Tuple[str, Optional[Path]]:
+    """Resolve model identifier, endpoint, and world identity reference directory."""
     if args.api_key:
         os.environ["TOKENME_API_KEY"] = args.api_key
 
-    workspace = Path(args.workspace)
-    if not workspace.exists():
-        print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
-        sys.exit(1)
-
     args.endpoint = resolve_endpoint(args.endpoint)
     model = resolve_model(args.model, args.endpoint, force=args.force_model)
-    from anibon.parity_gates import ensure_mood_555
-    ensure_mood_555(workspace)
 
-    # ── Summarize-only Shortcut ──────────────────────────────────────────────
-    if args.summarize_only:
-        raw_ts = workspace / "all_timestamps.txt"
-        if not raw_ts.exists():
-            print(f"ERROR: {raw_ts} not found for --summarize-only", file=sys.stderr)
-            sys.exit(1)
-        stamps = [l.strip() for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
-        print(f"[summarize-only] Loaded {len(stamps)} timestamps. Running assembly...")
-        glossary = None
-        if not args.no_knowledge_reader:
-            sig_file = workspace / "signals.json"
-            sig_map = json.loads(sig_file.read_text(encoding="utf-8")) if sig_file.exists() else {}
-            g_path = run_knowledge_discovery(workspace, sig_map, world_identity_dir=None)
-            if g_path.exists():
-                try:
-                    with open(g_path, encoding="utf-8") as gf:
-                        glossary = json.load(gf)
-                except Exception:
-                    pass
-        out_md, deduped = finalize_and_assemble_timestamps(
-            workspace=workspace,
-            all_timestamps=stamps,
-            endpoint=args.endpoint,
-            model=model,
-            temperature=args.temperature,
-            block_size=args.block_size,
-            no_summarizer_pass=args.no_summarizer_pass,
-            args=args,
-            glossary=glossary,
-        )
-        print(f"✅ Assembly complete: {out_md}")
-
-        from anibon.transcript_source import is_youtube_auto_transcript
-        if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
-            run_garbled_collector(
-                workspace=workspace,
-                video_url=args.video_url,
-                whisper_bin=args.whisper_bin,
-                model=args.whisper_model,
-            )
-        elif not is_youtube_auto_transcript(workspace):
-            print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
-        return
-
-    try:
-        chunk_files = discover_chunks(workspace)
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    total_chunks = len(chunk_files)
-    print(f"[init] workspace   : {workspace}")
-    print(f"[init] model       : {model}")
-    print(f"[init] endpoint    : {args.endpoint}")
-    print(f"[init] mode        : {args.mode}")
-    print(f"[init] multimodal  : {'enabled' if getattr(args, 'multimodal_chunks', False) else 'disabled (text-only)'}")
-    print(f"[init] total chunks: {total_chunks}")
-
-    print(f"[init] lang        : {args.lang}")
-
-    # Resolve world identity references directory
     world_identity_dir: Optional[Path] = (
         Path(args.world_identity_dir) if args.world_identity_dir else WORLD_IDENTITY_DIR
     )
@@ -1029,39 +253,55 @@ def main() -> None:
         world_identity_dir = None
         print("[init] world-id    : not found (world identity context disabled)")
 
-    if args.dry_run:
-        print(f"[dry-run] Discovered {total_chunks} chunks.")
-        return
+    return model, world_identity_dir
 
-    # ── Signal & Knowledge Detection ─────────────────────────────────────────
+
+def _discover_workspace_chunks(workspace: Path) -> List[Path]:
+    """Discover available transcript chunk files or exit gracefully."""
+    try:
+        return discover_chunks(workspace)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _load_or_detect_signals(workspace: Path) -> dict:
+    """Load existing workspace signals or trigger fresh detection."""
     signals_file = workspace / "signals.json"
     if not signals_file.exists():
         print("[signals] Detecting domain signals...")
-        signals_map = detect_signals_for_chunks(workspace)
-    else:
-        try:
-            with open(signals_file, encoding="utf-8") as f:
-                signals_map = json.load(f)
-        except Exception:
-            signals_map = detect_signals_for_chunks(workspace)
+        return detect_signals_for_chunks(workspace)
+    try:
+        with open(signals_file, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return detect_signals_for_chunks(workspace)
 
-    # ── Stage 0.5: Domain Knowledge Discovery & Entity Glossary ───────────────
-    glossary = {}
-    if not args.no_knowledge_reader:
-        glossary_path = run_knowledge_discovery(workspace, signals_map, world_identity_dir)
-        try:
-            with open(glossary_path, encoding="utf-8") as f:
-                glossary = json.load(f)
-        except Exception:
-            glossary = {}
 
-    # ── Transcript Source Detection & Garbled Configuration ──────────────────
-    from anibon.transcript_source import is_youtube_auto_transcript, detect_transcript_source
+def _load_or_discover_glossary(
+    workspace: Path,
+    signals_map: dict,
+    world_identity_dir: Optional[Path],
+    disabled: bool,
+) -> dict:
+    """Generate or read entity glossary unless explicitly disabled."""
+    if disabled:
+        return {}
+    glossary_path = run_knowledge_discovery(workspace, signals_map, world_identity_dir)
+    try:
+        with open(glossary_path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _prepare_transcript_mappings(workspace: Path) -> Tuple[list, list, bool]:
+    """Detect transcript source and prepare phonetic mappings and garbled dictionaries."""
     is_yt_auto = is_youtube_auto_transcript(workspace)
     src_label = detect_transcript_source(workspace)
 
     if is_yt_auto:
-        print(f"[transcript] Source: YouTube Auto-Transcript -> Enabling Garbled replacements & collector.")
+        print("[transcript] Source: YouTube Auto-Transcript -> Enabling Garbled replacements & collector.")
         garbled = load_garbled_replacements()
     else:
         print(f"[transcript] Source: {src_label.capitalize()}/clean transcript -> Skipping Garbled replacements & collector.")
@@ -1072,58 +312,106 @@ def main() -> None:
         print(f"[knowledge] Loaded {len(garbled)} garbled replacement entries (garbled_replacements.json)")
     if mappings:
         print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings (default_mappings.json)")
-    mappings = garbled + mappings  # garbled first = higher priority
 
-    # ── Execution Branching ──────────────────────────────────────────────────
+    return garbled + mappings, garbled, is_yt_auto
+
+
+def _print_run_header(
+    workspace: Path,
+    model: str,
+    endpoint: str,
+    mode: str,
+    multimodal: bool,
+    total_chunks: int,
+    lang: str,
+) -> None:
+    """Print initialization status header."""
+    print(f"[init] workspace   : {workspace}")
+    print(f"[init] model       : {model}")
+    print(f"[init] endpoint    : {endpoint}")
+    print(f"[init] mode        : {mode}")
+    print(f"[init] multimodal  : {'enabled' if multimodal else 'disabled (text-only)'}")
+    print(f"[init] total chunks: {total_chunks}")
+    print(f"[init] lang        : {lang}")
+
+
+def _dispatch_pipeline_mode(
+    args: argparse.Namespace,
+    workspace: Path,
+    model: str,
+    chunk_files: List[Path],
+    signals_map: dict,
+    mappings: list,
+    world_identity_dir: Optional[Path],
+    glossary: dict,
+) -> None:
+    """Route execution to recursive or group runner mode."""
     if args.mode == "recursive":
         run_recursive_mode(
-            workspace=workspace,
-            chunk_files=chunk_files,
-            endpoint=args.endpoint,
-            model=model,
-            lang=args.lang,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            signals_map=signals_map,
-            mappings=mappings,
-            no_resume=args.no_resume,
-            max_chunks=args.max_chunks,
-            no_summarizer_pass=args.no_summarizer_pass,
-            block_size=args.block_size,
-            world_identity_dir=world_identity_dir,
-            args=args,
-            glossary=glossary,
+            workspace=workspace, chunk_files=chunk_files, endpoint=args.endpoint, model=model,
+            lang=args.lang, max_tokens=args.max_tokens, temperature=args.temperature,
+            signals_map=signals_map, mappings=mappings, no_resume=args.no_resume,
+            max_chunks=args.max_chunks, no_summarizer_pass=args.no_summarizer_pass,
+            block_size=args.block_size, world_identity_dir=world_identity_dir, args=args, glossary=glossary,
         )
     else:
         run_group_mode(
-            workspace=workspace,
-            chunk_files=chunk_files,
-            endpoint=args.endpoint,
-            model=model,
-            lang=args.lang,
-            max_tokens=args.max_tokens,
-            temperature=args.temperature,
-            group_size=args.group_size,
-            signals_map=signals_map,
-            mappings=mappings,
-            no_resume=args.no_resume,
-            max_groups=args.max_groups,
-            no_summarizer_pass=args.no_summarizer_pass,
-            block_size=args.block_size,
-            world_identity_dir=world_identity_dir,
-            args=args,
-            glossary=glossary,
+            workspace=workspace, chunk_files=chunk_files, endpoint=args.endpoint, model=model,
+            lang=args.lang, max_tokens=args.max_tokens, temperature=args.temperature,
+            group_size=args.group_size, signals_map=signals_map, mappings=mappings,
+            no_resume=args.no_resume, max_groups=args.max_groups, no_summarizer_pass=args.no_summarizer_pass,
+            block_size=args.block_size, world_identity_dir=world_identity_dir, args=args, glossary=glossary,
         )
 
+
+def _finalize_garbled_collector(workspace: Path, args: argparse.Namespace, is_yt_auto: bool) -> None:
+    """Run whisper audio verification if running on YouTube auto-transcript."""
     if is_yt_auto and not args.no_garbled_collector:
         run_garbled_collector(
-            workspace=workspace,
-            video_url=args.video_url,
-            whisper_bin=args.whisper_bin,
-            model=args.whisper_model,
+            workspace=workspace, video_url=args.video_url,
+            whisper_bin=args.whisper_bin, model=args.whisper_model,
         )
     elif not is_yt_auto:
         print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
+
+
+def main() -> None:
+    """Main CLI entry point for local timestamp runner."""
+    _apply_early_config_override()
+
+    ap = build_argument_parser()
+    args = ap.parse_args()
+
+    workspace = Path(args.workspace)
+    if not workspace.exists():
+        print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
+        sys.exit(1)
+
+    model, world_identity_dir = _resolve_runtime_targets(args, workspace)
+    ensure_mood_555(workspace)
+
+    if args.summarize_only:
+        _run_summarize_only(workspace, model, args)
+        return
+
+    chunk_files = _discover_workspace_chunks(workspace)
+    _print_run_header(
+        workspace, model, args.endpoint, args.mode,
+        getattr(args, "multimodal_chunks", False), len(chunk_files), args.lang
+    )
+
+    if args.dry_run:
+        print(f"[dry-run] Discovered {len(chunk_files)} chunks.")
+        return
+
+    signals_map = _load_or_detect_signals(workspace)
+    glossary = _load_or_discover_glossary(workspace, signals_map, world_identity_dir, args.no_knowledge_reader)
+    mappings, _, is_yt_auto = _prepare_transcript_mappings(workspace)
+
+    _dispatch_pipeline_mode(
+        args, workspace, model, chunk_files, signals_map, mappings, world_identity_dir, glossary
+    )
+    _finalize_garbled_collector(workspace, args, is_yt_auto)
 
 
 if __name__ == "__main__":

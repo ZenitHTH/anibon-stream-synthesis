@@ -47,7 +47,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of front-tier models, making them prone to phonetic guessing and hallucinated English titles. `anibon-timestamper-local` implements a deterministic 4-layer defense pipeline:
 
-1. **Layer 1: Two-Stage Signal Detection & Chaining Weights (`signal_detector.py`)**
+1. **Layer 1: Two-Stage Signal Detection & Chaining Weights (`signal_detector.py` / `lib/anibon/signal_detector.py`)**
    - **Stage 1 (Game Domain Identification)**:
      - Ingests video title, description, and tags from `info.json` via `extract_metadata_signals()`.
      - Dynamically discovers all reference markdown games in `anibon-world-identity/references/*.md` via `discover_reference_games()`.
