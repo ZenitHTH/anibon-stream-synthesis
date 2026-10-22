@@ -8,7 +8,7 @@ Supports:
 """
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Set
 
 from anibon.time import fmt_ts
 from anibon.timestamps import TAGS
@@ -90,10 +90,57 @@ def load_world_identity_context(
     return f"## WORLD IDENTITY REFERENCE: {candidate.stem}\n{snippet}{extra}"
 
 
+def build_candidate_weights_block(signal: Optional[dict]) -> str:
+    """Format Stage-1 candidate game weights, matched special words, and standing-word guards."""
+    if not signal:
+        return ""
+
+    candidates = signal.get("candidates", [])
+    special_kws = signal.get("special_keywords", [])
+    standing_kws = signal.get("standing_keywords", [])
+
+    lines = ["## CANDIDATE DOMAIN WEIGHTS (STAGE 1 SIGNAL DETECTION)"]
+
+    if candidates:
+        lines.append("Active candidate games ranked by temporal chaining weight:")
+        for cand in candidates[:3]:
+            file_name = cand.get("file", "")
+            topic = cand.get("topic")
+            if not topic:
+                stem = Path(file_name).stem if file_name else "Unknown"
+                topic = stem.replace("-", " ").replace("_", " ").title()
+            w = cand.get("weight", 0.0)
+            prob_pct = int(round(cand.get("prob", 0.0) * 100))
+            kws = cand.get("keywords") or special_kws
+            kw_str = f" [matched special words: {', '.join(kws)}]" if kws else ""
+            lines.append(f"- {topic}: weight={w} ({prob_pct}%){kw_str}")
+    elif signal.get("primary_topic"):
+        lines.append(f"- {signal['primary_topic']}: confidence={int(round(signal.get('confidence', 0.0)*100))}%")
+
+    if special_kws and not any("matched special words" in l for l in lines):
+        lines.append(f"- Detected Special Words: {', '.join(special_kws)}")
+
+    lines.append("")
+    lines.append("### GENERIC GAMING STANDING WORDS & COMMON NAMES GUARD")
+    lines.append(
+        "1. Standing Dupe Codes & Generic Terms:\n"
+        "   - Terms like E0-E6, C0-C6, S0-S6, R1-R5, M0-M6, 'กาชา', 'ตู้', 'หลุดเรท', 'เกลือ', 'บอส', 'ดาเมจ', 'parry', 'solo'\n"
+        "     are universal gamer vocabulary. NEVER infer a game (e.g. Zenless Zone Zero, Wuthering Waves) based solely on these codes!\n"
+        "2. Common Character Given Names:\n"
+        "   - Shared names (e.g. Yuki, Rin, Mika, Yvonne, Lucy, Alice, Kuro, Emma) belong to multiple anime/games.\n"
+        "     Strictly adhere to the dominant candidate game above and the VERIFIED DOMAIN ENTITIES table below."
+    )
+    if standing_kws:
+        lines.append(f"   - (Detected in this chunk: {', '.join(standing_kws)})")
+
+    return "\n".join(lines)
+
+
 def build_chunk_entity_context(
     chunk_text: str,
     glossary: Optional[dict] = None,
     max_tokens: int = ENTITY_CONTEXT_MAX_TOKENS,
+    allowed_sources: Optional[Set[str]] = None,
 ) -> str:
     """Filter entity glossary to entities relevant to the current chunk text.
 
@@ -111,6 +158,13 @@ def build_chunk_entity_context(
     for name, meta in glossary.items():
         if not isinstance(meta, dict):
             continue
+
+        if allowed_sources is not None:
+            source_file = meta.get("source_file") or meta.get("file")
+            if source_file:
+                source_name = Path(source_file).name
+                if source_name not in allowed_sources and source_file not in allowed_sources:
+                    continue
 
         en = str(meta.get("en") or (name if not re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
         th = str(meta.get("th") or (name if re.search(r"[\u0E00-\u0E7F]", name) else "")).strip()
@@ -141,17 +195,18 @@ def build_chunk_entity_context(
                 break
 
     # Also resolve JIT domain entities (phonetic bridge + SQLite)
-    try:
-        from anibon.domain_db import resolve_entities_for_chunk
-        jit_entities = resolve_entities_for_chunk(chunk_text, max_entities=10)
-        for entity_label in jit_entities:
-            if entity_label not in seen:
-                seen.add(entity_label)
-                matched_lines.append(f"- {entity_label}")
-                if len(matched_lines) >= 15:
-                    break
-    except Exception:
-        pass
+    if allowed_sources is None or any(db_game in s.lower() for s in allowed_sources for db_game in ("fgo", "fate", "pokemon", "ygo", "yu-gi-oh")):
+        try:
+            from anibon.domain_db import resolve_entities_for_chunk
+            jit_entities = resolve_entities_for_chunk(chunk_text, max_entities=10)
+            for entity_label in jit_entities:
+                if entity_label not in seen:
+                    seen.add(entity_label)
+                    matched_lines.append(f"- {entity_label}")
+                    if len(matched_lines) >= 15:
+                        break
+        except Exception:
+            pass
 
     if not matched_lines:
         return ""
@@ -201,10 +256,24 @@ def build_recursive_prompt(
     tags_list = "  ".join(all_tags)
 
     domain_section = f"{domain_block}\n" if domain_block else ""
+    candidate_weights_block = build_candidate_weights_block(signal)
+    candidate_weights_section = f"{candidate_weights_block}\n\n" if candidate_weights_block else ""
     world_identity_section = f"{world_identity_ref}\n" if world_identity_ref else ""
 
+    allowed_sources = None
+    if signal:
+        allowed = set()
+        for cand in signal.get("candidates", []):
+            f = cand.get("file")
+            if f:
+                allowed.add(Path(f).name)
+        if signal.get("best_file"):
+            allowed.add(Path(signal["best_file"]).name)
+        if allowed:
+            allowed_sources = allowed
+
     if not entity_context and glossary:
-        entity_context = build_chunk_entity_context(transcript_block, glossary)
+        entity_context = build_chunk_entity_context(transcript_block, glossary, allowed_sources=allowed_sources)
     entity_section = f"{entity_context}\n" if entity_context else ""
 
     context_extras = []
@@ -245,7 +314,7 @@ Recent Focus: {rolling_summary}
     prompt = f"""\
 You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
 
-{topic_section}{context_block}{domain_section}{world_identity_section}{entity_section}
+{topic_section}{context_block}{domain_section}{candidate_weights_section}{world_identity_section}{entity_section}
 ## YOUR TASK
 Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to the Previous Topic State above.
 
@@ -270,9 +339,9 @@ Rules:
      If Pu Boat only mentions something briefly in passing without deep-dive discussion, you MUST IGNORE IT or output [].
    - Tags: {tags_list} (Strictly use allowed tags).
    - First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
-   - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. Wuthering Waves, Zelda, Bleach). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
+   - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
    - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
-   - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
+   - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts or mishearing (e.g. "บัวใคร" = Blue Archive). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
    - STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต'
    - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
    - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
@@ -386,14 +455,29 @@ def build_group_prompt(
     wi_ref = load_world_identity_context(best_group_signal, world_identity_dir)
     world_identity_section = f"{wi_ref}\n" if wi_ref else ""
 
-    entity_ctx = build_chunk_entity_context(full_group_transcript, glossary) if glossary else ""
+    cand_weights_block = build_candidate_weights_block(best_group_signal)
+    candidate_weights_section = f"{cand_weights_block}\n\n" if cand_weights_block else ""
+
+    allowed_sources = None
+    if best_group_signal:
+        allowed = set()
+        for cand in best_group_signal.get("candidates", []):
+            f = cand.get("file")
+            if f:
+                allowed.add(Path(f).name)
+        if best_group_signal.get("best_file"):
+            allowed.add(Path(best_group_signal["best_file"]).name)
+        if allowed:
+            allowed_sources = allowed
+
+    entity_ctx = build_chunk_entity_context(full_group_transcript, glossary, allowed_sources=allowed_sources) if glossary else ""
     entity_section = f"{entity_ctx}\n" if entity_ctx else ""
 
     prompt = f"""\
 You are an expert timestamper processing Group {group_idx} (chunks {chunks[0].get('_idx', 0):02d} to {chunks[-1].get('_idx', 0):02d}) of a Thai livestream by Pu Boat (Anibon Official).
 Group Time Range: {group_start} - {group_end} (~{len(chunks)*4} minutes)
 
-{prev_section}{domain_guidance}{world_identity_section}{entity_section}
+{prev_section}{domain_guidance}{candidate_weights_section}{world_identity_section}{entity_section}
 ## YOUR TASK
 
 Read the entire group transcript. Output 2 to 4 notable timestamps for major topics or moments in this group.
@@ -411,9 +495,9 @@ Rules:
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
   * STRICT PASSING MENTIONS FILTER: Do NOT stamp brief passing remarks or 1-3 sentence off-hand mentions where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. reading a chat comment, casual mentions of other games/consoles, fleeting remarks). Timestamp ONLY when speaker actively dwells and analyzes the topic for >1-2 minutes or several paragraphs.
   * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.
-- PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. Wuthering Waves, Zelda, Bleach). Never use vague pronouns ("เกมนี้", "คนนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
+- PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "คนนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
 - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
-- ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts (e.g. "บัวใคร" = Blue Archive, "Wing Wave" = Wuthering Waves). If unsure or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
+- ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts or mishearing (e.g. "บัวใคร" = Blue Archive). If unsure or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
 - STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต'
 - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
 - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ

@@ -103,6 +103,44 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("ห้ามสะกดว่า 'ปู่บอท'", rec_prompt)
         self.assertIn("ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการ", rec_prompt)
 
+    def test_build_recursive_prompt_injects_candidate_weights_and_standing_word_guard(self):
+        chunk = {
+            "_idx": 17,
+            "items": [{"timestamp": "01:16:36", "start": 4596.0, "text": "ตัวใหม่ C5 เปิดพเนอร์ รอซึวสึ E2"}]
+        }
+        signal = {
+            "best_file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md",
+            "primary_topic": "Chaos Zero Nightmare",
+            "confidence": 0.91,
+            "special_keywords": ["พเนอร์", "รอซึวสึ"],
+            "standing_keywords": ["c5", "e2"],
+            "candidates": [
+                {"file": "Chaos_Zero_Nightmare.md", "topic": "Chaos Zero Nightmare", "weight": 34.2, "prob": 0.91, "keywords": ["พเนอร์", "รอซึวสึ"]},
+            ],
+        }
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="เล่น Chaos Zero Nightmare",
+            rolling_summary="ปู่โบ๊ตเปิดกาชา",
+            lang="th",
+            signal=signal,
+        )
+        self.assertIn("CANDIDATE DOMAIN WEIGHTS", prompt)
+        self.assertIn("Chaos Zero Nightmare: weight=34.2 (91%)", prompt)
+        self.assertIn("พเนอร์, รอซึวสึ", prompt)
+        self.assertIn("GENERIC GAMING STANDING WORDS", prompt)
+        self.assertNotIn("e.g. Wuthering Waves", prompt)
+
+    def test_build_chunk_entity_context_filters_by_allowed_sources(self):
+        glossary = {
+            "Yuki": {"th": "ยูกิ", "role": "Striker", "source_file": "Chaos_Zero_Nightmare.md"},
+            "Hoshino": {"th": "โฮชิโนะ", "role": "Tank", "source_file": "Blue_Archive.md"},
+        }
+        ctx = build_chunk_entity_context("ยูกิ กับ โฮชิโนะ", glossary, allowed_sources={"Chaos_Zero_Nightmare.md"})
+        self.assertIn("Yuki", ctx)
+        self.assertNotIn("Hoshino", ctx)
+
+
 
 if __name__ == "__main__":
     unittest.main()
