@@ -346,8 +346,8 @@ def extract_chunk_text(path: Path) -> tuple[int, str]:
     return start_sec, clean_text
 
 
-def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = None) -> dict:
-    """Run corpus-level TF-IDF signal detection on workspace chunks and return signals map."""
+def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = None, chain_decay: float = 0.88) -> dict:
+    """Run corpus-level TF-IDF signal detection with forward chaining weights on workspace chunks."""
     entries = load_knowledge(knowledge_path) or {}
 
     # Merge dynamically discovered game references
@@ -358,6 +358,21 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
 
     if not entries:
         return {}
+
+    # Stage 1: Prune blocked tokens, common character names, and generic standing words from entries
+    stage1_blocked = (
+        COMMON_CHARACTER_NAMES_BLACKLIST |
+        AMBIGUOUS_SINGLE_TOKENS |
+        GENERIC_GAMING_STANDING_WORDS |
+        {"fate", "เฟท", "servant", "nexon", "เน็กซอน"}
+    )
+    pruned_entries = {}
+    for kw, meta in entries.items():
+        kw_l = kw.lower()
+        if kw_l in stage1_blocked or any(kw_l == b.lower() for b in stage1_blocked):
+            continue
+        pruned_entries[kw] = meta
+    entries = pruned_entries
 
     chunks_dir = workspace / "chunks"
     if not chunks_dir.exists():
@@ -380,24 +395,27 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
     if not chunk_files:
         return {}
 
-    # Extract text from all chunks
+    # Extract text from all chunks and filter standing gaming words
     loaded_chunks = []
     for cf in chunk_files:
         start_sec, raw_text = extract_chunk_text(cf)
+        filtered_text, standing_kws = filter_standing_gaming_words(raw_text.lower())
         loaded_chunks.append({
             "id": cf.stem,
             "path": cf,
             "start_sec": start_sec,
-            "text": raw_text.lower(),
+            "raw_text": raw_text.lower(),
+            "filtered_text": filtered_text,
+            "standing_kws": standing_kws,
         })
 
     n_chunks = len(loaded_chunks)
 
-    # 1. Compute Document Frequency (df) for each keyword in knowledge.json
+    # 1. Compute Document Frequency (df) on filtered chunk text
     df_counts = {}
     for kw in entries:
         kw_l = kw.lower()
-        count = sum(1 for c in loaded_chunks if kw_l in c["text"])
+        count = sum(1 for c in loaded_chunks if kw_l in c["filtered_text"])
         if count > 0:
             df_counts[kw_l] = count
 
@@ -406,16 +424,28 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
     for kw_l, df in df_counts.items():
         idf_weights[kw_l] = math.log((n_chunks + 1.0) / (df + 0.5)) + 1.0
 
-    # 3. Score each chunk
+    # 3. Seed initial chained game weights from stream metadata signals (* 15.0)
+    specific_kinds = {"game", "tokusatsu", "anime", "event", "publisher", "bookstore", "vlog_theme"}
+    chained_game_weights: dict[str, float] = {}
+    for mkw, mscore in meta_signals.items():
+        mkw_l = mkw.lower()
+        for ekw, emeta in entries.items():
+            if ekw.lower() == mkw_l and emeta.get("file"):
+                if emeta.get("kind") in specific_kinds:
+                    f_ref = emeta["file"]
+                    chained_game_weights[f_ref] = chained_game_weights.get(f_ref, 0.0) + mscore * 15.0
+
+    # 4. Score each chunk sequentially with forward chaining weight
     signals = {}
+
     for c in loaded_chunks:
         cid = c["id"]
-        text = c["text"]
+        text = c["filtered_text"]
+        standing_kws = c["standing_kws"]
 
-        matched_files = {}
-        file_kinds = {}
-        kind_weighted = {}
+        raw_specific_scores: dict[str, float] = {}
         matched_keywords = {}
+        special_keywords = []
 
         for kw, meta in entries.items():
             kw_l = kw.lower()
@@ -433,29 +463,35 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
                     "weight": round(weight, 4),
                 }
 
-                if file_ref:
-                    matched_files[file_ref] = matched_files.get(file_ref, 0.0) + score
-                    file_kinds.setdefault(file_ref, set()).add(kind)
-                kind_weighted[kind] = kind_weighted.get(kind, 0.0) + score
+                if file_ref and kind in specific_kinds:
+                    raw_specific_scores[file_ref] = raw_specific_scores.get(file_ref, 0.0) + score
+                    special_keywords.append(kw)
 
-        # Rank files: prioritize specific content (game, tokusatsu, anime, etc.) over generic stream_type
-        specific_kinds = {"game", "tokusatsu", "anime", "event", "publisher", "bookstore", "vlog_theme"}
+        # Update chained weights across chunks
+        all_candidate_files = set(chained_game_weights.keys()) | set(raw_specific_scores.keys())
+        for f in all_candidate_files:
+            prev = chained_game_weights.get(f, 0.0)
+            current_score = raw_specific_scores.get(f, 0.0)
+            chained_game_weights[f] = chain_decay * prev + current_score
 
-        def file_rank_key(item):
-            f = item["file"]
-            kinds = file_kinds.get(f, set())
-            is_specific = 1 if (kinds & specific_kinds) and "stream_type" not in kinds else 0
-            return (is_specific, item["score"])
+        # Filter active candidates
+        active_candidates = [
+            (f, w) for f, w in chained_game_weights.items() if w > 0.01
+        ]
+        sorted_candidates = sorted(active_candidates, key=lambda x: x[1], reverse=True)
+        total_active_weight = sum(w for _, w in sorted_candidates)
 
-        sorted_files = sorted(
-            [{"file": f, "score": round(s, 4)} for f, s in matched_files.items()],
-            key=file_rank_key,
-            reverse=True
-        )
+        candidates = []
+        for f, w in sorted_candidates:
+            prob = (w / total_active_weight) if total_active_weight > 0 else 0.0
+            candidates.append({
+                "file": f,
+                "weight": round(w, 4),
+                "prob": round(prob, 4),
+            })
 
-        best_file = sorted_files[0]["file"] if sorted_files else None
-        total_score = sum(matched_files.values())
-        confidence = (sorted_files[0]["score"] / total_score) if sorted_files and total_score > 0 else 0.0
+        best_file = candidates[0]["file"] if candidates else None
+        confidence = candidates[0]["prob"] if candidates else 0.0
 
         primary_topic = "General Livestream"
         if best_file:
@@ -468,30 +504,11 @@ def detect_signals_for_chunks(workspace: Path, knowledge_path: Optional[Path] = 
             "best_file": best_file,
             "confidence": round(confidence, 4),
             "matched_keywords": matched_keywords,
-            "weighted_files": sorted_files[:3],
+            "special_keywords": special_keywords,
+            "standing_keywords": standing_kws,
+            "candidates": candidates[:5],
+            "weighted_files": [{"file": c_item["file"], "score": c_item["weight"]} for c_item in candidates[:3]],
         }
-
-    # Stream-level anchor: chunks with no game match inherit the stream's dominant game,
-    # so gameplay chunks without spoken title keywords still get the right reference.
-    game_totals = {}
-    for kw, meta in entries.items():
-        if meta.get("kind") == "game" and meta.get("file"):
-            kw_l = kw.lower()
-            game_totals[meta["file"]] = game_totals.get(meta["file"], 0.0) + meta_signals.get(kw_l, 0.0) * 10
-    for s in signals.values():
-        for m in s["matched_keywords"].values():
-            if m["kind"] == "game" and m["file"]:
-                game_totals[m["file"]] = game_totals.get(m["file"], 0.0) + m["count"] * m["weight"]
-    dominant = max(game_totals, key=game_totals.get) if game_totals else None
-    if dominant and game_totals[dominant] >= 0.4 * sum(game_totals.values()):
-        for s in signals.values():
-            # A single passing mention ("ยูกิ x1", "fgo x1") must not override the stream's game.
-            has_game = any(m["kind"] == "game" and (m["count"] >= 3 or m["file"] == dominant)
-                           for m in s["matched_keywords"].values())
-            if not has_game:
-                s["best_file"] = dominant
-                s["primary_topic"] = Path(dominant).stem.replace("_", " ") + " (stream anchor)"
-                s["weighted_files"] = [{"file": dominant, "score": 0.0}] + s["weighted_files"][:2]
 
     # Save to workspace/signals.json
     out_path = workspace / "signals.json"

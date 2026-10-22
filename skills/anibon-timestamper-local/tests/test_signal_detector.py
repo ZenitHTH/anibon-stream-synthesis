@@ -84,6 +84,42 @@ class TestSignalDetector(unittest.TestCase):
             self.assertIn("zenless_zone_zero", discovered["bangboo"].lower())
             self.assertIn("blue_archive", discovered["kivotos"].lower())
 
+    def test_chaining_weight_ignores_common_japanese_names_and_standing_dupe_codes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "info.json").write_text(json.dumps({
+                "title": "1 ปีแล้ว ของ ฝันร้าย",
+                "description": "เล่น Chaos Zero Nightmare",
+                "tags": ["CZN"]
+            }, ensure_ascii=False), encoding="utf-8")
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text("สวัสดีครับ วันนี้มาเล่น Chaos Zero Nightmare ครบรอบ 1 ปี", encoding="utf-8")
+            (chunks / "chunk_01.txt").write_text("เปิดกาชา ได้ยูกิ E3 ได้ริน ได้มิกะ C5 E6 S1 เกลือมาก ตีบอส", encoding="utf-8")
+            (chunks / "chunk_02.txt").write_text("อัปเกรดพเนอร์ รอซึวสึ โอเมก้าโค้ด เมมโมรี่แฟรกเมนต์", encoding="utf-8")
+
+            signals = detect_signals_for_chunks(ws)
+            self.assertIn("chaos_zero_nightmare", signals["chunk_01"]["best_file"].lower())
+            self.assertNotIn("ยูกิ", signals["chunk_01"]["matched_keywords"])
+            self.assertIn("e6", signals["chunk_01"]["standing_keywords"])
+            self.assertIn("chaos_zero_nightmare", signals["chunk_02"]["best_file"].lower())
+            self.assertIn("รอซึวสึ", signals["chunk_02"]["special_keywords"])
+            self.assertGreater(signals["chunk_02"]["candidates"][0]["prob"], 0.85)
+
+    def test_chaining_weight_switches_on_sustained_new_game_special_words(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text("เล่น Chaos Zero Nightmare ตีบอส เคอส", encoding="utf-8")
+            (chunks / "chunk_01.txt").write_text("เปลี่ยนเกมมาเล่น Deadlock กับ Vindicta และ Grey Talon ใน Deadlock", encoding="utf-8")
+            (chunks / "chunk_02.txt").write_text("Deadlock ตานี้ Bebop เก็บไหวิญญาณสวยมาก เล่น Deadlock ยาวๆ", encoding="utf-8")
+
+            signals = detect_signals_for_chunks(ws)
+            self.assertIn("chaos_zero_nightmare", signals["chunk_00"]["best_file"].lower())
+            self.assertIn("deadlock", signals["chunk_02"]["best_file"].lower())
+
+
 
 
 if __name__ == "__main__":
