@@ -47,10 +47,17 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of front-tier models, making them prone to phonetic guessing and hallucinated English titles. `anibon-timestamper-local` implements a deterministic 4-layer defense pipeline:
 
-1. **Layer 1: Metadata & Title Signal Ingestion (`signal_detector.py`)**
-   - Ingests video title, description, and tags from `info.json` via `extract_metadata_signals()`.
-   - Dynamically discovers all reference markdown games in `anibon-world-identity/references/*.md` via `discover_reference_games()`.
-   - Anchors stream context before inference to prevent misidentifying specific games as generic categories.
+1. **Layer 1: Two-Stage Signal Detection & Chaining Weights (`signal_detector.py`)**
+   - **Stage 1 (Game Domain Identification)**:
+     - Ingests video title, description, and tags from `info.json` via `extract_metadata_signals()`.
+     - Dynamically discovers all reference markdown games in `anibon-world-identity/references/*.md` via `discover_reference_games()`.
+     - Detects game presence via exclusive special words and title signals with chaining weights across sequential chunks.
+     - Strips common Japanese character names (*Yuki*, *Rin*, *Ren*) and generic gaming standing words (*E*, *C*, *AP*, *FTK*, *E6*, *Preset*) from triggering false game candidates.
+     - Decays candidate probabilities across chunks to preserve ongoing gameplay context while discarding weak tail noise (`prob < 0.15`).
+   - **Stage 2 (Entity Scoping via `allowed_sources`)**:
+     - Scopes entity glossary queries and prompt context strictly to `allowed_sources` returned from Stage 1 candidates.
+   - **Zero-Example Prompt Discipline**:
+     - Prompt templates and few-shot examples must NEVER hardcode real game titles (*Wuthering Waves*, *Zelda*, *Bleach*) as static text; use abstract token placeholders (`<Game_A>`, `<Character_X>`) to prevent local models (e.g. Gemma 4 12B) from latching onto them as hallucinations.
 
 2. **Layer 2: Pre-Inference Buffer Normalization & Scrubbing (`state.py`)**
    - Automatically scrubs ASR speaker drift (`ปู่บอท`, `ลุงบอท`, `ปู่โบต` → `ปู่โบ๊ต`) during chunk loading in `load_chunk_file()`.

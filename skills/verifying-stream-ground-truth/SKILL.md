@@ -42,6 +42,10 @@ flowchart TD
    - **Action:** Extract the targeted frame via `slice_stream_frame.py` or inspect storyboard frames, ground what is literally depicted (e.g. *"สาวไซเบอร์ผมขาว ยืนคู่บุคคลในชุดสูท"*), and clearly frame the streamer's reaction as a roast under `[Reaction]`.
 7. **WatchParty / Showcase Chapter Misattribution**: Streamer reads English event, chapter, or expansion titles phonetically or in colloquial Thai (e.g. *"Promise of Snow คำสัญญาแห่งดินแดนหิมะ"*).
    - **Iron Rule:** When the streamer is watchpartying/reacting to an official stream or showcase, inspect on-screen video player title, channel badge, and lower-third banners. Never hallucinate a brand-new standalone game or franchise when the on-screen content is an update, season, or expansion of the primary game being showcased (e.g. *Chaos Zero Nightmare Season 2 "A Promise Upon the Snow"*).
+8. **LiveChat Entity Fusion (Character-to-Game Hallucination)**:
+   - **Symptom**: Model generates titles like `ในเกม [ชื่อตัวละคร]` (e.g. `ในเกม Tenebria`).
+   - **Mechanism**: A viewer asks a question in LiveChat (e.g. `หลุด Tenebria เก่งไหม`) while the streamer is discussing an in-game feature (e.g. card skins, deck building). The LLM fuses the character name with the feature to invent a non-existent game title.
+   - **Iron Rule**: Never convert viewer inquiries about character names in chat into standalone game titles. Always cross-reference the on-screen game title or HUD. Tenebria is a character, not a game.
 
 ### When NOT to Use:
 - Static podcast/radio segments where the streamer merely chats over a static background image or webcam.
@@ -105,6 +109,20 @@ Streamers often misread Japanese kanji units on the fly when sleep-deprived:
 | **万 (man)** | 10,000 | 1 หมื่น (หมื่น) | Reads `3500万` as *"3,500 ล้าน"* or *"3 หมื่นล้าน"* | `3,500 × 10,000` = **35,000,000 (35 ล้าน / 35M)** |
 | **3000万** | 30,000,000 | 30 ล้าน | Confused with 30,000 ล้าน | **30 ล้าน (30M)** |
 | **億 (oku)** | 100,000,000 | 100 ล้าน | Confused with พันล้าน | **100 ล้าน (100M)** |
+
+---
+
+## Gacha & Subculture ASR Homophone Traps
+
+Streamers speak rapidly using gaming slang and abbreviations that ASR tools (Whisper) transcribe phonetically into common Thai words:
+
+| Spoken / ASR Output | True Meaning | Context & Correct Transcription |
+| :--- | :--- | :--- |
+| **10 ก.** / **10 โล** | **10 โรล (10 Pulls)** | Streamer said "10 โล" (10 rolls/pulls); Whisper transcribed as "10 ก." (kilograms). Correct to `10 โรล` or `เปิดกาชา 10 ครั้ง`. |
+| **ตัวละครพเนอร์** | **พาร์ทเนอร์ (Partner Card)** | Support/Equipment card banner in CZN, not a playable character. Correct to `พาร์ทเนอร์ (Partner)`. |
+| **Los ไวท์** | **รอสไวส์ (Rossweisse)** | Fast-speech phonetic corruption of character name Rossweisse. Correct to `รอสไวส์ (Rossweisse)`. |
+| **CZN Made** | **CZN Mate / czn.gg** | Spoken "CZN Mate" transcribed as "Made". Correct to `CZN Mate`. |
+| **ชุดมังควา** | **ชุดมังฮวา (Manhwa Skin)** | Streamer buys a Korean Manhwa-themed costume skin. Correct to `ชุดมังฮวา (Manhwa Skin)`. |
 
 ---
 
