@@ -235,6 +235,12 @@ class TestSkillStructure(unittest.TestCase):
                     offenders.append(str(p.relative_to(PLUGIN_ROOT)))
         self.assertEqual(offenders, [], f"Unguarded top-level PIL imports found: {offenders}")
 
+    def test_no_accidental_or_empty_directories(self):
+        timestamper_dir = SKILLS_DIR / "anibon-timestamper"
+        self.assertFalse((timestamper_dir / "--help").exists(), "Accidental '--help' folder found")
+        self.assertFalse((timestamper_dir / "frames").exists(), "Empty 'frames' folder found")
+        self.assertFalse((timestamper_dir / "resources").exists(), "Redundant 'resources' directory found in timestamper")
+
 
 if __name__ == "__main__":
 

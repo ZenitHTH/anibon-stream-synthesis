@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 skills/anibon-timestamper/scripts/check_sections.py --file \"$TARGET_FILE\"",
+            "command": "python3 scripts/check_sections.py --file \"$TARGET_FILE\"",
             "timeout": 15
           }
         ]
