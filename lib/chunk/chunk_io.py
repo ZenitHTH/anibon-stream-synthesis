@@ -114,6 +114,10 @@ def _load_chunk_xml(path: Path):
     return path.stem, start_sec, " ".join(texts)
 
 
+load_chunk_json = _load_chunk_json
+load_chunk_xml = _load_chunk_xml
+
+
 def _load_chunk_file(path: Path):
     """Load a single chunk file, detecting format by extension."""
     if path.suffix == ".xml":

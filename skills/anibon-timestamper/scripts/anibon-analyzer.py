@@ -6,8 +6,12 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from chunk.chunk_io import load_chunks_list
-from chunk.analyzer import classify_chunk, detect_timeline_gaps, calculate_youtube_blocks
+from interface import (
+    calculate_youtube_blocks,
+    classify_chunk,
+    detect_timeline_gaps,
+    load_chunks_list,
+)
 
 
 def main():

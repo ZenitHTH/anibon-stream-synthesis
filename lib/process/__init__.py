@@ -33,11 +33,13 @@ from process.prompts import (
 from process.runners import run_group_mode, run_recursive_mode
 from process.signals import (
     clean_transcript_noise,
+    compute_idf_stats,
     detect_signals_for_chunks,
     get_domain_guidance,
     load_garbled_replacements,
     load_knowledge,
     load_mappings,
+    match_chunk,
     normalize_transcript,
 )
 from process.summarizer import (
@@ -80,6 +82,8 @@ __all__ = [
     "load_mappings",
     "load_garbled_replacements",
     "clean_transcript_noise",
+    "compute_idf_stats",
+    "match_chunk",
     "normalize_transcript",
     "assemble_parts",
     "enforce_byte_cap",

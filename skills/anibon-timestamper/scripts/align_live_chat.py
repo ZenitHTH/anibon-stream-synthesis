@@ -20,7 +20,7 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from chunk.chunk_io import chunk_sort_key
+from interface import chunk_sort_key
 
 
 def load_events(events_path: Path) -> list[tuple[int, str]]:

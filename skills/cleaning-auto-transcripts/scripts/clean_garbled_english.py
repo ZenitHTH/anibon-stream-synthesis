@@ -30,7 +30,7 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from common.cleaner import clean_chunk, clean_text, load_replacements
+from interface import clean_chunk, clean_text, load_replacements
 
 # Compiled regex cache — loaded once at import time
 _COMPILED = load_replacements()

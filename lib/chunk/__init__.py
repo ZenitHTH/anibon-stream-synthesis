@@ -11,6 +11,8 @@ from chunk.analyzer import (
 )
 from chunk.chunk_io import (
     chunk_sort_key,
+    load_chunk_json,
+    load_chunk_xml,
     load_chunks,
     load_chunks_list,
     write_chunk_json,
@@ -33,6 +35,8 @@ __all__ = [
     "classify_chunk",
     "detect_timeline_gaps",
     "chunk_sort_key",
+    "load_chunk_json",
+    "load_chunk_xml",
     "load_chunks",
     "load_chunks_list",
     "write_chunk_json",

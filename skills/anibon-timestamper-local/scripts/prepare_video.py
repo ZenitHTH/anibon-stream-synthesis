@@ -6,17 +6,23 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from download import ytdlp
-from common import cleaner
-from common.resources import load_default_mappings
-from chunk.chunk_io import write_chunk_json, write_chunk_xml, write_chunk_txt
+from interface import (
+    correct_transcript,
+    download_storyboard,
+    download_transcript,
+    load_default_mappings,
+    load_transcript,
+    write_chunk_json,
+    write_chunk_txt,
+    write_chunk_xml,
+)
 
 
 def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int:
     """Load transcript, clean, and write chunk files. Returns number of chunks."""
-    transcript = ytdlp.load_transcript(workspace)
+    transcript = load_transcript(workspace)
     mappings = load_default_mappings()
-    cleaned = cleaner.correct_transcript(transcript, mappings)
+    cleaned = correct_transcript(transcript, mappings)
 
     if not cleaned:
         return 0
@@ -74,15 +80,14 @@ def main():
     print(f"[*] Workspace: {workspace}", file=sys.stderr)
 
     (workspace / ".video_url").write_text(url.strip(), encoding="utf-8")
-    ytdlp.download_transcript(url, workspace)
+    download_transcript(url, workspace)
     if not args.no_storyboard:
-        ytdlp.download_storyboard(url, workspace)
+        download_storyboard(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
 
-
     if args.vision and args.format in ["json", "xml"]:
-        from process import vision as _vision
-        _vision.run(workspace, url)
+        from interface import process as _proc
+        _proc.vision.run(workspace, url)
 
     print(f"[*] Done! Wrote {n} chunks ({args.format}) to {workspace}/chunks/")
 

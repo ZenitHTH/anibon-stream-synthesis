@@ -39,7 +39,7 @@ if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
 # ── Resources ────────────────────────────────────────────────────
-from common.resources import resource_path
+from interface import resource_path
 
 
 def load_tag_macros() -> dict[str, str]:

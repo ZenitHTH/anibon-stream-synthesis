@@ -36,12 +36,7 @@ for p in (_SCRIPT_DIR, _LIB_DIR):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from process.assembly import finalize_and_assemble_timestamps
-from process.audit import (
-    audit_timestamps_against_glossary,
-    sanitize_and_audit_timestamps,
-)
-from common.config import (
+from interface import (
     CHUNK_MAX_TOKENS,
     DEFAULT_BLOCK_SIZE,
     DEFAULT_CHAT_PATH,
@@ -51,38 +46,35 @@ from common.config import (
     EVAL_BATCH_SIZE,
     PRIMARY_HOST,
     SCENE_DELTA_THRESHOLD,
-    cfg_bool,
-    load_config,
-    reload_config,
-)
-from process.garbled_collector import run_garbled_collector
-from process.knowledge.reader import (
-    enrich_with_sqlite_databases,
-    extract_entity_glossary,
-    save_entity_glossary,
-)
-from common.lmstudio import (
+    WORLD_IDENTITY_DIR,
+    audit_timestamps_against_glossary,
     call_local,
-    call_vision,
-    get_loaded_models,
-    resolve_endpoint,
-    resolve_model,
-)
-from process.multimodal import (
-    prepare_storyboard_slides,
-    sample_chunk_keyframes,
     call_multimodal,
-)
-from process.parity_gates import ensure_mood_555
-from process.prompts import WORLD_IDENTITY_DIR
-from process.runners import run_group_mode, run_recursive_mode
-from process.signals.detector import (
+    call_vision,
+    cfg_bool,
     detect_signals_for_chunks,
+    detect_transcript_source,
+    discover_chunks,
+    enrich_with_sqlite_databases,
+    ensure_mood_555,
+    extract_entity_glossary,
+    finalize_and_assemble_timestamps,
+    get_loaded_models,
+    is_youtube_auto_transcript,
+    load_config,
     load_garbled_replacements,
     load_mappings,
+    prepare_storyboard_slides,
+    reload_config,
+    resolve_endpoint,
+    resolve_model,
+    run_garbled_collector,
+    run_group_mode,
+    run_recursive_mode,
+    sample_chunk_keyframes,
+    sanitize_and_audit_timestamps,
+    save_entity_glossary,
 )
-from chunk.state import discover_chunks
-from download.transcript_source import detect_transcript_source, is_youtube_auto_transcript
 
 # Re-exports for test compatibility
 __all__ = [

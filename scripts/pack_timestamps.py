@@ -48,7 +48,7 @@ def load_tag_macros() -> dict[str, str]:
     return data.get("mapping", {})
 
 
-from common.cleaner import clean_text as _clean_desc
+from interface import clean_text as _clean_desc
 
 
 # Byte cost of the ═══ separator block (two sep lines ~172B each + title line ~140B).

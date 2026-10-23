@@ -5,6 +5,7 @@ common — Foundational shared utilities, configuration, time, cleaner, and mode
 from __future__ import annotations
 
 from common.cleaner import (
+    clean_chunk,
     clean_text,
     clean_text_with_count,
     compile_mapping_entries,
@@ -56,6 +57,7 @@ from common.timestamps import (
 
 __all__ = [
     # Cleaner
+    "clean_chunk",
     "clean_text",
     "clean_text_with_count",
     "compile_mapping_entries",

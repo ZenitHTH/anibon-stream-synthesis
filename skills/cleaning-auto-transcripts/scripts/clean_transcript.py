@@ -9,8 +9,7 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from download.ytdlp import flatten_json3
-from common.cleaner import correct_transcript
+from interface import correct_transcript, flatten_json3
 
 def main():
     ap = argparse.ArgumentParser(description="Clean and chunk auto-transcripts.")

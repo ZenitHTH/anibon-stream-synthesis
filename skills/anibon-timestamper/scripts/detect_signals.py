@@ -16,17 +16,15 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from chunk.chunk_io import (
+from interface import (
+    compute_idf_stats,
     load_chunk_json,
     load_chunk_xml,
     load_chunks,
-)
-from process.signals.detector import (
-    _process_single_chunk,
-    compute_idf_stats,
     load_knowledge,
     match_chunk,
 )
+from process.signals.detector import _process_single_chunk
 
 __all__ = [
     "_process_single_chunk",
