@@ -1,5 +1,5 @@
 import unittest
-from anibon.phonetic_bridge import load_phonetic_bridge, match_phonemes
+from process.knowledge.phonetic_bridge import load_phonetic_bridge, match_phonemes
 
 
 class TestPhoneticBridge(unittest.TestCase):

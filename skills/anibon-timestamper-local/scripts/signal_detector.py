@@ -12,7 +12,7 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from anibon.signal_constants import (
+from process.signals.constants import (
     AMBIGUOUS_SINGLE_TOKENS,
     ANIME_INSTRUCTION_BLOCK,
     ANIME_TAGS,
@@ -40,7 +40,7 @@ from anibon.signal_constants import (
     _NOISE_BRACKET_RE,
     _SPEAKER_MARKER_RE,
 )
-from anibon.signal_detector import (
+from process.signals.detector import (
     _process_single_chunk,
     clean_transcript_noise,
     compute_idf_stats,

@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
-from anibon import vision as _vision
+from process import vision as _vision
 
 
 class TestVision(unittest.TestCase):

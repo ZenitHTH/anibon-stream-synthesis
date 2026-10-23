@@ -17,7 +17,7 @@ _LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from anibon.time import parse_ts
+from common.time import parse_ts
 
 REQUIRED_CHECKS = [
     "anibon-analyzer.py — detects timeline gaps >10min",

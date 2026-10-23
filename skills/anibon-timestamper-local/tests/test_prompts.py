@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import tempfile
 
-from anibon.prompts import (
+from process.prompts import (
     load_world_identity_context,
     build_recursive_prompt,
     build_group_prompt,

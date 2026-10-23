@@ -1,5 +1,5 @@
 import unittest
-from anibon.world_sanitizer import sanitize_pokemon_names, clean_token_stutters, ensure_outro_timestamp
+from process.world_sanitizer import sanitize_pokemon_names, clean_token_stutters, ensure_outro_timestamp
 
 
 class TestWorldSanitizer(unittest.TestCase):

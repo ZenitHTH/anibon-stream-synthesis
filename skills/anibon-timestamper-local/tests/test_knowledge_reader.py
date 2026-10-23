@@ -2,7 +2,7 @@ import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
-from anibon.knowledge_reader import extract_entity_glossary, save_entity_glossary, enrich_with_sqlite_databases
+from process.knowledge.reader import extract_entity_glossary, save_entity_glossary, enrich_with_sqlite_databases
 
 
 class TestKnowledgeReader(unittest.TestCase):
@@ -177,7 +177,7 @@ class TestKnowledgeReader(unittest.TestCase):
             self.assertIn("Ashiya Douman", g)
 
     def test_parse_markdown_entities_excludes_generic_standing_words_but_keeps_characters_for_stage2(self):
-        from anibon.knowledge_reader import parse_markdown_entities
+        from process.knowledge.reader import parse_markdown_entities
         md = (
             "- **สมาชิก**: Maribell + Diana\n"
             "- **กลไก**: ใช้โล่สะท้อนดาเมจ\n"
@@ -195,8 +195,8 @@ class TestKnowledgeReader(unittest.TestCase):
         self.assertIn("Rossweisse", ents)
 
     def test_extract_entity_glossary_supports_multi_source_entities_and_scoping(self):
-        from anibon.knowledge_reader import extract_entity_glossary
-        from anibon.prompts import build_chunk_entity_context
+        from process.knowledge.reader import extract_entity_glossary
+        from process.prompts import build_chunk_entity_context
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             ref_dir = tmp_path / "references"

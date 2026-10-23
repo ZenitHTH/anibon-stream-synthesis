@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import json
 
-from anibon.state import (
+from chunk.state import (
     load_state,
     save_state,
     load_chunk_livechat,

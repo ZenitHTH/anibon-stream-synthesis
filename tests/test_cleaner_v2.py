@@ -6,8 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from anibon.cleaner import clean_text, clean_text_with_count, load_replacements
-from anibon.resources import resource_path
+from common.cleaner import clean_text, clean_text_with_count, load_replacements
+from common.resources import resource_path
 
 
 class TestCleanerV2(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestCleanerV2(unittest.TestCase):
             self.assertNotIn("&amp;amp;", raw_out)
 
     def test_correct_transcript_preserves_word_boundaries(self):
-        from anibon.cleaner import correct_transcript
+        from common.cleaner import correct_transcript
         mappings = {
             "mappings": [
                 {
@@ -54,7 +54,7 @@ class TestCleanerV2(unittest.TestCase):
         self.assertEqual(corrected[1]["text"], "เลข 12SKO99 ไม่ควรแก้")
 
     def test_compile_mapping_entries_cached(self):
-        from anibon.cleaner import compile_mapping_entries
+        from common.cleaner import compile_mapping_entries
         entries = [
             {"correct": "FGO", "patterns": ["เฟท", "fgo"]}
         ]

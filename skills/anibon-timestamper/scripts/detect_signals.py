@@ -16,12 +16,12 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from anibon.chunk_io import (
+from chunk.chunk_io import (
     load_chunk_json,
     load_chunk_xml,
     load_chunks,
 )
-from anibon.signal_detector import (
+from process.signals.detector import (
     _process_single_chunk,
     compute_idf_stats,
     load_knowledge,

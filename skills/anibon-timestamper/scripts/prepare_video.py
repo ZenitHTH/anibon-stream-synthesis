@@ -6,9 +6,10 @@ _LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from anibon import ytdlp, cleaner
-from anibon.resources import load_default_mappings
-from anibon.chunk_io import write_chunk_json, write_chunk_xml, write_chunk_txt
+from download import ytdlp
+from common import cleaner
+from common.resources import load_default_mappings
+from chunk.chunk_io import write_chunk_json, write_chunk_xml, write_chunk_txt
 
 
 def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int:

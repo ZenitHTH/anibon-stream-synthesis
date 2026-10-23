@@ -57,7 +57,7 @@ class TestPipelineE2E(unittest.TestCase):
             tmp_path = Path(tmp_dir)
             from signal_detector import detect_signals_for_chunks
             from process_chunks_local import run_knowledge_discovery
-            from anibon.prompts import load_world_identity_context, build_recursive_prompt
+            from process.prompts import load_world_identity_context, build_recursive_prompt
 
             # 1. Setup mock chunks in workspace
             chunks_dir = tmp_path / "chunks"

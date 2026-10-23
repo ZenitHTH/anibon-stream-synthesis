@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from anibon.vision_verify import (
+from process.vision_verify import (
     is_ambiguous,
     stamp_seconds,
     parse_verify_response,
@@ -167,7 +167,7 @@ class TestVisionVerify(unittest.TestCase):
             tmp_path = Path(tmp)
             args = argparse.Namespace(vision_verify=False)
             stamps = [ORIG]
-            with patch("anibon.vision_verify.verify_ambiguous_stamps") as mock_fn:
+            with patch("process.vision_verify.verify_ambiguous_stamps") as mock_fn:
                 out = apply_vision_verify(stamps, tmp_path, args, "model")
                 self.assertEqual(out, stamps)
                 mock_fn.assert_not_called()
@@ -184,7 +184,7 @@ class TestVisionVerify(unittest.TestCase):
                 endpoint="http://127.0.0.1:1234/v1/chat/completions",
             )
             stamps = [ORIG]
-            with patch("anibon.vision_verify.verify_ambiguous_stamps") as mock_fn:
+            with patch("process.vision_verify.verify_ambiguous_stamps") as mock_fn:
                 mock_fn.return_value = ["03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock"]
                 out = apply_vision_verify(stamps, tmp_path, args, "default-model")
                 self.assertEqual(out, ["03:52:49 - [Gameplay] Seven และ McGinnis ใน Deadlock"])

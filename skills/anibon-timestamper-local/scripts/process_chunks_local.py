@@ -36,12 +36,12 @@ for p in (_SCRIPT_DIR, _LIB_DIR):
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from anibon.assembly import finalize_and_assemble_timestamps
-from anibon.audit import (
+from process.assembly import finalize_and_assemble_timestamps
+from process.audit import (
     audit_timestamps_against_glossary,
     sanitize_and_audit_timestamps,
 )
-from anibon.config import (
+from common.config import (
     CHUNK_MAX_TOKENS,
     DEFAULT_BLOCK_SIZE,
     DEFAULT_CHAT_PATH,
@@ -55,34 +55,34 @@ from anibon.config import (
     load_config,
     reload_config,
 )
-from anibon.garbled_collector import run_garbled_collector
-from anibon.knowledge_reader import (
+from process.garbled_collector import run_garbled_collector
+from process.knowledge.reader import (
     enrich_with_sqlite_databases,
     extract_entity_glossary,
     save_entity_glossary,
 )
-from anibon.lmstudio import (
+from common.lmstudio import (
     call_local,
     call_vision,
     get_loaded_models,
     resolve_endpoint,
     resolve_model,
 )
-from anibon.multimodal import (
+from process.multimodal import (
     prepare_storyboard_slides,
     sample_chunk_keyframes,
     call_multimodal,
 )
-from anibon.parity_gates import ensure_mood_555
-from anibon.prompts import WORLD_IDENTITY_DIR
-from anibon.runners import run_group_mode, run_recursive_mode
-from anibon.signal_detector import (
+from process.parity_gates import ensure_mood_555
+from process.prompts import WORLD_IDENTITY_DIR
+from process.runners import run_group_mode, run_recursive_mode
+from process.signals.detector import (
     detect_signals_for_chunks,
     load_garbled_replacements,
     load_mappings,
 )
-from anibon.state import discover_chunks
-from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
+from chunk.state import discover_chunks
+from download.transcript_source import detect_transcript_source, is_youtube_auto_transcript
 
 # Re-exports for test compatibility
 __all__ = [

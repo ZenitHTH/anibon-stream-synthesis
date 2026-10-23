@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch
 from pathlib import Path
-from anibon.parity_gates import ensure_mood_555, run_parity_gates
+from process.parity_gates import ensure_mood_555, run_parity_gates
 
 
 class TestParityGates(unittest.TestCase):
 
-    @patch("anibon.parity_gates._run")
+    @patch("process.parity_gates._run")
     def test_ensure_mood_555_runs_when_missing(self, mock_run):
         mock_run.return_value = 0
         tmp_ws = Path("/tmp/test_parity_ws")
@@ -20,7 +20,7 @@ class TestParityGates(unittest.TestCase):
             args = mock_run.call_args[0]
             self.assertEqual(args[0], "analyze_555.py")
 
-    @patch("anibon.parity_gates._run")
+    @patch("process.parity_gates._run")
     def test_ensure_mood_555_skips_when_exists(self, mock_run):
         tmp_ws = Path("/tmp/test_parity_ws")
         with patch.object(Path, "is_dir", return_value=True), \
@@ -28,7 +28,7 @@ class TestParityGates(unittest.TestCase):
             ensure_mood_555(tmp_ws)
             mock_run.assert_not_called()
 
-    @patch("anibon.parity_gates._run")
+    @patch("process.parity_gates._run")
     def test_run_parity_gates_invokes_audit_and_check(self, mock_run):
         mock_run.return_value = 0
         tmp_ws = Path("/tmp/test_parity_ws")

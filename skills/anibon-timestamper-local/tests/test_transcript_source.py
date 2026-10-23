@@ -2,7 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from anibon.transcript_source import detect_transcript_source, is_youtube_auto_transcript
+from download.transcript_source import detect_transcript_source, is_youtube_auto_transcript
 
 
 class TestTranscriptSource(unittest.TestCase):

@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from anibon.config import (
+from common.config import (
     load_config,
     cfg_int,
     cfg_float,
@@ -71,7 +71,8 @@ class TestConfig(unittest.TestCase):
 
     def test_modules_use_config_defaults(self):
         import inspect
-        from anibon import config, summarizer, lmstudio, prompts, multimodal, timestamps
+        from common import config, lmstudio, timestamps
+        from process import summarizer, prompts, multimodal
 
         self.assertEqual(
             inspect.signature(summarizer.run_local_summarizer_pass).parameters["max_tokens"].default,
@@ -115,7 +116,7 @@ class TestConfig(unittest.TestCase):
         self.assertIn("--env-file", res.stdout)
 
     def test_cfg_bool_and_default_multimodal_chunks(self):
-        from anibon.config import cfg_bool, DEFAULT_MULTIMODAL_CHUNKS
+        from common.config import cfg_bool, DEFAULT_MULTIMODAL_CHUNKS
         self.assertTrue(DEFAULT_MULTIMODAL_CHUNKS)
         self.assertTrue(cfg_bool("multimodal_chunks", False))
 
@@ -169,7 +170,7 @@ class TestConfig(unittest.TestCase):
 
 
     def test_multimodal_batch_and_scene_config_defaults(self):
-        import anibon.config as cfg
+        import common.config as cfg
         cfg.load_config(override=True)
         self.assertEqual(cfg.EVAL_BATCH_SIZE, 8192)
         self.assertEqual(cfg.TOKENS_PER_IMAGE, 260)

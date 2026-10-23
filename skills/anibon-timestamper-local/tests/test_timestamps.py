@@ -1,6 +1,6 @@
 import unittest
 import re
-from anibon.timestamps import (
+from common.timestamps import (
     TAGS,
     TAG_REMAP,
     normalize_tag,

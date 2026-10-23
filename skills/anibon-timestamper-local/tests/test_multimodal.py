@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from anibon.multimodal import (
+from process.multimodal import (
     sec_to_ts,
     build_multimodal_content,
     sample_chunk_keyframes,
@@ -41,7 +41,7 @@ class TestMultimodal(unittest.TestCase):
         self.assertEqual(content[4]["image_url"]["url"], "data:image/jpeg;base64,b64_data_2")
 
     def test_select_target_seconds_incomplete_cues(self):
-        from anibon.multimodal import select_target_seconds
+        from process.multimodal import select_target_seconds
         items = [
             {"start": 10, "text": "สวัสดีครับทุกคน วันนี้มาคุยกัน"},
             {"start": 60, "text": "เนี่ยดูดิ อันนี้ในจอคืออะไร"},
@@ -55,7 +55,7 @@ class TestMultimodal(unittest.TestCase):
         self.assertIn(120, res)
 
     def test_select_target_seconds_full_context_interesting(self):
-        from anibon.multimodal import select_target_seconds
+        from process.multimodal import select_target_seconds
         items = [
             {"start": 30, "text": "วันนี้เราจะมาวิเคราะห์ระบบเศรษฐกิจและการเมืองระยะยาว"},
             {"start": 110, "text": "ปัญหาคือว่ามันกระทบกับทุกคนมาก 555 ไม่น่าเชื่อเลย!"},
@@ -65,7 +65,7 @@ class TestMultimodal(unittest.TestCase):
         self.assertEqual(len(res), 2)
 
     def test_select_target_seconds_dynamic_min_max(self):
-        from anibon.multimodal import select_target_seconds
+        from process.multimodal import select_target_seconds
         # 1 cue -> ensures at least 3 frames
         items_few = [{"start": 50, "text": "ดูอันนี้ดิ"}]
         res_few = select_target_seconds(0, 270, min_frames=3, max_frames=5, items=items_few)
@@ -109,7 +109,7 @@ class TestMultimodal(unittest.TestCase):
                     (slides / f"slide_{i:04d}.jpg").write_bytes(b"jpeg")
                 return frames / "storyboard.mhtml"
 
-            with patch("anibon.multimodal.download_storyboard", side_effect=fake_download) as mock_dl:
+            with patch("process.multimodal.download_storyboard", side_effect=fake_download) as mock_dl:
                 res = prepare_storyboard_slides(ws)
                 mock_dl.assert_called_once_with("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ws)
                 self.assertIsNotNone(res)
@@ -117,7 +117,7 @@ class TestMultimodal(unittest.TestCase):
 
     def test_download_storyboard_does_not_skip_download_and_guards_empty_dir(self):
         import tempfile
-        from anibon.ytdlp import download_storyboard
+        from download.ytdlp import download_storyboard
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             # Create an empty frames/slides_clean dir
@@ -135,7 +135,7 @@ class TestMultimodal(unittest.TestCase):
 
 
     def test_compute_frame_budget_scales_with_eval_batch(self):
-        from anibon.multimodal import compute_frame_budget
+        from process.multimodal import compute_frame_budget
         # 2500 text tokens in 8192 batch -> (8192 - 2500) // 260 = 21 -> capped at max_frames=16
         self.assertEqual(compute_frame_budget(2500, eval_batch_size=8192, tokens_per_image=260, min_frames=1, max_frames=16), 16)
         # 7500 text tokens in 8192 batch -> (8192 - 7500) // 260 = 2
@@ -145,7 +145,7 @@ class TestMultimodal(unittest.TestCase):
 
     def test_compute_tile_visual_delta_identical_vs_distinct(self):
         import shutil, subprocess, tempfile
-        from anibon.multimodal import compute_tile_visual_delta, Image
+        from process.multimodal import compute_tile_visual_delta, Image
         with tempfile.TemporaryDirectory() as tmp:
             p1 = Path(tmp) / "black.jpg"
             p2 = Path(tmp) / "black_copy.jpg"
@@ -164,7 +164,7 @@ class TestMultimodal(unittest.TestCase):
 
     def test_sample_chunk_keyframes_scene_dedup_drops_static_and_keeps_changes(self):
         import shutil, subprocess, tempfile
-        from anibon.multimodal import sample_chunk_keyframes, Image
+        from process.multimodal import sample_chunk_keyframes, Image
         with tempfile.TemporaryDirectory() as tmp:
             slides_dir = Path(tmp) / "slides"
             out_dir = Path(tmp) / "tiles"
@@ -197,14 +197,14 @@ class TestMultimodal(unittest.TestCase):
             self.assertGreaterEqual(len(res_change), 2)
 
     def test_compute_tile_visual_delta_unreadable_fallback(self):
-        from anibon.multimodal import compute_tile_visual_delta
+        from process.multimodal import compute_tile_visual_delta
         # Missing file should gracefully return 1.0
         delta = compute_tile_visual_delta(Path("/tmp/nonexistent_1.jpg"), Path("/tmp/nonexistent_2.jpg"))
         self.assertEqual(delta, 1.0)
 
     def test_sample_chunk_keyframes_pinned_cues_and_budget_cap(self):
         import subprocess, tempfile
-        from anibon.multimodal import sample_chunk_keyframes, Image
+        from process.multimodal import sample_chunk_keyframes, Image
         with tempfile.TemporaryDirectory() as tmp:
             slides_dir = Path(tmp) / "slides"
             out_dir = Path(tmp) / "tiles"
@@ -236,7 +236,7 @@ class TestMultimodal(unittest.TestCase):
 
     def test_get_tile_downsampled_bytes_writes_and_reuses_rgb_sidecar(self):
         import subprocess, tempfile
-        from anibon.multimodal import _get_tile_downsampled_bytes, _THUMB_CACHE, Image
+        from process.multimodal import _get_tile_downsampled_bytes, _THUMB_CACHE, Image
         with tempfile.TemporaryDirectory() as tmp:
             tile_path = Path(tmp) / "tile_000010.jpg"
             sidecar = Path(tmp) / "tile_000010.rgb"
@@ -265,7 +265,7 @@ class TestMultimodal(unittest.TestCase):
 
     def test_sample_chunk_keyframes_default_scene_dedup_is_true(self):
         import subprocess, tempfile
-        from anibon.multimodal import sample_chunk_keyframes, Image
+        from process.multimodal import sample_chunk_keyframes, Image
         with tempfile.TemporaryDirectory() as tmp:
             slides_dir = Path(tmp) / "slides"
             out_dir = Path(tmp) / "tiles"

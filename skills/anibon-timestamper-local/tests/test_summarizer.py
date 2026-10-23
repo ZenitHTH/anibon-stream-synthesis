@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from anibon.summarizer import (
+from process.summarizer import (
     generate_part_summary,
     assemble_parts,
     find_best_boundary,
@@ -92,7 +92,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertIn("รีวิวซีรีส์ Lanterns ตอนที่ 1", parts[1])
 
     def test_enforce_byte_cap_splits_and_renumbers(self):
-        from anibon.summarizer import enforce_byte_cap
+        from process.summarizer import enforce_byte_cap
         b = "═" * 57
         big = "\n".join(f"00:{i:02d}:00 - [Talk] " + "ก" * 120 for i in range(20))
         md = f"{b}\n ส่วนที่ 1: หัวข้อ (⏱ เริ่ม: 00:00:00)\n{b}\n{big}\n\n{b}\n ส่วนที่ 2: ท้าย (⏱ เริ่ม: 00:30:00)\n{b}\n00:30:00 - [Chat] ปิดไลฟ์"
@@ -105,7 +105,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertEqual(out.count("[Talk]"), 20)
 
     def test_enforce_byte_cap_multiline_header(self):
-        from anibon.summarizer import enforce_byte_cap
+        from process.summarizer import enforce_byte_cap
         b = "═" * 57
         big = "\n".join(f"00:{i:02d}:00 - [Talk] " + "ก" * 120 for i in range(20))
         # 2-line header between borders
@@ -132,14 +132,14 @@ class TestSummarizer(unittest.TestCase):
 
     def test_run_local_summarizer_pass_does_not_enforce_byte_cap(self):
         from unittest.mock import patch
-        from anibon.summarizer import run_local_summarizer_pass
+        from process.summarizer import run_local_summarizer_pass
 
         stamps = [f"00:{i:02d}:00 - [Talk] " + ("ก" * 120) for i in range(25)]
         fake_llm_output = (
             "Part 1: 00:00:00\nSummary: เปิดสตรีมคุยข่าวใหญ่\n\n"
             "Part 2: 00:20:00\nSummary: ปิดท้ายสตรีม\n"
         )
-        with patch("anibon.summarizer.call_local", return_value=fake_llm_output):
+        with patch("process.summarizer.call_local", return_value=fake_llm_output):
             md = run_local_summarizer_pass("http://127.0.0.1:1234", "test-model", stamps)
 
         self.assertIsNotNone(md)
@@ -147,9 +147,9 @@ class TestSummarizer(unittest.TestCase):
         self.assertEqual(len(parts), 2)
         self.assertTrue(any(len(part.encode("utf-8")) > 3500 for part in parts))
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_prune_drops_non_verbatim(self, mock_call):
-        from anibon.summarizer import prune_essential
+        from process.summarizer import prune_essential
         stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
         reply_lines = stamps[10:50] + ["00:05:00 - [Talk] แต่งเอง"]
         mock_call.return_value = "\n".join(reply_lines)
@@ -157,26 +157,26 @@ class TestSummarizer(unittest.TestCase):
         self.assertNotIn("00:05:00 - [Talk] แต่งเอง", out)
         self.assertTrue(set(out) <= set(stamps))
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_prune_falls_back_when_too_few(self, mock_call):
-        from anibon.summarizer import prune_essential
+        from process.summarizer import prune_essential
         stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
         mock_call.return_value = "\n".join(stamps[:3])
         out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
         self.assertEqual(out, stamps)
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_prune_falls_back_on_error(self, mock_call):
-        from anibon.summarizer import prune_essential
+        from process.summarizer import prune_essential
         stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
         mock_call.side_effect = RuntimeError("endpoint timeout")
         out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
         self.assertEqual(out, stamps)
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_prune_keeps_first_and_ending(self, mock_call):
-        from anibon.summarizer import prune_essential
-        from anibon.time import parse_ts
+        from process.summarizer import prune_essential
+        from common.time import parse_ts
         stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(100)] + ["01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม"]
         mock_call.return_value = "\n".join(stamps[10:50])
         out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
@@ -184,17 +184,17 @@ class TestSummarizer(unittest.TestCase):
         self.assertIn(stamps[-1], out)
         self.assertEqual(out, sorted(out, key=lambda l: parse_ts(l[:8])))
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_prune_skips_short_input(self, mock_call):
-        from anibon.summarizer import prune_essential
+        from process.summarizer import prune_essential
         stamps = [f"00:{i:02d}:00 - [Talk] หัวข้อ {i}" for i in range(30)]
         out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
         mock_call.assert_not_called()
         self.assertEqual(out, stamps)
 
     def test_fill_pruned_gaps_eliminates_gaps_over_threshold(self):
-        from anibon.summarizer import fill_pruned_gaps
-        from anibon.time import parse_ts
+        from process.summarizer import fill_pruned_gaps
+        from common.time import parse_ts
         all_stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(0, 120, 2)]
         kept_stamps = [
             "00:00:00 - [Talk] หัวข้อ 0",
@@ -207,9 +207,9 @@ class TestSummarizer(unittest.TestCase):
             self.assertLessEqual(filled_ts[i + 1] - filled_ts[i], 600)
         self.assertTrue(set(filled) <= set(all_stamps))
 
-    @patch("anibon.summarizer.call_local")
+    @patch("process.summarizer.call_local")
     def test_run_local_summarizer_pass_preserves_full_multiline_summary(self, mock_call):
-        from anibon.summarizer import run_local_summarizer_pass
+        from process.summarizer import run_local_summarizer_pass
         stamps = [
             "00:00:00 - [Talk] วิเคราะห์การเมืองไทยเรื่องประกันสังคม",
             "00:10:00 - [Talk] เจาะลึกซีรีส์ Lanterns ของ James Gunn",

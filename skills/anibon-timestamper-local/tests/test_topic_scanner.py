@@ -1,5 +1,5 @@
 import unittest
-from anibon.topic_scanner import extract_macro_anchor, scan_chunk_topic_pivot
+from chunk.topic_scanner import extract_macro_anchor, scan_chunk_topic_pivot
 
 
 class TestTopicScanner(unittest.TestCase):
