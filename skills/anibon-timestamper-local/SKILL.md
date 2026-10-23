@@ -22,26 +22,26 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 ## Pipeline Architecture
 
-| **0. Noise Cleaning & Pre-normalization** | `signal_detector.py` / `anibon/` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
-| **0.5 Knowledge Self-Reading** | `anibon/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
-| **1. Preparation & Chunking** | `prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
-| **1.5 LiveChat & Mood Detection** | `anibon/parity_gates.py` (`analyze_555.py`) | `livechat/` → `mood_555.json` | Auto-detects 555/laugh bursts and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
-| **2. Topic Segmentation (Pass 1)** | `process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
-| **2.5 Vision Ground Truth (Optional)** | `anibon/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
-| **3. Summarizer & Assembly (Pass 2)** | `anibon/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
-| **4. Garbled Collector & Whisper Ground Truth** | `whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
-| **5. Deterministic Parity Gates** | `anibon/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `audit_gaps.py` (enforces NO GAPS > 10m) and `check_sections.py` (audits byte sizes and ASR garble patterns; report-only). |
+| **0. Noise Cleaning & Pre-normalization** | `lib/process/signal_detector.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
+| **0.5 Knowledge Self-Reading** | `lib/process/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
+| **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
+| **1.5 LiveChat & Mood Detection** | `scripts/analyze_555.py` / `lib/process/parity_gates.py` | `livechat/` → `mood_555.json` | Auto-detects 555/laugh bursts and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
+| **2. Topic Segmentation (Pass 1)** | `scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
+| **2.5 Vision Ground Truth (Optional)** | `lib/process/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
+| **3. Summarizer & Assembly (Pass 2)** | `lib/process/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
+| **4. Garbled Collector & Whisper Ground Truth** | `scripts/whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
+| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m) and `scripts/check_sections.py` (audits byte sizes and ASR garble patterns; report-only). |
 
-### Modular Library Architecture (`scripts/anibon/`)
+### Modular Library Architecture (`lib/`)
 
-- `anibon/multimodal.py`: Storyboard slide unpacking, adaptive scene-change & evaluation-batch keyframe selector (1–16 frames per chunk, 16×9 RGB sidecar caching, Thai deictic cue pinning), OpenAI-compatible multi-image payload construction, and VLM execution.
-- `anibon/knowledge_reader.py`: Automated domain knowledge discovery from `signals.json`, regex table/bullet entity parser, SQLite DB enricher (`atlas_fgo.db`, `pokemon.db`), and `entity_glossary.json` generator.
-- `anibon/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
-- `anibon/lmstudio.py`: LM Studio & OpenAI-compatible client (TokenMe, vLLM, Ollama), model resolution (defaults to `gemma-4-12b-it-qat@q4_k_xl` or `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, Bearer auth, Cloudflare bypass, and multi-modal Vision API (`image_url` data URIs for Gemma 4 Vision, Qwen-VL).
-- `anibon/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
-- `anibon/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
-- `anibon/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and macro-thematic part assembly (typically 4–6 parts).
-- `anibon/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
+- `lib/process/multimodal.py`: Storyboard slide unpacking, adaptive scene-change & evaluation-batch keyframe selector (1–16 frames per chunk, 16×9 RGB sidecar caching, Thai deictic cue pinning), OpenAI-compatible multi-image payload construction, and VLM execution.
+- `lib/process/knowledge_reader.py`: Automated domain knowledge discovery from `signals.json`, regex table/bullet entity parser, SQLite DB enricher (`atlas_fgo.db`, `pokemon.db`), and `entity_glossary.json` generator.
+- `lib/process/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
+- `lib/process/lmstudio.py`: LM Studio & OpenAI-compatible client (TokenMe, vLLM, Ollama), model resolution (defaults to `gemma-4-12b-it-qat@q4_k_xl` or `unsloth/gemma-4-26b-a4b-it@q2_k_x`), text completions, Bearer auth, Cloudflare bypass, and multi-modal Vision API (`image_url` data URIs for Gemma 4 Vision, Qwen-VL).
+- `lib/process/websearch.py`: Lightweight DuckDuckGo search with local JSON cache (`websearch_cache.json`) for zero-cost entity verification.
+- `lib/process/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
+- `lib/process/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and macro-thematic part assembly (typically 4–6 parts).
+- `lib/process/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
 
 ### Multi-Layer Anti-Hallucination & Verification Architecture (4-Layer Defense)
 
@@ -118,13 +118,13 @@ python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --w
 #### 2. Run Timestamper Directly (Foreground)
 **macOS / Linux:**
 ```bash
-python3 -X utf8 scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" \
+python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" \
     --mode recursive --lang th
 ```
 
 **Windows (PowerShell):**
 ```powershell
-python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
+python -X utf8 skills\anibon-timestamper-local\scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
 ```
 
 > [!TIP]
@@ -135,26 +135,26 @@ python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspa
 #### 2.1 In-Pipeline Vision Verification (Optional)
 Inspect on-screen video frames for ambiguous or vague timestamps (deictic pronouns, missing game names, `[?]` markers) using the local vision model before Pass 2 summary:
 ```powershell
-python -X utf8 scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th --vision-verify
+python -X utf8 skills\anibon-timestamper-local\scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th --vision-verify
 ```
 
 #### 2.2 Multimodal Chunk Analysis with Storyboard Keyframes (Default: Enabled)
 Samples high-resolution Storyboard keyframes per chunk directly into the VLM (e.g. Gemma 4 12B Vision, Qwen-VL) alongside the transcript text during Pass 1. Enabled by default via `config.json` (`"multimodal_chunks": true`). Eliminates game title misattribution and grounds event/chapter subtitles in real time:
 ```bash
 # Enabled by default (Adaptive Scene-Change Mode):
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
+python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
 
 # To tune visual sensitivity or evaluation batch size:
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
+python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
   --eval-batch-size 8192 \
   --max-chunk-frames 16 \
   --scene-delta-threshold 0.06
 
 # To disable adaptive scene deduplication (fallback to legacy fixed 3-5 frames):
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-scene-dedup
+python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-scene-dedup
 
 # To disable all multimodal analysis and run in text-only mode:
-python3 scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-multimodal
+python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-multimodal
 ```
 
 **Adaptive Scene-Change Keyframe Selector (`scene_dedup=True`):**

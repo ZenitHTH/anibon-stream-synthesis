@@ -440,23 +440,24 @@ HH:MM:SS - [Tag] Description
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/prepare_video.py` | Download + clean + chunk |
+| `scripts/prepare_video.py` | Download + clean + chunk (plugin root utility) |
 | `scripts/dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
 | `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
-| `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/anibon/signal_detector.py`) |
+| `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/process/signal_detector.py`) |
 | `scripts/detect_boundaries.py` | Detect topic boundaries (feeds `--topic-json` in Step 9) |
 | `scripts/align_live_chat.py` | Slice LiveChat event feed to per-transcript-chunk logs (Step 3.5) |
-| `scripts/analyze_555.py` | Detect Thai-laugh/meme pulses from aligned LiveChat → per-chunk mood verdict (Step 3.7) |
+| `../../scripts/analyze_555.py` | Detect Thai-laugh/meme pulses from aligned LiveChat → per-chunk mood verdict (Step 3.7) |
 | `scripts/validate_mood.py` | Verify mood-bearing timestamps honour mood_555 verdicts (Step 11.5) |
 | `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
 | `../anibon-livechat-analysis/scripts/extract_visual_livechat.py` | Extract burned-in on-screen LiveChat via Gemini vision proxy when `.live_chat.json` is missing (Step 3.5) |
 | `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
-| `scripts/process_chunks_local.py` | Local LLM sequential chunk runner via LM Studio / llama.cpp OpenAI endpoint |
-| `scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
-| `scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
-| `scripts/check_sections.py` | Validate byte cap + ASR garbles |
+| `../anibon-timestamper-local/scripts/process_chunks_local.py` | Local LLM sequential chunk runner via LM Studio / llama.cpp OpenAI endpoint |
+| `../../scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
+| `../../scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
+| `../../scripts/check_sections.py` | Validate byte cap + ASR garbles |
 | `scripts/validate_part_coherence.py` | Cross-reference game names vs signals |
-| `scripts/validate_tags.py` | Validate timestamp tag vocabulary |
+| `../../scripts/validate_tags.py` | Validate timestamp tag vocabulary |
+| `../../scripts/whisper_dispatcher.py` | Slices audio and transcribes acoustic ground truth via whisper.cpp (Step 8.6a) |
 | `../cleaning-auto-transcripts/scripts/clean_garbled_english.py` | Normalize Thai-Whisper garbled English (Step 3) |
 | `../cleaning-auto-transcripts/scripts/clean_transcript.py` | Raw json3 cleaner (called by prepare_video) |
 | `../anibon-world-identity/scripts/fetch_story_ref.py` | Fetch/cache story synopses (user consent for websearch) |

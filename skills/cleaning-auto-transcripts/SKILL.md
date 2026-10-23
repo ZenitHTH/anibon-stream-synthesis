@@ -30,11 +30,11 @@ A skill for processing, fetching, and noise-cleaning auto-generated YouTube tran
 
 ### Step 2: Prepare Workspace, Download, and Chunk Transcript
 **Action**: Run the `prepare_video.py` script. This script automatically handles creating the `youtube_VIDEO_ID_workspace`, safely downloading the transcript with native `yt-dlp`, and cleaning/chunking it in one go.
-- **Find `[SKILL_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip the filename `SKILL.md` (or with backslashes `\` on Windows). Replace all `\` with `/`. The result is `[SKILL_ROOT]`.
+- **Find `[PLUGIN_ROOT]`**: Look at the `<skill location="...">` XML tag at the top of your prompt. Strip `/skills/cleaning-auto-transcripts/SKILL.md`. The result is `[PLUGIN_ROOT]`.
 - **Command**:
-  Use the pipeline script inside the skill directory:
+  Use the canonical pipeline script:
   ```bash
-  python3 "[SKILL_ROOT]/scripts/prepare_video.py" "VIDEO_URL"
+  python3 "[PLUGIN_ROOT]/scripts/prepare_video.py" "VIDEO_URL"
   ```
 
 ### Step 3: Verify Output
