@@ -3,7 +3,10 @@ import pathlib
 import sys
 import unittest
 
-sys.path.insert(0, str(pathlib.Path(__file__).parents[2] / "scripts"))
+_PLUGIN_ROOT = pathlib.Path(__file__).resolve().parents[3]
+for _p in (_PLUGIN_ROOT / "scripts", _PLUGIN_ROOT / "lib"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 from pack_timestamps import (
     cluster_by_tag,
     normalise_segments,

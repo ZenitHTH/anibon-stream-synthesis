@@ -1,6 +1,12 @@
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+_PLUGIN_ROOT = Path(__file__).resolve().parents[3]
+for _p in (_PLUGIN_ROOT / "scripts", _PLUGIN_ROOT / "lib"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from analyze_555 import (
     EMOJI_MARKER_RE,
