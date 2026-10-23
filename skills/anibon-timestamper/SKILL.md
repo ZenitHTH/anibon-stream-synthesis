@@ -27,11 +27,11 @@ Loaded by signal (add to prompt when needed):
 
 ## Pipeline (Linear, Top-to-Bottom)
 
-All paths relative to the skill root directory (`skills/anibon-timestamper/`).
+Commands below assume execution from the plugin root directory (`anibon-stream-synthesis/`).
 
 ### 0. Environment
 
-`scripts/` directory contains all helper scripts. Run `<script>.py --help` for flags.
+Shared cross-cutting CLI executables (`prepare_video.py`, `audit_gaps.py`, `check_sections.py`, `pack_timestamps.py`, `analyze_555.py`, `validate_tags.py`, `whisper_dispatcher.py`) reside at the plugin root `scripts/` directory. Skill-specific scripts reside in `skills/anibon-timestamper/scripts/`. Run `<script>.py --help` for flags.
 Store working files in `youtube_<video_id>_workspace/`.
 
 ### 1. Initialize
@@ -440,7 +440,7 @@ HH:MM:SS - [Tag] Description
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/prepare_video.py` | Download + clean + chunk (plugin root utility) |
+| `../../scripts/prepare_video.py` | Download + clean + chunk (plugin root utility) |
 | `scripts/dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
 | `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
 | `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/process/signal_detector.py`) |

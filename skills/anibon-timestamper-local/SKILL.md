@@ -22,11 +22,15 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 
 ## Pipeline Architecture
 
-| **0. Noise Cleaning & Pre-normalization** | `lib/process/signal_detector.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
+Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`). Shared CLI utilities live in `scripts/`; skill-specific runners live in `skills/anibon-timestamper-local/scripts/`.
+
+| Stage | Script / Module | Inputs / Outputs | Description |
+|-------|-----------------|------------------|-------------|
+| **0. Noise Cleaning & Pre-normalization** | `lib/process/signals/detector.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **0.5 Knowledge Self-Reading** | `lib/process/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
 | **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
 | **1.5 LiveChat & Mood Detection** | `scripts/analyze_555.py` / `lib/process/parity_gates.py` | `livechat/` → `mood_555.json` | Auto-detects 555/laugh bursts and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
-| **2. Topic Segmentation (Pass 1)** | `scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
+| **2. Topic Segmentation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
 | **2.5 Vision Ground Truth (Optional)** | `lib/process/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
 | **3. Summarizer & Assembly (Pass 2)** | `lib/process/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
 | **4. Garbled Collector & Whisper Ground Truth** | `scripts/whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
