@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-_PLUGIN_SCRIPTS = Path(__file__).resolve().parents[4] / "scripts"
+_PLUGIN_SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 
 
 def _run(script: str, *args) -> int | None:

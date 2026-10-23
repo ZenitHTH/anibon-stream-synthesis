@@ -41,6 +41,12 @@ class TestParityGates(unittest.TestCase):
             self.assertIn("audit_gaps.py", called_scripts)
             self.assertIn("check_sections.py", called_scripts)
 
+    def test_plugin_scripts_directory_exists_and_contains_gates(self):
+        from process.parity_gates import _PLUGIN_SCRIPTS
+        self.assertTrue(_PLUGIN_SCRIPTS.is_dir(), f"_PLUGIN_SCRIPTS does not exist: {_PLUGIN_SCRIPTS}")
+        self.assertTrue((_PLUGIN_SCRIPTS / "audit_gaps.py").is_file(), "audit_gaps.py missing in _PLUGIN_SCRIPTS")
+        self.assertTrue((_PLUGIN_SCRIPTS / "check_sections.py").is_file(), "check_sections.py missing in _PLUGIN_SCRIPTS")
+
 
 if __name__ == "__main__":
     unittest.main()
