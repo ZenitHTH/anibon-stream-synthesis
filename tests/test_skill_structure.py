@@ -171,16 +171,13 @@ class TestSkillStructure(unittest.TestCase):
         for rel in dead_paths:
             self.assertFalse((PLUGIN_ROOT / rel).exists(), f"Dead/divergent file still exists: {rel}")
 
-        symlinked = [
-            "skills/anibon-timestamper/scripts/process_chunks_local.py",
-            "skills/anibon-timestamper/scripts/pack_timestamps.py",
-            "skills/anibon-timestamper/scripts/check_sections.py",
-            "skills/anibon-timestamper/scripts/whisper_dispatcher.py",
-            "skills/anibon-timestamper-local/scripts/fetch_fgo_db.py",
-            "skills/anibon-timestamper-local/scripts/fetch_ygo_db.py",
+    def test_no_symlinked_scripts_in_skills(self):
+        symlinks = [
+            str(p.relative_to(PLUGIN_ROOT))
+            for p in PLUGIN_ROOT.glob("skills/*/scripts/*.py")
+            if p.is_symlink()
         ]
-        for rel in symlinked:
-            self.assertTrue((PLUGIN_ROOT / rel).is_symlink(), f"Expected symlink at {rel}")
+        self.assertEqual(symlinks, [], f"Deceptive script symlinks found in skills: {symlinks}")
 
     def test_no_vendored_prepare_video_duplicates(self):
         dups = list(PLUGIN_ROOT.glob("skills/*/scripts/prepare_video.py"))

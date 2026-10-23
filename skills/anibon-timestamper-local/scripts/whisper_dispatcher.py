@@ -1,1 +1,0 @@
-../../../scripts/whisper_dispatcher.py

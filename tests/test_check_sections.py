@@ -6,7 +6,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / "skills" / "anibon-timestamper" / "scripts" / "check_sections.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "scripts" / "check_sections.py"
 
 VALID_MD = textwrap.dedent("""\
     ══════════════════════════

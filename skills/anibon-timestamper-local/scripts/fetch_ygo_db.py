@@ -1,1 +1,0 @@
-../../anibon-world-identity/scripts/fetch_ygo_db.py

@@ -1,1 +1,0 @@
-../../../scripts/check_sections.py

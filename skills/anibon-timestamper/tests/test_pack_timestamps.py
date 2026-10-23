@@ -3,7 +3,7 @@ import pathlib
 import sys
 import unittest
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / "scripts"))
+sys.path.insert(0, str(pathlib.Path(__file__).parents[2] / "scripts"))
 from pack_timestamps import (
     cluster_by_tag,
     normalise_segments,

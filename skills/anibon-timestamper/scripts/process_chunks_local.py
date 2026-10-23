@@ -1,1 +1,0 @@
-../../anibon-timestamper-local/scripts/process_chunks_local.py

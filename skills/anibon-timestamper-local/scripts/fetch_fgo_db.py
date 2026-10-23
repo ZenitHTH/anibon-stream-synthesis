@@ -1,1 +1,0 @@
-../../anibon-world-identity/scripts/fetch_fgo_db.py
