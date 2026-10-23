@@ -182,6 +182,10 @@ class TestSkillStructure(unittest.TestCase):
         for rel in symlinked:
             self.assertTrue((PLUGIN_ROOT / rel).is_symlink(), f"Expected symlink at {rel}")
 
+    def test_no_vendored_prepare_video_duplicates(self):
+        dups = list(PLUGIN_ROOT.glob("skills/*/scripts/prepare_video.py"))
+        self.assertEqual(dups, [], f"Redundant prepare_video.py found in skills: {dups}")
+
     def test_agy_model_pinned_to_gemini_3_8_flash_high(self):
         targets = [
             PLUGIN_ROOT / "GEMINI.md",
