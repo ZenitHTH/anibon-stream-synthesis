@@ -8,11 +8,15 @@ import argparse
 import json
 import re
 import sys
+import time
+import urllib.error
 from pathlib import Path
 from typing import List, Optional, Tuple
+from urllib.parse import urlparse
 
 from process.assembly import finalize_and_assemble_timestamps
-from common.config import STAMP_COLLISION_SEC
+from common.config import PRIMARY_HOST, STAMP_COLLISION_SEC
+from common.lmstudio import is_host_reachable
 from process.prompts import build_recursive_prompt, load_world_identity_context
 from process.runners.common import (
     _call_chunk_model,
@@ -251,6 +255,72 @@ def _persist_chunk_output(
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+MAX_CHUNK_RETRIES: int = 3
+NETWORK_POLL_INTERVAL_SEC: float = 5.0
+RECOVERY_STABILIZE_SEC: float = 2.0
+
+
+def _is_network_failure(err: Exception) -> bool:
+    """Check if exception represents a network, socket, or timeout failure."""
+    if isinstance(err, (urllib.error.URLError, TimeoutError, ConnectionError, OSError)):
+        return True
+    msg = str(err).lower()
+    network_markers = ("timed out", "timeout", "errno 60", "errno 61", "connection", "temporary failure")
+    return any(marker in msg for marker in network_markers)
+
+
+def _wait_for_network_recovery(endpoint: str, poll_interval: float = NETWORK_POLL_INTERVAL_SEC) -> None:
+    """Pause execution and poll until unreachable host/endpoint recovers."""
+    parsed = urlparse(endpoint)
+    host = parsed.hostname or PRIMARY_HOST
+    port = parsed.port or 1234
+    print(f"\n[network] Endpoint {host}:{port} unreachable (blackout/cutout). Waiting...", flush=True)
+    while not is_host_reachable(host, port, timeout=2.0):
+        time.sleep(poll_interval)
+    print(f"\n[network] Connection to {host}:{port} restored! Resuming...", flush=True)
+    time.sleep(RECOVERY_STABILIZE_SEC)
+
+
+def _handle_inference_error(e: Exception, chunk_idx: str, endpoint: str, attempt: int, max_retries: int) -> bool:
+    """Handle error and decide whether network pause or normal retry delay is needed."""
+    if _is_network_failure(e):
+        _wait_for_network_recovery(endpoint)
+        print(f"[redo] {chunk_idx}: retrying after network recovery...", flush=True)
+        return False
+    print(f"\n[redo] {chunk_idx} error: {e}. Retrying ({attempt + 1}/{max_retries})...", flush=True)
+    time.sleep(2.0)
+    return True
+
+
+def _call_chunk_model_with_retry(
+    endpoint: str,
+    model: str,
+    prompt: str,
+    keyframes: list,
+    max_tokens: int,
+    temperature: float,
+    chunk_idx: str,
+    args: Optional[argparse.Namespace],
+    max_retries: int = MAX_CHUNK_RETRIES,
+) -> Optional[dict]:
+    """Execute model inference with automatic network recovery and redo on failure."""
+    attempt = 0
+    while attempt < max_retries:
+        try:
+            call_fn = _get_runtime_hook("_call_chunk_model", _call_chunk_model)
+            raw_text = call_fn(endpoint, model, prompt, keyframes, max_tokens, temperature, chunk_idx, args)
+            res = _parse_model_chunk_json(raw_text)
+            if res:
+                return res
+            print(f"\n[redo] {chunk_idx}: unparseable JSON. Retrying ({attempt + 1}/{max_retries})...", flush=True)
+            time.sleep(2.0)
+            attempt += 1
+        except Exception as e:
+            if _handle_inference_error(e, chunk_idx, endpoint, attempt, max_retries):
+                attempt += 1
+    return None
+
+
 def _execute_and_persist_chunk(
     endpoint: str,
     model: str,
@@ -267,21 +337,23 @@ def _execute_and_persist_chunk(
     workspace: Path,
     out_path: Path,
 ) -> Tuple[str, str]:
-    """Run model inference and persist valid topic and timestamp updates."""
-    try:
-        raw_text = _call_chunk_model(endpoint, model, prompt, keyframes, max_tokens, temperature, chunk_idx, args)
-        res = _parse_model_chunk_json(raw_text)
-        if res:
-            v_ts_sorted, is_cont, current_topic_title, rolling_summary = _update_topic_flow(
-                res, chunk, all_timestamps, current_topic_title, rolling_summary
-            )
-            _save_chunk_garbled_notes(res, workspace, chunk_idx)
-            _persist_chunk_output(
-                out_path, chunk_idx, is_cont, v_ts_sorted, res,
-                rolling_summary, current_topic_title, keyframes
-            )
-    except Exception as e:
-        print(f"[error] {chunk_idx}: {e}", file=sys.stderr)
+    """Run model inference with redo retries and persist valid topic updates."""
+    res = _call_chunk_model_with_retry(
+        endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes,
+        max_tokens=max_tokens, temperature=temperature, chunk_idx=chunk_idx, args=args,
+    )
+    if not res:
+        print(f"\n[error] {chunk_idx}: failed after all retry attempts", file=sys.stderr)
+        return current_topic_title, rolling_summary
+
+    v_ts_sorted, is_cont, current_topic_title, rolling_summary = _update_topic_flow(
+        res, chunk, all_timestamps, current_topic_title, rolling_summary
+    )
+    _save_chunk_garbled_notes(res, workspace, chunk_idx)
+    _persist_chunk_output(
+        out_path, chunk_idx, is_cont, v_ts_sorted, res,
+        rolling_summary, current_topic_title, keyframes
+    )
     return current_topic_title, rolling_summary
 
 

@@ -1,8 +1,17 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+
+_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+_LIB = Path(__file__).resolve().parent.parent.parent.parent / "lib"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+if str(_LIB) not in sys.path:
+    sys.path.insert(0, str(_LIB))
+
 import process_chunks_local as pcl
 
 
@@ -169,6 +178,83 @@ class TestProcessChunksResumeAndCleanSlate(unittest.TestCase):
             self.assertEqual(captured_kwargs.get("delta_threshold"), 0.12)
             self.assertEqual(captured_kwargs.get("num_frames"), 8)
             self.assertEqual(captured_kwargs.get("eval_batch_size"), 4096)
+
+    def test_chunk_redo_on_timeout_does_not_skip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks_dir = ws / "chunks"
+            chunks_dir.mkdir()
+            (chunks_dir / "chunk_00.txt").write_text("[00:00:00] สวัสดีครับ\n", encoding="utf-8")
+            out_dir = ws / "recursive_outputs"
+            out_dir.mkdir()
+
+            import urllib.error
+            calls = {"count": 0}
+            def fake_call_local(*args, **kwargs):
+                calls["count"] += 1
+                if calls["count"] == 1:
+                    raise urllib.error.URLError("Operation timed out")
+                return '{"is_continuation": false, "timestamps": ["00:00:00 - [Talk] สำเร็จ"], "chunk_summary": "ok", "updated_summary": "ok", "new_topic_title": "สำเร็จ"}'
+
+            with patch.object(pcl, "call_local", side_effect=fake_call_local), \
+                 patch("process.runners.recursive.is_host_reachable", return_value=True), \
+                 patch("process.runners.recursive.time.sleep", return_value=None), \
+                 patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(ws / "anibon_timestamps.md", [])):
+                pcl.run_recursive_mode(
+                    workspace=ws,
+                    chunk_files=[chunks_dir / "chunk_00.txt"],
+                    endpoint="http://localhost:1234/v1/chat/completions",
+                    model="test-model",
+                    lang="th",
+                    max_tokens=500,
+                    temperature=0.2,
+                    signals_map={},
+                    mappings=[],
+                    no_resume=True,
+                    max_chunks=1,
+                    no_summarizer_pass=True,
+                    block_size=40,
+                )
+
+            self.assertTrue((out_dir / "chunk_00.json").exists(), "Chunk 00 must be retried and saved, never skipped")
+            self.assertGreaterEqual(calls["count"], 2, "Must have retried after timeout failure")
+
+    def test_chunk_redo_on_unparseable_json_does_not_skip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks_dir = ws / "chunks"
+            chunks_dir.mkdir()
+            (chunks_dir / "chunk_00.txt").write_text("[00:00:00] สวัสดีครับ\n", encoding="utf-8")
+            out_dir = ws / "recursive_outputs"
+            out_dir.mkdir()
+
+            responses = [
+                "Not JSON at all",
+                '{"is_continuation": false, "timestamps": ["00:00:00 - [Talk] ผ่าน"], "chunk_summary": "ok", "updated_summary": "ok", "new_topic_title": "ผ่าน"}'
+            ]
+            def fake_call_local(*args, **kwargs):
+                return responses.pop(0)
+
+            with patch.object(pcl, "call_local", side_effect=fake_call_local), \
+                 patch("process.runners.recursive.time.sleep", return_value=None), \
+                 patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(ws / "anibon_timestamps.md", [])):
+                pcl.run_recursive_mode(
+                    workspace=ws,
+                    chunk_files=[chunks_dir / "chunk_00.txt"],
+                    endpoint="http://localhost:1234/v1/chat/completions",
+                    model="test-model",
+                    lang="th",
+                    max_tokens=500,
+                    temperature=0.2,
+                    signals_map={},
+                    mappings=[],
+                    no_resume=True,
+                    max_chunks=1,
+                    no_summarizer_pass=True,
+                    block_size=40,
+                )
+
+            self.assertTrue((out_dir / "chunk_00.json").exists(), "Chunk 00 must be retried and saved on invalid JSON")
 
 
 if __name__ == "__main__":
