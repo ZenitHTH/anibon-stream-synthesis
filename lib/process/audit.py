@@ -125,15 +125,7 @@ def _run_stage5_world_sanitizer(content: str, workspace: Path) -> str:
     """Execute Stage 5 World Sanitizer (Pokémon naming, token stutter, outro injection)."""
     try:
         from process.world_sanitizer import audit_and_sanitize_final_markdown
-        from chunk.topic_scanner import extract_macro_anchor
-        info_f = workspace / "info.json"
-        macro_anchor = None
-        if info_f.is_file():
-            try:
-                macro_anchor = extract_macro_anchor(json.loads(info_f.read_text(encoding="utf-8")))
-            except Exception:
-                pass
-        cleaned, _ = audit_and_sanitize_final_markdown(content, workspace, macro_anchor=macro_anchor)
+        cleaned, _ = audit_and_sanitize_final_markdown(content, workspace)
         return cleaned
     except Exception as e:
         print(f"[audit] World sanitizer notice: {e}")

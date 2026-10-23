@@ -17,10 +17,9 @@ _LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from interface import parse_ts
+from common.time import parse_ts
 
 REQUIRED_CHECKS = [
-    "anibon-analyzer.py — detects timeline gaps >10min",
     "detect_signals.py — TF-IDF keyword scan for sub-skill routing",
     "macro-density override — block=600 overlap=60 for talk-heavy",
 ]
@@ -77,8 +76,8 @@ def check_timestamps(timestamp_path):
         curr_ts = curr_parts[0]
 
         gap = parse_ts(curr_ts) - parse_ts(prev_ts)
-        if gap > 900:  # 15min
-            issues.append(f"GAP {prev_ts} → {curr_ts}: {gap//60}min (max 15min)")
+        if gap > 600:  # 10min
+            issues.append(f"GAP {prev_ts} → {curr_ts}: {gap//60}min (max 10min)")
 
     return issues
 
@@ -108,15 +107,7 @@ def main():
     else:
         print("\n✅ Workspace OK")
 
-    # 2. Run anibon-analyzer if available
-    analyzer = os.path.join(skill_base, "scripts", "anibon-analyzer.py")
-    if os.path.isfile(analyzer):
-        passed, out = run_check("anibon-analyzer", ["python3", analyzer, workspace], workspace)
-        print(f"\n{out}")
-    else:
-        print(f"\n⚠️  anibon-analyzer.py not found at {analyzer}")
-
-    # 3. Check for timestamp gaps (if already generated)
+    # 2. Check for timestamp gaps (if already generated)
     ts_path = os.path.join(workspace, "timestamps.txt")
     gap_issues = check_timestamps(ts_path)
     if gap_issues:
@@ -124,9 +115,9 @@ def main():
         for g in gap_issues:
             print(f"  - {g}")
     else:
-        print("\n✅ No timestamp gaps >15min" if os.path.isfile(ts_path) else "\n⏭️  No timestamp file yet")
+        print("\n✅ No timestamp gaps >10min" if os.path.isfile(ts_path) else "\n⏭️  No timestamp file yet")
 
-    # 4. Summary
+    # 3. Summary
     total_issues = len(ws_issues) + len(gap_issues)
     if total_issues > 0:
         print(f"\n❌ GATE BLOCKED: {total_issues} issue(s). Fix before proceeding.")

@@ -13,7 +13,7 @@ Symptoms of a violation:
 - Timestamps that repeat the same generic label across many time ranges (e.g., `[Talk] ตอบคำถามแชท` repeated 30+ times).
 - Zero reference to specific characters, story beats, or game events that were actually discussed.
 
-Correct behavior: After `anibon-analyzer.py` passes, the next step is **always** `invoke_subagent` per chunk using `subagent-prompt-template.md`.
+Correct behavior: After `preflight-gate.py` passes, the next step is **always** `invoke_subagent` per chunk using `subagent-prompt-template.md`.
 
 ## agy Model Rule
 

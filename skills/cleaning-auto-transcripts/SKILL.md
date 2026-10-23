@@ -65,10 +65,7 @@ The file for storing misspelled-to-correct-spelling mappings is stored as JSON:
 ---
 
 ## Helper Scripts & Native Tools
-**CRITICAL RULE (Ponytail Mode):** Never build reusable CLI abstractions for one-off JSON operations. Rely exclusively on native tools (`jq` or PowerShell `ConvertFrom-Json`) for searching, dumping, and previewing transcripts.
-
-For convenient regex-based mapping cleanup, use:
-- [clean_transcript.py](scripts/clean_transcript.py)
+**CRITICAL RULE (Ponytail Mode):** Never build reusable CLI abstractions for one-off JSON operations. Rely exclusively on native tools (`jq` or PowerShell `ConvertFrom-Json`) for searching, dumping, and previewing transcripts. Transcript cleaning and chunking is automated via root utility `scripts/prepare_video.py` and `lib/common/cleaner.py`.
 
 ### Fetching Transcripts (Native)
 **CRITICAL**: See **Step 2** for the exact command to fetch the transcript safely into an isolated workspace.
@@ -77,19 +74,11 @@ For convenient regex-based mapping cleanup, use:
 - **Local run**: Tell the user and ask which browser they use (e.g., `chrome`, `brave`, `edge`). Append `--cookies-from-browser <browser_name>` to the `yt-dlp` command. Do NOT guess the browser name or use random session strings.
 - **OpenCode / Cloud Sandbox run**: If you are in an isolated cloud environment, `--cookies-from-browser` WILL FAIL. Ask the user to download the transcript locally and upload `raw_transcript.json` to the session workspace.
 
-### clean_transcript.py Usage
-Use simple positional arguments: `python3 "[SKILL_ROOT]/scripts/clean_transcript.py" <input.json> [custom_mappings.json] > output.json`
+### Automated Preparation
+Use root script `scripts/prepare_video.py <URL>` which automatically downloads, cleans, and chunks:
 
 ```bash
-# Default mapping (outputs single JSON to stdout)
-python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json > cleaned_transcript.json
-
-# Custom mapping
-python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json custom_mappings.json > cleaned_transcript.json
-
-# Chunking mode (for MapReduce pipelines like anibon-timestamper)
-# Use the --chunk flag to output segments with overlap directly to a folder, instead of stdout.
-python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json --chunk --chunk-dir chunks --block 900 --overlap 60
+python3 scripts/prepare_video.py <YouTube_URL> --workspace ~/youtube_<id>_workspace
 ```
 
 ### Transcript Operations (Native One-Liners)
@@ -158,7 +147,7 @@ When activating a summarization or timestamping skill, follow these steps:
 1. **anibon-timestamper**:
    * **REQUIRED SUB-SKILL**: Use `cleaning-auto-transcripts` to clean the transcript file before running the timestamp script, for stable keyword matching.
 2. **youtube-minutes-synthesis**:
-   * **REQUIRED SUB-SKILL**: Switch to fetching and cleaning the transcript with `clean_transcript.py` as the base cleaning step (instead of using raw `fetch_transcript.py`) so the meeting-minutes report is free of transcription noise.
+   * **REQUIRED SUB-SKILL**: Fetch and clean the transcript with `scripts/prepare_video.py` as the base preparation step so the meeting-minutes report is free of transcription noise.
 
 ---
 

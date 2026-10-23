@@ -117,7 +117,7 @@ class TestSkillStructure(unittest.TestCase):
             if (SKILLS_DIR / d).is_dir() and not d.startswith(".") and d != "reference"
         ]
         self.assertEqual(
-            len(skill_dirs), 23, f"Expected 23 skill directories, found {len(skill_dirs)}"
+            len(skill_dirs), 22, f"Expected 22 skill directories, found {len(skill_dirs)}"
         )
         for d in skill_dirs:
             self.assertIn(d, text, f"docs/SKILLS.md missing entry for {d}")
@@ -167,6 +167,15 @@ class TestSkillStructure(unittest.TestCase):
             "skills/cleaning-auto-transcripts/scripts/clean_garbled_dictionary.py",
             "scripts/subagent-prompt-builder.py",
             "skills/anibon-timestamper/scripts/test_analyze_555_emoji.py",
+            "lib/chunk/topic_scanner.py",
+            "lib/chunk/analyzer.py",
+            "lib/process/vision.py",
+            "skills/anibon-timestamper/scripts/anibon-analyzer.py",
+            "skills/anibon-timestamper/scripts/detect_boundaries.py",
+            "skills/anibon-timestamper/scripts/dump_chunk_text.py",
+            "skills/anibon-timestamper/scripts/merge_timestamps.py",
+            "skills/cleaning-auto-transcripts/scripts/clean_transcript.py",
+            "skills/anibon-stream-synthesis-ffmpeg/SKILL.md",
         ]
         for rel in dead_paths:
             self.assertFalse((PLUGIN_ROOT / rel).exists(), f"Dead/divergent file still exists: {rel}")

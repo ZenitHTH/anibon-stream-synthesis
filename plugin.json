@@ -5,7 +5,7 @@
   "root_cause": "subagent-prompt-template.md exists but orchestrator writes ad-hoc prompts — no OUTPUT CONTRACT, no density self-check, no inline JSON. Subagents produce vague output. Orchestrator falls back to manual stamps → lost domain depth.",
   "fix": [
     "scripts/subagent-prompt-builder.py — canonical prompt from template, 1 chunk per agent, strict contract",
-    "scripts/preflight-gate.py — analyzer + detect_topics before any spawn",
+    "scripts/preflight-gate.py — workspace checks + gap gate before any spawn",
     "scripts/assembly-gate.py — dedup, caveman headers, gap audit"
   ],
   "enforcement": {

@@ -142,10 +142,10 @@ If a chunk is flagged `MEME_PULSE` but the subagent writes a flat, factual first
 
 ### 4. Analyze (Pre-flight)
 
-Quick summary of chunk categories, gaps, byte sizes. Note: On Windows, use `-X utf8` to avoid console `UnicodeEncodeError`.
+Quick verification of workspace files and gap checks:
 
 ```bash
-python3 -X utf8 scripts/anibon-analyzer.py ~/youtube_<id>_workspace/
+python3 scripts/preflight-gate.py ~/youtube_<id>_workspace/
 ```
 
 ### 5. Detect Signals → Match Knowledge Files
@@ -183,15 +183,9 @@ python3 ../anibon-world-identity/scripts/fetch_ygo_db.py --check --db "../refere
 
 **Inject** the resolved name map into the Step 7 subagent prompts (any chunk whose signal matches one of these files) so `[Story]` stamps use canonical names, not phonetic guesses. Skip when stream covers well-known pre-cutoff content.
 
-### 6. Detect Topic Boundaries (Optional)
+### 6. Inspect Topic Boundaries from Signals (Optional)
 
-For long streams with clear topic shifts. Run:
-
-```bash
-python3 -X utf8 scripts/detect_boundaries.py --chunks ~/youtube_<id>_workspace/chunks/ --signals ~/youtube_<id>_workspace/signals.json --output ~/youtube_<id>_workspace/boundaries.json
-```
-
-If boundaries look noisy, fall back to manual identification from `signals.json`: look for chunks where `matched_files` changes (e.g., gaming→Genshin→FGO). Note timestamps for `--break-at` in Step 9.
+For long streams with clear topic shifts, inspect `signals.json`: look for chunks where `primary_topic` or `matched_files` changes (e.g., gaming→Genshin→FGO). Note timestamps for `--break-at` in Step 9 if manual section breakpoints are desired.
 
 ### 7. Spawn Subagents (Parallel)
 
@@ -257,8 +251,7 @@ Each `anibon-chunk-timestamper` returns plain-text timestamp lines (typically 2�
 Write each subagent's output to its own file (e.g., `chunk_001.txt`, `chunk_002.txt`). Then merge + sort chronologically:
 
 ```bash
-python3 scripts/merge_timestamps.py ~/youtube_<id>_workspace/chunk_*.txt \
-  -o ~/youtube_<id>_workspace/all_timestamps.txt
+cat ~/youtube_<id>_workspace/chunk_*.txt | sort | uniq > ~/youtube_<id>_workspace/all_timestamps.txt
 ```
 
 ### 8.5. Audit Gaps (MANDATORY before summarizer)
@@ -441,25 +434,20 @@ HH:MM:SS - [Tag] Description
 | Script | Purpose |
 |--------|---------|
 | `../../scripts/prepare_video.py` | Download + clean + chunk (plugin root utility) |
-| `scripts/dump_chunk_text.py` | Dump clean formatted text from XML chunks for subagents |
-| `scripts/anibon-analyzer.py` | Pre-flight: gaps, categories, byte sizes |
-| `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/process/signal_detector.py`) |
-| `scripts/detect_boundaries.py` | Detect topic boundaries (feeds `--topic-json` in Step 9) |
+| `scripts/detect_signals.py` | TF-IDF signal + knowledge matching (powered by `lib/process/signals`) |
 | `scripts/align_live_chat.py` | Slice LiveChat event feed to per-transcript-chunk logs (Step 3.5) |
 | `../../scripts/analyze_555.py` | Detect Thai-laugh/meme pulses from aligned LiveChat → per-chunk mood verdict (Step 3.7) |
 | `scripts/validate_mood.py` | Verify mood-bearing timestamps honour mood_555 verdicts (Step 11.5) |
 | `../anibon-livechat-analysis/scripts/parse_live_chat.py` | Parse `.live_chat.json` to event feed (Step 3.5) |
 | `../anibon-livechat-analysis/scripts/extract_visual_livechat.py` | Extract burned-in on-screen LiveChat via Gemini vision proxy when `.live_chat.json` is missing (Step 3.5) |
-| `scripts/merge_timestamps.py` | Combine + sort subagent outputs |
 | `../anibon-timestamper-local/scripts/process_chunks_local.py` | Local LLM sequential chunk runner via LM Studio / llama.cpp OpenAI endpoint |
 | `../../scripts/audit_gaps.py` | Gap audit (NO GAPS rule) + gap→chunk mapping (Step 8.5) |
-| `../../scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`, `--topic-json`) |
+| `../../scripts/pack_timestamps.py` | Byte-limited section packing (supports `--break-at`) |
 | `../../scripts/check_sections.py` | Validate byte cap + ASR garbles |
 | `scripts/validate_part_coherence.py` | Cross-reference game names vs signals |
 | `../../scripts/validate_tags.py` | Validate timestamp tag vocabulary |
 | `../../scripts/whisper_dispatcher.py` | Slices audio and transcribes acoustic ground truth via whisper.cpp (Step 8.6a) |
 | `../cleaning-auto-transcripts/scripts/clean_garbled_english.py` | Normalize Thai-Whisper garbled English (Step 3) |
-| `../cleaning-auto-transcripts/scripts/clean_transcript.py` | Raw json3 cleaner (called by prepare_video) |
 | `../anibon-world-identity/scripts/fetch_story_ref.py` | Fetch/cache story synopses (user consent for websearch) |
 | `../anibon-world-identity/scripts/align_ref_timeline.py` | Align reference SRT timestamps with chunks |
 | `../anibon-world-identity/scripts/fetch_fgo_db.py`, `fetch_ygo_db.py` | Build card databases (World Identity) |
@@ -475,7 +463,7 @@ HH:MM:SS - [Tag] Description
 - **ONE FILE** — single `.md` with `═══` section blocks. No `part1.md`.
 - **NO GAPS** — max 10 min between timestamps unless verified silent.
 - **INTRO BREAKDOWN** — intro >10 min → break into 3-5 min sub-topic milestones.
-- **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → `merge_timestamps.py` → `anibon-summarizer`.
+- **NO AD-HOC TIMESTAMPS** — only via subagent pipeline → all_timestamps.txt → anibon-summarizer.
 - **READ BOTH SIDES** — subagents must read the ENTIRE transcript chunk AND its LiveChat log (when present) before writing any timestamp. Situation + emotion come from both talks and chat, never from `primary_topic` alone.
 - **HONOUR THE MOOD VERDICT** — when `mood_555.json` exists, inject each chunk's `tone` guidance (mood + suggested verbs) into the subagent prompt. The AI keeps its own first-verb choice, but must not flatline a chat-laugh/hype peak into a calm factual verb.
 - **NON-SPOILER GACHA POLICY** — Never spoil whether the streamer won or lost a gacha pull in the timestamp description. Focus on anticipation, the featured banner/character, and chat interactions.

@@ -78,12 +78,8 @@ from download import (
 # ── 3. Chunk Domain (Chunk File Management, Parsing, State) ──────────────────
 import chunk
 from chunk import (
-    calculate_youtube_blocks,
     chunk_sort_key,
-    classify_chunk,
-    detect_timeline_gaps,
     discover_chunks,
-    extract_macro_anchor,
     load_chunk_activity,
     load_chunk_json,
     load_chunk_livechat,
@@ -94,7 +90,6 @@ from chunk import (
     load_state,
     parse_timestamp_line,
     save_state,
-    scan_chunk_topic_pivot,
     write_chunk_json,
     write_chunk_txt,
     write_chunk_xml,
@@ -211,11 +206,6 @@ __all__ = [
     "load_chunk_livechat",
     "load_chunk_mood",
     "parse_timestamp_line",
-    "classify_chunk",
-    "detect_timeline_gaps",
-    "calculate_youtube_blocks",
-    "extract_macro_anchor",
-    "scan_chunk_topic_pivot",
     # Process
     "compute_idf_stats",
     "match_chunk",

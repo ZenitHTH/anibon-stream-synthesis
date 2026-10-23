@@ -112,11 +112,6 @@ def main() -> None:
         download_storyboard(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
 
-    if args.vision and args.format in ["json", "xml"]:
-        from interface import process as _proc
-
-        _proc.vision.run(workspace, url)
-
     print(f"[*] Done! Wrote {n} chunks ({args.format}) to {workspace}/chunks/")
 
 

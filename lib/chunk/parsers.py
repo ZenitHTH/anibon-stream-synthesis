@@ -13,7 +13,7 @@ from common.time import parse_ts
 # Standard format:   HH:MM:SS - [Tag][Tag] Description
 LINE_RE = re.compile(r"^(\d{2}:\d{2}:\d{2})\s*-\s*((?:\[.*?\])+)\s*(.*)$")
 
-# Flexible format used by merge_timestamps:   HH:MM:SS - [Tag] Desc  or  HH:MM:SS Desc
+# Flexible format:   HH:MM:SS - [Tag] Desc  or  HH:MM:SS Desc
 MERGE_RE = re.compile(r"^(\d{2}:\d{2}:\d{2})\s*(?:-\s*)?(?:\[(.*?)\])?\s*(.*)$")
 
 

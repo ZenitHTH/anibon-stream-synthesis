@@ -1,6 +1,6 @@
 # Anibon Stream Synthesis — Skills Index & Sitemap
 
-This document lists all 23 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
+This document lists all 22 skills available within the anibon-stream-synthesis plugin, categorized by their primary role in the pipeline.
 
 ## 1. Orchestrator Skills
 
@@ -26,8 +26,7 @@ Specialized handlers loaded by signal triggers or fallback logic:
 - livestream-scene-selection — Selects timeline boundaries for highlight editing.
 - antigravity-vision-proxy — Inspects video frames via ffmpeg + view_file when vision ground truth is needed.
 - verifying-stream-ground-truth — Extracts targeted video frames to verify disputed numbers, campaign banners, and proper nouns that ASR misspeaks.
-- edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, and audio sync fixing.
-- anibon-stream-synthesis-ffmpeg — Advanced FFmpeg editing skill for seamless narrative flows.
+- edit-cut-video-ffmpeg — Frame-accurate video cutting, concatenating, audio sync fixing, and seamless narrative flows.
 - batching-subagents-concurrency — Rate-limit-safe parallel subagent dispatch (MAX 6 concurrent batches).
 
 ## 3. Utility & Synthesis Skills

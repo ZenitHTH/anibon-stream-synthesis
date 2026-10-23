@@ -10,6 +10,7 @@ from typing import List, Optional, Tuple
 
 from process.audit import audit_timestamps_against_glossary
 from process.parity_gates import run_parity_gates
+from common.time import parse_ts as ts_to_sec
 from process.summarizer import (
     assemble_parts,
     enforce_byte_cap,
@@ -82,7 +83,7 @@ def finalize_and_assemble_timestamps(
     if args and getattr(args, "byte_cap", False):
         byte_cap = True
 
-    deduped = list(dict.fromkeys(all_timestamps))
+    deduped = sorted(list(dict.fromkeys(all_timestamps)), key=ts_to_sec)
     _write_raw_timestamps(workspace, deduped)
 
     deduped = _prune_and_verify_timestamps(

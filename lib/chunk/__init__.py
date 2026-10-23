@@ -4,11 +4,6 @@ chunk — Chunk management, file I/O, state tracking, and boundary analysis.
 
 from __future__ import annotations
 
-from chunk.analyzer import (
-    calculate_youtube_blocks,
-    classify_chunk,
-    detect_timeline_gaps,
-)
 from chunk.chunk_io import (
     chunk_sort_key,
     load_chunk_json,
@@ -28,12 +23,8 @@ from chunk.state import (
     load_state,
     save_state,
 )
-from chunk.topic_scanner import extract_macro_anchor, scan_chunk_topic_pivot
 
 __all__ = [
-    "calculate_youtube_blocks",
-    "classify_chunk",
-    "detect_timeline_gaps",
     "chunk_sort_key",
     "load_chunk_json",
     "load_chunk_xml",
@@ -50,6 +41,4 @@ __all__ = [
     "load_chunk_mood",
     "parse_timestamp_line",
     "parse_timestamps",
-    "extract_macro_anchor",
-    "scan_chunk_topic_pivot",
 ]

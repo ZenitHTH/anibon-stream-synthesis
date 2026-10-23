@@ -28,7 +28,7 @@ CONTEXT: The orchestrator will inject stream date, previous group's last topic, 
 Read and process chunks **one by one in order**. For each chunk:
 
 1. Read the ENTIRE chunk transcript — every line, not a skim.
-   Prefer `python -X utf8 scripts/dump_chunk_text.py <chunk_xml>` for clean text if file path given.
+   Read the chunk file directly via read_file or view_file.
 2. Read the ENTIRE LiveChat log for this chunk (injected per chunk), if present.
 3. Do NOT write any timestamp until you have read the chunk fully.
 4. If you cannot read the full chunk, output NOTHING for it and say "incomplete read".

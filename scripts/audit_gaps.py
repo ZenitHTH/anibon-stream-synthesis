@@ -11,21 +11,23 @@ a fill agent for. Exit 0 = no gaps, 1 = gaps found.
 import sys, re, argparse
 from pathlib import Path
 
-LINE_RE = re.compile(r"^(\d\d):(\d\d):(\d\d)\s*-")
+_LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
 
+from common.time import parse_ts
 
-def _sec(h: int, m: int, s: int) -> int:
-    return h * 3600 + m * 60 + s
+LINE_RE = re.compile(r"^(\d\d:\d\d:\d\d)\s*-")
 
 
 def parse_timestamps(text: str):
     """Return sorted [(seconds, line), ...] from timestamp lines."""
     out = []
     for ln in text.splitlines():
-        m = LINE_RE.match(ln.strip())
+        line = ln.strip()
+        m = LINE_RE.match(line)
         if m:
-            h, mi, s = map(int, m.groups())
-            out.append((_sec(h, mi, s), ln.strip()))
+            out.append((parse_ts(m.group(1)), line))
     out.sort(key=lambda x: x[0])
     return out
 
@@ -42,14 +44,13 @@ def find_gaps(ts, max_gap_sec=600):
 
 def chunk_for_ts(ts_str: str, chunk_span_sec: int = 300) -> str:
     """Map an HH:MM:SS to the chunk id covering it (start = n*span)."""
-    m = LINE_RE.match(ts_str)
-    h, mi, s = map(int, m.groups())
-    return f"chunk_{_sec(h, mi, s) // chunk_span_sec:02d}"
+    sec = parse_ts(ts_str)
+    return f"chunk_{sec // chunk_span_sec:02d}"
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("input", help="merged timestamp list file (merge_timestamps.py output)")
+    ap.add_argument("input", help="merged timestamp list file (all_timestamps.txt)")
     ap.add_argument("--max-gap", type=int, default=600,
                     help="max allowed seconds between timestamps (default 600 = 10 min)")
     ap.add_argument("--chunk-span", type=int, default=300,

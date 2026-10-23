@@ -21,6 +21,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+_LIB_DIR = str(Path(__file__).resolve().parent.parent.parent.parent / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
+from common.time import fmt_hhmmss
+from process.text import is_hallucinated
+
 WHISPER_CLI = str(Path.home() / "whisper.cpp/build/bin/whisper-cli")
 if not Path(WHISPER_CLI).exists() and Path(WHISPER_CLI + ".exe").exists():
     WHISPER_CLI += ".exe"
@@ -84,20 +91,8 @@ def log_event(worker_id: str, stage: str, msg: str, tracker: ProgressTracker = N
 
 
 # ---------------------------------------------------------------------------
-# Task 1: Detection
+# Task 1: Detection (delegated to process.text)
 # ---------------------------------------------------------------------------
-
-def is_hallucinated(text: str, threshold: float = 0.4) -> bool:
-    """True if a repeated n-gram (n=2..4, count>=2) covers > threshold of text length."""
-    if len(text) < 8:
-        return False
-    for n in range(2, 5):
-        ngrams = [text[i:i+n] for i in range(len(text) - n + 1)]
-        for gram in set(ngrams):
-            count = text.count(gram)
-            if count >= 2 and count * n / len(text) > threshold:
-                return True
-    return False
 
 
 # ---------------------------------------------------------------------------
@@ -193,10 +188,7 @@ def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float, device
 # ---------------------------------------------------------------------------
 
 def _fmt_ts(seconds: float) -> str:
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    s = int(seconds % 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
+    return fmt_hhmmss(seconds)
 
 
 def _try_whisper_task(task):

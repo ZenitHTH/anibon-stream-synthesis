@@ -18,7 +18,7 @@ _LIB_DIR = str(Path(__file__).resolve().parent.parent / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
-from interface import parse_ts
+from common.time import parse_ts
 
 
 def parse_timestamps(text):
@@ -70,7 +70,7 @@ def compute_section_bytes(lines):
     return len('\n'.join(lines).encode('utf-8'))
 
 
-def audit_gaps(stamps, max_gap_min=15):
+def audit_gaps(stamps, max_gap_min=10):
     """Find gaps > max_gap_min between consecutive stamps."""
     issues = []
     for i in range(1, len(stamps)):

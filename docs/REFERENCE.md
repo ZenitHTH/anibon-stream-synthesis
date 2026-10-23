@@ -6,9 +6,9 @@
 scripts/                          Root-level Python utilities
   prepare_video.py                All-in-one download, clean, chunk
   pack_timestamps.py              Flat timestamp packer → parts + markdown
-  clean_transcript.py             Space normalization & MapReduce chunking
   check_sections.py               YouTube comment byte-size checker
-  anibon-analyzer.py              Gap detection & chunk classifier
+  preflight-gate.py               Pre-flight checklist & gap gate
+  assembly-gate.py                Assembly deduplication & gap audit gate
   fetch_fgo_db.py / fetch_ygo_db.py  DB bootstrap scripts
   plan_highlight.py / cut_highlight.py / verify_highlight.py  Video highlight tools
 skills/                           Agent skills
@@ -80,13 +80,12 @@ Input format (one per line): `HH:MM:SS - [Tag] Description`
 
 **TAG_MACRO_MAP:** `Story`→`TALK`, `WatchParty`→`NEWS` for density-aware grouping.
 
-### `clean_transcript.py` — Normalization & Chunking
+### `prepare_video.py` — Download, Normalization & Chunking
 
 Regex mapping, UTF-8 normalization (critical for Windows PowerShell), and chunk generation.
 
 ```bash
-python3 scripts/clean_transcript.py raw_transcript.json > cleaned.json
-python3 scripts/clean_transcript.py raw_transcript.json --chunk --chunk-dir chunks --block 300 --overlap 30
+python3 scripts/prepare_video.py <YouTube_URL> --format xml --block 300 --overlap 30
 ```
 
 ### `check_sections.py` — YouTube Comment Size Validator

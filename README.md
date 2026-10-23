@@ -198,8 +198,7 @@ python3 skills/whisper-corruption-recovery/scripts/enrich_uncertain_with_vision.
 | `masking-royal-news` | Conditional metaphor-based safety masking for sensitive Thai royal/political legal-risk topics | Triggered only on legal-risk signals |
 | `batching-subagents-concurrency` | Rate-limit-safe parallel subagent batching (MAX 6–10 concurrent per batch turn) | Auto-loaded by orchestrators |
 | `livestream-scene-selection` | Filters and marks timeline scenes with narrative buffers for highlight reels | Used by `creating-highlight-video` |
-| `edit-cut-video-ffmpeg` | Frame-accurate FFmpeg cutting, concatenation, and audio/video sync repair | Used by `creating-highlight-video` |
-| `anibon-stream-synthesis-ffmpeg` | Advanced FFmpeg waveform cutting and narrative transition synthesis without jump-cuts | Used for video editing workflows |
+| `edit-cut-video-ffmpeg` | Frame-accurate FFmpeg cutting, concatenation, audio/video sync repair, and narrative transitions | Used by `creating-highlight-video` |
 
 ### 3. Archive, Research & Tooling Skills
 | Skill | Description | Trigger / Usage |

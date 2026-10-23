@@ -17,7 +17,7 @@ CONTEXT: Stream recorded on <Upload Date> (<Time_Ago>).
 ## Step 0: READ EVERYTHING FIRST (MANDATORY, do this before anything else)
 
 1. Read the ENTIRE transcript chunk — every line, not a skim. If it is a file,
-   read the whole file top-to-bottom (prefer `python -X utf8 scripts/dump_chunk_text.py <chunk_xml>` for clean text).
+   read the whole file top-to-bottom via read_file or view_file.
 2. Read the ENTIRE LiveChat log for this chunk (LIVE-CHAT LOG block below), if present.
 3. Do NOT write a single timestamp until you have read both fully.
 4. If you cannot read the full chunk, output NOTHING and say "incomplete read" — never stamp from a skim.
@@ -114,10 +114,6 @@ If unsure → merge. Never split.
 
 ## Step 1: Verify Signal Against Transcript
 The [DETECTION SIGNAL] block above suggests the primary topic(s). Confirm by reading the transcript text. If signal says FGO but transcript shows WuWa → trust transcript. Match card/game terms against FGO/YGO database records if provided.
-
-> [!TIP]
-> **Reading Chunks**: To inspect transcript dialogue without XML truncation or encoding errors on Windows, run:
-> `python -X utf8 scripts/dump_chunk_text.py <path_to_chunk_xmls>`
 
 ## Step 2: Time Alignment
 For every valid timestamp event:
