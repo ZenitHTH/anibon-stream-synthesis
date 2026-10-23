@@ -12,7 +12,11 @@ class LiveChatPackageFinder:
     """Enables importing skills.anibon_livechat_analysis.* regardless of hyphenated directory names."""
     @classmethod
     def find_spec(cls, fullname, path=None, target=None):
-        if fullname == "skills.anibon_livechat_analysis":
+        if fullname == "skills":
+            spec = ModuleSpec(fullname, None, is_package=True)
+            spec.submodule_search_locations = [str(Path(__file__).resolve().parent.parent.parent)]
+            return spec
+        elif fullname == "skills.anibon_livechat_analysis":
             pkg_dir = Path(__file__).resolve().parent.parent
             spec = ModuleSpec(fullname, None, is_package=True)
             spec.submodule_search_locations = [str(pkg_dir)]

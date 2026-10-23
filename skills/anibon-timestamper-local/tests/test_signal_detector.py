@@ -1,7 +1,16 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+_LIB = Path(__file__).resolve().parent.parent.parent.parent / "lib"
+if str(_SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS))
+if str(_LIB) not in sys.path:
+    sys.path.insert(0, str(_LIB))
+
 from signal_detector import detect_signals_for_chunks, extract_metadata_signals, discover_reference_games
 
 
