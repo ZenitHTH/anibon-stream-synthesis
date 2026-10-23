@@ -3,11 +3,12 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: $0 <WORKSPACE> [ENDPOINT_OR_IP] [MODEL] [LANG] [MODE]"
+    echo "Usage: $0 <WORKSPACE> [ENDPOINT_OR_IP] [MODEL] [LANG] [MODE] [VIDEO_URL]"
     echo "  ENDPOINT_OR_IP: Full URL or IP address (default: 100.115.25.30)"
     echo "  MODEL: Model identifier (default: auto)"
     echo "  LANG: Output language th|en (default: th)"
     echo "  MODE: recursive|group (default: recursive)"
+    echo "  VIDEO_URL: Optional YouTube URL for whisper audio slicing"
     exit 1
 }
 

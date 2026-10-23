@@ -241,6 +241,12 @@ class TestSkillStructure(unittest.TestCase):
         self.assertFalse((timestamper_dir / "frames").exists(), "Empty 'frames' folder found")
         self.assertFalse((timestamper_dir / "resources").exists(), "Redundant 'resources' directory found in timestamper")
 
+    def test_launch_local_runners_consolidation(self):
+        local_scripts = SKILLS_DIR / "anibon-timestamper-local" / "scripts"
+        self.assertFalse((local_scripts / "launch_local.zsh").exists(), "Redundant launch_local.zsh still exists")
+        sh_content = (local_scripts / "launch_local.sh").read_text(encoding="utf-8")
+        self.assertIn("VIDEO_URL", sh_content, "launch_local.sh missing VIDEO_URL argument support")
+
 
 if __name__ == "__main__":
 
