@@ -104,7 +104,7 @@ python3 "[SKILL_ROOT]/scripts/clean_transcript.py" raw_transcript.json --chunk -
 
 Whisper auto-transcription of Thai mixes Latin fragments into Thai words when an English phoneme is rendered as ASCII: `อีเวent` (event), `ยูทูer` (YouTuber), `ทarเก็ต` (target), `เซerกอร` (Berserker), `อิบukิ` (Ibuki). These survive `default_mappings.json` (which only handles game titles) and are the main source of garble in ANIBON streams.
 
-**Resource**: rules live in the shared `resources/garbled_replacements.json` (plugin root) using the Version 2 Grouped Schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`). `clean_garbled_english.py` auto-loads it via `resource_path()`, and `update_garbled_dictionary.py` synchronizes both root and skill copies. Rules are regex, `re.IGNORECASE`, first-match wins; within each canonical word, longer/more specific patterns are tried first.
+**Resource**: rules live in the shared `resources/garbled_replacements.json` (plugin root) using the Version 2 Grouped Schema (`mappings: { "CanonicalWord": ["pattern1", "pattern2"] }`). `clean_garbled_english.py` auto-loads it via `resource_path()`, and `update_garbled_dictionary.py` manages updates directly against this single source of truth. Rules are regex, `re.IGNORECASE`, first-match wins; within each canonical word, longer/more specific patterns are tried first.
 
 ### Workflow when a stream still shows hybrids
 1. **Detect**: scan transcript for `[\u0e00-\u0e7f]+[A-Za-z]{2,}` (Thai run glued to a Latin tail). Count tokens/unique.

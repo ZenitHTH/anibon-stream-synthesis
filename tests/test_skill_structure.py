@@ -247,6 +247,11 @@ class TestSkillStructure(unittest.TestCase):
         sh_content = (local_scripts / "launch_local.sh").read_text(encoding="utf-8")
         self.assertIn("VIDEO_URL", sh_content, "launch_local.sh missing VIDEO_URL argument support")
 
+    def test_garbled_dictionary_sync_targets_only_root_resource(self):
+        script_path = SKILLS_DIR / "cleaning-auto-transcripts" / "scripts" / "update_garbled_dictionary.py"
+        content = script_path.read_text(encoding="utf-8")
+        self.assertNotIn('skills" / "anibon-timestamper" / "resources', content, "update_garbled_dictionary targets deleted skills resources directory")
+
 
 if __name__ == "__main__":
 

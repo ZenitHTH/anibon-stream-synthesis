@@ -2,8 +2,8 @@
 
 This reference file lists all exclusive Anibon channel emotes, standard YouTube global emotes, their subculture meanings, pulse weights, and mood classifications for `anibon-timestamper` and `anibon-livechat-analysis`.
 
-> **MACHINE SOURCE**: `analyze_555.py` reads the JSON mirror of this dictionary at
-> `skills/anibon-timestamper/resources/emoji_dictionary.json`. Each emote carries a
+> **MACHINE SOURCE**: `analyze_555.py` reads the JSON source of this dictionary at
+> `resources/emoji_dictionary.json`. Each emote carries a
 > `laugh` flag — only `laugh: true` emotes count as laugh markers when detecting
 > `MEME_PULSE`. Flat/AFK/confusion/political/welcome emotes are `laugh: false`.
 > Keep the JSON in sync when adding/removing emotes in this doc.

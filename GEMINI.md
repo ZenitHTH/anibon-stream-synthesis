@@ -63,7 +63,7 @@ Whenever updating phonetic replacements or expanding domain knowledge in this pl
      python3 skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
          --add "<CanonicalTarget>" "<noise_pattern_1>" "<noise_pattern_2>"
      ```
-   - This ensures automatic normalization, regex safety checks, deduplication, and synchronization across both mirror copies (`resources/` and `skills/anibon-timestamper/resources/`).
+   - This ensures automatic normalization, regex safety checks, deduplication, and atomic updates to the single root resource (`resources/garbled_replacements.json`).
 
 2. **Domain Knowledge File Lifecycle (`anibon-world-identity`)**:
    - When a livestream covers a major franchise or topic lacking a reference file in `skills/anibon-world-identity/references/`, do not leave `signals.json` with 0 glossary matches.

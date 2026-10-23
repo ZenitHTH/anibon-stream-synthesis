@@ -404,7 +404,7 @@ Once `output.md` is generated and verified (or after a multi-part series run fin
 1. **Synchronize Garbled Notes**:
    - Collect and harvest all spotted `GARBLED_NOTES:` from chunk timestamper subagents across all parts.
    - Ingest into `resources/garbled_replacements.json` under the `"mappings"` key (`data["mappings"]`, preserving header metadata keys `version`, `description`, `note`).
-   - Synchronize across both plugin root and vendored copies (`resources/garbled_replacements.json` and `skills/anibon-timestamper/resources/garbled_replacements.json`).
+   - Canonical dictionary is at plugin root: `resources/garbled_replacements.json`.
    - Commit and push updated dictionary to GitHub (`anibon-stream-synthesis.git`).
 
 2. **Ingest into `timestamp_workspace`**:

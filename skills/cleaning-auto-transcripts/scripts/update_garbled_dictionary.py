@@ -45,7 +45,6 @@ _PLUGIN_ROOT = _SCRIPT_DIR.parents[2]  # from skills/cleaning-auto-transcripts/s
 
 TARGET_FILES = [
     _PLUGIN_ROOT / "resources" / "garbled_replacements.json",
-    _PLUGIN_ROOT / "skills" / "anibon-timestamper" / "resources" / "garbled_replacements.json"
 ]
 
 
