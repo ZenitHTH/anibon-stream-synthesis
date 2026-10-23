@@ -1,0 +1,222 @@
+"""
+Unified Library Interface for anibon-stream-synthesis skills.
+
+Facade module providing simple, centralized access to all four task packages:
+1. common   — Config, text cleaning, time formatting, timestamps, LM Studio client, and resources.
+2. download — Media downloading, yt-dlp automation, and transcript detection.
+3. chunk    — Chunk I/O, state tracking, topic scanning, and boundary analysis.
+4. process  — Timestamping pipeline, signals, knowledge databases, runners, and assembly.
+
+Usage in skill scripts:
+    from interface import clean_text, fmt_ts, load_chunks, detect_signals_for_chunks
+    # OR
+    import interface as api
+    chunks = api.load_chunks(workspace_path)
+"""
+
+from __future__ import annotations
+
+# ── 1. Common Domain (Foundation, Configuration, Cleaning, Time) ────────────
+import common
+from common import (
+    TAG_REMAP,
+    TAGS,
+    call_local,
+    call_vision,
+    cfg_bool,
+    cfg_float,
+    cfg_int,
+    cfg_str,
+    clean_text,
+    clean_text_with_count,
+    compile_mapping_entries,
+    deduplicate_consecutive_timestamps,
+    fmt_hhmmss,
+    fmt_ts,
+    get_loaded_models,
+    is_continuation,
+    load_config,
+    load_default_mappings,
+    load_replacements,
+    normalize_tag,
+    parse_timestamps,
+    parse_ts,
+    plugin_root,
+    reload_config,
+    resolve_endpoint,
+    resolve_model,
+    resource_path,
+    sanitize_timestamp_line,
+    validate_timestamps,
+)
+
+# ── 2. Download Domain (yt-dlp, Transcript Fetching) ─────────────────────────
+import download
+from download import (
+    detect_transcript_source,
+    download_storyboard,
+    download_transcript,
+    download_video,
+    flatten_json3,
+    is_youtube_auto_transcript,
+    load_transcript,
+    probe_metadata,
+    ytdlp_cmd,
+)
+
+# ── 3. Chunk Domain (Chunk File Management, Parsing, State) ──────────────────
+import chunk
+from chunk import (
+    calculate_youtube_blocks,
+    chunk_sort_key,
+    classify_chunk,
+    detect_timeline_gaps,
+    discover_chunks,
+    extract_macro_anchor,
+    load_chunk_activity,
+    load_chunk_livechat,
+    load_chunk_mood,
+    load_chunks,
+    load_chunks_list,
+    load_state,
+    parse_timestamp_line,
+    save_state,
+    scan_chunk_topic_pivot,
+    write_chunk_json,
+    write_chunk_txt,
+    write_chunk_xml,
+)
+
+# ── 4. Process Domain (Pipeline, Signals, Knowledge, Runners) ────────────────
+import process
+from process import (
+    WORLD_IDENTITY_DIR,
+    apply_vision_verify,
+    audit_and_sanitize_final_markdown,
+    audit_timestamps_against_glossary,
+    build_group_prompt,
+    build_multimodal_content,
+    build_recursive_prompt,
+    call_multimodal,
+    clean_transcript_noise,
+    detect_signals_for_chunks,
+    enrich_with_sqlite_databases,
+    ensure_mood_555,
+    extract_entity_glossary,
+    finalize_and_assemble_timestamps,
+    get_domain_guidance,
+    load_garbled_replacements,
+    load_knowledge,
+    load_mappings,
+    load_world_identity_context,
+    normalize_transcript,
+    prepare_storyboard_slides,
+    prune_essential,
+    run_garbled_collector,
+    run_group_mode,
+    run_local_summarizer_pass,
+    run_parity_gates,
+    run_recursive_mode,
+    sample_chunk_keyframes,
+    sanitize_and_audit_timestamps,
+    save_entity_glossary,
+)
+
+# Unified module namespace exports for clean structured access
+__all__ = [
+    # Subpackages
+    "common",
+    "download",
+    "chunk",
+    "process",
+    # Common
+    "load_config",
+    "reload_config",
+    "cfg_bool",
+    "cfg_int",
+    "cfg_float",
+    "cfg_str",
+    "clean_text",
+    "clean_text_with_count",
+    "load_replacements",
+    "compile_mapping_entries",
+    "fmt_ts",
+    "fmt_hhmmss",
+    "parse_ts",
+    "TAGS",
+    "TAG_REMAP",
+    "normalize_tag",
+    "is_continuation",
+    "validate_timestamps",
+    "sanitize_timestamp_line",
+    "deduplicate_consecutive_timestamps",
+    "parse_timestamps",
+    "call_local",
+    "call_vision",
+    "resolve_endpoint",
+    "resolve_model",
+    "get_loaded_models",
+    "resource_path",
+    "plugin_root",
+    "load_default_mappings",
+    # Download
+    "detect_transcript_source",
+    "is_youtube_auto_transcript",
+    "download_transcript",
+    "download_storyboard",
+    "download_video",
+    "flatten_json3",
+    "load_transcript",
+    "probe_metadata",
+    "ytdlp_cmd",
+    # Chunk
+    "load_chunks",
+    "load_chunks_list",
+    "chunk_sort_key",
+    "write_chunk_json",
+    "write_chunk_xml",
+    "write_chunk_txt",
+    "discover_chunks",
+    "load_state",
+    "save_state",
+    "load_chunk_activity",
+    "load_chunk_livechat",
+    "load_chunk_mood",
+    "parse_timestamp_line",
+    "classify_chunk",
+    "detect_timeline_gaps",
+    "calculate_youtube_blocks",
+    "extract_macro_anchor",
+    "scan_chunk_topic_pivot",
+    # Process
+    "detect_signals_for_chunks",
+    "get_domain_guidance",
+    "load_knowledge",
+    "load_mappings",
+    "load_garbled_replacements",
+    "clean_transcript_noise",
+    "normalize_transcript",
+    "extract_entity_glossary",
+    "save_entity_glossary",
+    "enrich_with_sqlite_databases",
+    "run_group_mode",
+    "run_recursive_mode",
+    "finalize_and_assemble_timestamps",
+    "audit_timestamps_against_glossary",
+    "sanitize_and_audit_timestamps",
+    "prune_essential",
+    "run_local_summarizer_pass",
+    "ensure_mood_555",
+    "run_parity_gates",
+    "prepare_storyboard_slides",
+    "sample_chunk_keyframes",
+    "call_multimodal",
+    "build_multimodal_content",
+    "apply_vision_verify",
+    "run_garbled_collector",
+    "audit_and_sanitize_final_markdown",
+    "WORLD_IDENTITY_DIR",
+    "build_group_prompt",
+    "build_recursive_prompt",
+    "load_world_identity_context",
+]

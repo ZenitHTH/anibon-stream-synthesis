@@ -1,5 +1,5 @@
 """
-anibon.process — Core livestream timestamping, prompting, summarization, and verification pipeline.
+process — Core livestream timestamping, prompting, summarization, and verification pipeline.
 """
 
 from __future__ import annotations
@@ -10,7 +10,13 @@ from process.audit import (
     sanitize_and_audit_timestamps,
 )
 from process.garbled_collector import run_garbled_collector
-from process.knowledge import extract_entity_glossary, save_entity_glossary
+from process.knowledge import (
+    enrich_with_sqlite_databases,
+    extract_entity_glossary,
+    resolve_entities_for_chunk,
+    resolve_reference_file,
+    save_entity_glossary,
+)
 from process.multimodal import (
     build_multimodal_content,
     call_multimodal,
@@ -25,7 +31,15 @@ from process.prompts import (
     load_world_identity_context,
 )
 from process.runners import run_group_mode, run_recursive_mode
-from process.signals import detect_signals_for_chunks, get_domain_guidance
+from process.signals import (
+    clean_transcript_noise,
+    detect_signals_for_chunks,
+    get_domain_guidance,
+    load_garbled_replacements,
+    load_knowledge,
+    load_mappings,
+    normalize_transcript,
+)
 from process.summarizer import (
     assemble_parts,
     enforce_byte_cap,
@@ -34,6 +48,7 @@ from process.summarizer import (
     run_local_summarizer_pass,
 )
 from process.vision_verify import apply_vision_verify
+from process.whisper_dispatcher import dispatch_verification
 from process.world_sanitizer import audit_and_sanitize_final_markdown
 
 __all__ = [
@@ -41,8 +56,12 @@ __all__ = [
     "sanitize_and_audit_timestamps",
     "audit_timestamps_against_glossary",
     "run_garbled_collector",
+    "dispatch_verification",
     "extract_entity_glossary",
     "save_entity_glossary",
+    "enrich_with_sqlite_databases",
+    "resolve_entities_for_chunk",
+    "resolve_reference_file",
     "build_multimodal_content",
     "call_multimodal",
     "prepare_storyboard_slides",
@@ -57,6 +76,11 @@ __all__ = [
     "run_recursive_mode",
     "detect_signals_for_chunks",
     "get_domain_guidance",
+    "load_knowledge",
+    "load_mappings",
+    "load_garbled_replacements",
+    "clean_transcript_noise",
+    "normalize_transcript",
     "assemble_parts",
     "enforce_byte_cap",
     "generate_part_summary",
