@@ -40,24 +40,29 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "nebia", "เนเบีย", "เนบีย", "renoir", "เรนัวร์", "เลนัว",
     ],
     "Wuthering_Waves.md": [
-        "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "changli", "yinlin",
+        "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "จินซี", "changli", "ฉางลี่", "yinlin", "อินหลิน",
+        "jiyan", "จี้หยาน", "shorekeeper", "ชอร์คีปเปอร์", "camellya", "คาเมลเลีย", "xiangli yao", "เซียงลี่เหยา",
         "echo", "tacet field", "sonance sphere",
     ],
     "Zenless_Zone_Zero.md": [
         "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
         "hollow zero", "proxies", "proxy", "inter-knot",
         "phoenix", "ฟีนิกซ์", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
+        "miyabi", "มิยาบิ", "yanagi", "ยานางิ", "caesar", "ซีซาร์", "burnice", "เบอร์นิซ", "jane doe", "เจนโด",
     ],
     "Blue_Archive.md": [
         "blue archive", "kivotos", "schale", "sensei", "halo festival", "total assault",
+        "kisaki", "คิซากิ", "hoshino", "โฮชิโนะ", "shiroko", "ชิโรโกะ", "hina", "ฮินะ", "mika", "มิกะ", "kuroko", "คุโรโกะ", "rio", "ริโอ", "seia", "เซยะ",
     ],
     "Honkai_Star_Rail.md": [
         "honkai star rail", "star rail", "hsr", "astral express", "trailblazer",
         "stellaron", "simulated universe", "divergent universe", "จักรวาลจำลอง",
         "penacony", "เพนาโคนี่", "acheron", "อาเครอน", "aventurine", "อะเวนทูรีน",
-        "firefly", "ไฟร์ฟลาย", "feixiao", "เฟยเซียว", "sparxie", "สปาร์กซี่",
+        "firefly", "ไฟร์ฟลาย", "feixiao", "เฟยเซียว", "sparxie", "สปาร์กซี่", "sparkle", "สปาร์กเคิล",
         "yao guang", "เหยาจวง", "ปิติสุข", "elation", "memory of chaos", "moc",
         "pearl", "เพิร์ล", "ไข่มุก", "nihilux", "นิฮิรัก", "aha", "อาฮา",
+        "sunday", "ซันเดย์", "fugue", "ฟูจิ", "robin", "โรบิน", "boothill", "บูทฮิลล์",
+        "yunli", "หยุนหลี่", "jiaoqiu", "เจียวชิว", "lingsha", "ลิงชา", "the herta", "aglaea", "castorice", "tribbie",
     ],
     "Genshin_Impact.md": [
         "genshin impact", "genshin", "teyvat", "archon", "primogem",
@@ -66,6 +71,8 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "natlan", "เนตลัน", "fontaine", "ฟอนเทน", "sumeru", "สุเมรุ", "inazuma", "อินาซึมะ",
         "liyue", "หลีเยว่", "mondstadt", "มอนด์สตัดท์", "fatui", "ฟาตุย", "harbinger",
         "nod-krai", "น็อด-ไกร", "snezhnaya", "สเนซนายา", "tsaritsa", "ดองทรัพยากร",
+        "chasca", "ชาสก้า", "xilonen", "ชิโลเนน", "kinich", "คินิช", "mualani", "มัวลานี่",
+        "neuvillette", "นิววิลเล็ต", "arlecchino", "อาร์เลคคิโน", "navia", "นาเวีย",
     ],
     "references/stream/fgo-knowledge.md": [
         "fate grand order", "fgo", "chaldea", "servant", "noble phantasm", "saint quartz",
@@ -73,6 +80,12 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     ],
     "Deadlock.md": [
         "deadlock", "patron", "trooper", "mid boss", "flex slot", "spirit power",
+        "abrams", "เอแบรห์มส์", "bebop", "บีบ็อป", "dynamo", "ไดนาโม", "grey talon", "เกรย์ ทาลอน",
+        "haze", "เฮซ", "infernus", "อินเฟอร์นัส", "ivy", "ไอวี่", "kelvin", "เคลวิน",
+        "lady geist", "เลดี้ ไกส์ต", "lash", "แลช", "mcginnis", "แม็กกินนิส", "mirage", "มิราจ",
+        "mo & krill", "โม แอนด์ คริลล์", "paradox", "พาราด็อกซ์", "pocket", "พ็อกเก็ต",
+        "seven", "เซเว่น", "shiv", "ชิฟ", "vindicta", "วินดิกต้า", "viscous", "วิสคัส",
+        "warden", "วอร์เดน", "wraith", "เรธ", "yamato", "ยามาโตะ",
         "เดดล็อก", "เดดล็อค", "baba yaga", "yamato", "abrams", "shiv", "infernus",
     ],
     "Sekiro_Shadows_Die_Twice.md": [

@@ -19,6 +19,28 @@
 | **Canto II** | **Rodion** | *The Unloving* | **มีนาคม 2023** — ความรู้สึกผิดและบาปจากการสังหารผู้ขูดรีดชาวบ้าน |
 | **Canto I** | **Gregor** | *The Outcast* | **กุมภาพันธ์ 2023** — อดีตทหารจักรกลแขนแมลงที่โดนขับออกจากสังคม |
 
+---
+
+### 📌 ทำเนียบ 12 คนบาปและผู้จัดการ (The 12 Sinners & Management Roster)
+
+| หมายเลข | คนบาป (Sinner) | ภาษาเกาหลี | บทประพันธ์ต้นฉบับ | เอกลักษณ์และไอเดนทิตี้เด่น |
+| :---: | :--- | :---: | :--- | :--- |
+| **01** | **Yi Sang (อีซัง)** | 이상 | *The Wings* (Yi Sang) | กวีหนุ่มผู้สร้างเทคโนโลยีกระจกส่องมิติ (Spicebush, Ring Pointillist) |
+| **02** | **Faust (เฟาสต์)** | 파우스트 | *Faust* (Goethe) | หญิงสาวผู้รอบรู้ทุกสิ่ง ประดิษฐ์เครื่องจักรและรถบัส (The One Who Grips, W Corp) |
+| **03** | **Don Quixote (ดอน กิโฆเต้)** | 돈키호테 | *Don Quixote* (Cervantes) | อัศวินสาวผู้ผดุงความยุติธรรม / แท้จริงคือรุ่นที่สองแห่งสายเลือดแวมไพร์ (W Corp, Cinq) |
+| **04** | **Ryōshū (เรียวชู)** | 료슈 | *Hell Screen* (Akutagawa) | นักดาบสาวผู้มองการฆ่าเป็นศิลปะ พูดประโยคย่อตัวอักษร (W Corp, Kurokumo) |
+| **05** | **Meursault (เมอร์โซต์)** | 뫼르소 | *The Stranger* (Camus) | ชายร่างยักษ์ผู้ทำตามคำสั่งโดยไร้คำถาม ไม่แสดงอารมณ์ (Dieci, N Corp) |
+| **06** | **Hong Lu (หงหลู่)** | 홍루 | *Dream of the Red Chamber* | คุณชายตระกูลใหญ่ผู้ยิ้มแย้มตลอดเวลาแต่แฝงความว่างเปล่า (Kurokumo, TingTang) |
+| **07** | **Heathcliff (ฮีธคลิฟฟ์)** | 히스클리프 | *Wuthering Heights* (Brontë) | หนุ่มเลือดร้อนอาวุธไม้เบสบอล/กระบอง รักฝังใจกับแคทเธอรีน (Wild Hunt, R Corp) |
+| **08** | **Ishmael (อิชมาเอล)** | 이스마엘 | *Moby-Dick* (Melville) | อดีตกะลาสีสาวผู้รอดชีวิตจากวาฬยักษ์สีขาว อาวุธกระบองและโล่ (Captain Ishmael, Butler) |
+| **09** | **Rodion (โรเดียน)** | 로디온 | *Crime and Punishment* | สาวร่างสูงผู้รักการพนัน อาวุธขวานยักษ์ (Dieci, Rime Shank) |
+| **10** | **Sinclair (ซินแคลร์)** | 싱클레어 | *Demian* (Hesse) | เด็กหนุ่มผู้มีปมบาปในใจ อาวุธง้าว Halberd (The One Who Shall Grip, Cinq) |
+| **11** | **Outis (อูทิส)** | 오티ส | *Odyssey* (Homer) | อดีตนายทหารจอมประจบดันเต้ มีความลับในสงครามควัน (Magic Bullet, Butler) |
+| **12** | **Gregor (เกรเกอร์)** | 그레고르 | *The Metamorphosis* (Kafka) | ทหารผ่านศึกแขนขวาเป็นก้ามแมลงสาบ อดีตเด็กทดลองสงคราม (Edgar Family, Liu) |
+| **Manager** | **Dante (ดันเต้)** | 단테 | *Divine Comedy* | ผู้จัดการหัวนาฬิกา หมุนเวลาคืนชีพ Sinners |
+| **Guide** | **Vergilius (เวอร์จิเลียส)** | 베르길리우스 | *Aeneid* | มัคคุเทศก์สีชาด (The Red Gaze) อดีต Fixer ระดับ Color ที่แข็งแกร่งที่สุดคนหนึ่ง |
+| **Driver** | **Charon (คารอน)** | 카론 | *Greek Myth* | เด็กสาวคนขับรถบัส Mephistopheles ผู้รักการขับรถ |
+
 ### 🗓️ บทคั่นพิเศษ (Intervallo) ที่สำคัญ
 *   **Intervallo I (บทคั่น 5.5):** ใช้ชื่อว่า **"Yield My Flesh to Claim Their Bones"** (22 กุมภาพันธ์ 2024) — นำเสนอเรื่องราวความขัดแย้งของกลุ่มดาบสไตล์ญี่ปุ่น (Kurokumo Clan & Blade Lineage)
 *   **Intervallo III (บทคั่น 5.5 - District 20):** **"Miracle in District 20"** — เทศกาลคริสต์มาสสุดโหดและคดีลักพาตัวถุงของขวัญ

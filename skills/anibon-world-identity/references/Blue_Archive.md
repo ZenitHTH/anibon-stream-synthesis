@@ -29,44 +29,55 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - **Nonomi (ノノミ / โนโนมิ)** — rich girl with a big... personality, loves heavy machinery
 - **Ayane (アヤネ / อายาเนะ)** — responsible secretary type, keeps track of finances
 
-**Gehenna Academy:**
-- **Aru (アル / อารุ)** — self-proclaimed villainess, leader of Problem Solver 68, actually a total dork
-- **Mutsuki (ムツキ / มุซึกิ)** — mischievous, loves explosions, Aru's friend
-- **Kayoko (カヨコ / คาโยโกะ)** — cool, exasperated adult of the group, smokes lollipops
-- **Haruka (ハルカ / ฮารุกะ)** — shy, heavy weaponry
-- **Hina (ヒナ / ฮินะ)** — Head of Disciplinary Committee, incredibly powerful, loves Sensei
+**Trinity General School:**
+- **Mika (ミカ / มิกะ)** — powerhouse, was used as a pawn in Eden Treaty, can bench press a building, 2nd Anniv Fest
+- **Nagisa (ナギサ / นางิสะ)** — calm, scheming tea party leader, artillery support
+- **Seia (セイア / เซยะ)** — third member of Tea Party, prophet, quiet fox-eared girl
+- **Koharu (コハル / โคฮารุ)** — healer who loves violent combat, conflicted
+- **Hifumi (ヒフミ / ฮิฟุมิ)** — Peroro obsessed, can't escape warcrimes allegations (Peroro-sama)
+- **Hanako (ハナコ / ฮานาโกะ)** — playful, lewd jokes, Swimsuit Hanako (2.5 Anniv Sonic Fest meta)
 
 **Millennium Science School:**
 - **Yuuka (ユウカ / ยูกะ)** — treasurer, meticulous with money, loves Sensei (romantic)
 - **Noa (ノア / โนอา)** — secretary to Yuuka, playful, also interested in Sensei
-- **Maki (マキ / มากิ)** — member of C&C, has a JTF2 contract
+- **Rio (リオ / ริโอ)** — former student council president of Seminar, calculated pragmatist
+- **Himari (ヒマリ / ฮิมาริ)** — wheelchair genius hacker, supreme ATK buffer
+- **Toki (トキ / โทกิ)** — C&C agent number 5, Peace-Peace, pilot of Abi-Eshuh exosuit
+- **Aris / Alice (アリス / อลิส)** — retro gamer robot daughter, railgun cannon
+- **Maki (マキ / มากิ)** — member of Veritas, paintball armor shredder
 - **Hibiki (ヒビキ / ฮิบิกิ)** — heavy mortar support
-- **Rio (リオ / ริโอ)** — former student council president of Millennium, semi-antagonist
 
-**Trinity General School:**
-- **Mika (ミカ / มิกะ)** — powerhouse, was used as a pawn in Eden Treaty, can bench press a building
-- **Nagisa (ナギサ / นางิสะ)** — calm, scheming tea party leader, very dangerous
-- **Koharu (コハル / โคฮารุ)** — healer who loves violent combat, conflicted
-- **Hifumi (ヒフミ / ฮิฟุมิ)** — Peroro obsessed, can't escape warcrimes allegations (Peroro-sama)
+**Gehenna Academy:**
+- **Hina (ヒナ / ฮินะ)** — Head of Disciplinary Committee, incredibly powerful, Dress Hina (3rd Anniv sniper meta)
+- **Ako (アコ / อาโกะ)** — Hina's devoted secretary, side-boob dress, critical DMG/rate buffer
+- **Aru (アル / อารุ)** — self-proclaimed villainess, leader of Problem Solver 68, actually a total dork
+- **Mutsuki (ムツキ / มุซึกิ)** — mischievous, loves explosions, Aru's friend
+- **Kayoko (カヨコ / คาโยโกะ)** — cool, exasperated adult of the group, smokes lollipops
+- **Haruka (ハルカ / ฮารุกะ)** — shy, heavy weaponry
+- **Iori (イオリ / อิโอริ)** — Disciplinary Committee vanguard, acrobatic sniper (Sensei licks her feet meme)
 
-**Hyakkiyako:**
-- **Wakamo (ワカモ / วาคาโมะ)** — fox, obsessive yandere for Sensei, incredibly powerful
-- **Tsukuyo (ツクヨ / สึกุโยะ)** — ninja leader, serious
+**Abydos High School:**
+- **Shiroko (シロコ / ชิโรโกะ)** — sporty wolf-eared girl, bank robbery mastermind
+- **Kuroko / Shiroko Terror (クロコ / คุโรโกะ / ชิโรโกะ เทอร์เรอร์)** — 3.5 Anniv Fest, alternate world Shiroko
+- **Hoshino (ホシノ / โฮชิโนะ)** — sleepy pink-haired girl, Battle Hoshino (3.5 Anniv stance-switch meta)
+- **Serika (セリカ / เซริกะ)** — energetic cat-eared girl, works at a convenience store
+- **Nonomi (ノノミ / โนโนมิ)** — rich girl with minigun
+- **Ayane (アヤネ / อายาเนะ)** — responsible secretary type
 
 **Shanhaijing:**
-- **Kisaki (キサキ / คิซากิ)** — leader, always scheming, shadow master
+- **Kisaki (キサキ / คิซากิ)** — president of Xuanwu Club, shadow mastermind, 3.5 Anniv EX skill amplifier meta
+- **Mina (ミナ / มินะ)** — high executioner, noir movie fan
+- **Rumi (ルミ / รูมิ)** — Genryumon leader, Chinese fried rice chef
 
-**Red Winter:**
-- **Cherino (チェリノ / เชริโนะ)** — tiny dictator, loves herself
-- **Mina (ミナ / มินะ)** — high executioner
+**Arius Squad:**
+- **Saori (サオリ / ซาโอริ)** — Squad leader, tragic soldier, assault rifle burst
+- **Atsuko (アツコ / อัตสึโกะ)** — royal princess of Arius, flower mask healer
+- **Hiyori, Misaki** — Arius squad members
 
-**SRT Special Academy (closed):**
+**Valkyrie Police Academy & SRT:**
+- **Kanna (カンナ / คันนะ)** — Chief of Public Safety, "Mad Dog of Valkyrie", armor shredder
 - **Miyako (ミヤコ / มิยาโกะ)** — leader of RABBIT squad, serious
-- **Saki (サキ / ซากิ)** — moody member of RABBIT
-
-**Ohara Convent:**
-- **Kuroko (クロコ / คุโรโกะ)** — redacted Shiroko-related being
-- **Seia (セイア / เซยะ)** — prophet, can see future, needs to go to a hospital
+- **Saki (サキ / ซากิ)** — moody member of RABBIT, stun grenade
 
 ### Non-student characters
 - **Sensei (先生 / อาจารย์)** — Player character, teacher
