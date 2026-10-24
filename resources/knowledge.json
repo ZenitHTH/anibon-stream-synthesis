@@ -115,6 +115,10 @@
    "kind": "domain",
    "file": "references/stream/donation-classifier.md"
   },
+  "dracaene": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "donbrothers": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -122,6 +126,10 @@
   "elation": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
+  "eldreda": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "endfield": {
    "kind": "game",
@@ -267,6 +275,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Limbus_Company.md"
   },
+  "lindverne": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "lore": {
    "kind": "domain",
    "file": "references/stream/story-enrichment.md"
@@ -371,6 +383,10 @@
   "revice": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
+  },
+  "roscaelifer": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "saber": {
    "kind": "tokusatsu",

@@ -60,6 +60,10 @@
     "ฟีนิกซ์": {"en": "Phoenix", "domain": "zzz"},
     "ซันบริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
     "สปริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
-    "สปริเกอร์": {"en": "Sunbringer", "domain": "zzz"}
+    "สปริเกอร์": {"en": "Sunbringer", "domain": "zzz"},
+    "เอลเดรดา": {"en": "Eldreda", "domain": "zzz"},
+    "ลินด์เวิร์น": {"en": "Lindverne", "domain": "zzz"},
+    "ดราซีน": {"en": "Dracaene", "domain": "zzz"},
+    "รอสเคลีเฟอร์": {"en": "Roscaelifer", "domain": "zzz"}
   }
 }

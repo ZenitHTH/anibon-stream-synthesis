@@ -46,7 +46,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Zenless_Zone_Zero.md": [
         "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
         "hollow zero", "proxies", "proxy", "inter-knot",
-        "phoenix", "ฟีนิกซ์", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer",
+        "phoenix", "ฟีนิกซ์", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
     ],
     "Blue_Archive.md": [
         "blue archive", "kivotos", "schale", "sensei", "halo festival", "total assault",
