@@ -255,6 +255,10 @@
    "kind": "bookstore",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
   },
+  "krampus": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "limbus": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Limbus_Company.md"
@@ -327,6 +331,10 @@
   "pearl": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
+  "phoenix": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "phoenix next": {
    "kind": "publisher",
@@ -404,6 +412,10 @@
   "sparxie": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
+  "springer": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "star rail": {
    "kind": "game",
@@ -689,6 +701,10 @@
    "kind": "stream_type",
    "file": "references/stream/vlog-stream.md"
   },
+  "ฟีนิกซ์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "มหกรรมหนังสือ": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
@@ -732,6 +748,10 @@
   "วล็อก": {
    "kind": "stream_type",
    "file": "references/stream/vlog-stream.md"
+  },
+  "สปริเกอร์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "สปาร์กซี่": {
    "kind": "game",
