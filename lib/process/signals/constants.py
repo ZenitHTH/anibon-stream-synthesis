@@ -103,6 +103,9 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Eternal_Return.md": [
         "eternal return", "lumia island", "seres", "เซเรส",
     ],
+    "Azur_Promilia.md": [
+        "azur promilia", "promilia", "อาซูร์ โพรมีเลีย", "โพรมีเลีย", "อซูมิเรีย",
+    ],
     "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db": [
         "yu-gi-oh", "yugioh", "master duel", "duel monsters",
     ],

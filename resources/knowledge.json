@@ -27,6 +27,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Arknights_Endfield.md"
   },
+  "azur promilia": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Azur_Promilia.md"
+  },
   "arona": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"

@@ -204,6 +204,10 @@
 
     "ไดลิน": {"en": "Dialyn", "domain": "zzz"},
     "ป้านเยว่": {"en": "Banyue", "domain": "zzz"},
-    "เย่ชุนกวง": {"en": "Ye Shunguang", "domain": "zzz"}
+    "เย่ชุนกวง": {"en": "Ye Shunguang", "domain": "zzz"},
+
+    "อซูมิเรีย": {"en": "Azur Promilia", "domain": "game"},
+    "อาซูร์ โพรมีเลีย": {"en": "Azur Promilia", "domain": "game"},
+    "โพรมีเลีย": {"en": "Azur Promilia", "domain": "game"}
   }
 }

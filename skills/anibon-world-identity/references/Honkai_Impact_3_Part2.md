@@ -1,6 +1,6 @@
 # 🪐 Honkai Impact 3rd Part 2 (สามเค ภาค 2) - Deep Knowledge Base
 
-คู่มืออ้างอิงข้อมูลเชิงลึกเนื้อหา บทตัวละคร ระบบการเล่น และประวัติศาสตร์เวอร์ชันช่วง Part 2 (ยุคดาวอังคารและการเดินทางในทะเลข้อมูลถึงเวอร์ชัน 8.9) ของเกม **Honkai Impact 3rd** สำหรับใช้ประกอบการทำไทม์สแตมป์สตรีมช่อง Anibon Official
+คู่มืออ้างอิงข้อมูลเชิงลึกเนื้อหา บทตัวละคร ระบบการเล่น และประวัติศาสตร์เวอร์ชันช่วง Part 2 (ยุคดาวอังคารและการเดินทางในทะเลข้อมูลถึงเวอร์ชัน 9.1 - ต.ค. 2026) ของเกม **Honkai Impact 3rd** สำหรับใช้ประกอบการทำไทม์สแตมป์สตรีมช่อง Anibon Official
 
 ---
 
@@ -40,7 +40,7 @@
 
 ---
 
-### 📌 องก์ที่ 3: เมืองโบราณตี้เฟิงและวันสิ้นโลก (บทที่ 10 - 13 - อัปเดตล่าสุด v8.9)
+### 📌 องก์ที่ 3: เมืองโบราณตี้เฟิงและวันสิ้นโลก (บทที่ 10 - 13 - ก.ค. 2026)
 *สงครามและความจริงครั้งใหม่ในเมืองตี้เฟิง (Difeng) ต้นกำเนิดของอารยธรรมดาวอังคาร การทำลายล้างจากภัยพิบัติวันสิ้นโลก และบทบาทของ Seele ร่างปีกสวรรค์*
 
 *   **สู่เมืองปฐมกาลตี้เฟิง (Reunited Under the Light of Faith - บทที่ 10):** กลุ่มผู้ผจญภัยเดินทางเข้าสู่ **ตี้เฟิง (Difeng)** ซึ่งเปรียบเสมือนพิพิธภัณฑ์ประวัติศาสตร์ธรรมชาติธรรมชาติและจุดเริ่มต้นของอารยธรรมดาวอังคาร ที่นี่พวกเขาได้พบกับเซนาดีน่าในเวอร์ชันอดีต และรับรู้ถึงวิกฤต **Doomsday Countdown (เวลานับถอยหลังสู่วันสิ้นโลก)**
@@ -66,23 +66,23 @@
 | :---: | :--- | :---: | :---: | :--- |
 | **9.1 (22 ต.ค. 2026)** | **Herrscher of Time (แฮชเชอร์แห่งกาลเวลา)** | S-Rank / IMG / Fire | Drive Core (Key of Mirroring) | แฮชเชอร์กาลเวลา วงแหวน Wheel of Destiny มีคุณสมบัติ Astral Ring ครบทุกสาย ดาเมจไฟมหาศาล มีกลไก "ย้อนเวลา" บันทึกดาเมจเพื่อนเป็น Weight of Ages ทำ HP loss รุนแรง |
 | **9.0 (20 ส.ค. 2026)** | **AstralOp Senadina / Fenghuang Divine Key** | AstralOp / S-Rank Rework | Divine Key | บทสรุป Part 2 ปลดล็อก Senadina ในฐานะ AstralOp ประจำทีม และ Divine Key ชุดใหม่เสริมพลัง Fenghuang of Vicissitude |
-| **8.9** | **Seele ( Wings of Panacea )** | S-Rank / SD / Lightning | Scythe (เคียวขนนก) | เซเล่ร่างปีกสวรรค์ทำดาเมจไฟฟ้าหมู่ บัฟฟื้นฟูเกจ Astral Ring รวดเร็ว บัฟเจาะเกราะให้ทีม World Star |
-| **8.8** | **Silverwing: N-EX Divine Key / DLC** | Divine Key / S-Rank Rework | Heavy | กุญแจสวรรค์และ DLC อัปเกรด Silverwing (โบรเนีย) เสริมพลังธาตุน้ำแข็งและระบบ Astral Ring |
-| **8.7** | **Raiden Mei ( Xentinel · Dawnbearing Crescent )** | S-Rank / MECH / Physical | Staff / Swords | เมย์ร่างเฉือนจันทร์ ทำดาเมจกายภาพหนักหน่วง ทำลายเกราะป้องกันประเภทบอสชีวภาพได้อย่างรวดเร็ว |
-| **8.6** | **Rita Rossweisse ( Miss Espionage )** | S-Rank / IMG / Lightning | Scythe (เคียวสายฟ้า) | ริต้าร่างสายลับ ดาเมจสายฟ้าจินตภาพ วงแหวน Wheel of Destiny ปลดล็อกคอมโบสังหารรวดเร็ว |
-| **8.5** | **Elysia ( Hi♪ Love Elf♥ )** | S-Rank / SD / Ice | Bow (ธนูความรัก) | เอลีเซียร่างเอลฟ์ ดาเมจน้ำแข็ง Stardust พร้อมเปิดตัว Divine Key เสริม Herrscher of Rebirth |
-| **8.4** | **Coralie 6B ( Behold! Fate-Defying Dragon )** | S-Rank / MECH / Fire | Rocket Hammer (ค้อนจรวดมังกร) | โคราลี่ชุดเกราะมังกร ดาเมจไฟจักรกล ทุบกระจายเกราะ วงแหวน Rite of Oblivion |
-| **8.3** | **Erdős Helia ( Planar Armament: Warped Spacetime )** | S-Rank / BIO / Lightning | Crossbows (หน้าไม้คู่มิติ) | เฮเลียชุดเกราะข้ามมิติ ดาเมจสายฟ้าชีวภาพ สาดกระสุนหน้าไม้สนับสนุนทีม Part 2 ยุคใหม่ |
-| **8.2** | **Li Sushang ( Peregrine Sword )** | S-Rank / BIO / Physical | Fists (สนับมือกระบี่) | ซู่ซังชุดกระบี่บิน ทำดาเมจโจมตีกายภาพเดี่ยวรวดเร็ว รองรับระบบ Law of Ascension |
-| **8.1** | **Kiana Kaslana ( Ba-Dum! Fiery Wishing Star )** | S-Rank / SD / Fire | Pistols / Staff (ปืนคู่คฑาไฟ) | เคียน่าดวงดาราเพลิง ดาเมจไฟ Stardust วงแหวน Law of Ascension ระเบิดท่าไม้ตายข้ามมิติ |
-| **8.0** | **Durandal ( Reign Solaris )** | S-Rank / IMG / Physical | Lance (ทวนสุริยะ) | ดูรันดัลร่างดวงตะวัน ทำดาเมจทะลวงจุดอ่อน ดึงเมคคานิกแกนหมุนดาราจักรแบบพิเศษ |
-| **7.9** | **Sparkle ( Thousand-Faced Maestro: Cameo )** | S-Rank / QUA / Fire | Drive Core (แกนพลังงาน) | ตัวละครคอลแลบถาวรจากเกม *Honkai: Star Rail* เป็นซัพพอร์ตธาตุไฟทำความเสียหายประสาน |
-| **7.8** | **Vita ( Lone Planetfarer )** | S-Rank / MECH / Lightning | Drive Core (แกนพลังงาน) | ร่างต่อสู้ของวีต้า สามารถอัญเชิญหุ่นรบยักษ์ยิงเลเซอร์ บัฟทีมสายฟ้าและ Resonance |
-| **7.7** | **Theresa ( Schicksal Imperative )** | S-Rank / QUA / Lightning | Chainblade (โซ่ใบมีด) | ป้าเทริร่างอู้งาน ปล่อยตุ๊กตาโฮมูลงมาต่อสู้แทน ซัพพอร์ตสายฟ้าและทำลายเกราะควอนตัม |
-| **7.6** | **Songque ( Jovial Deception: Shadowdimmer )** | S-Rank / SD / Physical | Staff (ไม้เท้ากู่กวาง) | ร่างจุติของซ่งเชวี่ยในชุดเกราะทอง ทำดาเมจกายภาพหนักหน่วงทะลวงธาตุ Stardust |
-| **7.5** | **Lantern ( Lone Destruction: Shadowchaser )** | S-Rank / PSY / Fire | Rapid-shot Crossbow (หน้าไม้คู่) | ลันเทิร์นสาดกระสุนปืนกล หน้าไม้ และปืนลูกซอง ดาเมจไฟสู้บอสเดี่ยวรวดเร็ว |
-| **7.4** | **Thelema ( Mad Pleasure: Shadowbringer )** | S-Rank / MECH / Ice | Chainblade (โซ่ใบมีด) | ราชินีโซ่แส้ทำดาเมจน้ำแข็งกลางอากาศ เน้นคอมโบการสะสมพลังเกจและแช่แข็งศัตรู |
-| **7.3** | **Senadina ( Deepspace Anchor: First Light )** | S-Rank / SD / Lightning | Yo-yo (โยโย่คู่) | ตัวละครหลักประจำภาค 2 โจมตีสายฟ้ารัวด้วยโยโย่ วางเสาลวดเชื่อมต่อ Resonance |
+| **8.9 (10 ก.ค. 2026)** | **Seele ( Wings of Panacea )** | S-Rank / SD / Lightning | Scythe (เคียวขนนก) | เซเล่ร่างปีกสวรรค์ทำดาเมจไฟฟ้าหมู่ บัฟฟื้นฟูเกจ Astral Ring รวดเร็ว บัฟเจาะเกราะให้ทีม World Star |
+| **8.8 (29 พ.ค. 2026)** | **Silverwing: N-EX Divine Key / DLC** | Divine Key / S-Rank Rework | Heavy | กุญแจสวรรค์และ DLC อัปเกรด Silverwing (โบรเนีย) เสริมพลังธาตุน้ำแข็งและระบบ Astral Ring |
+| **8.7 (17 เม.ย. 2026)** | **Raiden Mei ( Xentinel · Dawnbearing Crescent )** | S-Rank / MECH / Physical | Staff / Swords | เมย์ร่างเฉือนจันทร์ ทำดาเมจกายภาพหนักหน่วง ทำลายเกราะป้องกันประเภทบอสชีวภาพได้อย่างรวดเร็ว |
+| **8.6 (6 มี.ค. 2026)** | **Rita Rossweisse ( Miss Espionage )** | S-Rank / IMG / Lightning | Scythe (เคียวสายฟ้า) | ริต้าร่างสายลับ ดาเมจสายฟ้าจินตภาพ วงแหวน Wheel of Destiny ปลดล็อกคอมโบสังหารรวดเร็ว |
+| **8.5 (23 ม.ค. 2026)** | **Elysia ( Hi♪ Love Elf♥ )** | S-Rank / SD / Ice | Bow (ธนูความรัก) | เอลีเซียร่างเอลฟ์ ดาเมจน้ำแข็ง Stardust พร้อมเปิดตัว Divine Key เสริม Herrscher of Rebirth |
+| **8.4 (12 ธ.ค. 2025)** | **Coralie 6B ( Behold! Fate-Defying Dragon )** | S-Rank / MECH / Fire | Rocket Hammer (ค้อนจรวดมังกร) | โคราลี่ชุดเกราะมังกร ดาเมจไฟจักรกล ทุบกระจายเกราะ วงแหวน Rite of Oblivion |
+| **8.3 (31 ต.ค. 2025)** | **Erdős Helia ( Planar Armament: Warped Spacetime )** | S-Rank / BIO / Lightning | Crossbows (หน้าไม้คู่มิติ) | เฮเลียชุดเกราะข้ามมิติ ดาเมจสายฟ้าชีวภาพ สาดกระสุนหน้าไม้สนับสนุนทีม Part 2 ยุคใหม่ |
+| **8.2 (19 ก.ย. 2025)** | **Li Sushang ( Peregrine Sword )** | S-Rank / BIO / Physical | Fists (สนับมือกระบี่) | ซู่ซังชุดกระบี่บิน ทำดาเมจโจมตีกายภาพเดี่ยวรวดเร็ว รองรับระบบ Law of Ascension |
+| **8.1 (8 ส.ค. 2025)** | **Kiana Kaslana ( Ba-Dum! Fiery Wishing Star )** | S-Rank / SD / Fire | Pistols / Staff (ปืนคู่คฑาไฟ) | เคียน่าดวงดาราเพลิง ดาเมจไฟ Stardust วงแหวน Law of Ascension ระเบิดท่าไม้ตายข้ามมิติ |
+| **8.0 (27 มิ.ย. 2025)** | **Durandal ( Reign Solaris )** | S-Rank / IMG / Physical | Lance (ทวนสุริยะ) | ดูรันดัลร่างดวงตะวัน ทำดาเมจทะลวงจุดอ่อน ดึงเมคคานิกแกนหมุนดาราจักรแบบพิเศษ |
+| **7.9 (16 พ.ค. 2025)** | **Sparkle ( Thousand-Faced Maestro: Cameo )** | S-Rank / QUA / Fire | Drive Core (แกนพลังงาน) | ตัวละครคอลแลบถาวรจากเกม *Honkai: Star Rail* เป็นซัพพอร์ตธาตุไฟทำความเสียหายประสาน |
+| **7.8 (4 เม.ย. 2025)** | **Vita ( Lone Planetfarer )** | S-Rank / MECH / Lightning | Drive Core (แกนพลังงาน) | ร่างต่อสู้ของวีต้า สามารถอัญเชิญหุ่นรบยักษ์ยิงเลเซอร์ บัฟทีมสายฟ้าและ Resonance |
+| **7.7 (21 ก.พ. 2025)** | **Theresa ( Schicksal Imperative )** | S-Rank / QUA / Lightning | Chainblade (โซ่ใบมีด) | ป้าเทริร่างอู้งาน ปล่อยตุ๊กตาโฮมูลงมาต่อสู้แทน ซัพพอร์ตสายฟ้าและทำลายเกราะควอนตัม |
+| **7.6 (10 ม.ค. 2025)** | **Songque ( Jovial Deception: Shadowdimmer )** | S-Rank / SD / Physical | Staff (ไม้เท้ากู่กวาง) | ร่างจุติของซ่งเชวี่ยในชุดเกราะทอง ทำดาเมจกายภาพหนักหน่วงทะลวงธาตุ Stardust |
+| **7.5 (29 พ.ย. 2024)** | **Lantern ( Lone Destruction: Shadowchaser )** | S-Rank / PSY / Fire | Rapid-shot Crossbow (หน้าไม้คู่) | ลันเทิร์นสาดกระสุนปืนกล หน้าไม้ และปืนลูกซอง ดาเมจไฟสู้บอสเดี่ยวรวดเร็ว |
+| **7.4 (18 ต.ค. 2024)** | **Thelema ( Mad Pleasure: Shadowbringer )** | S-Rank / MECH / Ice | Chainblade (โซ่ใบมีด) | ราชินีโซ่แส้ทำดาเมจน้ำแข็งกลางอากาศ เน้นคอมโบการสะสมพลังเกจและแช่แข็งศัตรู |
+| **7.3 (29 ก.พ. 2024)** | **Senadina ( Deepspace Anchor: First Light )** | S-Rank / SD / Lightning | Yo-yo (โยโย่คู่) | ตัวละครหลักประจำภาค 2 โจมตีสายฟ้ารัวด้วยโยโย่ วางเสาลวดเชื่อมต่อ Resonance |
 
 ---
 
