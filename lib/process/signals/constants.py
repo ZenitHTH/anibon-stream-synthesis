@@ -42,18 +42,19 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Wuthering_Waves.md": [
         "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "จินซี", "changli", "ฉางลี่", "yinlin", "อินหลิน",
         "jiyan", "จี้หยาน", "shorekeeper", "ชอร์คีปเปอร์", "camellya", "คาเมลเลีย", "xiangli yao", "เซียงลี่เหยา",
-        "cantarella", "คันตาเรลล่า",
+        "cantarella", "คันตาเรลล่า", "suoming", "ซั่วหมิง", "hsin", "ซิน", "qingxiao", "jingran",
         "echo", "tacet field", "sonance sphere",
     ],
     "Zenless_Zone_Zero.md": [
         "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
         "hollow zero", "proxies", "proxy", "inter-knot",
-        "phoenix", "ฟีนิกซ์", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
+        "phoenix", "ฟีนิกซ์", "severian", "เซเวเรียน", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
         "miyabi", "มิยาบิ", "yanagi", "ยานางิ", "caesar", "ซีซาร์", "burnice", "เบอร์นิซ", "jane doe", "เจนโด",
     ],
     "Blue_Archive.md": [
         "blue archive", "kivotos", "schale", "sensei", "halo festival", "total assault",
         "kisaki", "คิซากิ", "hoshino", "โฮชิโนะ", "shiroko", "ชิโรโกะ", "hina", "ฮินะ", "mika", "มิกะ", "kuroko", "คุโรโกะ", "rio", "ริโอ", "seia", "เซยะ",
+        "tsumugi", "สึมุกิ",
     ],
     "Honkai_Star_Rail.md": [
         "honkai star rail", "star rail", "hsr", "astral express", "trailblazer",
@@ -73,6 +74,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "natlan", "เนตลัน", "fontaine", "ฟอนเทน", "sumeru", "สุเมรุ", "inazuma", "อินาซึมะ",
         "liyue", "หลีเยว่", "mondstadt", "มอนด์สตัดท์", "fatui", "ฟาตุย", "harbinger",
         "nod-krai", "น็อด-ไกร", "snezhnaya", "สเนซนายา", "tsaritsa", "ดองทรัพยากร",
+        "mitya", "มิตยา", "valeriy", "วาเลริย์",
         "chasca", "ชาสก้า", "xilonen", "ชิโลเนน", "kinich", "คินิช", "mualani", "มัวลานี่",
         "citlali", "ซิทลาลี", "ororon", "โอโรลอน", "kachina", "คาชิน่า", "mizuki", "มิสึกิ", "varesa", "วาเรซ่า",
         "neuvillette", "นิววิลเล็ต", "arlecchino", "อาร์เลคคิโน", "navia", "นาเวีย",
@@ -89,13 +91,14 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "mo & krill", "โม แอนด์ คริลล์", "paradox", "พาราด็อกซ์", "pocket", "พ็อกเก็ต",
         "seven", "เซเว่น", "shiv", "ชิฟ", "vindicta", "วินดิกต้า", "viscous", "วิสคัส",
         "warden", "วอร์เดน", "wraith", "เรธ", "yamato", "ยามาโตะ",
+        "violet", "nurse harrow",
         "เดดล็อก", "เดดล็อค", "baba yaga", "yamato", "abrams", "shiv", "infernus",
     ],
     "Sekiro_Shadows_Die_Twice.md": [
         "sekiro", "shadows die twice", "kusabimaru", "posture", "shinobi", "dragonrot",
     ],
     "Eternal_Return.md": [
-        "eternal return", "lumia island",
+        "eternal return", "lumia island", "seres", "เซเรส",
     ],
     "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db": [
         "yu-gi-oh", "yugioh", "master duel", "duel monsters",
@@ -109,9 +112,13 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Arknights.md": [
         "arknights", "rhodes island", "oripathy", "originium", "doctor", "amiya", "อาร์คไนท์", "โรดส์",
         "wis'adel", "วิชอาเดล", "logos", "โลโกส", "theresa", "เทเรซ่า", "shu", "สุ", "degenbrecher", "pepe",
+        "closure", "โคลเชอร์", "esperanta", "เอสเปรันต้า",
     ],
     "Arknights_Endfield.md": [
-        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii",
+        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii", "si", "ซี", "typhoeus", "ไทฟอน",
+    ],
+    "Honkai_Impact_3_Part2.md": [
+        "honkai impact 3rd", "honkai impact", "hi3", "สามเค", "ฮงไก", "herrscher of time", "senadina", "เซนาดิน่า",
     ],
     "Bleach.md": [
         "bleach", "บลีช", "เทพมรณะ", "bankai", "บังไค", "zanpakuto", "ดาบฟันวิญญาณ",

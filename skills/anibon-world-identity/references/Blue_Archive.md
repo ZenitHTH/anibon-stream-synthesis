@@ -104,6 +104,19 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 
 ---
 
+## 🗓️ ทำเนียบตู้และนักเรียนล่าสุด (October 2026 Roster & Banners)
+
+### 🌍 Global Server (ตุลาคม 2026)
+- **Kisaki (Swimsuit / คิซากิ ชุดว่ายน้ำ)** — 3★ Striker / Support ธาตุสั่นสะเทือน (Sonic) ซัพพอร์ตยอดนิยม (13 - 27 ต.ค. 2026)
+- **Shun (Swimsuit / ชุน ชุดว่ายน้ำ)** — 3★ Striker / Dealer ธาตุ Sonic ยิงทำดาเมจแรง (13 - 27 ต.ค. 2026)
+- Nexon ปรับสปีดตารางเร่งเข้าสู่การปรับปรุงระบบ Recruitment ในเดือนพฤศจิกายน
+
+### 🇯🇵 JP Server (ตุลาคม 2026)
+- **Tsumugi (สึมุกิ)** — นักเรียนใหม่เปิดตัวช่วงต้นเดือน ต.ค. 2026
+- รีรันสำคัญ: Eri, Kanoe, S.Miyako, S.Saki, Marina (Qipao), Tomoe (Qipao), Kanna, Noa
+
+---
+
 ## Game Systems
 
 ### Gacha (ガチャ / ระบบกาชา)

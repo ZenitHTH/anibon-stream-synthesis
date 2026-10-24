@@ -30,6 +30,8 @@
 | **Warden (วอร์เดน)** | Anti-Carry Bruiser | ขังกรง / กักขังเดี่ยว | โยนขวดลดพลัง, ปล่อยกรงกักขัง Binding Word สตัน, ดูดเกราะเลือด Last Stand |
 | **Wraith (เรธ)** | Rapid Fire Carry | ไพ่ยิงรัว / ยกเป้าหมาย | ขว้างไพ่การ์ดยิงซ้ำ Card Trick, บัฟยิงรัว Full Auto, ยกศัตรูลอยเคว้งกลางอากาศ Telekinesis |
 | **Yamato (ยามาโตะ)** | Dual Sword Fighter | ดึงเป้า / อมตะชั่วคราว | ยิงตะขอดึงเข้าหา Flying Strike, กวัดแกว่งดาบฟันเฉือน Power Slash, เปิดร่างอมตะ Shadow Transformation |
+| **Violet (ไวโอเล็ต)** | Duelist / Skirmisher | อัปเดต City Never Sleeps | ฮีโร่ใหม่บรรจุเข้าสู่ Roster หลักอย่างเป็นทางการ |
+| **Nurse Harrow (เนิร์ส แฮร์โรว์)** | Support / Combat Medic | พยาบาลสนาม / ฮีลไฟต์ | ฮีโร่ใหม่เปิดตัวกลางเดือน ต.ค. 2026 สายสนับสนุนและควบคุมพื้นที่ |
 
 ### 📌 ฮีโร่ทดสอบและตัวละครใหม่ (Hero Labs / Experimental Heroes)
 
@@ -42,7 +44,9 @@
 | **Viper (ไวเปอร์)** | Ranged / DoT | มือปืนพิษ ยิงกระสุนกรดกัดกร่อนและพ่นไอพิษสกัดเลน |
 | **Trapper (แทรปเปอร์)** | Area Controller | นายพราน วางกับดักกับระเบิดและสั่งสัตว์ล่ากัดตรึงขา |
 | **Doorman (เดอะ ดอร์แมน)** | Teleport / Utility | เปิดประตูมิติเชื่อมโยงตำแหน่งในแผนที่ |
-| **Paige, Mina, Drifter, Graves, Apollo, Celeste, Rat King** | Playtest Roster | รายชื่อฮีโร่ที่อยู่ในระบบ Hero Labs และไฟล์ทดสอบพัฒนาของ Valve |
+| **Baba (บาบา)** | Controller / Debuffer | ยายแก่ใยแมงมุม (เนิร์ฟเกราะกระสุนและคูลดาวน์สกิล 14 ต.ค. 2026) |
+| **Deadman Danny (แดนนี่)** | Bruiser / Explosive | ปืนใหญ่จรวด ร็อคเก็ตจัมป์ (บัฟพลังชีวิตและดาเมจปืน 14 ต.ค. 2026) |
+| **Paige, Mina, Drifter, Graves, Apollo, Celeste, Rat King, Sinclair** | Playtest Roster | รายชื่อฮีโร่ที่อยู่ในระบบ Hero Labs และไฟล์ทดสอบพัฒนาของ Valve |
 
 ---
 

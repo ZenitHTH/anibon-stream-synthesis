@@ -123,6 +123,9 @@
     "ฮู่เต๋า": {"en": "Hu Tao", "domain": "genshin"},
     "กานอวี่": {"en": "Ganyu", "domain": "genshin"},
     
+    "มิตยา": {"en": "Mitya", "domain": "genshin"},
+    "วาเลริย์": {"en": "Valeriy", "domain": "genshin"},
+    
     "จินซี": {"en": "Jinhsi", "domain": "wuwa"},
     "ฉางลี่": {"en": "Changli", "domain": "wuwa"},
     "อินหลิน": {"en": "Yinlin", "domain": "wuwa"},
@@ -135,10 +138,16 @@
     "คาร์ล็อตต้า": {"en": "Carlotta", "domain": "wuwa"},
     "ฟีบี้": {"en": "Phoebe", "domain": "wuwa"},
     "คันตาเรลล่า": {"en": "Cantarella", "domain": "wuwa"},
+    "ซั่วหมิง": {"en": "Suoming", "domain": "wuwa"},
+    "ซิน": {"en": "Hsin", "domain": "wuwa"},
+    "ชิงเซียว": {"en": "Qingxiao", "domain": "wuwa"},
+    "จิงหราน": {"en": "Jingran", "domain": "wuwa"},
     
     "วิชอาเดล": {"en": "Wis'adel", "domain": "arknights"},
     "โลโกส": {"en": "Logos", "domain": "arknights"},
     "เทเรซ่า": {"en": "Theresa", "domain": "arknights"},
+    "เอสเปรันต้า": {"en": "Kal'tsit - Esperanta", "domain": "arknights"},
+    "โคลเชอร์": {"en": "Closure", "domain": "arknights"},
     
     "คิซากิ": {"en": "Kisaki", "domain": "bluearchive"},
     "ชิโรโกะ": {"en": "Shiroko", "domain": "bluearchive"},
@@ -148,6 +157,7 @@
     "คุโรโกะ": {"en": "Kuroko", "domain": "bluearchive"},
     "ริโอ": {"en": "Rio", "domain": "bluearchive"},
     "เซยะ": {"en": "Seia", "domain": "bluearchive"},
+    "สึมุกิ": {"en": "Tsumugi", "domain": "bluearchive"},
     
     "มิยาบิ": {"en": "Hoshimi Miyabi", "domain": "zzz"},
     "ยานางิ": {"en": "Tsukishiro Yanagi", "domain": "zzz"},
@@ -160,12 +170,19 @@
     "จูหยวน": {"en": "Zhu Yuan", "domain": "zzz"},
     "ไลแคน": {"en": "Von Lycaon", "domain": "zzz"},
     "ฟีนิกซ์": {"en": "Phoenix", "domain": "zzz"},
+    "เซเวเรียน": {"en": "Severian", "domain": "zzz"},
     "ซันบริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
     "สปริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
     "สปริเกอร์": {"en": "Sunbringer", "domain": "zzz"},
     "เอลเดรดา": {"en": "Eldreda", "domain": "zzz"},
     "ลินด์เวิร์น": {"en": "Lindverne", "domain": "zzz"},
     "ดราซีน": {"en": "Dracaene", "domain": "zzz"},
-    "รอสเคลีเฟอร์": {"en": "Roscaelifer", "domain": "zzz"}
+    "รอสเคลีเฟอร์": {"en": "Roscaelifer", "domain": "zzz"},
+
+    "รอสไวส์": {"en": "Rossweisse", "domain": "czn"},
+    "เบลซเบลล์": {"en": "Blazebell", "domain": "czn"},
+    "เซเรส": {"en": "Seres", "domain": "eternal_return"},
+    "เนิร์ส แฮร์โรว์": {"en": "Nurse Harrow", "domain": "deadlock"},
+    "แฮชเชอร์แห่งกาลเวลา": {"en": "Herrscher of Time", "domain": "hi3"}
   }
 }

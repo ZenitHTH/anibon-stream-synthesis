@@ -8,7 +8,7 @@
 
 | บทเนื้อเรื่อง (Canto) | ตัวละครนำ (Sinner) | ชื่อบทภาษาอังกฤษ / เกาหลี | ช่วงเวลา / รายละเอียดเนื้อหา |
 | :---: | :--- | :---: | :--- |
-| **Canto X** | **Meursault** | *The Gaze Bearing* | **กันยายน - ตุลาคม 2026** — เรื่องราวการไต่สวนและการเผชิญหน้ากับความว่างเปล่า/ความตายของ Meursault, ผู้คุม The Warden, ห้าง Grand Museum, N-Corp, น้องเพีย (Peia) และการทดสอบของ Carmen |
+| **Canto X** | **Meursault** | *The Gaze Bearing* | **กันยายน - ตุลาคม 2026 (Season 8: STÚDĬUM PUNCTUM)** — เรื่องราวบทสรุปการไต่สวนความตายและหน้าที่ของ Meursault อิงจาก *The Stranger* และ *The Myth of Sisyphus* ณ ห้าง Grand Magasin Sisyphe เผชิญหน้าผู้คุม The Warden, Jeanne, Pwie และการทลายโครงสร้างจำลอง N-Corp ด้วย Cogito (แพตช์ 8, 15, 22 ต.ค. เนิร์ฟปรับลดความยากบอสช่วงท้าย) |
 | **Canto IX** | **Ryōshū** | *The Unsevering* | **31 ธันวาคม 2025** — เรื่องราวความเป็นมาและการแยกสายศิลปะดาบของเรียวชู |
 | **Canto VIII** | **Hong Lu** | *The Surrendered Witnessing* | **พฤษภาคม 2025** — ตระกูลและความสูญเสียภายในจิตใจของหงหลู่ |
 | **Canto VII** | **Don Quixote** | *The Dream Ending* | **ตุลาคม 2024** — เรื่องราวจุดสิ้นสุดของความฝันผู้ผดุงความยุติธรรมและชาติกำเนิดแวมไพร์ |
