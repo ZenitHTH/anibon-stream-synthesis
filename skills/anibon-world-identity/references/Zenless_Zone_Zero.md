@@ -14,6 +14,8 @@
 | **3.3 (21 ต.ค. 2026 - ปัจจุบัน)** | **Phoenix (ฟีนิกซ์ / Phoenix Reffaella)** | Fire / Anomaly (S) | Krampus Compliance Authority | ผู้พิพากษา Krampus เอเจนต์ไฟสาย Anomaly บัฟความผิดปกติทั้งทีมติด Anomaly CRIT และมีกลไกคืนชีพ Rebirth (W-Engine: *Plume of Rebirth*, สกิน *Chronic Life*) |
 | **3.3 (21 ต.ค. 2026 - ปัจจุบัน)** | **Severian (เซเวเรียน)** | Wind / Anomaly & Attack (S) | - | เอเจนต์สายลมเน้นดาเมจลมเฉือนกวาดล้างและสร้างสถานะปั่นป่วน (W-Engine: *Joyau Dore*, สกิน *Harsh Ideal*) |
 | **3.x (Upcoming)** | **Sunbringer (ซันบริงเกอร์ / 挽昼)** | Fire / Armorer (S) | Roscaelifer / Void Hunter | เอเจนต์ระดับตำนานหนึ่งในผู้บุกเบิก Void Hunter รุ่นแรกและผู้ประดิษฐ์ Bangboo แบ่งจิตวิญญาณเป็น 3 ร่างเพื่อบริหารนครลอยฟ้า Roscaelifer ได้แก่ Eldreda (เอลเดรดา - ร่างโตชุดทูโทนคราม-ดำ/ปีกหลัง), Lindverne (ลินด์เวิร์น - ร่างทวินเทลหอกดาบ), Dracaene (ดราซีน - ร่างเล็กโล่โคลเวอร์) รวมเป็นเอเจนต์เดียวแบบ 3-in-1 สลับต่อสู้ในสนาม |
+| **3.2** | **Claret Flint (คลาเร็ต)** | Electric / Armorer (S) | - | "Their Secret Histories" เฟส 1 ("Bloodmoon Rising") เอเจนต์สายเกราะ/ซัพพอร์ตไฟฟ้า (W-Engine: *Crimson Thirst*) |
+| **3.2** | **Roxy Ifrita Pryce (ร็อกซี่ / Roxy)** | Wind / Stun (S) | - | "Their Secret Histories" เฟส 2 ("Cindernight Respite") สตั้นธาตุลมความเร็วสูง สะสมเกจมึนงงด้วยระเบิดควันไฟ (W-Engine: *Crimson Moon Casket*) |
 | **3.1** | **Remielle (เรมิเอล)** | Lumiflux / Anomaly | - | เอเจนต์ความผิดปกติธาตุแสงรุ่นใหม่ ดาเมจวงกว้างทรงพลัง |
 | **3.1** | **Sigrid (ซิกริต)** | Ice / Attack | - | ดาเมจน้ำแข็งสายประชิดความเร็วสูง |
 | **3.0** | **Velina (เวลิน่า)** | Electric / Attack | - | ตัวละครดาเมจไฟฟ้าหลักเปิดตัวบทใหม่ |
@@ -112,6 +114,8 @@
 
 *   **ฟีนิกซ์ / ผู้พิพากษาไฟ:** Phoenix Reffaella (เอเจนต์ไฟ Anomaly คืนชีพได้)
 *   **เซเวเรียน:** Severian (เอเจนต์ลมสายดาเมจตัดอากาศ)
+*   **คลาเร็ต:** Claret Flint (เอเจนต์ไฟฟ้า Armorer บท 3.2)
+*   **ร็อกซี่:** Roxy Ifrita Pryce (เอเจนต์ลมสายสตั้นบท 3.2)
 *   **หนู / เจนโด / หนูแซ่บ:** Jane Doe (ดีไซน์สาวหูหนู Thiren สุดเซ็กซี่)
 *   **น้องหลาม / น้องฉลาม:** Ellen Joe
 *   **หัวหน้า / มิยาบิ:** Hoshimi Miyabi

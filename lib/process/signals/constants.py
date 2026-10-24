@@ -48,7 +48,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Zenless_Zone_Zero.md": [
         "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
         "hollow zero", "proxies", "proxy", "inter-knot",
-        "phoenix", "ฟีนิกซ์", "severian", "เซเวเรียน", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
+        "phoenix", "ฟีนิกซ์", "severian", "เซเวเรียน", "claret", "คลาเร็ต", "roxy", "ร็อกซี่", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
         "miyabi", "มิยาบิ", "yanagi", "ยานางิ", "caesar", "ซีซาร์", "burnice", "เบอร์นิซ", "jane doe", "เจนโด",
     ],
     "Blue_Archive.md": [
