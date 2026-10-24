@@ -54,7 +54,9 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "honkai star rail", "star rail", "hsr", "astral express", "trailblazer",
         "stellaron", "simulated universe", "divergent universe", "จักรวาลจำลอง",
         "penacony", "เพนาโคนี่", "acheron", "อาเครอน", "aventurine", "อะเวนทูรีน",
-        "firefly", "ไฟร์ฟลาย", "feixiao", "เฟยเซียว",
+        "firefly", "ไฟร์ฟลาย", "feixiao", "เฟยเซียว", "sparxie", "สปาร์กซี่",
+        "yao guang", "เหยาจวง", "ปิติสุข", "elation", "memory of chaos", "moc",
+        "pearl", "เพิร์ล", "ไข่มุก", "nihilux", "นิฮิรัก", "aha", "อาฮา",
     ],
     "Genshin_Impact.md": [
         "genshin impact", "genshin", "teyvat", "archon", "primogem",
@@ -62,9 +64,11 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "raiden shogun", "ไรเดน", "nahida", "นาฮิดา", "furina", "ฟูรินา", "mavuika", "มาวิกา",
         "natlan", "เนตลัน", "fontaine", "ฟอนเทน", "sumeru", "สุเมรุ", "inazuma", "อินาซึมะ",
         "liyue", "หลีเยว่", "mondstadt", "มอนด์สตัดท์", "fatui", "ฟาตุย", "harbinger",
+        "nod-krai", "น็อด-ไกร", "snezhnaya", "สเนซนายา", "tsaritsa", "ดองทรัพยากร",
     ],
     "references/stream/fgo-knowledge.md": [
         "fate grand order", "fgo", "chaldea", "servant", "noble phantasm", "saint quartz",
+        "grand servant", "grand score", "grand substitute", "tamamo", "ทามาโมะ", "ciel",
     ],
     "Deadlock.md": [
         "deadlock", "patron", "trooper", "mid boss", "flex slot", "spirit power",

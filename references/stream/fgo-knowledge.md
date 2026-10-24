@@ -41,12 +41,28 @@ For **established/familiar Servants**, ongoing story analysis, or routine gamepl
 | Arcueid Brunestud | Archetype: Earth | アーキタイプ：アース | `อัลเควด` / `องค์หญิง` |
 | Kazuradrop | Kazuradrop | カズラドロップ | `คาซูระ` |
 | Ascalaphos | Ascalaphos | アスカラポス | `อัสคาลาพอส` |
+| Tamamo no Mae (Grand Ego) | Tamamo no Mae | 玉藻の前 (Grand Ego / Rider) | `ทามาโมะ` / `ทามาโมะ โนะ มาเอะ` |
+| Ciel | Ciel | シエル (Moon Cancer) | `เซียล` |
+| Sesshoin Kiara | Sesshoin Kiara | 殺生院キアラ (Alter Ego) | `คิอาระ` |
+| Scathach-Skadi | Scathach-Skadi | スカサハ＝スカディ (Caster/Ruler) | `สกาฮะ-สกาดี` / `สกาดี` |
 
 ---
 
-## 3. Story & Event Context Shortcuts
+## 3. Story, Event & System Context Shortcuts
 
+- **Grand Servant Slots & Grand Score:** ระบบปลดล็อกสล็อต Grand Servant และสะสมคะแนน Grand Score เพื่อเพิ่มตัวคูณสเตตัสและคำสั่งพิเศษเฉพาะคลาส Grand
+- **Grand Substitute Event:** ด่านและอีเวนต์ทดสอบระดับสูงที่ต้องยืมตัว Servant คีย์แมน (เช่น Ciel) เพื่อผ่านเงื่อนไขท้าทาย
+- **Caster Class Skill Update & Mahoyo:** การปรับปรุงสกิลกดคลาส Caster และกระแสการรอคอยความร่วมมือตัวละครจาก Mahoyo (Witch on the Holy Night)
+- **Mashu 2M Damage Setup:** กลยุทธ์คอมโบการ์ด Arts และบัฟพิเศษของคาลเดียเพื่อผลักดันดาเมจมาชู (Mash Kyrielight) ให้แตะ 2,000,000 หน่วย
 - **One Second After Time:** Post-Ordeal Call / Late FGO Main Story arc.
 - **Grand Class / Storm Border:** Chaldea's flagship & Grand Servant trials.
 - **AppMedia Tier List:** Japanese FGO wiki meta rankings frequently discussed by Boat.
 - **GSSR (Guaranteed SSR):** Lucky bag gacha banners (ครบรอบ / ปีใหม่).
+
+---
+
+## 4. Common ASR / Whisper Phonic Traps in FGO
+
+- `อ้า` / `Aza` → ถอดเสียงเพี้ยนมาจากคำว่า **"การ์ด Arts"**
+- `เคีย่า` / `Kiya` → ถอดเสียงเพี้ยนมาจาก **"คิอาระ (Kiara)"**
+- `แกรนด์เอโก้` → คลาสพิเศษ **Grand Ego** (Tamamo no Mae)

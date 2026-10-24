@@ -1,11 +1,19 @@
 {
  "version": 2,
- "updated": "2026-07-31",
+ "updated": "2026-10-24",
  "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
  "entries": {
   "a-n-i-m-e": {
    "kind": "anime",
    "file": "references/stream/phuboat-anime-talking-style.md"
+  },
+  "abrams": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "aha": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "anime": {
    "kind": "anime",
@@ -22,6 +30,14 @@
   "arona": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
+  },
+  "bebop": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "black survival": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Eternal_Return.md"
   },
   "bleach": {
    "kind": "anime",
@@ -63,9 +79,21 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   },
+  "ciel": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
   "comic world": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "czn": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
+  "deadlock": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
   },
   "dinoblade": {
    "kind": "game",
@@ -91,9 +119,17 @@
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
   },
+  "elation": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "endfield": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+  },
+  "eternal return": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Eternal_Return.md"
   },
   "event": {
    "kind": "stream_type",
@@ -148,6 +184,18 @@
    "file": "references/stream/tokusatsu-stream.md"
   },
   "grand order": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
+  "grand score": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
+  "grand servant": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
+  "grand substitute": {
    "kind": "game",
    "file": "references/stream/fgo-knowledge.md"
   },
@@ -247,9 +295,17 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
+  "nihilux": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "nippon haku": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "nod-krai": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
   "one punch man": {
    "kind": "anime",
@@ -267,6 +323,10 @@
   "patch": {
    "kind": "stream_type",
    "file": "references/stream/event-stream.md"
+  },
+  "pearl": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "phoenix next": {
    "kind": "publisher",
@@ -337,6 +397,14 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
+  "snezhnaya": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Genshin_Impact.md"
+  },
+  "sparxie": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "star rail": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
@@ -361,6 +429,14 @@
    "kind": "stream_type",
    "file": "references/stream/talk-stream.md"
   },
+  "tamamo": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
+  "tamamo no mae": {
+   "kind": "game",
+   "file": "references/stream/fgo-knowledge.md"
+  },
   "tokusatsu": {
    "kind": "stream_type",
    "file": "references/stream/tokusatsu-stream.md"
@@ -380,6 +456,10 @@
   "uwufufu": {
    "kind": "domain",
    "file": "references/stream/uwufufu-knowledge.md"
+  },
+  "vindicta": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
   },
   "vlog": {
    "kind": "stream_type",
@@ -412,6 +492,10 @@
   "wuwa": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+  },
+  "yao guang": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "ygo": {
    "kind": "game",
@@ -489,6 +573,14 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Wuthering_Waves.md"
   },
+  "คาเซนา": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
+  "คาเซน่า": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+  },
   "คาเมน ไรเดอร์": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -561,6 +653,10 @@
    "kind": "event",
    "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
   },
+  "นิฮิรัก": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "น้องข้าว": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
@@ -584,6 +680,10 @@
   "บูไค": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
+  },
+  "ปิติสุข": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "พาเที่ยว": {
    "kind": "stream_type",
@@ -633,6 +733,10 @@
    "kind": "stream_type",
    "file": "references/stream/vlog-stream.md"
   },
+  "สปาร์กซี่": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "สัปดาห์หนังสือ": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
@@ -656,6 +760,10 @@
   "อาร์กไนท์": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Arknights.md"
+  },
+  "อาฮา": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "อีเวนท์": {
    "kind": "stream_type",
@@ -721,6 +829,14 @@
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
   },
+  "เดดล็อก": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "เดดล็อค": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Deadlock.md"
+  },
   "เนื้อเรื่อง": {
    "kind": "domain",
    "file": "references/stream/story-enrichment.md"
@@ -728,6 +844,10 @@
   "เน็กซอน": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
+  },
+  "เพิร์ล": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "เฟท": {
    "kind": "game",
@@ -744,6 +864,10 @@
   "เล่น": {
    "kind": "stream_type",
    "file": "references/stream/gaming-stream.md"
+  },
+  "เหยาจวง": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "เฮนชิน": {
    "kind": "tokusatsu",
@@ -769,6 +893,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Pokemon_PvP.md"
   },
+  "ไข่มุก": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
   "ไคจู": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -792,50 +920,6 @@
   "心动小镇": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Heartopia.md"
-  },
-  "deadlock": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "เดดล็อก": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "เดดล็อค": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "abrams": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "vindicta": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "bebop": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "czn": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "คาเซน่า": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "คาเซนา": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "eternal return": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Eternal_Return.md"
-  },
-  "black survival": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Eternal_Return.md"
   }
  },
  "_discovered": {

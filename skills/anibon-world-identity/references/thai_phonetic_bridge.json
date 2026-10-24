@@ -10,6 +10,9 @@
     "อัลเควด": {"en": "Archetype: Earth", "domain": "fgo", "class": "MoonCancer"},
     "เมลูซีน": {"en": "Melusine", "domain": "fgo", "class": "Lancer"},
     "เกนไซ": {"en": "Gensai", "domain": "fgo"},
+    "ทามาโมะ": {"en": "Tamamo no Mae", "domain": "fgo", "class": "Grand Ego / Rider"},
+    "เซียล": {"en": "Ciel", "domain": "fgo", "class": "MoonCancer"},
+    "เคีย่า": {"en": "Kiara", "th": "คิอาระ", "domain": "fgo", "class": "Alter Ego"},
     
     "multiblood": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
     "เมลตี้บลัด": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
@@ -45,6 +48,14 @@
     "วันพีซ": {"en": "One Piece", "domain": "anime"},
     "บリーチ": {"en": "Bleach", "domain": "anime"},
     "เคมปาจิ": {"en": "Zaraki Kenpachi", "domain": "anime"},
-    "ยูฮาบัค": {"en": "Yhwach", "domain": "anime"}
+    "ยูฮาบัค": {"en": "Yhwach", "domain": "anime"},
+    
+    "สปาร์กซี่": {"en": "Sparxie", "domain": "hsr"},
+    "เหยาจวง": {"en": "Yao Guang", "domain": "hsr"},
+    "เพิร์ล": {"en": "Pearl", "domain": "hsr"},
+    "ไข่มุก": {"en": "Pearl", "domain": "hsr"},
+    "นิฮิรัก": {"en": "Nihilux", "domain": "hsr"},
+    "อาฮา": {"en": "Aha", "domain": "hsr"},
+    "น็อด-ไกร": {"en": "Nod-Krai", "domain": "genshin"}
   }
 }
