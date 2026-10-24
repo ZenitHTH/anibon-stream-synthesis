@@ -294,6 +294,115 @@ def build_vision_payload(
     }
 
 
+def build_native_chat_payload(
+    model: str,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    system_prompt: str = SYSTEM_PROMPT,
+) -> Dict[str, Any]:
+    """Construct LM Studio native /api/v1/chat payload."""
+    payload: Dict[str, Any] = {
+        "model": model,
+        "input": prompt,
+        "temperature": temperature,
+        "max_output_tokens": max_tokens,
+        "reasoning": "off",
+        "store": False,
+    }
+    if system_prompt:
+        payload["system_prompt"] = system_prompt
+    return payload
+
+
+def _extract_content_or_reasoning(content: str, reasoning: Optional[str]) -> str:
+    """Fallback to reasoning content when message content is empty."""
+    if content:
+        return content
+    if not reasoning:
+        return ""
+    rc = reasoning.strip()
+    if "ส่วนที่" in rc or "════" in rc:
+        return rc
+    m = re.findall(r"(\d{2}:\d{2}:\d{2}\s*-\s*\[[\w]+\]\s*[^\n]+)", rc)
+    if m:
+        return "\n".join(m)
+    if "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
+        return "CONTINUATION"
+    return rc
+
+
+def extract_chat_response(data: Dict[str, Any]) -> str:
+    """Extract content from either OpenAI choices or LM Studio output array."""
+    if "choices" in data and data["choices"]:
+        msg = data["choices"][0]["message"]
+        content = msg.get("content", "").strip()
+        reasoning = msg.get("reasoning_content") or msg.get("reasoning")
+        return _extract_content_or_reasoning(content, reasoning)
+
+    if "output" in data:
+        msgs = [item.get("content", "") for item in data["output"] if item.get("type") == "message"]
+        rsns = [item.get("content", "") for item in data["output"] if item.get("type") == "reasoning"]
+        content = "\n".join(msgs).strip()
+        reasoning = "\n".join(rsns).strip() if rsns else None
+        return _extract_content_or_reasoning(content, reasoning)
+
+    return ""
+
+
+def _prepare_request(
+    endpoint: str,
+    model: str,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    system_prompt: str,
+    api_key: Optional[str] = None,
+) -> urllib.request.Request:
+    """Prepare urllib POST request for either native or OpenAI endpoint."""
+    if "/api/v1/chat" in endpoint:
+        payload = build_native_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
+    else:
+        payload = build_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
+
+    data_bytes = json.dumps(payload).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    return urllib.request.Request(endpoint, data=data_bytes, headers=headers, method="POST")
+
+
+def _execute_http_call(req: urllib.request.Request, timeout: int) -> str:
+    """Execute request and parse message or reasoning response."""
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return extract_chat_response(data)
+
+
+def _try_fallback_native_chat(
+    endpoint: str,
+    model: str,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    system_prompt: str,
+    timeout: int,
+    api_key: Optional[str],
+) -> Optional[str]:
+    """Fallback to LM Studio native /api/v1/chat if OpenAI endpoint returns error."""
+    if "/api/v1/chat" in endpoint or "/v1/chat/completions" not in endpoint:
+        return None
+    native_endpoint = endpoint.replace("/v1/chat/completions", "/api/v1/chat")
+    req = _prepare_request(native_endpoint, model, prompt, max_tokens, temperature, system_prompt, api_key)
+    try:
+        return _execute_http_call(req, timeout=timeout)
+    except Exception:
+        return None
+
+
 def call_local(
     endpoint: str,
     model: str,
@@ -305,48 +414,19 @@ def call_local(
     retries: int = MAX_RETRIES,
     api_key: Optional[str] = None,
 ) -> str:
-    """Call local OpenAI-compatible API for text generation."""
-    payload = build_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
-    data_bytes = json.dumps(payload).encode("utf-8")
-    api_key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
-    headers = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-    }
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-    req = urllib.request.Request(
-        endpoint,
-        data=data_bytes,
-        headers=headers,
-        method="POST",
-    )
+    """Call local OpenAI-compatible or LM Studio native API for text generation."""
+    key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
+    req = _prepare_request(endpoint, model, prompt, max_tokens, temperature, system_prompt, key)
 
     last_err = None
     for attempt in range(retries + 1):
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-
-            msg = data["choices"][0]["message"]
-            content = msg.get("content", "").strip()
-            reasoning = msg.get("reasoning_content") or msg.get("reasoning")
-
-            if not content and reasoning:
-                rc = reasoning.strip()
-                if "ส่วนที่" in rc or "════" in rc:
-                    content = rc
-                else:
-                    m = re.findall(r"(\d{2}:\d{2}:\d{2}\s*-\s*\[[\w]+\]\s*[^\n]+)", rc)
-                    if m:
-                        content = "\n".join(m)
-                    elif "CONTINUATION" in rc.upper() or "SKIP" in rc.upper():
-                        content = "CONTINUATION"
-                    else:
-                        content = rc
-            return content
+            return _execute_http_call(req, timeout=timeout)
         except Exception as e:
             last_err = e
+            fallback_res = _try_fallback_native_chat(endpoint, model, prompt, max_tokens, temperature, system_prompt, timeout, key)
+            if fallback_res is not None:
+                return fallback_res
             if attempt < retries:
                 time.sleep(2)
 
