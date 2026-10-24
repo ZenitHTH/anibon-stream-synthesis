@@ -64,7 +64,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "pearl", "เพิร์ล", "ไข่มุก", "nihilux", "นิฮิรัก", "aha", "อาฮา",
         "sunday", "ซันเดย์", "fugue", "ฟูจิ", "robin", "โรบิน", "boothill", "บูทฮิลล์",
         "yunli", "หยุนหลี่", "jiaoqiu", "เจียวชิว", "lingsha", "ลิงชา", "the herta", "aglaea", "castorice", "tribbie",
-        "rappa", "แรปป้า",
+        "rappa", "แรปป้า", "planarcadia", "พลานาร์เคเดีย", "amphoreus", "แอมฟอรัส", "evernight", "cyrene", "phainon",
     ],
     "Genshin_Impact.md": [
         "genshin impact", "genshin", "teyvat", "archon", "primogem",
