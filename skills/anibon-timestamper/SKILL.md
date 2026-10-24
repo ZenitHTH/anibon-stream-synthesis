@@ -242,9 +242,11 @@ Each `anibon-chunk-timestamper` returns plain-text timestamp lines (typically 2�
 > NEVER take satirical roasts (e.g., *"กลายเป็นคอมมิวนิสต์"*, *"เหมือนสลิ่ม"*, *"หลอนเป็นเปรต"*) as literal descriptions of the generated image. Always use `[Reaction]` and attribute the roast clearly (e.g. `ปู่โบ๊ตเหวอ TH-AI ไม่รู้จัก Jane Doe เจนเป็นสาวไซเบอร์ยืนคู่ ครม. แซวยังกะรัฐบาลจีน`).
 
 > [!IMPORTANT]
-> **Timestamp Lead-in & Off-hand Analogy Guard**:
+> **Timestamp Lead-in, Topic-Cluster Wrapping & Off-hand Analogy Guard**:
 > 1. **Lead-in Anchor**: Always anchor timestamp start to the *opening sentence* of a discussion topic. Never stamp mid-sentence after key proper nouns have already been uttered (prevents viewers from clicking and missing context).
 > 2. **Off-hand Analogy Rule**: Never elevate passing 1–2 sentence analogies or sarcastic roasts (e.g. comparing a show's budget to *Frieren*) into the primary timestamp title. Always describe the core topic (e.g. *One Punch Man S3 & J.C.Staff drama*) and relegate passing comparisons to parentheticals.
+> 3. **Topic-Cluster Wrapping**: When consecutive timestamps discuss the same subject within a group, wrap them into ONE unified timestamp. Never emit chains of micro-timestamps every 1–2 minutes for the same ongoing topic.
+> 4. **Fleeting Micro-Talk Skipping**: Skip brief offhand comments spanning only a few sentences (<30–60s) with no substantive analysis (e.g. praising a Thai localization name, reading an off-screen chat joke, or momentary passing remarks).
 
 ### 8. Merge Timestamps
 

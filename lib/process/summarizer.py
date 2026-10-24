@@ -93,7 +93,9 @@ def prune_essential(
     target = max(PRUNE_TARGET_MIN, min(PRUNE_TARGET_MAX, len(stamps) // 4))
     prompt = f"""Below are {len(stamps)} livestream timestamps. Select ONLY the ~{target} most essential ones:
 topic starts/pivots, official news/releases, key gameplay milestones, core conclusions, the stream ending.
-Drop repeats of the same talking point and casual banter. Copy selected lines EXACTLY, one per line, chronological, nothing else.
+Drop repeats of the same talking point, casual banter, and micro-talk (e.g. offhand remarks on translation or minor side-comments lasting only a few sentences).
+Wrap/favor timestamps that represent the consolidated topic rather than fragmented micro-steps.
+Copy selected lines EXACTLY, one per line, chronological, nothing else.
 
 {"\n".join(stamps)}"""
 

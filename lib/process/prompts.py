@@ -343,7 +343,8 @@ Rules:
      If the speaker continues discussing the same broad news, political, or societal subject across multiple chunks (>8-10 minutes without any timestamp), you MUST NOT leave it blank as an empty continuation.
      Identify any distinct sub-angle, specific policy/news critique, concrete case study, or notable shift in focus (e.g. specific data, secondary news item, viewer debate, geographic analysis) and emit 1 timestamp marking that sub-topic (using [Talk] or [News]) so long monologues are properly indexable.
    - STRICT PASSING MENTIONS & OFF-HAND REMARKS FILTER (CRITICAL):
-     DO NOT emit timestamps for brief passing remarks, 1-3 sentence off-hand mentions, or momentary tangents where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. merely reading a chat comment, saying "เห็นข่าวเกม X แวบๆ", "เดี๋ยวค่อยว่ากัน", casual hello to a chatter, fleeting side comments, mentioning a console/game name in passing).
+     DO NOT emit timestamps for brief passing remarks, 1-3 sentence off-hand mentions, or momentary tangents where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. merely reading a chat comment, saying "เห็นข่าวเกม X แวบๆ", praising a game's Thai name translation in passing, casual hello to a chatter, fleeting side comments, mentioning a console/game name in passing).
+     WRAP SAME-TOPIC CLUSTERS: If multiple actions or discussion points belong to the same overarching subject/thread, WRAP them into a SINGLE timestamp. Do NOT micro-stamp every 1-2 minutes.
      A timestamp is WARRANTED ONLY IF:
      1) Pu Boat actively dwells and spends SUBSTANTIAL focused discussion (several paragraphs, >1-2 minutes) analyzing, explaining, critiquing, or reacting deeply to that specific subject.
      2) OR an unambiguous gameplay milestone occurs (Boss encounter, Death, Victory, Gacha roll, Donation).

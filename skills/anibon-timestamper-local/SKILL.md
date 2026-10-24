@@ -313,6 +313,8 @@ When generating timestamps from long livestreams (4–8 hours), follow these ope
 3. **Pruning Micro-Stamps**:
    - Prune micro-talk stamps repeating the same talking point within a short window (e.g. if the streamer dissects a point for 5–10 minutes, do not place stamps every 2 minutes).
    - Prune casual chat chatter, minor jokes, or banter that does not impact the core narrative.
+   - **Wrap Same-Topic Clusters**: Consolidate consecutive stamps that belong to the same topic group into a single comprehensive timestamp.
+   - **Skip Fleeting Micro-Talk**: Never create a timestamp for an offhand reaction or passing thought spanning only 2–3 sentences (e.g. praising how a game translated a boss name into Thai).
 4. **Dual-File Storage**:
    - Save the curated essential timestamps file to `anibon_timestamps_essential.md` (or `anibon_timestamps.md`).
    - Retain the exhaustive, full chronological timestamp log in `anibon_timestamps_full.md` (and `all_timestamps.txt`) for reference and archival lookup.

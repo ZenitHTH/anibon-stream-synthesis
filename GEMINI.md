@@ -42,6 +42,8 @@ Whenever processing, generating, auditing, or summarizing timestamps for Anibon 
 5. **Macro-Thematic Cohesion & Essential Curation Invariant**:
    - **Drop 3,500-Byte Cap Over-Splitting**: Timestamps must be grouped strictly by cohesive macro-thematic activity periods (typically 4–6 parts for long streams). NEVER artificially slice a unified topic block into multiple sub-parts solely to satisfy a 3,500-byte comment ceiling. Single-comment byte limits are an optional export utility, not the structural grouping logic.
    - **Essential Timestamps Curation**: Prioritize high-impact, essential timestamps (~40–60 stamps for a 7–8 hour stream) as the primary user-facing output. Filter out conversational micro-loops, repetitive affirmations, and minor tangents while preserving major topic pivots, verified news, in-depth analysis, visual/gameplay highlights, and the stream outro. Keep the exhaustive chronological log in `all_timestamps.txt` / `anibon_timestamps_full.md` for ground-truth reference.
+   - **Topic-Cluster Wrapping (Anti-Micro-Stamping)**: When adjacent timestamps discuss the same subject, wrap them into ONE unified timestamp. Never emit chains of micro-timestamps every 1–2 minutes for the same ongoing topic.
+   - **Fleeting Side-Track Skipping**: Skip brief offhand comments spanning only a few sentences (<30–60s) with no substantive analysis (e.g. praising a Thai localization name, reading an off-screen chat joke, or momentary passing remarks).
 
 ## Knowledge Maintenance & Dictionary Invariants
 
