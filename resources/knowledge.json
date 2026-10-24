@@ -417,6 +417,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
+  "sunbringer": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "star rail": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
@@ -748,6 +752,10 @@
   "วล็อก": {
    "kind": "stream_type",
    "file": "references/stream/vlog-stream.md"
+  },
+  "ซันบริงเกอร์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
   "สปริงเกอร์": {
    "kind": "game",
