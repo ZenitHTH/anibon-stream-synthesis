@@ -42,6 +42,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Wuthering_Waves.md": [
         "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "จินซี", "changli", "ฉางลี่", "yinlin", "อินหลิน",
         "jiyan", "จี้หยาน", "shorekeeper", "ชอร์คีปเปอร์", "camellya", "คาเมลเลีย", "xiangli yao", "เซียงลี่เหยา",
+        "cantarella", "คันตาเรลล่า",
         "echo", "tacet field", "sonance sphere",
     ],
     "Zenless_Zone_Zero.md": [
@@ -63,6 +64,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "pearl", "เพิร์ล", "ไข่มุก", "nihilux", "นิฮิรัก", "aha", "อาฮา",
         "sunday", "ซันเดย์", "fugue", "ฟูจิ", "robin", "โรบิน", "boothill", "บูทฮิลล์",
         "yunli", "หยุนหลี่", "jiaoqiu", "เจียวชิว", "lingsha", "ลิงชา", "the herta", "aglaea", "castorice", "tribbie",
+        "rappa", "แรปป้า",
     ],
     "Genshin_Impact.md": [
         "genshin impact", "genshin", "teyvat", "archon", "primogem",
@@ -72,6 +74,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "liyue", "หลีเยว่", "mondstadt", "มอนด์สตัดท์", "fatui", "ฟาตุย", "harbinger",
         "nod-krai", "น็อด-ไกร", "snezhnaya", "สเนซนายา", "tsaritsa", "ดองทรัพยากร",
         "chasca", "ชาสก้า", "xilonen", "ชิโลเนน", "kinich", "คินิช", "mualani", "มัวลานี่",
+        "citlali", "ซิทลาลี", "ororon", "โอโรลอน", "kachina", "คาชิน่า", "mizuki", "มิสึกิ", "varesa", "วาเรซ่า",
         "neuvillette", "นิววิลเล็ต", "arlecchino", "อาร์เลคคิโน", "navia", "นาเวีย",
     ],
     "references/stream/fgo-knowledge.md": [
@@ -105,6 +108,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     ],
     "Arknights.md": [
         "arknights", "rhodes island", "oripathy", "originium", "doctor", "amiya", "อาร์คไนท์", "โรดส์",
+        "wis'adel", "วิชอาเดล", "logos", "โลโกส", "theresa", "เทเรซ่า", "shu", "สุ", "degenbrecher", "pepe",
     ],
     "Arknights_Endfield.md": [
         "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii",

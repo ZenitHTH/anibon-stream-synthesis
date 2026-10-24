@@ -84,6 +84,8 @@
     "อักลาเอีย": {"en": "Aglaea", "domain": "hsr"},
     "คาสโตริเซ่": {"en": "Castorice", "domain": "hsr"},
     "อนักซา": {"en": "Anaxa", "domain": "hsr"},
+    "แรปป้า": {"en": "Rappa", "domain": "hsr"},
+    "มาร์ช": {"en": "March 7th", "domain": "hsr"},
     
     "น็อด-ไกร": {"en": "Nod-Krai", "domain": "genshin"},
     "มาวุยก้า": {"en": "Mavuika", "domain": "genshin"},
@@ -92,6 +94,10 @@
     "คินิช": {"en": "Kinich", "domain": "genshin"},
     "มัวลานี่": {"en": "Mualani", "domain": "genshin"},
     "ซิทลาลี": {"en": "Citlali", "domain": "genshin"},
+    "โอโรลอน": {"en": "Ororon", "domain": "genshin"},
+    "คาชิน่า": {"en": "Kachina", "domain": "genshin"},
+    "มิสึกิ": {"en": "Mizuki", "domain": "genshin"},
+    "วาเรซ่า": {"en": "Varesa", "domain": "genshin"},
     "นิววิลเล็ต": {"en": "Neuvillette", "domain": "genshin"},
     "ฟูริน่า": {"en": "Furina", "domain": "genshin"},
     "อาร์เลคคิโน": {"en": "Arlecchino", "domain": "genshin"},
@@ -120,6 +126,11 @@
     "เวริน่า": {"en": "Verina", "domain": "wuwa"},
     "คาร์ล็อตต้า": {"en": "Carlotta", "domain": "wuwa"},
     "ฟีบี้": {"en": "Phoebe", "domain": "wuwa"},
+    "คันตาเรลล่า": {"en": "Cantarella", "domain": "wuwa"},
+    
+    "วิชอาเดล": {"en": "Wis'adel", "domain": "arknights"},
+    "โลโกส": {"en": "Logos", "domain": "arknights"},
+    "เทเรซ่า": {"en": "Theresa", "domain": "arknights"},
     
     "คิซากิ": {"en": "Kisaki", "domain": "bluearchive"},
     "ชิโรโกะ": {"en": "Shiroko", "domain": "bluearchive"},

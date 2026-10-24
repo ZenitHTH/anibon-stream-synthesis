@@ -23,16 +23,16 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 ### Main (Sensei's students by school)
 
 **Abydos High School:**
-- **Shiroko (シロコ / ชิโรโกะ)** — sporty wolf-eared girl, part of Foreclosure Task Force. Alternate: Shiroko Terror (dual-wielding)
-- **Hoshino (ホシノ / โฮชิโนะ)** — sleepy pink-haired girl, powerful in combat, actually >2 years repeating. Has an alternate: Hoshino Battle (swimsuit)
+- **Shiroko (シロコ / ชิโรโกะ)** — sporty wolf-eared girl, bank robbery mastermind. Alternate: **Shiroko＊Terror (シロコ＊テラー / คุโรโกะ)** (3.5th Anniv Fest Limited)
+- **Hoshino (ホシノ / โฮชิโนะ)** — sleepy pink-haired girl, powerful in combat. Alternates: Swimsuit Hoshino (1.5th Anniv), **Armed Hoshino / Combat Hoshino (臨戦ホシノ)** (3.5th Anniv Fest Limited stance-switch meta)
 - **Serika (セリカ / เซริกะ)** — energetic cat-eared girl, works at a convenience store
-- **Nonomi (ノノミ / โนโนมิ)** — rich girl with a big... personality, loves heavy machinery
+- **Nonomi (ノノミ / โนโนมิ)** — rich girl with a minigun
 - **Ayane (アヤネ / อายาเนะ)** — responsible secretary type, keeps track of finances
 
 **Trinity General School:**
 - **Mika (ミカ / มิกะ)** — powerhouse, was used as a pawn in Eden Treaty, can bench press a building, 2nd Anniv Fest
 - **Nagisa (ナギサ / นางิสะ)** — calm, scheming tea party leader, artillery support
-- **Seia (セイア / เซยะ)** — third member of Tea Party, prophet, quiet fox-eared girl
+- **Seia (セイア / เซยะ)** — third member of Tea Party, fox-eared prophet (4th Anniv Release)
 - **Koharu (コハル / โคฮารุ)** — healer who loves violent combat, conflicted
 - **Hifumi (ヒフミ / ฮิฟุมิ)** — Peroro obsessed, can't escape warcrimes allegations (Peroro-sama)
 - **Hanako (ハナコ / ฮานาโกะ)** — playful, lewd jokes, Swimsuit Hanako (2.5 Anniv Sonic Fest meta)
@@ -40,7 +40,8 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 **Millennium Science School:**
 - **Yuuka (ユウカ / ยูกะ)** — treasurer, meticulous with money, loves Sensei (romantic)
 - **Noa (ノア / โนอา)** — secretary to Yuuka, playful, also interested in Sensei
-- **Rio (リオ / ริโอ)** — former student council president of Seminar, calculated pragmatist
+- **Rio (リオ / ริโอ)** — former student council president of Seminar, calculated pragmatist (4th Anniv Fest Limited)
+- **Neru (ネル / เนรุ)** — leader of C&C, callsign 00. Alternate: **Neru School Uniform (制服ネル)** (4th Anniv Fest Limited)
 - **Himari (ヒマリ / ฮิมาริ)** — wheelchair genius hacker, supreme ATK buffer
 - **Toki (トキ / โทกิ)** — C&C agent number 5, Peace-Peace, pilot of Abi-Eshuh exosuit
 - **Aris / Alice (アリス / อลิส)** — retro gamer robot daughter, railgun cannon
