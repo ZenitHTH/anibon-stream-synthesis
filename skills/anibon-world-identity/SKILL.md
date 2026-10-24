@@ -51,6 +51,13 @@ python3 scripts/fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"
 
 Training-data inference, older-version character, unconfirmed phonetic match
 
+## Version Chronology Verification
+
+When a stream covers a version update or special program for a live-service game (Genshin, HSR, ZZZ, WuWa, etc.):
+1. **Match Version to Nation/Arc**: Consult the version chronology table in `references/<Game>.md`. Verify which nation/arc the patch belongs to before assigning titles to sections, characters, or bosses.
+2. **Anti-Callback Conflation**: Streamers regularly mention older regions/patches to compare character balance or meta history (e.g. Boat referencing 6.x Nod-Krai during the 7.2 Snezhnaya stream). Do NOT mistake a historical comparison for the active patch location.
+3. **Character Affiliation Integrity**: Verify newly announced characters against the active version table. New characters belong to the active patch nation unless explicitly documented otherwise.
+
 ## DB Bootstrap
 
 Run these before World Identity lookups for applicable games:

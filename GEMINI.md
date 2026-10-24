@@ -45,6 +45,11 @@ Whenever processing, generating, auditing, or summarizing timestamps for Anibon 
    - **Topic-Cluster Wrapping (Anti-Micro-Stamping)**: When adjacent timestamps discuss the same subject, wrap them into ONE unified timestamp. Never emit chains of micro-timestamps every 1–2 minutes for the same ongoing topic.
    - **Fleeting Side-Track Skipping**: Skip brief offhand comments spanning only a few sentences (<30–60s) with no substantive analysis (e.g. praising a Thai localization name, reading an off-screen chat joke, or momentary passing remarks).
 
+6. **Canonical Version Chronology & Comparative Callback Guard**:
+   - **Cross-Reference Version Tables**: When labeling live-service game updates (e.g. 7.2, 3.x), strictly cross-check the version chronology in `skills/anibon-world-identity/references/<Game>.md` to identify the official region/nation (e.g., 7.x = Snezhnaya, 6.x = Nod-Krai).
+   - **Active Showcase vs. Comparative Callback**: The active stream showcase defines the section title and character affiliations. Never allow a streamer's nostalgic or comparative reference to an earlier version (e.g. "ตั้งแต่ตอนหนองคาย...") to overwrite the current update's canonical setting.
+   - **Explicit Callback Phrasing**: Retrospective discussions must be framed as callbacks (e.g. `...พร้อมย้อนคุยเมต้าตัวละครตั้งแต่ยุค <Region> (<RegionEN>)`), never as the active version setting.
+
 ## Knowledge Maintenance & Dictionary Invariants
 
 Whenever updating phonetic replacements or expanding domain knowledge in this plugin:

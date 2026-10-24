@@ -58,6 +58,7 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
      - Detects game presence via exclusive special words and title signals with chaining weights across sequential chunks.
      - Strips common Japanese character names (*Yuki*, *Rin*, *Ren*) and generic gaming standing words (*E*, *C*, *AP*, *FTK*, *E6*, *Preset*) from triggering false game candidates.
      - Decays candidate probabilities across chunks to preserve ongoing gameplay context while discarding weak tail noise (`prob < 0.15`).
+   - **Chronology & Callback Validation**: Cross-checks detected game versions against `references/<Game>.md` to prevent retrospective streamer commentary from corrupting the active update title.
    - **Stage 2 (Entity Scoping via `allowed_sources`)**:
      - Scopes entity glossary queries and prompt context strictly to `allowed_sources` returned from Stage 1 candidates.
    - **Zero-Example Prompt Discipline**:
