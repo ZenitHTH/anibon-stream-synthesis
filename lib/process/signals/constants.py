@@ -43,12 +43,14 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "wuthering waves", "wuthering", "wuwa", "เวฟ", "rover", "jinhsi", "จินซี", "changli", "ฉางลี่", "yinlin", "อินหลิน",
         "jiyan", "จี้หยาน", "shorekeeper", "ชอร์คีปเปอร์", "camellya", "คาเมลเลีย", "xiangli yao", "เซียงลี่เหยา",
         "cantarella", "คันตาเรลล่า", "suoming", "ซั่วหมิง", "hsin", "ซิน", "qingxiao", "jingran",
+        "cartethyia", "คาร์เทเธีย", "hiyuki", "ฮิยูกิ", "aemeath", "เอมีธ",
         "echo", "tacet field", "sonance sphere",
     ],
     "Zenless_Zone_Zero.md": [
         "zenless zone zero", "zenless", "zzz", "new eridu", "bangboo",
         "hollow zero", "proxies", "proxy", "inter-knot",
         "phoenix", "ฟีนิกซ์", "severian", "เซเวเรียน", "claret", "คลาเร็ต", "roxy", "ร็อกซี่", "sunbringer", "ซันบริงเกอร์", "springer", "สปริงเกอร์", "สปริเกอร์", "krampus", "roscaelifer", "eldreda", "lindverne", "dracaene",
+        "dialyn", "ไดลิน", "banyue", "ป้านเยว่", "ye shunguang", "เย่ชุนกวง",
         "miyabi", "มิยาบิ", "yanagi", "ยานางิ", "caesar", "ซีซาร์", "burnice", "เบอร์นิซ", "jane doe", "เจนโด",
     ],
     "Blue_Archive.md": [
@@ -78,6 +80,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "chasca", "ชาสก้า", "xilonen", "ชิโลเนน", "kinich", "คินิช", "mualani", "มัวลานี่",
         "citlali", "ซิทลาลี", "ororon", "โอโรลอน", "kachina", "คาชิน่า", "mizuki", "มิสึกิ", "varesa", "วาเรซ่า",
         "neuvillette", "นิววิลเล็ต", "arlecchino", "อาร์เลคคิโน", "navia", "นาเวีย",
+        "skirk", "สเกิร์ก", "escoffier", "เอสคอฟฟิเยร์", "ineffa", "อิเนฟฟา", "nefer", "เนเฟอร์", "columbina", "โคลัมบินา", "varka", "วาร์กา",
     ],
     "references/stream/fgo-knowledge.md": [
         "fate grand order", "fgo", "chaldea", "servant", "noble phantasm", "saint quartz",

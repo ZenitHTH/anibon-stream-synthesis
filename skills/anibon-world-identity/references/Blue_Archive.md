@@ -115,6 +115,21 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - **Tsumugi (สึมุกิ)** — นักเรียนใหม่เปิดตัวช่วงต้นเดือน ต.ค. 2026
 - รีรันสำคัญ: Eri, Kanoe, S.Miyako, S.Saki, Marina (Qipao), Tomoe (Qipao), Kanna, Noa
 
+### 🎂 ประวัติตู้ฉลองครบรอบ & เฟสติวัล (Anniversary & Fest History)
+- **4.5-Year Anniversary (กลางปี 2025):**
+  - **Fest Limited:** **Aris (Armed / 臨戦アリス)** — 3★ Striker / Sonic & Pierce DPS (เรลกันโหมดรบเต็มพิกัด), **Kei (ケイ)** — 3★ Special / Sonic Support & Sub-DPS
+  - **Limited:** **Rio (Armed / 臨戦リオ)** — 3★ Striker / Tactical Dealer, **Himari (Armed / 臨戦ヒマリ)** — 3★ Special / Supreme Buffer
+  - **Welfare (แจกฟรี):** **Toki (Armed / 臨戦トキ)** — 1★ Striker
+- **4th Anniversary (ต้นปี 2025):**
+  - **Fest Limited:** **Seia (セイア)** — 3★ Special / Mystic Prophet Buffer, **Rio (リオ)** — 3★ Striker / Seminar President
+  - **Limited:** **Neru (School Uniform / 制服ネル)** — 3★ Striker / Vanguard Slasher
+- **3.5th Anniversary (กลางปี 2024):**
+  - **Fest Limited:** **Shiroko＊Terror / Kuroko (คุโรโกะ)** — 3★ Striker / Mystic Boss Killer, **Armed Hoshino (臨戦ホシノ)** — 3★ Striker / Stance-switch Dual Form
+  - **Limited:** **Kisaki (คิซากิ)** — 3★ Special / EX Skill Damage Booster (Meta)
+- **3rd Anniversary (ต้นปี 2024):**
+  - **Fest Limited:** **Dress Hina (ドレスヒナ)** — 3★ Striker / Explosive Sniper Meta
+  - **Limited:** **Makoto (マコト)**, **Dress Ako (ドレスアコ)** / แจกฟรี **Ibuki (イブキ)**
+
 ---
 
 ## Game Systems

@@ -67,8 +67,14 @@
 | **9.1 (22 ต.ค. 2026)** | **Herrscher of Time (แฮชเชอร์แห่งกาลเวลา)** | S-Rank / IMG / Fire | Drive Core (Key of Mirroring) | แฮชเชอร์กาลเวลา วงแหวน Wheel of Destiny มีคุณสมบัติ Astral Ring ครบทุกสาย ดาเมจไฟมหาศาล มีกลไก "ย้อนเวลา" บันทึกดาเมจเพื่อนเป็น Weight of Ages ทำ HP loss รุนแรง |
 | **9.0 (20 ส.ค. 2026)** | **AstralOp Senadina / Fenghuang Divine Key** | AstralOp / S-Rank Rework | Divine Key | บทสรุป Part 2 ปลดล็อก Senadina ในฐานะ AstralOp ประจำทีม และ Divine Key ชุดใหม่เสริมพลัง Fenghuang of Vicissitude |
 | **8.9** | **Seele ( Wings of Panacea )** | S-Rank / SD / Lightning | Scythe (เคียวขนนก) | เซเล่ร่างปีกสวรรค์ทำดาเมจไฟฟ้าหมู่ บัฟฟื้นฟูเกจ Astral Ring รวดเร็ว บัฟเจาะเกราะให้ทีม World Star |
+| **8.8** | **Silverwing: N-EX Divine Key / DLC** | Divine Key / S-Rank Rework | Heavy | กุญแจสวรรค์และ DLC อัปเกรด Silverwing (โบรเนีย) เสริมพลังธาตุน้ำแข็งและระบบ Astral Ring |
 | **8.7** | **Raiden Mei ( Xentinel · Dawnbearing Crescent )** | S-Rank / MECH / Physical | Staff / Swords | เมย์ร่างเฉือนจันทร์ ทำดาเมจกายภาพหนักหน่วง ทำลายเกราะป้องกันประเภทบอสชีวภาพได้อย่างรวดเร็ว |
-| **8.1** | **Li Sushang ( Peregrine Sword )** | S-Rank / BIO / Physical | Fists (สนับมือกระบี่) | ซู่ซังชุดกระบี่บิน ทำดาเมจโจมตีกายภาพเดี่ยวรวดเร็ว รองรับระบบ Law of Ascension |
+| **8.6** | **Rita Rossweisse ( Miss Espionage )** | S-Rank / IMG / Lightning | Scythe (เคียวสายฟ้า) | ริต้าร่างสายลับ ดาเมจสายฟ้าจินตภาพ วงแหวน Wheel of Destiny ปลดล็อกคอมโบสังหารรวดเร็ว |
+| **8.5** | **Elysia ( Hi♪ Love Elf♥ )** | S-Rank / SD / Ice | Bow (ธนูความรัก) | เอลีเซียร่างเอลฟ์ ดาเมจน้ำแข็ง Stardust พร้อมเปิดตัว Divine Key เสริม Herrscher of Rebirth |
+| **8.4** | **Coralie 6B ( Behold! Fate-Defying Dragon )** | S-Rank / MECH / Fire | Rocket Hammer (ค้อนจรวดมังกร) | โคราลี่ชุดเกราะมังกร ดาเมจไฟจักรกล ทุบกระจายเกราะ วงแหวน Rite of Oblivion |
+| **8.3** | **Erdős Helia ( Planar Armament: Warped Spacetime )** | S-Rank / BIO / Lightning | Crossbows (หน้าไม้คู่มิติ) | เฮเลียชุดเกราะข้ามมิติ ดาเมจสายฟ้าชีวภาพ สาดกระสุนหน้าไม้สนับสนุนทีม Part 2 ยุคใหม่ |
+| **8.2** | **Li Sushang ( Peregrine Sword )** | S-Rank / BIO / Physical | Fists (สนับมือกระบี่) | ซู่ซังชุดกระบี่บิน ทำดาเมจโจมตีกายภาพเดี่ยวรวดเร็ว รองรับระบบ Law of Ascension |
+| **8.1** | **Kiana Kaslana ( Ba-Dum! Fiery Wishing Star )** | S-Rank / SD / Fire | Pistols / Staff (ปืนคู่คฑาไฟ) | เคียน่าดวงดาราเพลิง ดาเมจไฟ Stardust วงแหวน Law of Ascension ระเบิดท่าไม้ตายข้ามมิติ |
 | **8.0** | **Durandal ( Reign Solaris )** | S-Rank / IMG / Physical | Lance (ทวนสุริยะ) | ดูรันดัลร่างดวงตะวัน ทำดาเมจทะลวงจุดอ่อน ดึงเมคคานิกแกนหมุนดาราจักรแบบพิเศษ |
 | **7.9** | **Sparkle ( Thousand-Faced Maestro: Cameo )** | S-Rank / QUA / Fire | Drive Core (แกนพลังงาน) | ตัวละครคอลแลบถาวรจากเกม *Honkai: Star Rail* เป็นซัพพอร์ตธาตุไฟทำความเสียหายประสาน |
 | **7.8** | **Vita ( Lone Planetfarer )** | S-Rank / MECH / Lightning | Drive Core (แกนพลังงาน) | ร่างต่อสู้ของวีต้า สามารถอัญเชิญหุ่นรบยักษ์ยิงเลเซอร์ บัฟทีมสายฟ้าและ Resonance |

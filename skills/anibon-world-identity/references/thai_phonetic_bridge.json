@@ -185,6 +185,25 @@
     "เบลซเบลล์": {"en": "Blazebell", "domain": "czn"},
     "เซเรส": {"en": "Seres", "domain": "eternal_return"},
     "เนิร์ส แฮร์โรว์": {"en": "Nurse Harrow", "domain": "deadlock"},
-    "แฮชเชอร์แห่งกาลเวลา": {"en": "Herrscher of Time", "domain": "hi3"}
+    "แฮชเชอร์แห่งกาลเวลา": {"en": "Herrscher of Time", "domain": "hi3"},
+
+    "สเกิร์ก": {"en": "Skirk", "domain": "genshin"},
+    "เอสคอฟฟิเยร์": {"en": "Escoffier", "domain": "genshin"},
+    "อิเนฟฟา": {"en": "Ineffa", "domain": "genshin"},
+    "เนเฟอร์": {"en": "Nefer", "domain": "genshin"},
+    "ดูริน": {"en": "Durin", "domain": "genshin"},
+    "โคลัมบินา": {"en": "Columbina", "domain": "genshin"},
+    "วาร์กา": {"en": "Varka", "domain": "genshin"},
+    "มาดามปิง": {"en": "Madame Ping", "domain": "genshin"},
+
+    "คาร์เทเธีย": {"en": "Cartethyia", "domain": "wuwa"},
+    "ลูปา": {"en": "Lupa", "domain": "wuwa"},
+    "เอมีธ": {"en": "Aemeath", "domain": "wuwa"},
+    "ฮิยูกิ": {"en": "Hiyuki", "domain": "wuwa"},
+    "เดเนีย": {"en": "Denia", "domain": "wuwa"},
+
+    "ไดลิน": {"en": "Dialyn", "domain": "zzz"},
+    "ป้านเยว่": {"en": "Banyue", "domain": "zzz"},
+    "เย่ชุนกวง": {"en": "Ye Shunguang", "domain": "zzz"}
   }
 }
