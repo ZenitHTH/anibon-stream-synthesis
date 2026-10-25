@@ -53,10 +53,45 @@ def download_transcript(url: str, workspace: Path) -> None:
         sys.exit(1)
 
 
+def _download_144p_video(url: str, video_path: Path) -> bool:
+    """Download 144p video stream for local storyboard synthesis."""
+    if video_path.is_file() and video_path.stat().st_size > 0:
+        return True
+    fmt = "160/bestvideo[height<=240][ext=mp4]/worst[ext=mp4]"
+    cmd = [*ytdlp_cmd(), "-f", fmt, "-o", str(video_path), url]
+    res = subprocess.run(cmd, capture_output=True, check=False)
+    return res.returncode == 0 and video_path.is_file()
+
+
+def _tile_video_to_slides(video_path: Path, clean_dir: Path) -> Path | None:
+    """Tile video frames using ffmpeg into 3x3 storyboard slides."""
+    clean_dir.mkdir(parents=True, exist_ok=True)
+    out_pattern = str(clean_dir / "slide_%04d.jpg")
+    vf = "fps=1/10,scale=320:180,tile=3x3"
+    cmd = ["ffmpeg", "-v", "error", "-y", "-i", str(video_path), "-vf", vf, "-q:v", "3", out_pattern]
+    res = subprocess.run(cmd, capture_output=True, check=False)
+    has_slides = any(clean_dir.glob("slide_*.jpg"))
+    return clean_dir if res.returncode == 0 and has_slides else None
+
+
+def _synthesize_slides_from_144p(url: str, frames_dir: Path) -> Path | None:
+    """Synthesize 3x3 storyboard slides from 144p video as fallback when sb is missing."""
+    video_path = frames_dir / "video_144p.mp4"
+    clean_dir = frames_dir / "slides_clean"
+    try:
+        if not _download_144p_video(url, video_path):
+            return None
+        return _tile_video_to_slides(video_path, clean_dir)
+    except Exception as e:
+        print(f"[!] Failed to synthesize 144p storyboard: {e}", file=sys.stderr)
+        return None
+
+
 def download_storyboard(url: str, workspace: Path) -> Path | None:
     """Download storyboard images/mhtml via yt-dlp into workspace/frames/.
 
     Skips if storyboard file or unpacked slides already exist.
+    Falls back to 144p video 3x3 tiling when sb0-sb3 formats are missing.
     """
     frames_dir = Path(workspace) / "frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
@@ -85,11 +120,10 @@ def download_storyboard(url: str, workspace: Path) -> Path | None:
             if m.is_file():
                 return m
         found = list(frames_dir.glob("*.mhtml"))
-        return found[0] if found else None
+        return found[0] if found else _synthesize_slides_from_144p(url, frames_dir)
     except Exception as e:
         print(f"[!] Failed to download storyboard: {e}", file=sys.stderr)
         return None
-
 
 
 def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best") -> Path | None:

@@ -284,6 +284,30 @@ class TestMultimodal(unittest.TestCase):
             res = sample_chunk_keyframes(0, 50, slides_dir, out_dir, text_tokens=3000)
             self.assertEqual(len(res), 1)
 
+    def test_download_storyboard_falls_back_to_144p_ffmpeg_tiling_when_sb_missing(self):
+        import tempfile
+        from download.ytdlp import download_storyboard
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            clean_dir = ws / "frames" / "slides_clean"
+
+            def fake_run(cmd, **kwargs):
+                if "sb0/sb1/sb2/sb3" in cmd:
+                    return MagicMock(returncode=1)
+                if "video_144p.mp4" in " ".join(str(c) for c in cmd) and "yt-dlp" in str(cmd[0]):
+                    (ws / "frames" / "video_144p.mp4").write_bytes(b"mp4")
+                    return MagicMock(returncode=0)
+                if "ffmpeg" in str(cmd[0]):
+                    clean_dir.mkdir(parents=True, exist_ok=True)
+                    (clean_dir / "slide_0001.jpg").write_bytes(b"jpg")
+                    return MagicMock(returncode=0)
+                return MagicMock(returncode=0)
+
+            with patch("subprocess.run", side_effect=fake_run):
+                result = download_storyboard("https://www.youtube.com/watch?v=XBtoCdurZ_Y", ws)
+                self.assertEqual(result, clean_dir)
+                self.assertTrue((clean_dir / "slide_0001.jpg").is_file())
+
 
 if __name__ == "__main__":
     unittest.main()
