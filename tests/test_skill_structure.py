@@ -261,6 +261,36 @@ class TestSkillStructure(unittest.TestCase):
         content = script_path.read_text(encoding="utf-8")
         self.assertNotIn('skills" / "anibon-timestamper" / "resources', content, "update_garbled_dictionary targets deleted skills resources directory")
 
+    def test_youtube_minutes_synthesis_uses_v1_3_pipeline_tools(self):
+        skill_dir = SKILLS_DIR / "youtube-minutes-synthesis"
+        skill_md = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        self.assertFalse(
+            (skill_dir / "scripts").exists(),
+            "Empty skills/youtube-minutes-synthesis/scripts directory should be removed",
+        )
+        for dead in ("subagent-prompt-builder.py", "sk_permission", "\\nead_file", "-f 134"):
+            self.assertNotIn(
+                dead,
+                skill_md,
+                f"youtube-minutes-synthesis/SKILL.md still contains outdated reference: {dead}",
+            )
+        for required in (
+            "scripts/prepare_video.py",
+            "clean_garbled_english.py",
+            "slice_stream_frame.py",
+            "unpack_storyboard.py",
+            "detect_signals.py",
+            "build_subagent_prompts.py",
+            "batching-subagents-concurrency",
+            "anibon-local-transcription",
+            "whisper-corruption-recovery",
+        ):
+            self.assertIn(
+                required,
+                skill_md,
+                f"youtube-minutes-synthesis/SKILL.md missing v1.3.0 tool reference: {required}",
+            )
+
 
 if __name__ == "__main__":
 

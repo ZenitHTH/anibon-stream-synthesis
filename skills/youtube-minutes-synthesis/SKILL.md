@@ -5,61 +5,129 @@ description: Use when extracting a transcript from a YouTube video to summarize 
 
 # YouTube Minutes Synthesis
 
-A skill for extracting transcripts from YouTube videos, processing and analyzing them, and producing structured meeting-minutes-style summaries or timestamped overviews as Markdown (.md) documents.
+A skill for extracting transcripts from YouTube videos, processing and analyzing them with canonical plugin tools, and producing structured meeting-minutes-style summaries or timestamped overviews as Markdown (.md) documents.
 
 ## When to Use
 
-- When the user needs meeting minutes from a recorded meeting or stream posted on YouTube.
-- When summarizing key points from a long live stream, interview, or educational video with timestamps for easy reference.
-- When repurposing a video transcript into an article or guide.
+- When the user needs meeting minutes from a recorded meeting, conference, talk, or stream posted on YouTube.
+- When summarizing key points from a video or interview with timestamps for easy reference.
+- When repurposing a video transcript into an article, executive brief, or guide.
 
 ## Process Flow
 
 ```dot
 digraph youtube_flow {
-    "Parse link and extract Video ID" [shape=box];
-    "Fetch transcript via Python script" [shape=box];
-    "Group content and sequence timestamps" [shape=box];
-    "Summarize key points and observations" [shape=box];
+    "Prepare tools & pre-flight" [shape=box];
+    "Download transcript, metadata & storyboard via prepare_video.py" [shape=box];
+    "Clean Thai-Latin garbles via clean_garbled_english.py" [shape=box];
+    "Ground ambiguous frames via slice_stream_frame.py / unpack_storyboard.py" [shape=box];
+    "Organize agenda & synthesize minutes" [shape=box];
     "Compile into report following template" [shape=box];
-    "Verify reference links and save file" [shape=doublecircle];
+    "Verify publish date and links" [shape=doublecircle];
 
-    "Parse link and extract Video ID" -> "Fetch transcript via Python script";
-    "Fetch transcript via Python script" -> "Group content and sequence timestamps";
-    "Group content and sequence timestamps" -> "Summarize key points and observations";
-    "Summarize key points and observations" -> "Compile into report following template";
-    "Compile into report following template" -> "Verify reference links and save file";
+    "Prepare tools & pre-flight" -> "Download transcript, metadata & storyboard via prepare_video.py";
+    "Download transcript, metadata & storyboard via prepare_video.py" -> "Clean Thai-Latin garbles via clean_garbled_english.py";
+    "Clean Thai-Latin garbles via clean_garbled_english.py" -> "Ground ambiguous frames via slice_stream_frame.py / unpack_storyboard.py";
+    "Ground ambiguous frames via slice_stream_frame.py / unpack_storyboard.py" -> "Organize agenda & synthesize minutes";
+    "Organize agenda & synthesize minutes" -> "Compile into report following template";
+    "Compile into report following template" -> "Verify publish date and links";
 }
 ```
 
 ## Checklist
 
-You MUST always follow these steps when this skill is activated:
+Commands run from the plugin root directory (`anibon-stream-synthesis/`).
 
 > [!IMPORTANT]
-> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `python3`). Do NOT proceed if any tool is missing.
+> **REQUIRED SUB-SKILL (FIRST):** Before anything else, run `preparing-tools` to verify all system dependencies (`yt-dlp`, `ffmpeg`, `python3`). Do NOT proceed if any tool is missing.
 
-1. **Verify Video ID & Publish Date — REQUIRED**: Extract the 11-character Video ID from the user-provided URL **AND verify the video's public publish date** (e.g. `upload_date` or `release_timestamp` from `yt-dlp --dump-json <URL>`, or look it up on the video's YouTube page) to establish the correct temporal context before analyzing any content. Always record the publish date in the report metadata.
-   - If the video is older than 6 months, add a note: **"Old video — context may differ from the present"** in the report.
-   - **NEVER attribute events or information that occurred after the publish date** to the speaker as if they said it, unless clearly labelled as **Post-stream Developments**.
-2. **Extract Transcript**:
-   - **REQUIRED SUB-SKILL**: To load or fetch a transcript, ALWAYS invoke the [cleaning-auto-transcripts](../cleaning-auto-transcripts/SKILL.md) skill to download and correct errors from the Auto-Transcript system or unclear speech.
-   - **CRITICAL for Low-Context AIs (e.g. gemma4:e2b or gemma:31b)**: Do NOT use complex python scripts (e.g., `python3 "/absolute/path/to/scripts/prepare_video.py" "VIDEO_URL" --format json`) or guess dynamic filenames. Download the transcript into a predictable JSON file (literally named `raw_transcript.json` in your current directory) using this native command. **ALWAYS prioritize original language** (`--sub-lang "th-orig"` or `"en-orig"`) over English (`en`):
-     `yt-dlp --write-auto-subs --sub-lang "th-orig" --sub-format json3 --skip-download --ignore-no-formats-error -o "raw_transcript" "<URL>" ; mv raw_transcript.*.json3 raw_transcript.json`
-   - **Anti-Bot Block Handling (YouTube 429 Error)**:
-     - **Local run**: Ask the user which browser they use (e.g., `chrome`, `brave`) and retry with `--cookies-from-browser <browser_name>`.
-     - **OpenCode / Cloud Sandbox run**: `--cookies-from-browser` WILL FAIL. Ask the user to run the `yt-dlp` command locally and upload `raw_transcript.json` to the session.
-   - If no speaker-specific error mapping file exists, just proceed with the `raw_transcript.json` using the standard filters.
-3. **Organize Agenda**:
-    - Divide the video timeline into main agenda items using a **Hierarchical MapReduce** approach:
-      - **Map**: Group transcript records into 10-15 minute blocks with a 2-minute sliding overlap to ensure sentence cohesion.
-      - **Reduce**: Synthesize the block summaries into high-level agenda sections, aligning main points with sub-ideas.
-4. **Summarize Core Points**:
-   - Summarize who said what, what conclusions or opinions were expressed during each segment.
-   - **NEVER skip important details** and preserve the accuracy of the original context.
-5. **Translate & Refine Language**:
-   - Write the report in consistent, polished language throughout the entire document (e.g. all Thai or all English).
-6. **Save to Markdown**: Save the document to the output store and provide the user with an accessible link.
+### 1. Prepare Workspace, Transcript & Metadata (Canonical Preparation)
+Run the root pipeline utility `scripts/prepare_video.py`:
+
+```bash
+python3 -X utf8 scripts/prepare_video.py "<URL>" --format xml --block 600 --overlap 60
+```
+
+`scripts/prepare_video.py` automatically:
+- Creates `~/youtube_<VIDEO_ID>_workspace/`.
+- Probes and writes `<workspace>/info.json` (`upload_date`, `release_timestamp`, `title`, `duration`, `channel`).
+- Downloads multi-language `json3` subtitles (prioritizing `th-orig,en-orig,th,en`) into `<workspace>/raw_transcript.json`.
+- Downloads YouTube storyboard slide sheets into `<workspace>/frames/`.
+- Cleans and segments the transcript into 10-minute XML chunks (`<workspace>/chunks/chunk_*.xml`).
+
+**Verify Publish Date & Temporal Context — REQUIRED**:
+- Read `<workspace>/info.json` (or `yt-dlp --dump-json "<URL>"`) to record the exact `upload_date` and `release_timestamp`.
+- If the video is older than 6 months, add a note: **"Old video — context may differ from the present"** in the report.
+- **NEVER attribute events or information that occurred after the publish date** to the speaker as if they said it during the video.
+
+### 2. Clean Thai-Latin Garbles & Fallback Strategies
+Normalize Whisper ASR phonetic drift and garbled loanwords across chunks:
+
+```bash
+python3 -X utf8 skills/cleaning-auto-transcripts/scripts/clean_garbled_english.py --chunks ~/youtube_<VIDEO_ID>_workspace/chunks/
+```
+
+#### No-Caption Fallback (Local Transcription)
+If the YouTube video has no subtitles or auto-captions:
+1. Load **`anibon-local-transcription`** to extract 16kHz audio and transcribe locally via `whisper.cpp`.
+2. If audio $\ge 2\text{h}$ exhibits repetition loops or silent stutter, invoke **`whisper-corruption-recovery`** to clean and stitch `raw_transcript.json`.
+3. Re-run `prepare_video.py` against the workspace to generate chunks.
+
+#### Anti-Bot Block Handling (YouTube 429 / HTTP 403)
+- **Local run**: Try `--extractor-args "youtube:player_client=android"` first to bypass YouTube SABR 403 blocks without macOS Keychain prompts. If sign-in is required, ask the user which browser they use and pass `--cookies-from-browser <browser_name>`.
+- **Cloud Sandbox run**: `--cookies-from-browser` will fail in headless sandboxes. Ask the user to run `yt-dlp` locally and upload `raw_transcript.json` to the session.
+
+### 2.B Visual Grounding & On-Screen Frame Inspection
+When a video contains on-screen presentation slides, settings sheets, tables, code listings, or diagrams:
+
+1. **Fast Storyboard Slide Inspection**:
+   Unpack storyboard slides downloaded during preparation:
+   ```bash
+   python3 -X utf8 skills/anibon-stream-activity/scripts/unpack_storyboard.py \
+     --mhtml "~/youtube_<VIDEO_ID>_workspace/frames/storyboard*" \
+     --out-dir "~/youtube_<VIDEO_ID>_workspace/frames/slides"
+   ```
+2. **Targeted High-Res Frame Slicing (`verifying-stream-ground-truth`)**:
+   Slice exact high-res frames at specific seconds without downloading full-length video:
+   ```bash
+   python3 -X utf8 skills/verifying-stream-ground-truth/scripts/slice_stream_frame.py \
+     "<URL>" "<HH:MM:SS>" \
+     -o "~/youtube_<VIDEO_ID>_workspace/frames/frame_<label>.jpg"
+   ```
+3. Read the extracted frame image using `read_file` to verify on-screen text, slider values, or Japanese unit conversions (`万` = 10,000, `億` = 100,000,000) directly.
+
+### 3. Organize Agenda & Hierarchical Synthesis
+
+- **Videos $\le 40$ minutes**:
+  Read `<workspace>/chunks/chunk_*.xml` directly. Divide content into cohesive 10–15 minute agenda blocks with 2-minute overlaps, synthesize main takeaways, and produce the report following the Recommended Template.
+
+- **Videos $> 40$ minutes (Subagent Dispatch Contract)**:
+  1. **Permissions**: Ask user permission before downloading external media or spawning parallel subagents.
+  2. **Domain Signal Detection**:
+     Run TF-IDF keyword matching to identify domain topics and entities:
+     ```bash
+     python3 -X utf8 skills/anibon-timestamper/scripts/detect_signals.py \
+       --chunks ~/youtube_<VIDEO_ID>_workspace/chunks/ \
+       --knowledge resources/knowledge.json \
+       --output ~/youtube_<VIDEO_ID>_workspace/signals.json
+     ```
+     If `signals.json` matches domain files in `skills/anibon-world-identity/references/`, load **`anibon-world-identity`** to verify entity spellings before synthesizing.
+  3. **Build Subagent Prompts**:
+     Generate bounded prompt files ($<46\text{KB}$ per file):
+     ```bash
+     python3 -X utf8 skills/anibon-timestamper/scripts/build_subagent_prompts.py ~/youtube_<VIDEO_ID>_workspace
+     ```
+  4. **Parallel Subagent Batching (`batching-subagents-concurrency`)**:
+     Spawn chunk-group subagents using `invoke_subagent` (`Model: "flash"`) in batches of **4–6 subagents per turn**, reading assigned `file://<workspace>/prompts_by_chunk/chunk_NN.txt` files sequentially.
+  5. **Reduce & Finalize**:
+     Assemble the group summaries into high-level agenda sections, align main points with sub-ideas, and verify completeness against the transcript.
+
+### 4. Summarize Core Points & Refine Language
+- Summarize who said what, key positions, suggestions, and conclusions reached.
+- Keep language consistent throughout the entire report (all Thai or all English).
+- Save to Markdown in `<workspace>/` and provide a clickable link.
+
+---
 
 ## Recommended Template
 
@@ -96,29 +164,11 @@ You MUST always follow these steps when this skill is activated:
 - [Channel Name / Original Video Title](real_YouTube_link) - Original video that is the source of this report
 ```
 
-## Troubleshooting & Fallback Strategies
-
-For videos with access restrictions (age-restricted, private, or captions disabled):
-
-1. **Age-restricted / Sign-in required**:
-   - Since YouTube blocks bots from logging in to fetch captions for age-restricted content, switch to a **"Fallback to Web Search"** plan.
-   - Search for summaries, reports, official press releases, or timestamps of that video online via Web Search.
-   - Use the gathered data to map against activity timeframes and write the meeting report following the template.
-3. **Manual Input**:
-   - If the content is highly sensitive and not publicly disclosed, ask the user to open the clip in their main browser, copy the text from the captions panel (Show transcript), and paste it directly into the chat.
+---
 
 ## Iron Rules
-- **ALWAYS verify publish date first (REQUIRED)**: NEVER skip the `upload_date` / `release_timestamp` check. Always record the publish date in the report before starting, and **NEVER attribute post-publish-date events** to the speaker as if said during the clip.
-- **Preserve timestamp accuracy**: Timestamp markers in the report must match the actual video time.
-- **No Hallucinated Links**: YouTube reference links must be real, working links.
-- **Write concisely yet comprehensively**: Summarize precisely without dropping the speaker's key substance.
 
-
-## Subagent Dispatch Contract
-
-For videos > 40 minutes:
-1. **Pre-Grant Workspace Permissions**: Call sk_permission for 
-ead_file on working directory before spawning.
-2. **Canonical Prompt Building**: Use ../scripts/subagent-prompt-builder.py with ../anibon-timestamper/references/subagent-prompt-template.md.
-3. **Parallel Dispatch**: Spawn chunk subagents using invoke_subagent per 40-50 minute group.
-4. **Assembly**: Collect agent reports and assemble via ../anibon-timestamper/references/summarizer-subagent-guide.md.
+- **ALWAYS verify publish date first (REQUIRED)**: Check `upload_date` or `release_timestamp` from `<workspace>/info.json` before writing analysis. Never attribute post-publish-date events to the speaker.
+- **Preserve timestamp accuracy**: Timestamp markers in the report must match actual video elapsed time.
+- **No Hallucinated Links**: YouTube source references must be real, valid links.
+- **Visual Ground Truth Priority**: Inspect slides/frames when on-screen data or numbers are unclear from audio alone.
