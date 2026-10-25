@@ -22,7 +22,7 @@ _WI_CANDIDATES = [
     _ROOT / "references",
 ]
 WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir()), None)
-_WI_SNIPPET_LIMIT = 4000
+_WI_SNIPPET_LIMIT = 1800
 
 
 def _chunk_range(items: list) -> Tuple[str, str]:

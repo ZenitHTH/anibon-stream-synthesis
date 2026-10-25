@@ -206,8 +206,8 @@ BYTE_CAP_LIMIT: int = 3500
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
 EVAL_BATCH_SIZE: int = 8192
 TOKENS_PER_IMAGE: int = 260
-SCENE_DELTA_THRESHOLD: float = 0.06
-MAX_CHUNK_FRAMES: int = 16
+SCENE_DELTA_THRESHOLD: float = 0.12
+MAX_CHUNK_FRAMES: int = 6
 
 
 def reload_config() -> None:
@@ -258,8 +258,8 @@ def reload_config() -> None:
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
     EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 8192)
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
-    SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.06)
-    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 16)
+    SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
+    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 6)
 
 
 # Initialize from default config.json

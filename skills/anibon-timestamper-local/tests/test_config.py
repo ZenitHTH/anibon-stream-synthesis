@@ -174,8 +174,16 @@ class TestConfig(unittest.TestCase):
         cfg.load_config(override=True)
         self.assertEqual(cfg.EVAL_BATCH_SIZE, 8192)
         self.assertEqual(cfg.TOKENS_PER_IMAGE, 260)
-        self.assertAlmostEqual(cfg.SCENE_DELTA_THRESHOLD, 0.06)
-        self.assertEqual(cfg.MAX_CHUNK_FRAMES, 16)
+        self.assertAlmostEqual(cfg.SCENE_DELTA_THRESHOLD, 0.12)
+        self.assertEqual(cfg.MAX_CHUNK_FRAMES, 6)
+
+    def test_multimodal_frame_budget_defaults_tuned_for_12b_attention(self):
+        from common import config
+        from process import prompts
+        config.load_config(config.SKILL_CONFIG_PATH, override=True)
+        self.assertEqual(config.MAX_CHUNK_FRAMES, 6)
+        self.assertAlmostEqual(config.SCENE_DELTA_THRESHOLD, 0.12)
+        self.assertEqual(prompts._WI_SNIPPET_LIMIT, 1800)
 
 
 if __name__ == "__main__":
