@@ -52,6 +52,16 @@ C:\Users\peter\whisper.cpp\build\bin\whisper-cli.exe -m C:\Users\peter\whisper.c
 
 For full build options and platform configurations, see [BUILD_WHISPERCPP_GUILD.md](../anibon-timestamper/references/BUILD_WHISPERCPP_GUILD.md).
 
+## 2.1 Remote / Local `whisper-server` Sliced Transcription (Recommended for 2h+ Streams)
+
+Running `whisper-cli` on a monolithic 8-hour WAV (~1GB) incurs a massive mel-spectrogram calculation delay and risks silence/music repetition loops across the file. When `whisper-server` is running (locally on `127.0.0.1:8080` or remotely alongside LM Studio on `100.115.25.30:8080`):
+
+1. **Probe Server**: Check `http://100.115.25.30:8080` (fallback `http://127.0.0.1:8080`).
+2. **10-Minute Sliced Batching**:
+   - Slice `audio_16k.wav` into 600-second (10-min) WAV segments using `ffmpeg -ss <offset> -t 600 -i audio_16k.wav -c copy slice.wav`.
+   - `POST` multipart form data (`file=@slice.wav`, `language=th`, `response_format=json`, `temperature=0.0`) to `/inference`.
+   - Cache each slice response in `<workspace>/whisper_slices_cache/slice_XXXX.json` for instant resume and stitch segment timestamps (`seg['offsets']['from']/1000.0 + offset`) directly into `raw_transcript.json`.
+
 ## 3. Format Conversion & Windows Invariants
 
 Convert `whisper_output.json` directly to pipeline-standard `raw_transcript.json`:

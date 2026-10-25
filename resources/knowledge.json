@@ -15,6 +15,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
+  "anachiro": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "anime": {
    "kind": "anime",
    "file": "references/stream/phuboat-anime-talking-style.md"
@@ -27,17 +31,25 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Arknights_Endfield.md"
   },
-  "azur promilia": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Azur_Promilia.md"
-  },
   "arona": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
+  "azur promilia": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Azur_Promilia.md"
+  },
   "bebop": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Deadlock.md"
+  },
+  "behemoth": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "belorta": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "black survival": {
    "kind": "game",
@@ -75,6 +87,10 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
+  "centi": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "chaos zero": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
@@ -83,13 +99,29 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
   },
+  "chatterbox": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "chime": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "ciel": {
    "kind": "game",
    "file": "references/stream/fgo-knowledge.md"
   },
+  "cinderella": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "comic world": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+  },
+  "crown": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "czn": {
    "kind": "game",
@@ -119,13 +151,21 @@
    "kind": "domain",
    "file": "references/stream/donation-classifier.md"
   },
+  "donbrothers": {
+   "kind": "tokusatsu",
+   "file": "references/stream/tokusatsu-stream.md"
+  },
+  "dorothy": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "dracaene": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
-  "donbrothers": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
+  "drake": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "elation": {
    "kind": "game",
@@ -134,6 +174,10 @@
   "eldreda": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
+  "elegg": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "endfield": {
    "kind": "game",
@@ -191,6 +235,14 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
+  "goddess of victory": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "goddess of victory: nikke": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "gotchard": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -211,9 +263,17 @@
    "kind": "game",
    "file": "references/stream/fgo-knowledge.md"
   },
+  "grave": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "heartopia": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Heartopia.md"
+  },
+  "hongryeon": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "honkai": {
    "kind": "game",
@@ -247,6 +307,10 @@
    "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
    "_added": "2026-07-27T09:08:06"
   },
+  "indivilia": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "japan expo": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
@@ -258,6 +322,10 @@
   "kamen rider": {
    "kind": "stream_type",
    "file": "references/stream/tokusatsu-stream.md"
+  },
+  "kilo": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "king-ohger": {
    "kind": "tokusatsu",
@@ -271,6 +339,18 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
+  "laplace": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "last kingdom": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "liberalio": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "limbus": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Limbus_Company.md"
@@ -282,6 +362,10 @@
   "lindverne": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
+  "liter": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "lore": {
    "kind": "domain",
@@ -295,6 +379,10 @@
    "kind": "stream_type",
    "file": "references/stream/marathon-stream.md"
   },
+  "marian": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "marvel": {
    "kind": "game",
    "file": null,
@@ -302,6 +390,10 @@
    "_confidence": 0.7,
    "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
    "_added": "2026-07-27T09:08:06"
+  },
+  "modernia": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "momotalk": {
    "kind": "game",
@@ -315,9 +407,17 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
   },
+  "nihilister": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "nihilux": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+  },
+  "nikke": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "nippon haku": {
    "kind": "event",
@@ -327,10 +427,18 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
+  "old tales": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "one punch man": {
    "kind": "anime",
    "file": null,
    "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
+  },
+  "over zone": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "palworld": {
    "kind": "game",
@@ -384,6 +492,22 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Pokemon_Radical_Red.md"
   },
+  "rapi": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "rapunzel": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "red ash": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "red hood": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "revice": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -395,6 +519,10 @@
   "saber": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
+  },
+  "scarlet": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "seele leaks": {
    "kind": "domain",
@@ -429,15 +557,15 @@
    "kind": "game",
    "file": "../anibon-world-identity/references/Genshin_Impact.md"
   },
+  "snow white": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "sparxie": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
   },
   "springer": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "sunbringer": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
   },
@@ -453,6 +581,10 @@
    "kind": "stream_type",
    "file": "references/stream/marathon-stream.md"
   },
+  "sunbringer": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
   "super sentai": {
    "kind": "stream_type",
    "file": "references/stream/tokusatsu-stream.md"
@@ -460,6 +592,10 @@
   "superchat": {
    "kind": "domain",
    "file": "references/stream/donation-classifier.md"
+  },
+  "syuen": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "talk": {
    "kind": "stream_type",
@@ -480,6 +616,10 @@
   "total assault": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Blue_Archive.md"
+  },
+  "trony": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "ultraman": {
    "kind": "stream_type",
@@ -605,6 +745,10 @@
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
   },
+  "คราวน์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "คลื่นเวฟ": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Wuthering_Waves.md"
@@ -657,6 +801,18 @@
    "kind": "event",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
   },
+  "ชูเอน": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "ซันบริงเกอร์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+  },
+  "ซินเดอเรลล่า": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "ซีโร่วัน": {
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
@@ -684,6 +840,10 @@
   "ทำงาน": {
    "kind": "domain",
    "file": "references/stream/talk-stream.md"
+  },
+  "นิกเกะ": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "นิปปอน ฮาคุ": {
    "kind": "event",
@@ -745,6 +905,14 @@
    "kind": "tokusatsu",
    "file": "references/stream/tokusatsu-stream.md"
   },
+  "ยัยบัวขาว": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "ยายลิเตอร์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
   "ยูกิ": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
@@ -773,10 +941,6 @@
    "kind": "stream_type",
    "file": "references/stream/vlog-stream.md"
   },
-  "ซันบริงเกอร์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
   "สปริงเกอร์": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
@@ -800,6 +964,14 @@
   "สามเค": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
+  },
+  "หมวกแดง": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
+  },
+  "หลวงเจ๊": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "อนิเมะ": {
    "kind": "anime",
@@ -840,6 +1012,10 @@
   "เกม": {
    "kind": "stream_type",
    "file": "references/stream/gaming-stream.md"
+  },
+  "เกรฟ": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Nikke.md"
   },
   "เข็มขัดแปลงร่าง": {
    "kind": "tokusatsu",
@@ -972,6 +1148,38 @@
   "心动小镇": {
    "kind": "game",
    "file": "../anibon-world-identity/references/Heartopia.md"
+  },
+  "1 in 8 billion": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "one in 8 billion": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "1 ชีวิต ณ กรุงศรี": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "หนึ่งในอสงไขย": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "ป่าหิมพานต์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "สุ่มเกิด": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "วิทยาธร": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "จันทรกรี": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
   }
  },
  "_discovered": {

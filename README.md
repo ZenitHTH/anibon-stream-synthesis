@@ -1,7 +1,7 @@
 # Anibon Stream Synthesis Plugin
 
-![Version](https://img.shields.io/badge/version-1.2.2-blue)
-[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.2.2)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
+[![Release](https://img.shields.io/github/v/release/ZenitHTH/anibon-stream-synthesis)](https://github.com/ZenitHTH/anibon-stream-synthesis/releases/tag/v1.3.0)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
 
 A full-stack AI agent skill suite for **Anibon Official (`ปู่โบ๊ต` / Boat)** livestreams: automated YouTube timestamping (Frontier Cloud & Local P100 GPU editions), multimodal storyboard & vision grounding, Thai LiveChat subculture mood analysis, Whisper corruption recovery, hybrid archive search, and non-jumpcut highlight video cutting. Works across **Antigravity CLI (`agy`)**, **Claude Code**, **OpenCode**, and **Pi Coding Agent**.

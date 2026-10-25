@@ -3,6 +3,38 @@
 All notable changes to **anibon-stream-synthesis** are documented here.  
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Versioning follows [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] — 2026-10-24
+
+### Added
+- **Unified Library Architecture (`lib/`, `lib/interface.py`)** — Centralized modular engine organized into focused domain packages (`chunk/`, `common/`, `download/`, `process/`, `video/`) and unified through a single public interface facade (`lib/interface.py`), establishing Clean Code boundaries across all skills and scripts.
+- **Production Multimodal Storyboard Grounding (`anibon-timestamper-local`)** — Automated YouTube storyboard downloading (`sb3`/`sb2`/`webp`) and unpacking, enabling visual frame grounding directly during chunk analysis by default (`--no-multimodal` opt-out). Includes production adaptive scene-change keyframe selection (`compute_tile_visual_delta`, `compute_frame_budget`, 16x9 RGB sidecar caching, and eval-batch frame budget controls).
+- **Recursive Rolling Topic State-Machine Engine** — Re-architected local timestamping engine (`anibon/state.py`, `anibon/summarizer.py`, `anibon/prompts.py`, `anibon/timestamps.py`, `anibon/websearch.py`) with strict topic shift comparators, continuation detection, multi-timestamp per-chunk support, and clean-slate/resume handling.
+- **Visual Ground-Truth Verification Pipeline (`verifying-stream-ground-truth`)** — Added `--vision-verify` post-pass before final summarizer with ambiguity detection, OCR/VLM verification cache, and automatic video URL resolution.
+- **On-Screen Visual LiveChat Vision Extraction** — Added `extract_visual_livechat` CLI with Antigravity vision proxy, ROI crop filtering, sliding-window chat deduplication, and raw JSON event formatting.
+- **ANIBON Livestream Archive Search Skill (`anibon-search`)** — Added dedicated skill for querying Boat's livestream archive topics, game reviews, discussions, and specific stream moments.
+- **Automated Timestamp Archiving Skill (`backing-up-timestamps`)** — Automated workflow for pushing completed stream workspaces and local ASR transcripts to private timestamp archive repositories.
+- **Two-Stage Signal Detection & Dynamic Knowledge Reader** — Added `knowledge_reader.py` core with markdown table parsing and SQLite integration (`pokemon.db`, `fgo.db`). Upgraded signal detection with per-game special word registries, candidate weight chaining, and common-character name suppression in Stage 1 to prevent false positives.
+- **Real-Time October 2026 Game Lore & Patch Timelines** — Synchronized real-time live-service game databases across Honkai: Star Rail (Planarcadia 2026, Amphoreus 2025, v4.6 Pearl, v4.7 Aha), Zenless Zone Zero (v3.2 Claret Flint & Roxy, Phoenix, Springer / Sunbringer), Genshin Impact (Snezhnaya chapter lore, v7.x HoYoverse cosmology bridge), Wuthering Waves, Blue Archive, Honkai Impact 3rd, Azur Promilia, Bleach, Minecraft (Cisco), and Deadlock.
+- **Centralized JSON Configuration (`config.json`)** — Added stdlib configuration loader (`anibon/config.py`) supporting dynamic defaults and CLI overrides via `--config`.
+- **Standalone `whisper_dispatcher`** — Fast local audio slicing and whisper.cpp ground-truth transcription with slice caching, unquoted token support, and automatic video URL discovery.
+
+### Changed
+- **Stdlib `unittest` Migration** — Converted all 15 test suites and skill tests to Python standard library `unittest`, removing external `pytest` dependencies.
+- **Runner & Script Consolidation** — Consolidated cross-platform runners (`launch_local.sh`, `launch_local.ps1`), canonicalized `scripts/prepare_video.py` through `lib/interface.py`, and eliminated duplicate scripts and fragile symlink trees across `skills/*/scripts/`.
+- **Essential Pruning & Byte-Cap Discipline** — Added LLM-driven essential timestamp curation pass with verbatim retention guards and configurable `--byte-cap` (preventing forced micro-part splitting while guaranteeing compliance with YouTube 5,000-byte comment limits).
+- **Single-Model 16GB VRAM Optimization** — Designated Gemma 4 12B/26B as primary local engines for Tesla P100 / LM Studio 0.4.x, with enhanced chain-of-thought sanitization, anti-guessing guards, and single-instance PID guards.
+- **Model Pins** — Upgraded Antigravity CLI model pins to Gemini 3.8 Flash (High).
+
+### Fixed
+- Fixed Thai character line truncation by enforcing UTF-8 line buffering across local runners.
+- Fixed LM Studio 0.4.x endpoint compatibility with native `/api/v1/chat` and `/v1/chat/completions` normalization.
+- Fixed prompt leakage and candidate collisions by excluding stream rule documentation from runtime entity glossaries.
+- Added network blackout/retry recovery engine to prevent unhandled chunk runner aborts on temporary server disconnects.
+- Hardened dictionary loaders against accented Latin Unicode patterns and short Latin cascade substitutions.
+- Added `__future__.annotations` and guarded Pillow/ffmpeg fallbacks across all modules for full Python 3.9–3.13 compatibility.
+
+---
+
 ## [1.2.2] — 2026-08-30
 
 ### Added

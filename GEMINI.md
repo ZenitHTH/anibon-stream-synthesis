@@ -72,8 +72,8 @@ Whenever updating phonetic replacements or expanding domain knowledge in this pl
      ```
    - This ensures automatic normalization, regex safety checks, deduplication, and atomic updates to the single root resource (`resources/garbled_replacements.json`).
 
-2. **Domain Knowledge File Lifecycle (`anibon-world-identity`)**:
-   - When a livestream covers a major franchise or topic lacking a reference file in `skills/anibon-world-identity/references/`, do not leave `signals.json` with 0 glossary matches.
+2. **Domain Knowledge File Lifecycle (`anibon-world-identity` & `anibon-live-service-researcher`)**:
+   - When a livestream covers a major franchise or live-service game lacking a reference file or missing recent patches in `skills/anibon-world-identity/references/`, invoke **`anibon-live-service-researcher`** (checks real-time date via `time.is`, finds current + next version, recursively traces back ≥3 versions, and documents oldest-to-latest changes, updates, gacha banners, and story). Do not leave `signals.json` with 0 glossary matches.
    - Scaffold `references/<Franchise>.md` using standard markdown tables or bold bullets recognizable by `anibon/knowledge_reader.py`:
      - Format A (Table): `| English Name (Thai Name) | Role/Faction | Attribute/Note |`
      - Format B (Bullets): `- **Name (English / Thai)**: Description`

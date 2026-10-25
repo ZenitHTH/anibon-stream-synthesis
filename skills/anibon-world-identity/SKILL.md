@@ -39,13 +39,22 @@ Thai transcript phoneme → verified EN name from sources above
 
 For each candidate, match against verified map
 
-### f. Websearch fallback
+### f. Websearch & Live-Service Version Research Fallback (`anibon-live-service-researcher`)
 
-Only if local + cached + SRT all insufficient:
+Only if local + cached + SRT all insufficient, OR when the stream covers a fresh live-service patch/game missing from `references/<Game>.md`:
 
+1. **Quick scene synopsis fetch**:
 ```bash
 python3 scripts/fetch_story_ref.py --game "HSR" --scene "Planarcadia 4.0"
 ```
+
+2. **Full Live-Service Version & Patch Chronology Research (`anibon-live-service-researcher`)**:
+When a live-service game in `references/<Game>.md` is outdated or unindexed, dispatch the **`anibon-live-service-researcher`** subagent via `invoke_subagent`:
+- **Step 1**: Checks real-time date (`time.is` / UTC clock) to lock current month and year.
+- **Step 2**: Finds the **current live version (`V_0`)** and **next upcoming version (`V_+1`)** for that month/year.
+- **Step 3**: Recursively traces backward **at least 3 versions** from `V_0` (`V_-3`, `V_-2`, `V_-1`, `V_0`, bridging any gap to the last version in `references/<Game>.md`).
+- **Step 4**: Audits every version from **oldest to latest** for: (a) changes/QoL, (b) system updates/events, (c) new gacha characters/banners (EN + Thai names, element, role/path), and (d) new story chapters/arcs.
+- **Step 5**: Updates `references/<Game>.md`, `references/INDEX.md`, `references/thai_phonetic_bridge.json`, and `resources/knowledge.json`.
 
 ### g. Reject
 

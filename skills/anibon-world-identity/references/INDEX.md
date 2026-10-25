@@ -2,6 +2,7 @@
 
 Game reference files live alongside this index in `references/`.
 
+- [1 in 8 Billion & Life Simulator Games Reference](One_in_8_Billion_Life_Sim.md)
 - [Arknights Reference](Arknights.md)
 - [Arknights: Endfield Reference](Arknights_Endfield.md)
 - [Azur Promilia Reference](Azur_Promilia.md)
@@ -12,6 +13,7 @@ Game reference files live alongside this index in `references/`.
 - [Dinoblade Reference](Dinoblade.md)
 - [Eternal Return Reference](Eternal_Return.md)
 - [Genshin Impact Reference](Genshin_Impact.md)
+- [Goddess of Victory: Nikke Reference](Nikke.md)
 - [Heartopia Reference](Heartopia.md)
 - [Honkai Impact 3rd Reference](Honkai_Impact_3.md)
 - [Honkai Impact 3rd Part 2 Reference](Honkai_Impact_3_Part2.md)

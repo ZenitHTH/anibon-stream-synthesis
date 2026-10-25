@@ -248,9 +248,14 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
    - **FGO Servants / Classes**: Query `atlas_fgo.db` (do NOT confuse Ashiya Douman with Ascalon/Asclepius).
    - **Pokémon Entities**: Query `pokemon.db` and enforce Thai community/official names first (e.g. `แบกซ์แคลิเบอร์ (Baxcalibur)`).
    - **Anime / Gacha Titles**: Verify against `references/*.md` (e.g. `Chaos_Zero_Nightmare.md`, `Genshin_Impact.md`, `Honkai_Star_Rail.md`, `Wuthering_Waves.md`).
+   - **Unfamiliar Indie / Web / Thai Games**: If the streamer plays an unindexed game genre (e.g. probability life sims like *1 in 8 Billion*, *1 ชีวิต ณ กรุงศรี*, *หนึ่งในอสงไขย*), research and scaffold `references/<Topic>.md` first, then reconstruct timestamps directly from `raw_transcript.json`.
    - **New Competitive Games (Deadlock, etc.)**: Cross-reference hero names (Baba / Baba Yaga, Celeste, Abrams) via web search or patch notes.
-2. **Apply Entity Corrections**: Correct phonetic drifts, misheard titles, or LLM hallucinations directly in `anibon_timestamps.md`.
-3. **Persist Knowledge**:
+2. **Audit Against `raw_transcript.json` for 3 Local-Model Distortion Patterns**:
+   - **Domain Context Bleeding**: Check non-gaming talk segments adjacent to gaming segments. Local 12B models often distort general words (e.g. `"บริษัทนั้น"` in a food/political news story) into `"บริษัทเกม"`. Verify the actual subject in `raw_transcript.json`.
+   - **Comparative Analogy Promotion**: When a secondary title (e.g. *Heaven Burns Red*, *Yu-Gi-Oh! GX*, *Bleach*) appears in a section dedicated to another main topic (e.g. *Wuthering Waves*), verify whether it was only used as a comparative example (e.g. ensemble cast or companion writing) and frame the timestamp around the primary topic.
+   - **Gameplay vs. Gacha Pulling Transitions**: During gameplay segments of gacha games (*Nikke*, *Arknights: Endfield*, *WuWa*), check the transcript for gacha pull keywords (`หลุดเรท`, `ตู้ถาวร`, `เพชรหมด`, `Token Exchange`) so gacha sessions are not mislabeled as continuing gameplay mechanics (e.g. factory/belt building).
+3. **Apply Entity & Chronology Corrections**: Correct phonetic drifts, inverted topic order, or LLM hallucinations directly in `anibon_timestamps.md`, and verify spacing ($\ge 45\text{s}$ min gap, $\le 600\text{s}$ max gap).
+4. **Persist Knowledge**:
    - Add confirmed phonetic drift patterns (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` across root and skill resources.
    - Add newly verified franchises/characters to `anibon-world-identity/references/`.
 
@@ -386,3 +391,14 @@ Proper nouns, mod names, and franchise titles in the stream's own YouTube metada
    - *Symptom*: `call_multimodal()` raises `KeyError: 'choices'` when passed a bare `http://host:1234` endpoint.
    - *Cause*: `urllib.request` hits the LM Studio root endpoint instead of `/v1/chat/completions`.
    - *Fix*: Always normalize `url` in `call_multimodal()` to append `/v1/chat/completions` if not already present.
+
+10. **Missing YouTube Storyboards (`sb0/sb1/sb2/sb3` Not Available) in Multimodal Mode**:
+   - *Symptom*: `yt-dlp -f sb0/sb1/sb2/sb3` fails with `Requested format is not available`, leaving `frames/slides_clean/` empty.
+   - *Cause*: Certain YouTube livestream VODs do not generate MHTML storyboard streams.
+   - *Fix*: Download the lightweight 144p video stream (`-f 160`, ~190MB for an 8.5h stream) and synthesize native-compatible 960×540 3×3 storyboard slide sheets directly into `frames/slides_clean/`:
+     ```bash
+     yt-dlp -f 160 -o "$WORKSPACE/frames/video_144p.mp4" "https://www.youtube.com/watch?v=<VIDEO_ID>"
+     mkdir -p "$WORKSPACE/frames/slides_clean"
+     # Compute interval = total_duration_sec / (350 * 9) or ~1 frame every 10s:
+     ffmpeg -i "$WORKSPACE/frames/video_144p.mp4" -vf "fps=1/10,scale=320:180,tile=3x3" -q:v 3 "$WORKSPACE/frames/slides_clean/slide_%04d.jpg"
+     ```
