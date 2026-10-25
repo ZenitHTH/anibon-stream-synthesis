@@ -12,11 +12,13 @@ if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 
 from interface import (
+    DEFAULT_SUB_LANGS,
     correct_transcript,
     download_storyboard,
     download_transcript,
     load_default_mappings,
     load_transcript,
+    save_metadata,
     write_chunk_json,
     write_chunk_txt,
     write_chunk_xml,
@@ -88,6 +90,11 @@ def main() -> None:
         help="Skip downloading YouTube storyboard mhtml slides",
     )
     ap.add_argument(
+        "--sub-langs",
+        default=DEFAULT_SUB_LANGS,
+        help=f"Subtitle language priority (default: {DEFAULT_SUB_LANGS})",
+    )
+    ap.add_argument(
         "--workspace",
         "-o",
         default=None,
@@ -107,7 +114,8 @@ def main() -> None:
     print(f"[*] Workspace: {workspace}", file=sys.stderr)
 
     (workspace / ".video_url").write_text(url.strip(), encoding="utf-8")
-    download_transcript(url, workspace)
+    save_metadata(url, workspace)
+    download_transcript(url, workspace, sub_langs=args.sub_langs)
     if not args.no_storyboard:
         download_storyboard(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)

@@ -38,6 +38,8 @@ class TestLibInterface(unittest.TestCase):
         self.assertTrue(callable(interface.is_youtube_auto_transcript))
         self.assertTrue(callable(interface.download_transcript))
         self.assertTrue(callable(interface.load_transcript))
+        self.assertTrue(callable(interface.save_metadata))
+        self.assertEqual(interface.DEFAULT_SUB_LANGS, "th-orig,en-orig,th,en")
 
     def test_chunk_functions_callable(self):
         self.assertTrue(callable(interface.load_chunks))

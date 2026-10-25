@@ -64,6 +64,7 @@ from common import (
 # ── 2. Download Domain (yt-dlp, Transcript Fetching) ─────────────────────────
 import download
 from download import (
+    DEFAULT_SUB_LANGS,
     detect_transcript_source,
     download_storyboard,
     download_transcript,
@@ -72,6 +73,7 @@ from download import (
     is_youtube_auto_transcript,
     load_transcript,
     probe_metadata,
+    save_metadata,
     ytdlp_cmd,
 )
 
@@ -181,6 +183,7 @@ __all__ = [
     "plugin_root",
     "load_default_mappings",
     # Download
+    "DEFAULT_SUB_LANGS",
     "detect_transcript_source",
     "is_youtube_auto_transcript",
     "download_transcript",
@@ -189,6 +192,7 @@ __all__ = [
     "flatten_json3",
     "load_transcript",
     "probe_metadata",
+    "save_metadata",
     "ytdlp_cmd",
     # Chunk
     "load_chunks",

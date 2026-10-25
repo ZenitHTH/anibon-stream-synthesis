@@ -1,12 +1,4 @@
-"""yt-dlp wrappers for transcript/video download and metadata probing.
-
-Consumers (before extraction):
-  download_transcript   — _transcript.py:25
-  flatten_json3         — _transcript.py:8
-  load_transcript       — _transcript.py:49
-  download_video        — _vision.py:11, cut_highlight.py (direct subprocess)
-  probe_metadata        — plan_highlight.py:147
-"""
+"""yt-dlp wrappers for transcript/video download and metadata probing."""
 from __future__ import annotations
 
 import json
@@ -16,45 +8,59 @@ import sys
 from pathlib import Path
 from common.time import fmt_ts
 
+DEFAULT_SUB_LANGS = "th-orig,en-orig,th,en"
+_SUB_PRIORITY = ("th-orig", "en-orig", "th", "en")
+_METADATA_KEYS = ("id", "title", "upload_date", "release_timestamp", "duration", "channel", "uploader", "webpage_url")
+
 
 def ytdlp_cmd() -> list[str]:
     return ["yt-dlp"] if shutil.which("yt-dlp") else [sys.executable, "-m", "yt_dlp"]
 
 
-def download_transcript(url: str, workspace: Path) -> None:
-    """Download YouTube transcript via yt-dlp.
+def _select_best_json3(workspace: Path) -> Path | None:
+    candidates = sorted(workspace.glob("raw_transcript*.json3"))
+    if not candidates:
+        return None
+    for lang in _SUB_PRIORITY:
+        for path in candidates:
+            if path.name.endswith(f".{lang}.json3"):
+                return path
+    return candidates[0]
 
-    Skips if raw_transcript.json already exists in workspace.
-    Downloads auto-subs (Thai), saves as raw_transcript.json.
-    """
+
+def download_transcript(url: str, workspace: Path, sub_langs: str = DEFAULT_SUB_LANGS) -> None:
     out = workspace / "raw_transcript.json"
     if out.exists():
         print("[*] Transcript already exists, skipping download.", file=sys.stderr)
         return
-
     print("[*] Downloading transcript via yt-dlp...", file=sys.stderr)
-    subprocess.run(
-        [
-            *ytdlp_cmd(), "-P", str(workspace),
-            "--write-auto-subs", "--sub-lang", "th-orig,th",
-            "--sub-format", "json3", "--skip-download",
-            "--ignore-no-formats-error", "-o", "raw_transcript", url,
-        ],
-        check=False,
-    )
-
-    # Rename yt-dlp output (e.g. raw_transcript.th.json3) → raw_transcript.json
-    for f in workspace.glob("raw_transcript*.json3"):
-        f.rename(out)
-        break
-
+    cmd = [
+        *ytdlp_cmd(), "-P", str(workspace), "--write-auto-subs", "--write-subs",
+        "--sub-lang", sub_langs, "--sub-format", "json3", "--skip-download",
+        "--ignore-no-formats-error", "-o", "raw_transcript", url,
+    ]
+    subprocess.run(cmd, check=False)
+    best = _select_best_json3(workspace)
+    if best:
+        best.rename(out)
     if not out.exists():
         print("[!] Error: Failed to download transcript.", file=sys.stderr)
         sys.exit(1)
 
 
+def save_metadata(url: str, workspace: Path) -> Path | None:
+    info_path = Path(workspace) / "info.json"
+    if info_path.is_file():
+        return info_path
+    meta = probe_metadata(url)
+    if not meta:
+        return None
+    compact = {k: meta.get(k) for k in _METADATA_KEYS if meta.get(k) is not None}
+    info_path.write_text(json.dumps(compact, ensure_ascii=False, indent=2), encoding="utf-8")
+    return info_path
+
+
 def _download_144p_video(url: str, video_path: Path) -> bool:
-    """Download 144p video stream for local storyboard synthesis."""
     if video_path.is_file() and video_path.stat().st_size > 0:
         return True
     fmt = "160/bestvideo[height<=240][ext=mp4]/worst[ext=mp4]"
@@ -64,18 +70,15 @@ def _download_144p_video(url: str, video_path: Path) -> bool:
 
 
 def _tile_video_to_slides(video_path: Path, clean_dir: Path) -> Path | None:
-    """Tile video frames using ffmpeg into 3x3 storyboard slides."""
     clean_dir.mkdir(parents=True, exist_ok=True)
     out_pattern = str(clean_dir / "slide_%04d.jpg")
     vf = "fps=1/10,scale=320:180,tile=3x3"
     cmd = ["ffmpeg", "-v", "error", "-y", "-i", str(video_path), "-vf", vf, "-q:v", "3", out_pattern]
     res = subprocess.run(cmd, capture_output=True, check=False)
-    has_slides = any(clean_dir.glob("slide_*.jpg"))
-    return clean_dir if res.returncode == 0 and has_slides else None
+    return clean_dir if res.returncode == 0 and any(clean_dir.glob("slide_*.jpg")) else None
 
 
 def _synthesize_slides_from_144p(url: str, frames_dir: Path) -> Path | None:
-    """Synthesize 3x3 storyboard slides from 144p video as fallback when sb is missing."""
     video_path = frames_dir / "video_144p.mp4"
     clean_dir = frames_dir / "slides_clean"
     try:
@@ -88,14 +91,8 @@ def _synthesize_slides_from_144p(url: str, frames_dir: Path) -> Path | None:
 
 
 def download_storyboard(url: str, workspace: Path) -> Path | None:
-    """Download storyboard images/mhtml via yt-dlp into workspace/frames/.
-
-    Skips if storyboard file or unpacked slides already exist.
-    Falls back to 144p video 3x3 tiling when sb0-sb3 formats are missing.
-    """
     frames_dir = Path(workspace) / "frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
-
     for p in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml"]:
         if p.is_file():
             return p
@@ -106,16 +103,9 @@ def download_storyboard(url: str, workspace: Path) -> Path | None:
     print("[*] Downloading storyboard via yt-dlp...", file=sys.stderr)
     try:
         subprocess.run(
-            [
-                *ytdlp_cmd(), "-P", str(frames_dir),
-                "-f", "sb0/sb1/sb2/sb3",
-                "--ignore-no-formats-error", "-o", "storyboard.%(ext)s", url,
-            ],
-            capture_output=True,
-            check=False,
-            timeout=120,
+            [*ytdlp_cmd(), "-P", str(frames_dir), "-f", "sb0/sb1/sb2/sb3", "--ignore-no-formats-error", "-o", "storyboard.%(ext)s", url],
+            capture_output=True, check=False, timeout=120,
         )
-
         for m in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "sb1.mhtml"]:
             if m.is_file():
                 return m
@@ -127,23 +117,12 @@ def download_storyboard(url: str, workspace: Path) -> Path | None:
 
 
 def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best") -> Path | None:
-    """Download a video (or section) via yt-dlp.
-
-    If output already exists, skips download.
-    Returns output path on success, None on failure.
-    """
     output = Path(output)
     if output.exists():
-        print(f"[*] Video already exists at {output}", file=sys.stderr)
         return output
-
-    print(f"[*] Downloading video via yt-dlp...", file=sys.stderr)
+    print(f"[!] Downloading video via yt-dlp...", file=sys.stderr)
     try:
-        subprocess.run(
-            [*ytdlp_cmd(), "-f", format_spec, "-o", str(output), url],
-            capture_output=False,
-            check=True,
-        )
+        subprocess.run([*ytdlp_cmd(), "-f", format_spec, "-o", str(output), url], check=True)
         return output
     except subprocess.CalledProcessError as e:
         print(f"[!] Failed to download video: {e}", file=sys.stderr)
@@ -151,7 +130,6 @@ def download_video(url: str, output: Path, format_spec: str = "bestvideo[height<
 
 
 def flatten_json3(raw: dict) -> list:
-    """Convert yt-dlp json3 format to flat [{text, start, duration, timestamp}] list."""
     items = []
     for e in raw.get("events", []):
         if "segs" not in e:
@@ -169,30 +147,14 @@ def flatten_json3(raw: dict) -> list:
 
 
 def load_transcript(workspace: Path) -> list:
-    """Load and return flat transcript list from workspace raw_transcript.json.
-
-    Handles both yt-dlp json3 format and simple JSON array format.
-    """
     path = workspace / "raw_transcript.json"
     raw = json.loads(path.read_text(encoding="utf-8"))
-    if "events" in raw:
-        return flatten_json3(raw)
-    return raw
+    return flatten_json3(raw) if "events" in raw else raw
 
 
 def probe_metadata(url: str) -> dict | None:
-    """Fetch video metadata via yt-dlp --dump-json.
-
-    Returns parsed dict or None on failure.
-    """
     try:
-        res = subprocess.run(
-            [*ytdlp_cmd(), "--dump-json", url],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=30,
-        )
+        res = subprocess.run([*ytdlp_cmd(), "--dump-json", url], capture_output=True, text=True, check=True, timeout=30)
         return json.loads(res.stdout)
     except (subprocess.CalledProcessError, json.JSONDecodeError, subprocess.TimeoutExpired) as e:
         print(f"[!] Failed to probe metadata: {e}", file=sys.stderr)
