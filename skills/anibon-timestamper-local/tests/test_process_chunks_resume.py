@@ -256,6 +256,34 @@ class TestProcessChunksResumeAndCleanSlate(unittest.TestCase):
 
             self.assertTrue((out_dir / "chunk_00.json").exists(), "Chunk 00 must be retried and saved on invalid JSON")
 
+    def test_update_topic_flow_unfreezes_title_on_mid_chunk_shift_and_chains_summary(self):
+        from process.runners.recursive import _update_topic_flow
+        chunk = {"start_sec": 300, "end_sec": 600}
+        all_ts = ["00:00:00 - [WatchParty] เปิดสตรีม"]
+        # Model sets is_continuation=True (mid-chunk shift) but provides new_topic_title
+        res1 = {
+            "is_continuation": True,
+            "timestamps": ["00:06:00 - [WatchParty] ส่องฉลอง 7.5 ปี Arknights"],
+            "chunk_summary": "เริ่มดู PV Arknights 7.5 ปี",
+            "updated_summary": "เปลี่ยนจากคุยทั่วไปมาดู PV Arknights 7.5 ปี",
+            "new_topic_title": "ส่องอัปเดต 7.5 ปี Arknights",
+        }
+        _, _, title1, sum1 = _update_topic_flow(res1, chunk, all_ts, "เปิดสตรีมดูอนิเมะ", "ทักทายผู้ชมช่วงเปิดไลฟ์")
+        self.assertEqual(title1, "ส่องอัปเดต 7.5 ปี Arknights")
+        self.assertIn("ทักทายผู้ชมช่วงเปิดไลฟ์ -> เปลี่ยนจากคุยทั่วไปมาดู PV Arknights 7.5 ปี", sum1)
+
+        # String literal "null" in new_topic_title must NOT overwrite current_topic_title
+        res2 = {
+            "is_continuation": True,
+            "timestamps": [],
+            "chunk_summary": "วิเคราะห์สกิลตัวละครใหม่ต่อ",
+            "updated_summary": "วิเคราะห์สกิลตัวละครใหม่ใน Arknights",
+            "new_topic_title": "null",
+        }
+        _, _, title2, sum2 = _update_topic_flow(res2, chunk, all_ts, title1, sum1)
+        self.assertEqual(title2, "ส่องอัปเดต 7.5 ปี Arknights")
+        self.assertEqual(len(sum2.split(" -> ")), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

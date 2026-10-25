@@ -233,6 +233,37 @@ def build_chunk_entity_context(
     return "## VERIFIED DOMAIN ENTITIES (WORLD IDENTITY):\n" + "\n".join(selected_lines)
 
 
+def _format_recent_timestamps(recent_timestamps: Optional[List[str]]) -> str:
+    """Format recent emitted timestamps block to avoid duplicate stamps."""
+    if not recent_timestamps:
+        return ""
+    stamps = "\n".join(f"- {ts}" for ts in recent_timestamps if ts)
+    if not stamps:
+        return ""
+    return f"Recent Emitted Timestamps (DO NOT re-stamp the same ongoing topic):\n{stamps}\n"
+
+
+def _format_previous_topic_section(
+    chunk_idx: int,
+    current_topic: str,
+    rolling_summary: str,
+    recent_timestamps: Optional[List[str]] = None,
+) -> str:
+    """Format previous topic state, rolling summary chain, and recent timestamps."""
+    if not current_topic:
+        return "## PREVIOUS TOPIC STATE\n(No previous topic — livestream is starting)\n"
+    prev_idx = max(0, chunk_idx - 1)
+    lines = [
+        f"## PREVIOUS TOPIC STATE (Chunk {prev_idx:02d})",
+        f"Active Topic: {current_topic}",
+        f"Rolling Context Chain (last 15m): {rolling_summary}",
+    ]
+    ts_block = _format_recent_timestamps(recent_timestamps)
+    if ts_block:
+        lines.append(ts_block.strip())
+    return "\n".join(lines) + "\n"
+
+
 def build_recursive_prompt(
     chunk: dict,
     current_topic: str,
@@ -248,6 +279,7 @@ def build_recursive_prompt(
     entity_context: str = "",
     glossary: Optional[dict] = None,
     keyframes: Optional[list] = None,
+    recent_timestamps: Optional[List[str]] = None,
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
@@ -314,13 +346,12 @@ def build_recursive_prompt(
 
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
-    if current_topic:
-        topic_section = f"""## PREVIOUS TOPIC STATE (Chunk {chunk.get('_idx', 0) - 1:02d})
-Active Topic: {current_topic}
-Recent Focus: {rolling_summary}
-"""
-    else:
-        topic_section = "## PREVIOUS TOPIC STATE\n(No previous topic — livestream is starting)\n"
+    topic_section = _format_previous_topic_section(
+        chunk.get("_idx", 0),
+        current_topic,
+        rolling_summary,
+        recent_timestamps,
+    )
 
     prompt = f"""\
 You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) of a Thai livestream by Pu Boat (Anibon Official).
@@ -332,7 +363,7 @@ Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to
 Rules:
 1. is_continuation:
    - true: Speaker is still on the same broader subject, gameplay session, or ongoing thread.
-   - false: Speaker completely shifted to a brand new subject, different game, or major activity pivot.
+   - false: Speaker completely shifted to a brand new subject, different game, or major activity pivot (even if the shift happens mid-chunk).
    - Exception: Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic shifts.
 
 2. timestamps:

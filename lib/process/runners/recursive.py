@@ -11,7 +11,7 @@ import sys
 import time
 import urllib.error
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from process.assembly import finalize_and_assemble_timestamps
@@ -196,6 +196,38 @@ def _parse_model_chunk_json(raw_text: str) -> Optional[dict]:
         return None
 
 
+def _clean_topic_candidate(raw_title: Any) -> str:
+    """Return stripped topic title or empty string if null/none placeholder."""
+    if not isinstance(raw_title, str):
+        return ""
+    cleaned = raw_title.strip()
+    return "" if cleaned.lower() in ("null", "none", "n/a", "-") else cleaned
+
+
+def _resolve_next_topic_title(res: dict, current_topic_title: str) -> str:
+    """Unfreeze topic title whenever model provides a valid new_topic_title or shift."""
+    new_title = _clean_topic_candidate(res.get("new_topic_title"))
+    if new_title:
+        return new_title
+    if not res.get("is_continuation", False):
+        ch_sum = _clean_topic_candidate(res.get("chunk_summary"))
+        return ch_sum or current_topic_title
+    return current_topic_title
+
+
+def _chain_rolling_summary(rolling_summary: str, res: dict) -> str:
+    """Maintain a 3-chunk sliding window summary chain on continuations; reset on clean topic break."""
+    next_entry = (res.get("updated_summary") or res.get("chunk_summary") or "").strip()
+    if not next_entry:
+        return rolling_summary
+    if not res.get("is_continuation", False) or not rolling_summary:
+        return next_entry
+    parts = [p.strip() for p in rolling_summary.split(" -> ") if p.strip()]
+    if not parts or parts[-1] != next_entry:
+        parts.append(next_entry)
+    return " -> ".join(parts[-3:])
+
+
 def _update_topic_flow(
     res: dict,
     chunk: dict,
@@ -205,10 +237,9 @@ def _update_topic_flow(
 ) -> Tuple[List[str], bool, str, str]:
     """Update topic state-machine and append sorted timestamps."""
     is_cont = res.get("is_continuation", False)
-    ch_sum = res.get("chunk_summary", "")
-    up_sum = res.get("updated_summary", "")
+    ch_sum = _clean_topic_candidate(res.get("chunk_summary"))
     raw_ts = res.get("timestamps") or res.get("timestamp") or res.get("new_timestamp")
-    new_title = res.get("new_topic_title", "")
+    new_title = _clean_topic_candidate(res.get("new_topic_title"))
 
     v_ts_sorted = _extract_and_sort_chunk_timestamps(raw_ts, chunk, new_title, ch_sum, is_cont)
 
@@ -217,17 +248,13 @@ def _update_topic_flow(
         label = "📌 SUB-TOPIC:" if is_cont else "👉 MAJOR SHIFT:"
         print(f"{label} {stamp}" + (f" ('{new_title or ch_sum}')" if not is_cont else ""), flush=True)
 
-    if is_cont:
-        if not v_ts_sorted:
-            print("🔄 CONTINUATION (no stamp)", flush=True)
-        rolling_summary = up_sum or ch_sum or rolling_summary
-    else:
-        if not v_ts_sorted:
-            print(f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')", flush=True)
-        current_topic_title = new_title or ch_sum
-        rolling_summary = up_sum or ch_sum
+    if not v_ts_sorted:
+        label = "🔄 CONTINUATION (no stamp)" if is_cont else f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')"
+        print(label, flush=True)
 
-    return v_ts_sorted, is_cont, current_topic_title, rolling_summary
+    next_title = _resolve_next_topic_title(res, current_topic_title)
+    next_summary = _chain_rolling_summary(rolling_summary, res)
+    return v_ts_sorted, is_cont, next_title, next_summary
 
 
 def _persist_chunk_output(
@@ -397,6 +424,7 @@ def _process_single_recursive_chunk(
         chunk=chunk, current_topic=current_topic_title, rolling_summary=rolling_summary,
         lang=lang, signal=sig, livechat=lc, activity=act, mood=mood,
         world_identity_ref=wi_ref, glossary=glossary, keyframes=keyframes if keyframes else None,
+        recent_timestamps=all_timestamps[-3:],
     )
 
     prompt_tokens = len(prompt) // 4

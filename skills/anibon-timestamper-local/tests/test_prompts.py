@@ -176,7 +176,25 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("Maribell", prompt)
         self.assertNotIn("Hoshino", prompt)
 
-
+    def test_build_recursive_prompt_includes_recent_timestamps_and_mid_chunk_shift_rule(self):
+        chunk = {
+            "_idx": 5,
+            "items": [{"timestamp": "00:20:00", "start": 1200.0, "text": "เปลี่ยนมาดูเกมใหม่กันครับ"}]
+        }
+        recent = [
+            "00:12:00 - [WatchParty] ส่องตัวอย่างเกมแรก",
+            "00:16:30 - [Talk] วิเคราะห์ระบบกาชา",
+        ]
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="วิเคราะห์ระบบกาชา",
+            rolling_summary="คุยเรื่องเรทกาชา -> เปรียบเทียบราคาสกิน",
+            lang="th",
+            recent_timestamps=recent,
+        )
+        self.assertIn("Recent Emitted Timestamps", prompt)
+        self.assertIn("00:16:30 - [Talk] วิเคราะห์ระบบกาชา", prompt)
+        self.assertIn("mid-chunk", prompt.lower())
 
 
 if __name__ == "__main__":
