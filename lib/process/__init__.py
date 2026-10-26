@@ -9,7 +9,12 @@ from process.audit import (
     audit_timestamps_against_glossary,
     sanitize_and_audit_timestamps,
 )
-from process.garbled_collector import run_garbled_collector
+from process.garbled_collector import (
+    GarbledCollectorOptions,
+    LlmTarget,
+    resolve_garbled_notes,
+    run_garbled_collector,
+)
 from process.knowledge import (
     enrich_with_sqlite_databases,
     extract_entity_glossary,
@@ -57,7 +62,10 @@ __all__ = [
     "finalize_and_assemble_timestamps",
     "sanitize_and_audit_timestamps",
     "audit_timestamps_against_glossary",
+    "resolve_garbled_notes",
     "run_garbled_collector",
+    "LlmTarget",
+    "GarbledCollectorOptions",
     "dispatch_verification",
     "extract_entity_glossary",
     "save_entity_glossary",

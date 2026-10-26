@@ -138,7 +138,11 @@ def _format_garbled_line(gn: str, chunk_idx: str) -> Optional[str]:
     val = gn.strip()
     if "@" in val and not val.startswith('"'):
         tok, rest = val.split("@", 1)
-        val = f'"{tok.strip()}" @{rest}'
+        if "->" in tok:
+            src, tgt = tok.split("->", 1)
+            val = f'"{src.strip()}" -> {tgt.strip()} @ {rest.strip()}'
+        else:
+            val = f'"{tok.strip()}" @ {rest.strip()}'
     return f"- {val} ({chunk_idx})"
 
 

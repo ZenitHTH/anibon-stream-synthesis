@@ -54,10 +54,27 @@ def _clean_xml_chunk(path: Path, dry_run: bool = False) -> list[tuple[str, str]]
     return changes
 
 
+def _clean_txt_chunk(path: Path, dry_run: bool = False) -> list[tuple[str, str]]:
+    """Clean plain-text lines in a .txt chunk file. Returns (orig, cleaned) pairs."""
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    changes = []
+    out_lines = []
+    for line in lines:
+        cleaned = clean_text(line, _COMPILED)
+        if cleaned != line:
+            changes.append((line.strip(), cleaned.strip()))
+        out_lines.append(cleaned)
+    if not dry_run and changes:
+        path.write_text("".join(out_lines), encoding="utf-8")
+    return changes
+
+
 def process_file(path: Path, dry_run: bool = False) -> int:
-    """Process a single chunk file (JSON or XML). Returns change count."""
+    """Process a single chunk file (JSON, XML, or TXT). Returns change count."""
     if path.suffix == ".xml":
         changes = _clean_xml_chunk(path, dry_run=dry_run)
+    elif path.suffix == ".txt":
+        changes = _clean_txt_chunk(path, dry_run=dry_run)
     else:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
@@ -79,7 +96,11 @@ def process_file(path: Path, dry_run: bool = False) -> int:
 
 def process_dir(path: Path, dry_run: bool = False) -> int:
     """Process all chunk files in a directory. Returns total changes."""
-    files = sorted(set(path.glob("chunk_*.json")) | set(path.glob("chunk_*.xml")))
+    files = sorted(
+        set(path.glob("chunk_*.json"))
+        | set(path.glob("chunk_*.xml"))
+        | set(path.glob("chunk_*.txt"))
+    )
     total = 0
     for f in files:
         total += process_file(f, dry_run=dry_run)

@@ -209,10 +209,7 @@ def _run_summarize_only(workspace: Path, model: str, args: argparse.Namespace) -
     )
     print(f"✅ Assembly complete: {out_md}")
 
-    if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
-        run_garbled_collector(workspace=workspace, video_url=args.video_url, whisper_bin=args.whisper_bin, model=args.whisper_model)
-    elif not is_youtube_auto_transcript(workspace):
-        print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
+    _finalize_garbled_collector(workspace, args, model)
 
 
 def _apply_early_config_override() -> None:
@@ -356,14 +353,18 @@ def _dispatch_pipeline_mode(
         )
 
 
-def _finalize_garbled_collector(workspace: Path, args: argparse.Namespace, is_yt_auto: bool) -> None:
+def _finalize_garbled_collector(workspace: Path, args: argparse.Namespace, model: str) -> None:
     """Run whisper audio verification if running on YouTube auto-transcript."""
-    if is_yt_auto and not args.no_garbled_collector:
+    if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
         run_garbled_collector(
-            workspace=workspace, video_url=args.video_url,
-            whisper_bin=args.whisper_bin, model=args.whisper_model,
+            workspace=workspace,
+            video_url=args.video_url,
+            whisper_bin=args.whisper_bin,
+            whisper_model=args.whisper_model,
+            endpoint=args.endpoint,
+            llm_model=model,
         )
-    elif not is_yt_auto:
+    elif not is_youtube_auto_transcript(workspace):
         print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
 
 
@@ -403,7 +404,7 @@ def main() -> None:
     _dispatch_pipeline_mode(
         args, workspace, model, chunk_files, signals_map, mappings, world_identity_dir, glossary
     )
-    _finalize_garbled_collector(workspace, args, is_yt_auto)
+    _finalize_garbled_collector(workspace, args, model)
 
 
 if __name__ == "__main__":

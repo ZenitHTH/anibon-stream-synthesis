@@ -326,19 +326,20 @@ def main():
                 except Exception as e:
                     print(f"[!] Warning: failed to re-clean workspace chunks: {e}", file=sys.stderr)
 
-        all_ts = args.workspace / "all_timestamps.txt"
-        if all_ts.is_file():
-            try:
-                sys.path.insert(0, str(_SCRIPT_DIR))
-                import clean_garbled_english
-                clean_garbled_english._COMPILED = clean_garbled_english.load_replacements()
-                orig_text = all_ts.read_text(encoding="utf-8")
-                cleaned_text = clean_garbled_english.clean_text(orig_text)
-                if cleaned_text != orig_text:
-                    all_ts.write_text(cleaned_text, encoding="utf-8")
-                    print(f"[+] Cleaned garbled tokens in {all_ts}")
-            except Exception as e:
-                print(f"[!] Warning: failed to clean all_timestamps.txt: {e}", file=sys.stderr)
+        for ts_name in ("all_timestamps.txt", "anibon_timestamps.md", "anibon_timestamps_essential.md", "anibon_timestamps_full.md"):
+            ts_file = args.workspace / ts_name
+            if ts_file.is_file():
+                try:
+                    sys.path.insert(0, str(_SCRIPT_DIR))
+                    import clean_garbled_english
+                    clean_garbled_english._COMPILED = clean_garbled_english.load_replacements()
+                    orig_text = ts_file.read_text(encoding="utf-8")
+                    cleaned_text = clean_garbled_english.clean_text(orig_text)
+                    if cleaned_text != orig_text:
+                        ts_file.write_text(cleaned_text, encoding="utf-8")
+                        print(f"[+] Cleaned garbled tokens in {ts_file}")
+                except Exception as e:
+                    print(f"[!] Warning: failed to clean {ts_name}: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
