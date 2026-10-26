@@ -228,6 +228,23 @@ class TestSummarizer(unittest.TestCase):
         self.assertIn("ชำแหละกลยุทธ์ของพรรคการเมืองและผลกระทบต่อผู้ประกันตนอย่างครบถ้วน.", md)
         self.assertIn("ถกประเด็นความสมจริงของซูเปอร์ฮีโร่เทียบกับคอมมิคต้นฉบับ.", md)
 
+    def test_clean_caveman_text_strips_leading_streamer(self):
+        from process.summarizer import clean_caveman_text
+        stamp = "00:04:12 - [Greeting] ปู่โบ๊ตทักทายผู้ชมและแจ้งข่าว"
+        self.assertEqual(clean_caveman_text(stamp), "00:04:12 - [Greeting] ทักทายผู้ชมและแจ้งข่าว")
+
+    def test_clean_caveman_text_strips_filler_prefixes(self):
+        from process.summarizer import clean_caveman_text
+        stamp1 = "02:45:12 - [Talk] ปู่โบ๊ตพูดถึงเรื่องการแยกทางกันของ Blue Archive"
+        self.assertEqual(clean_caveman_text(stamp1), "02:45:12 - [Talk] การแยกทางกันของ Blue Archive")
+        stamp2 = "03:00:00 - [Talk] กล่าวถึงประเด็นลิขสิทธิ์เกม"
+        self.assertEqual(clean_caveman_text(stamp2), "03:00:00 - [Talk] ประเด็นลิขสิทธิ์เกม")
+
+    def test_clean_caveman_text_on_headers(self):
+        from process.summarizer import clean_caveman_text
+        header = "ปู่โบ๊ตวิเคราะห์อัปเดต Wuthering Waves และ Blue Archive"
+        self.assertEqual(clean_caveman_text(header), "วิเคราะห์อัปเดต Wuthering Waves และ Blue Archive")
+
 
 if __name__ == "__main__":
     unittest.main()
