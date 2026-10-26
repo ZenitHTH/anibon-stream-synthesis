@@ -34,7 +34,7 @@ Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`)
 | **2.5 Vision Ground Truth (Optional)** | `lib/process/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
 | **3. Summarizer & Assembly (Pass 2)** | `lib/process/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
 | **4. Garbled Collector & Whisper Ground Truth** | `scripts/whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
-| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m) and `scripts/check_sections.py` (audits byte sizes and ASR garble patterns; report-only). |
+| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m) and `scripts/check_sections.py` (audits timestamp line counts [target 15–20, max 25 lines/part] and ASR garble patterns). |
 
 ### Modular Library Architecture (`lib/`)
 
@@ -224,6 +224,12 @@ scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25
 > - Secrets (like `TOKENME_API_KEY` or `LM_API_KEY`) belong in `.env` (which is gitignored).
 > - To customize parameters for a specific run or hardware setup, copy or create a JSON config file and pass `--config /path/to/config.json` (or `--env-file` for backward compatibility).
 > - Environment variables (`ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_TEMPERATURE`, etc.) seamlessly override `config.json` values without touching files.
+
+- **Section Splitting Rule (Line Count over Byte Count)**:
+  - Macro-parts (`ส่วนที่ X`) are grouped and split strictly by timestamp line count.
+  - **Target**: 15–20 lines/part. **Hard split limit**: > 25 lines/part.
+  - Byte counting is canceled for section splitting decisions (avoiding false alarms from 3-byte Thai UTF-8 text).
+  - Splitting snaps to the nearest topic transition marker or line midpoint (`len(stamps) // 2`).
 
 #### 4. Garbled Collector & Whisper Ground Truth (Automatic Post-Pass)
 After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio, aligns acoustic segments via `resolve_garbled_notes`, and updates `garbled_replacements.json`.

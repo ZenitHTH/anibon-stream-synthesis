@@ -25,30 +25,19 @@ ASR_GARBLED_PATTERNS = load_asr_garbled_patterns()
 
 
 
-# ponytail: replaces manual copy-paste-count workflow for section size checking.
+# ponytail: section size checking based on timestamp line count.
 #
-# WHY BYTES, NOT CHARS:
-#   YouTube's comment input counts characters using JavaScript's string length,
-#   which counts each UTF-16 code unit. Thai characters are U+0E00–U+0E7F and
-#   each occupies 1 UTF-16 code unit (same as ASCII). However, YouTube's *server*
-#   validation stores text in UTF-8 bytes and has historically enforced an 8 KB
-#   byte cap per comment. For practical safety we measure the FULL BLOCK
-#   (header + body, as the user pastes it) in UTF-8 bytes.
+# WHY LINE COUNT OVER BYTES:
+#   Thai characters take ~3 bytes in UTF-8, making byte counting distort section
+#   balance (a concise 18-stamp section can reach 4,000 bytes).
+#   We evaluate sections by timestamp line count for human readability.
 #
-#   Thai character ≈ 3 bytes in UTF-8, so 5,000 chars of dense Thai ≈ 15,000 bytes
-#   which WAY exceeds YouTube's server limit. Empirically, a paste that fails
-#   always has a UTF-8 byte size > ~5,000 bytes. We therefore use bytes as the
-#   primary metric and set conservative thresholds.
-#
-# THRESHOLDS (bytes of the FULL pasted block):
-#   LIMIT = 4500 bytes  → hard cap (❌ OVER — cannot paste)
-#   WARN  = 3500 bytes  → warn early (⚠️ WARN — risky, split recommended)
-#
-# The FULL block includes: the two ═══ separator lines, the 📌 header line,
-# the ⏱ metadata line, and all timestamp body lines below it.
+# THRESHOLDS (timestamp lines in body):
+#   LINE_LIMIT = 25 lines → hard cap (❌ OVER — must split)
+#   LINE_WARN  = 20 lines → warn early (⚠️ WARN — consider splitting)
 
-LIMIT = 4500   # bytes — YouTube Thai comment hard cap (empirical)
-WARN  = 3500   # bytes — warn early to leave safe margin
+LINE_LIMIT = 25  # max timestamps per part (❌ OVER)
+LINE_WARN  = 20  # warning threshold per part (⚠️ WARN)
 
 BLOCK_RE = re.compile(r'(═+\n(?:(?!═+)[\s\S])*?ส่วนที่(?:(?!═+)[\s\S])*?\n═+\n*)(.*?)(?=═+\n(?:(?!═+)[\s\S])*?ส่วนที่|\Z)', re.DOTALL)
 
@@ -63,27 +52,30 @@ def _full_blocks(text: str) -> list[dict]:
     return results
 
 
+def _count_timestamps(body: str) -> int:
+    """Count timestamp lines in section body."""
+    return sum(1 for line in body.splitlines() if re.match(r"\d{2}:\d{2}:\d{2}", line.strip()))
+
+
 def suggest_split(body: str) -> str | None:
-    """Find the timestamp line closest to the byte-midpoint of a too-long body."""
-    total_bytes = len(body.encode("utf-8"))
-    if total_bytes == 0:
-        return None
-    midpoint = total_bytes / 2
-    
-    ts_lines = []
-    current_bytes = 0
-    
-    for line in body.splitlines(keepends=True):
-        if re.match(r'\d{2}:\d{2}:\d{2}', line.strip()):
-            ts = line.split(" - ")[0].strip()
-            ts_lines.append((current_bytes, ts))
-        current_bytes += len(line.encode("utf-8"))
-        
+    """Find the timestamp line closest to the line-midpoint of a too-long body."""
+    ts_lines = [
+        line.split(" - ")[0].strip()
+        for line in body.splitlines()
+        if re.match(r"\d{2}:\d{2}:\d{2}", line.strip())
+    ]
     if len(ts_lines) < 2:
         return None
-        
-    best_ts = min(ts_lines, key=lambda x: abs(x[0] - midpoint))[1]
-    return best_ts
+    return ts_lines[len(ts_lines) // 2]
+
+
+def _evaluate_section_status(line_count: int) -> tuple[str, str, bool]:
+    """Determine section status label and failure flag based on line count."""
+    if line_count > LINE_LIMIT:
+        return "❌ OVER  ", "❌ ", True
+    if line_count > LINE_WARN:
+        return "⚠️  WARN ", "⚠️ ", True
+    return "✅ OK    ", "✅ ", False
 
 
 def _scan_asr_garbles(text: str) -> list[str]:
@@ -124,30 +116,21 @@ def main():
 
     any_fail = False
     suggestions = []
-    print(f"\n{'Status':10} {'Bytes':>6}  {'Chars':>6}  Section")
+    print(f"\n{'Status':10} {'Lines':>5}  {'Bytes':>6}  Section")
     print("─" * 80)
-    
+
     for r in blocks:
+        nlines = _count_timestamps(r["body"])
         nbytes = len(r["full"].strip().encode("utf-8"))
-        nchars = len(r["full"].strip())
-        
-        if nbytes > LIMIT:
-            status = "❌ OVER  "
+        status, label, is_over = _evaluate_section_status(nlines)
+
+        if is_over:
             any_fail = True
-            label = "❌ "
-        elif nbytes > WARN:
-            status = "⚠️  WARN "
-            any_fail = True
-            label = "⚠️ "
-        else:
-            status = "✅ OK    "
-            
-        print(f"{status}  {nbytes:5}B  {nchars:5}c  {r['label'][:55]}")
-        
-        if nbytes > WARN:
             mid_ts = suggest_split(r["body"])
             tip = f"split at ≈ {mid_ts}" if mid_ts else "section too short to split"
-            suggestions.append(f"  {label}{r['label'][:55]}\n     → {tip}  ({nbytes} bytes, {nchars} chars)")
+            suggestions.append(f"  {label}{r['label'][:55]}\n     → {tip}  ({nlines} lines, {nbytes} bytes)")
+
+        print(f"{status}  {nlines:4}L  {nbytes:5}B  {r['label'][:55]}")
 
     if any_fail:
         print("\n── Suggested split points ──────────────────────────────────────────────")
@@ -155,7 +138,7 @@ def main():
             print(sug)
         sys.exit(1)
     else:
-        print("\n✅ All sections are within the YouTube comment byte limit.")
+        print("\n✅ All sections are within the timestamp line count limit (≤ 20 lines).")
 
     # ── ASR garbled scan ──────────────────────────────────────────────
     if not args.no_garbled_check:

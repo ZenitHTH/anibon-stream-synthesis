@@ -202,6 +202,8 @@ STAMP_COLLISION_SEC: int = 45
 DEFAULT_GROUP_SIZE: int = 4
 DEFAULT_BLOCK_SIZE: int = 2400
 BYTE_CAP_LIMIT: int = 3500
+LINE_CAP_LIMIT: int = 25
+LINE_WARN_LIMIT: int = 20
 
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
 EVAL_BATCH_SIZE: int = 8192
@@ -218,7 +220,7 @@ def reload_config() -> None:
     global ENTITY_CONTEXT_MAX_TOKENS, DEFAULT_TEMPERATURE, VISION_TEMPERATURE, MAX_RETRIES
     global PRUNE_MIN_INPUT, PRUNE_TARGET_MIN, PRUNE_TARGET_MAX
     global DEDUP_MIN_GAP_SEC, DEDUP_MAX_GAP_SEC, STAMP_COLLISION_SEC
-    global DEFAULT_GROUP_SIZE, DEFAULT_BLOCK_SIZE, BYTE_CAP_LIMIT
+    global DEFAULT_GROUP_SIZE, DEFAULT_BLOCK_SIZE, BYTE_CAP_LIMIT, LINE_CAP_LIMIT, LINE_WARN_LIMIT
     global DEFAULT_MULTIMODAL_CHUNKS, EVAL_BATCH_SIZE, TOKENS_PER_IMAGE, SCENE_DELTA_THRESHOLD, MAX_CHUNK_FRAMES
 
     PRIMARY_HOST = cfg_str("primary_host", "100.115.25.30")
@@ -254,6 +256,8 @@ def reload_config() -> None:
     DEFAULT_GROUP_SIZE = cfg_int("group_size", 4)
     DEFAULT_BLOCK_SIZE = cfg_int("block_size", 2400)
     BYTE_CAP_LIMIT = cfg_int("byte_cap_limit", 3500)
+    LINE_CAP_LIMIT = cfg_int("line_cap_limit", 25)
+    LINE_WARN_LIMIT = cfg_int("line_warn_limit", 20)
 
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
     EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 8192)

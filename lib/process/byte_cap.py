@@ -1,10 +1,10 @@
-"""Topic transition boundary detection and byte-cap enforcement."""
+"""Topic transition boundary detection and line/byte cap enforcement."""
 from __future__ import annotations
 
 import re
 from typing import List, Optional, Tuple
 
-from common.config import BYTE_CAP_LIMIT
+from common.config import BYTE_CAP_LIMIT, LINE_CAP_LIMIT
 from process.caveman import clean_caveman_text
 
 TRANSITION_PATTERNS = [
@@ -48,7 +48,7 @@ def find_best_boundary(stamps: List[str], target_idx: int, window: int = 4) -> i
 
 
 def _split_oversized_block(block: str, limit: int) -> Optional[Tuple[str, str]]:
-    """Attempt splitting a block exceeding limit at the optimal boundary."""
+    """Attempt splitting a block exceeding line/byte limit at the optimal boundary."""
     lines = block.splitlines()
     border_indices = [i for i, line in enumerate(lines) if line.startswith("═")]
     stamps_start = (border_indices[1] + 1) if len(border_indices) >= 2 else 3
@@ -56,7 +56,8 @@ def _split_oversized_block(block: str, limit: int) -> Optional[Tuple[str, str]]:
     stamps = lines[stamps_start:]
     border = lines[border_indices[0]] if border_indices else (lines[0] if lines else "═" * 57)
 
-    if len(block.encode("utf-8")) <= limit or len(lines) < 4 or len(stamps) < 2:
+    is_oversized = (len(stamps) > limit) if limit <= 100 else (len(block.encode("utf-8")) > limit)
+    if not is_oversized or len(stamps) < 2:
         return None
 
     mid = min(max(find_best_boundary(stamps, len(stamps) // 2, window=3), 1), len(stamps) - 1)
@@ -66,8 +67,22 @@ def _split_oversized_block(block: str, limit: int) -> Optional[Tuple[str, str]]:
     return f"{header_chunk}\n" + "\n".join(first), f"{border}\n{second_header}\n{border}\n" + "\n".join(second)
 
 
+def enforce_line_cap(md: str, limit: int = LINE_CAP_LIMIT) -> str:
+    """Split any part exceeding line count limit, then renumber."""
+    out: List[str] = []
+    queue = [b for b in md.strip().split("\n\n") if b.strip()]
+    while queue:
+        block = queue.pop(0)
+        split_result = _split_oversized_block(block, limit)
+        if not split_result:
+            out.append(block)
+            continue
+        queue[0:0] = [split_result[0], split_result[1]]
+    return "\n\n".join(_PART_NUM_RE.sub(f"ส่วนที่ {i}:", b, count=1) for i, b in enumerate(out, 1))
+
+
 def enforce_byte_cap(md: str, limit: int = BYTE_CAP_LIMIT) -> str:
-    """Split any part over `limit` bytes, then renumber."""
+    """Split any part exceeding byte limit, then renumber."""
     out: List[str] = []
     queue = [b for b in md.strip().split("\n\n") if b.strip()]
     while queue:

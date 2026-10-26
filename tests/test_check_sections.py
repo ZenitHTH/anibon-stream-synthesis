@@ -17,8 +17,8 @@ VALID_MD = textwrap.dedent("""\
     00:01:00 - [Talk] คุย
 """)
 
-# 1,700 Thai chars × 3 bytes = 5,100 bytes → over the 4,500-byte cap
-OVER_LIMIT_MD = VALID_MD + ("00:02:00 - [Talk] " + "ก" * 1700 + "\n")
+# 26 timestamps → over the 25-line cap
+OVER_LIMIT_MD = VALID_MD + "".join(f"00:{i:02d}:00 - [Talk] รายการที่ {i}\n" for i in range(2, 28))
 
 
 class TestCheckSections(unittest.TestCase):
@@ -48,19 +48,16 @@ class TestCheckSections(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(self._run("# Just a notes file\nNo sections here.", Path(tmp)), 0)
 
-    def test_suggest_split_byte_midpoint(self):
+    def test_suggest_split_line_midpoint(self):
         if str(SCRIPT.parent) not in sys.path:
             sys.path.insert(0, str(SCRIPT.parent))
         from check_sections import suggest_split
 
-        # Body with a large block of Thai characters (3 bytes each)
-        # The midpoint in bytes will fall into the large block.
-        # We expect the suggestion to find the closest timestamp line.
-        body1 = "00:00:00 - start\n" + ("ก" * 1000) + "\n00:01:00 - middle\n00:02:00 - end\n"
+        body1 = "00:00:00 - start\n00:01:00 - middle\n00:02:00 - end\n"
         self.assertEqual(suggest_split(body1), "00:01:00")
 
-        body2 = "00:00:00 - start\n00:01:00 - middle\n" + ("ก" * 1000) + "\n00:02:00 - end\n"
-        self.assertEqual(suggest_split(body2), "00:01:00")
+        body2 = "00:00:00 - item 0\n00:01:00 - item 1\n00:02:00 - item 2\n00:03:00 - item 3\n"
+        self.assertEqual(suggest_split(body2), "00:02:00")
 
 
 if __name__ == "__main__":

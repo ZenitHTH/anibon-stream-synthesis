@@ -47,7 +47,13 @@ Whenever processing, generating, auditing, or summarizing timestamps for Anibon 
    - Always execute the 4-layer defense pipeline: (1) Metadata ingestion, (2) Pre-inference buffer scrubbing, (3) Invariant prompt directives, (4) Stage 5 deterministic auto-sanitization against `garbled_replacements.json`.
 
 6. **Macro-Thematic Cohesion & Essential Curation Invariant**:
-   - **Drop 3,500-Byte Cap Over-Splitting**: Timestamps must be grouped strictly by cohesive macro-thematic activity periods (typically 4–6 parts for long streams). NEVER artificially slice a unified topic block into multiple sub-parts solely to satisfy a 3,500-byte comment ceiling. Single-comment byte limits are an optional export utility, not the structural grouping logic.
+   - **Section Splitting Invariant (Timestamp Line Count Over Byte Cap)**:
+     - **Cancel Byte-Based Splitting**: NEVER evaluate or split macro-parts (`ส่วนที่ X`) using byte counts (e.g. 3,500B / 4,500B). UTF-8 byte counting unfairly penalizes Thai characters (3 bytes/char) and distorts section balance.
+     - **Split by Timestamp Line Count**:
+       - **Recommended Target**: ~15–20 timestamps per part.
+       - **Soft Warning (`WARN`)**: > 20 timestamps in a single part.
+       - **Hard Limit (`OVER` / Split Requirement)**: > 25 timestamps in a single part. If a part exceeds 25 timestamps, split it into two cohesive thematic sub-parts.
+     - **Boundary Snapping**: When splitting an oversized part, snap to the nearest topic transition marker or line midpoint (`len(stamps) // 2`), NOT byte midpoint.
    - **Essential Timestamps Curation**: Prioritize high-impact, essential timestamps (~40–60 stamps for a 7–8 hour stream) as the primary user-facing output. Filter out conversational micro-loops, repetitive affirmations, and minor tangents while preserving major topic pivots, verified news, in-depth analysis, visual/gameplay highlights, and the stream outro. Keep the exhaustive chronological log in `all_timestamps.txt` / `anibon_timestamps_full.md` for ground-truth reference.
    - **Topic-Cluster Wrapping (Anti-Micro-Stamping)**: When adjacent timestamps discuss the same subject, wrap them into ONE unified timestamp. Never emit chains of micro-timestamps every 1–2 minutes for the same ongoing topic.
    - **Fleeting Side-Track Skipping**: Skip brief offhand comments spanning only a few sentences (<30–60s) with no substantive analysis (e.g. praising a Thai localization name, reading an off-screen chat joke, or momentary passing remarks).
