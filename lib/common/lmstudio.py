@@ -415,6 +415,10 @@ def call_local(
     api_key: Optional[str] = None,
 ) -> str:
     """Call local OpenAI-compatible or LM Studio native API for text generation."""
+    if isinstance(system_prompt, (int, float)):
+        timeout = int(system_prompt)
+        system_prompt = SYSTEM_PROMPT
+
     key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
     req = _prepare_request(endpoint, model, prompt, max_tokens, temperature, system_prompt, key)
 

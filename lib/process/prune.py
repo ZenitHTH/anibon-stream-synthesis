@@ -100,7 +100,7 @@ def prune_essential(
     prompt = _build_prune_prompt(stamps, target)
     print(f"[prune] Calling local model to prune {len(stamps)} timestamps to ~{target} essential ones...")
     try:
-        content = call_local(endpoint, model, prompt, PRUNE_MAX_TOKENS, temperature, PRUNE_TIMEOUT_SEC)
+        content = call_local(endpoint, model, prompt, PRUNE_MAX_TOKENS, temperature, timeout=PRUNE_TIMEOUT_SEC)
         kept_lines = _extract_kept_stamps(content, set(stamps))
         if len(kept_lines) < target // 2:
             print(f"[prune] Warning: model returned only {len(kept_lines)} valid stamps (target {target}). Falling back to full list.")

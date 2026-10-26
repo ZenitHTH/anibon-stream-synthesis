@@ -132,7 +132,7 @@ def run_local_summarizer_pass(
     prompt = build_summarizer_prompt(stamps)
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
-        content = call_local(endpoint, model, prompt, max_tokens, temperature, SUMMARIZER_TIMEOUT_SEC)
+        content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=SUMMARIZER_TIMEOUT_SEC)
         matches = parse_summarizer_matches(content)
         return _render_summarized_parts(matches, stamps)
     except Exception as e:

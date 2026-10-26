@@ -419,3 +419,18 @@ Proper nouns, mod names, and franchise titles in the stream's own YouTube metada
      # Compute interval = total_duration_sec / (350 * 9) or ~1 frame every 10s:
      ffmpeg -i "$WORKSPACE/frames/video_144p.mp4" -vf "fps=1/10,scale=320:180,tile=3x3" -q:v 3 "$WORKSPACE/frames/slides_clean/slide_%04d.jpg"
      ```
+
+11. **`call_local()` Positional Timeout Collision (HTTP 400 Bad Request)**:
+    - *Symptom*: Summarizer or Pruning pass fails with `HTTP Error 400: Bad Request` and falls back to heuristics.
+    - *Cause*: Calling `call_local(ep, model, prompt, max_tokens, temp, TIMEOUT)` places the integer timeout into the `system_prompt` parameter (arg 6), creating `{"role": "system", "content": 180}`.
+    - *Fix*: Always pass timeout via keyword argument `timeout=...`. `lmstudio.call_local()` includes an `isinstance(system_prompt, (int, float))` guard to reroute legacy positional timeouts.
+
+12. **Tokusatsu Stage Show & TTFC Phonetic Traps**:
+    - *Stage Show Forms vs. Gacha Games*: Stage show original forms (`Chaos Drone`, `Extra Shadow`, `Advance`) must not be attributed to gacha games (`Chaos Zero Nightmare`).
+    - *ASR "ชิรูบิ"*: Maps to `ไรเดอร์ชิโนบิ (Kamen Rider Shinobi)` (TTFC series).
+    - *Actor Memorials & Old Interviews*: News regarding `Today is Friday in California` refers to actor `Hiroshi Tsuchida` (Sasuke / Kakuranger). Actor `Shu Watanabe` (Eiji Hino / Kamen Rider OOO) must never be confused with anime characters like `Gojo Satoru`.
+    - *Live-Action vs Anime*: Chinese Tokusatsu series like *Armor Hero* (นักล่าอสูรราชันผงาด / โอเมก้าฮอร์น) are live-action Tokusatsu, not anime.
+
+13. **MTP (Multi-Token Prediction) & Speculative Decoding Pauses**:
+    - Pausing a long run to attach MTP speculative decoding or adjust VRAM contexts in LM Studio is fully supported.
+    - Re-running the identical command automatically discovers `recursive_outputs/chunk_XX.json` and state files, resuming immediately from the paused chunk without re-billing previous inferences.
