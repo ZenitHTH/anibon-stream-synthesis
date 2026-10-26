@@ -5,6 +5,22 @@ from pathlib import Path
 from unittest.mock import patch
 
 
+def _setup_rejection_workspace(tmp: str) -> tuple[Path, Path]:
+    ws = Path(tmp)
+    raw_tx = {"events": [{"tStartMs": 0, "dDurationMs": 1000, "segs": [{"utf8": "สตรีม ON และ โยA"}]}]}
+    (ws / "raw_transcript.th-orig.json3").write_text(json.dumps(raw_tx, ensure_ascii=False), encoding="utf-8")
+    notes_path = ws / "garbled_notes.json"
+    notes_payload = {
+        "version": 1,
+        "notes": [
+            {"garbled": "ON", "google_sentence": "สตรีม ON", "whisper_segment": "สตรีม Nexon", "correct": None},
+            {"garbled": "โยA", "google_sentence": "ค่าย โยA สตรีม", "whisper_segment": "ค่ายอนิเมะสตรีม", "correct": None},
+        ],
+    }
+    notes_path.write_text(json.dumps(notes_payload, ensure_ascii=False), encoding="utf-8")
+    return ws, notes_path
+
+
 class TestGarbledCollector(unittest.TestCase):
     def test_format_garbled_line_preserves_arrow_mapping(self):
         from process.runners.recursive import _format_garbled_line
@@ -89,6 +105,42 @@ class TestGarbledCollector(unittest.TestCase):
             count = clean_garbled_english.process_dir(chunks_dir, dry_run=False)
             self.assertGreater(count, 0)
             self.assertIn("Arcane", txt_chunk.read_text(encoding="utf-8"))
+
+    def test_short_ascii_token_and_substring_replacement_rejected(self):
+        from process.garbled_rules import is_safe_replacement, is_valid_candidate_token
+
+        self.assertFalse(is_valid_candidate_token("ON"))
+        self.assertFalse(is_valid_candidate_token("anp"))
+        self.assertFalse(is_valid_candidate_token("MDB"))
+        self.assertFalse(is_safe_replacement("ON", "Nexon"))
+        self.assertFalse(is_safe_replacement("Blue", "Blue Archive"))
+        self.assertTrue(is_valid_candidate_token("neกon"))
+        self.assertTrue(is_safe_replacement("neกon", "Nexon"))
+
+    def test_unverified_hallucinated_target_rejected_by_grounding(self):
+        from process.garbled_grounding import GroundingContext, is_grounded_target
+
+        context = GroundingContext(
+            known_canonical_terms=frozenset({"nexon", "blue archive"}),
+            stream_title="Live Stream Discussion",
+        )
+        self.assertFalse(is_grounded_target("Toyosa", "เรื่องของโยดาสตรีม", context))
+        self.assertFalse(is_grounded_target("Sora", "เรื่องของขบวนการเซ็นไต", context))
+        self.assertTrue(is_grounded_target("Nexon", "เรื่องของค่าย Nexon", context))
+        self.assertTrue(is_grounded_target("Blue Archive", "ไม่กล่าวถึง", context))
+
+    def test_resolve_garbled_notes_rejects_hallucinated_and_unsafe_targets(self):
+        from process.garbled_collector import resolve_garbled_notes
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws, notes_path = _setup_rejection_workspace(tmp)
+            mock_llm = json.dumps({"ON": "Nexon", "โยA": "Toyosa"}, ensure_ascii=False)
+            with patch("process.garbled_collector.call_local", return_value=mock_llm):
+                count = resolve_garbled_notes(ws, notes_path, endpoint="http://127.0.0.1:1234", model="test")
+
+            self.assertEqual(count, 0)
+            updated = json.loads(notes_path.read_text(encoding="utf-8"))
+            self.assertTrue(all(n.get("correct") is None for n in updated["notes"]))
 
 
 if __name__ == "__main__":

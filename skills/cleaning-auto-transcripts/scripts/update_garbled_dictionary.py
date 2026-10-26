@@ -117,6 +117,10 @@ def is_blocked_pattern(target: str, pattern: str) -> tuple[bool, str]:
     p_lower = pattern.lower().strip()
     if p_lower in _EXACT_BLOCKED_PATTERNS:
         return True, "matches blocked common phrase / false positive"
+    if p_lower in target.lower() and len(p_lower) < len(target.strip()):
+        return True, f"pattern '{pattern}' is a substring of target '{target}'"
+    if pattern.strip().isascii() and len(pattern.strip()) < 5:
+        return True, f"pure-ASCII pattern '{pattern}' is shorter than 5 chars"
     for bs in _BLOCKED_SUBSTRINGS:
         if bs.lower() in p_lower and bs.lower() not in target.lower():
             return True, f"contains protected game/brand name '{bs}'"

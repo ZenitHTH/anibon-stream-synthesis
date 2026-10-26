@@ -11,11 +11,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from common.lmstudio import call_local, resolve_endpoint, resolve_model
+from process.garbled_grounding import (
+    GroundingContext,
+    is_grounded_target,
+    load_grounding_context,
+)
 from process.garbled_rules import (
     BATCH_SIZE,
     is_safe_replacement,
     is_valid_candidate_token,
-    load_domain_hint,
     load_raw_transcript_compact,
     strip_filler_prefix,
 )
@@ -23,7 +27,6 @@ from process.garbled_rules import (
 
 @dataclass(frozen=True)
 class LlmTarget:
-    """Target configuration for LLM alignment calls."""
     endpoint: Optional[str] = None
     model: Optional[str] = None
 
@@ -36,7 +39,6 @@ def _build_candidate_line(item: dict) -> str:
 
 
 def _build_resolution_prompt(batch: List[dict], domain_hint: str) -> str:
-    """Build LLM prompt to align Google ASR garbles with Whisper acoustic segments."""
     items_txt = "\n".join(_build_candidate_line(it) for it in batch)
     return (
         "You are an ASR phonetic alignment specialist for Thai gaming/anime livestreams.\n"
@@ -52,7 +54,6 @@ def _build_resolution_prompt(batch: List[dict], domain_hint: str) -> str:
 
 
 def _parse_llm_json(raw_reply: str) -> Dict[str, Optional[str]]:
-    """Extract JSON dictionary from LLM response text."""
     match = re.search(r"\{.*\}", raw_reply, re.DOTALL)
     if not match:
         return {}
@@ -63,12 +64,20 @@ def _parse_llm_json(raw_reply: str) -> Dict[str, Optional[str]]:
         return {}
 
 
-def _extract_safe_replacements(llm_map: Dict[str, Optional[str]]) -> Dict[str, str]:
-    return {
-        g: target.strip()
-        for g, target in llm_map.items()
-        if is_safe_replacement(g, target) and target is not None
-    }
+def _extract_grounded_replacements(
+    batch: List[dict],
+    llm_map: Dict[str, Optional[str]],
+    context: GroundingContext,
+) -> Dict[str, str]:
+    whisper_map = {item.get("garbled", ""): item.get("whisper_segment", "") for item in batch}
+    results: Dict[str, str] = {}
+    for garbled, target in llm_map.items():
+        if not target or not is_safe_replacement(garbled, target):
+            continue
+        whisper = whisper_map.get(garbled, "")
+        if is_grounded_target(target, whisper, context):
+            results[garbled] = target.strip()
+    return results
 
 
 def _invoke_llm(prompt: str, target: LlmTarget) -> str:
@@ -85,25 +94,24 @@ def _invoke_llm(prompt: str, target: LlmTarget) -> str:
 
 
 def _resolve_single_batch(
-    batch: List[dict], domain_hint: str, target: LlmTarget
+    batch: List[dict], context: GroundingContext, target: LlmTarget
 ) -> Dict[str, str]:
-    prompt = _build_resolution_prompt(batch, domain_hint)
+    prompt = _build_resolution_prompt(batch, context.domain_hint)
     try:
         reply = _invoke_llm(prompt, target)
-        return _extract_safe_replacements(_parse_llm_json(reply))
+        return _extract_grounded_replacements(batch, _parse_llm_json(reply), context)
     except Exception as e:
         print(f"[garbled] Warning: LLM resolution batch failed ({e}).")
         return {}
 
 
 def _resolve_candidate_batches(
-    candidates: List[dict], domain_hint: str, target: LlmTarget
+    candidates: List[dict], context: GroundingContext, target: LlmTarget
 ) -> Dict[str, str]:
-    """Query local LLM in batches and return validated (garbled -> canonical) mappings."""
     resolved: Dict[str, str] = {}
     for idx in range(0, len(candidates), BATCH_SIZE):
         batch = candidates[idx : idx + BATCH_SIZE]
-        resolved.update(_resolve_single_batch(batch, domain_hint, target))
+        resolved.update(_resolve_single_batch(batch, context, target))
     return resolved
 
 
@@ -144,12 +152,12 @@ def _coerce_llm_target(
 def _align_pending_notes(
     workspace: Path, pending: List[dict], target: LlmTarget
 ) -> Dict[str, str]:
-    hint = load_domain_hint(workspace)
+    context = load_grounding_context(workspace)
     ep = resolve_endpoint(target.endpoint)
     if "/v1/chat/completions" in ep:
         ep = ep.replace("/v1/chat/completions", "/api/v1/chat")
     mdl = resolve_model(target.model or "auto", ep)
-    return _resolve_candidate_batches(pending, hint, LlmTarget(ep, mdl))
+    return _resolve_candidate_batches(pending, context, LlmTarget(ep, mdl))
 
 
 def _apply_resolved_notes(notes: List[dict], resolved: Dict[str, str]) -> int:

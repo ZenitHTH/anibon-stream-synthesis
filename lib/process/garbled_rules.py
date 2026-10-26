@@ -13,6 +13,8 @@ BATCH_SIZE = 10
 MIN_PURE_THAI_LEN = 4
 MIN_GARBLED_LEN = 2
 MAX_GARBLED_LEN = 40
+MIN_CANONICAL_TARGET_LEN = 3
+MIN_ASCII_GARBLED_LEN = 5
 FILLER_PREFIXES = (
     "ตัวออกมาเป็นเรียกว่าแบบ",
     "ตัวออกมาเป็นเรียกว่า",
@@ -61,7 +63,9 @@ def is_valid_candidate_token(garbled: str) -> bool:
         return False
     if garbled in BLOCKED_THAI_WORDS:
         return False
-    if not has_non_thai_script(garbled) and len(garbled) < MIN_PURE_THAI_LEN:
+    if garbled.isascii() and len(garbled) < MIN_ASCII_GARBLED_LEN:
+        return False
+    if not has_non_thai_script(garbled):
         return False
     return True
 
@@ -71,9 +75,13 @@ def is_safe_replacement(garbled: str, correct: Optional[str]) -> bool:
     if not correct or not isinstance(correct, str):
         return False
     target = correct.strip()
-    if not target or target.lower() in UNSAFE_TARGET_KEYWORDS:
+    if len(target) < MIN_CANONICAL_TARGET_LEN:
+        return False
+    if target.lower() in UNSAFE_TARGET_KEYWORDS:
         return False
     if garbled.lower() == target.lower() or not is_valid_candidate_token(garbled):
+        return False
+    if garbled.lower() in target.lower():
         return False
     if _is_ascii_subset(garbled, target):
         return False
@@ -107,35 +115,4 @@ def _read_compact_file(path: Path) -> str:
         return ""
 
 
-def _extract_stream_title(workspace: Path) -> str:
-    info_path = workspace / "info.json"
-    if not info_path.is_file():
-        return ""
-    try:
-        data = json.loads(info_path.read_text(encoding="utf-8"))
-        return str(data.get("title", ""))
-    except Exception:
-        return ""
-
-
-def _extract_glossary_names(workspace: Path) -> List[str]:
-    gloss_path = workspace / "entity_glossary.json"
-    if not gloss_path.is_file():
-        return []
-    try:
-        gloss = json.loads(gloss_path.read_text(encoding="utf-8"))
-        return [k for k in list(gloss.keys())[:80] if len(k) >= 3]
-    except Exception:
-        return []
-
-
-def load_domain_hint(workspace: Path) -> str:
-    """Build compact domain proper-noun hint from info.json title and entity_glossary.json."""
-    parts: List[str] = []
-    title = _extract_stream_title(workspace)
-    if title:
-        parts.append(f"Stream Title: {title}")
-    names = _extract_glossary_names(workspace)
-    if names:
-        parts.append("Known Entities: " + ", ".join(names))
-    return "\n".join(parts)
+from process.garbled_grounding import load_domain_hint
