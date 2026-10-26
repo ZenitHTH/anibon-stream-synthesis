@@ -32,20 +32,27 @@ Whenever processing, generating, auditing, or summarizing timestamps for Anibon 
    - If an entity is not verified in `entity_glossary.json` or `references/*.md`, describe the action in Thai or write phonetic Thai. Never invent novel English proper nouns.
    - Pokémon names must always follow the standard format: `ชื่อไทย (English Name)`.
 
-3. **Stream Ending / Outro Guarantee**:
+3. **Caveman Timestamp Style Invariant (No Leading Streamer Prefixes)**:
+   - **NEVER** start timestamp lines or section titles (`ส่วนที่ X`) with `'ปู่โบ๊ต'` (viewers already know who the streamer is).
+   - **NEVER** repeat the same opening verb consecutively across lines (e.g. avoid repeating `'วิเคราะห์...'` or `'พูดถึง...'` line after line).
+   - **Action-First & Topic-First Phrasing**: Use crisp Caveman style: `[กริยาหลากหลาย/ประเด็นหลัก] + [ชื่อเฉพาะ] + [ใจความสำคัญกระชับ]`.
+   - Use varied first-verbs: `ส่อง`, `ชำแหละ`, `เทียบ`, `เจาะลึก`, `เม้าท์มอย`, `สรุปดราม่า`, `กางทฤษฎี`, `รีวิว`, `พักเบรก`, `ปิดไลฟ์`, or begin directly with the subject/game title.
+   - Preserve 100% of verified proper nouns (games, characters, people).
+
+4. **Stream Ending / Outro Guarantee**:
    - Never let continuous gameplay swallow the stream outro.
    - The final 5 minutes of transcript must always be inspected for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `บ๊ายบาย`) to emit `HH:MM:SS - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม`.
 
-4. **Deterministic Multi-Layer Verification**:
+5. **Deterministic Multi-Layer Verification**:
    - Always execute the 4-layer defense pipeline: (1) Metadata ingestion, (2) Pre-inference buffer scrubbing, (3) Invariant prompt directives, (4) Stage 5 deterministic auto-sanitization against `garbled_replacements.json`.
 
-5. **Macro-Thematic Cohesion & Essential Curation Invariant**:
+6. **Macro-Thematic Cohesion & Essential Curation Invariant**:
    - **Drop 3,500-Byte Cap Over-Splitting**: Timestamps must be grouped strictly by cohesive macro-thematic activity periods (typically 4–6 parts for long streams). NEVER artificially slice a unified topic block into multiple sub-parts solely to satisfy a 3,500-byte comment ceiling. Single-comment byte limits are an optional export utility, not the structural grouping logic.
    - **Essential Timestamps Curation**: Prioritize high-impact, essential timestamps (~40–60 stamps for a 7–8 hour stream) as the primary user-facing output. Filter out conversational micro-loops, repetitive affirmations, and minor tangents while preserving major topic pivots, verified news, in-depth analysis, visual/gameplay highlights, and the stream outro. Keep the exhaustive chronological log in `all_timestamps.txt` / `anibon_timestamps_full.md` for ground-truth reference.
    - **Topic-Cluster Wrapping (Anti-Micro-Stamping)**: When adjacent timestamps discuss the same subject, wrap them into ONE unified timestamp. Never emit chains of micro-timestamps every 1–2 minutes for the same ongoing topic.
    - **Fleeting Side-Track Skipping**: Skip brief offhand comments spanning only a few sentences (<30–60s) with no substantive analysis (e.g. praising a Thai localization name, reading an off-screen chat joke, or momentary passing remarks).
 
-6. **Canonical Version Chronology & Comparative Callback Guard**:
+7. **Canonical Version Chronology & Comparative Callback Guard**:
    - **Cross-Reference Version Tables**: When labeling live-service game updates (e.g. 7.2, 3.x), strictly cross-check the version chronology in `skills/anibon-world-identity/references/<Game>.md` to identify the official region/nation (e.g., 7.x = Snezhnaya, 6.x = Nod-Krai).
    - **Active Showcase vs. Comparative Callback**: The active stream showcase defines the section title and character affiliations. Never allow a streamer's nostalgic or comparative reference to an earlier version (e.g. "ตั้งแต่ตอนหนองคาย...") to overwrite the current update's canonical setting.
    - **Explicit Callback Phrasing**: Retrospective discussions must be framed as callbacks (e.g. `...พร้อมย้อนคุยเมต้าตัวละครตั้งแต่ยุค <Region> (<RegionEN>)`), never as the active version setting.
@@ -86,6 +93,19 @@ Whenever updating phonetic replacements or expanding domain knowledge in this pl
 
 4. **Prohibition on Ad-Hoc Dataset Mutation**:
    - Always locate and use repository tools (`update_garbled_dictionary.py`, `fetch_*_db.py`) instead of writing raw Python scripts that append to JSON files.
+
+5. **Garbled Collector Regex Safety & Grounding Invariants**:
+   - **Substring Collision Prevention**:
+     - **NEVER** add pure-ASCII noise patterns shorter than 5 characters (e.g. `"ON"`, `"anp"`, `"MDB"`) without strict word boundaries, as global regex replacement corrupts normal English words (e.g. `"Donghua"` → `"DNexonghua"`).
+     - **NEVER** add a noise pattern if `garbled.lower() in target.lower()` (e.g. `"on"` in `"Nexon"`, `"Blue"` in `"Blue Archive"`).
+     - **NEVER** add pure-Thai tokens without non-Thai script characters unless explicitly verified multi-syllable proper nouns, preventing common syllables (`บีด`, `เวฟ`) from corrupting normal Thai words (`ไมโครเวฟ`, `ทำครัว`).
+   - **Strict Target Grounding (Zero Novel English Guesses)**:
+     - Local LLMs must NEVER invent novel English proper nouns.
+     - A canonical target is strictly rejected unless it exists in canonical dictionary keys (`garbled_replacements.json`), `entity_glossary.json`, stream title, OR verbatim in `whisper_segment`.
+   - **Acoustic Alignment Step Requirement**:
+     - Local pipelines must execute `resolve_garbled_notes` using acoustic segments from `whisper.cpp` and local LLM alignment before calling `update_garbled_dictionary.py`.
+   - **Multi-Format Chunk Support**:
+     - Chunk cleaners (`clean_garbled_english.py`) must support `.txt` chunks in addition to `.json` and `.xml`.
 
 
 

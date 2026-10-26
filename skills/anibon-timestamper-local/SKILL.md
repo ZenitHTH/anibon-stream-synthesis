@@ -72,6 +72,11 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
    - Enforces `STREAMER IDENTITY` invariant: The streamer is exclusively `'ปู่โบ๊ต' (Boat)`. Never write `'ปู่บอท'`, `'ลุงบอท'`, or `'ปู่โบต'`.
    - Enforces `ANTI-GUESSING CONSTRAINT`: Never arbitrarily translate Thai phonetic loanwords into novel English spellings. If not found in `VERIFIED DOMAIN ENTITIES`, write phonetic Thai or describe the action in Thai. Never invent novel English proper nouns.
    - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'` (Thai community/official name followed by English name in parentheses).
+   - Enforces `CAVEMAN TIMESTAMP STYLE INVARIANT`:
+     - NEVER start timestamp descriptions or section titles with `'ปู่โบ๊ต'`.
+     - Prohibit consecutive repetitive opening verbs (`'วิเคราะห์...'`, `'พูดถึง...'`).
+     - Use varied action-first or topic-first verbs: `ส่อง`, `ชำแหละ`, `เทียบ`, `เจาะลึก`, `เม้าท์มอย`, `สรุปดราม่า`, `กางทฤษฎี`, `รีวิว`, `พักเบรก`, `ปิดไลฟ์`.
+     - Keep 100% of proper nouns while eliminating redundant conversational padding.
 
 4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
    - Automatically executes `sanitize_and_audit_timestamps()` during Pass 2 summary assembly.
@@ -221,7 +226,13 @@ scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25
 > - Environment variables (`ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_TEMPERATURE`, etc.) seamlessly override `config.json` values without touching files.
 
 #### 4. Garbled Collector & Whisper Ground Truth (Automatic Post-Pass)
-After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio and update `garbled_replacements.json`.
+After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py` automatically checks for surviving phonetic garbles in `<workspace>/garbled_notes_raw/` and invokes `whisper_dispatcher.py` with local `whisper.cpp` to slice audio, aligns acoustic segments via `resolve_garbled_notes`, and updates `garbled_replacements.json`.
+
+- **Garbled Collector Safety Rules**:
+  - Rejects ASCII patterns `< 5` characters (`"ON"`, `"MDB"`) to avoid substring corruptions (e.g. `"Donghua"` → `"DNexonghua"`).
+  - Rejects patterns where `garbled.lower() in target.lower()` (e.g. `"on"` in `"Nexon"`).
+  - Rejects ungrounded LLM targets not found in dictionary, glossary, stream title, or Whisper audio segments.
+  - Re-cleans both `chunks/*.txt` and `anibon_timestamps.md` upon updating the dictionary.
 
 - To pass video URL for on-the-fly stream slicing without full audio downloads:
   ```bash
