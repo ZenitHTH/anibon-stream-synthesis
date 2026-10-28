@@ -57,7 +57,11 @@
   },
   "bleach": {
    "kind": "anime",
-   "file": null
+   "file": "../anibon-world-identity/references/Bleach.md"
+  },
+  "bleach tybw": {
+   "kind": "anime",
+   "file": "../anibon-world-identity/references/Bleach.md"
   },
   "blue archive": {
    "kind": "game",

@@ -18,6 +18,7 @@ from interface import (
     download_transcript,
     load_default_mappings,
     load_transcript,
+    prepare_livechat,
     save_metadata,
     write_chunk_json,
     write_chunk_txt,
@@ -95,6 +96,11 @@ def main() -> None:
         help=f"Subtitle language priority (default: {DEFAULT_SUB_LANGS})",
     )
     ap.add_argument(
+        "--live-chat",
+        action="store_true",
+        help="Download, parse, and align YouTube live_chat replay into livechat/ chunks",
+    )
+    ap.add_argument(
         "--workspace",
         "-o",
         default=None,
@@ -119,6 +125,8 @@ def main() -> None:
     if not args.no_storyboard:
         download_storyboard(url, workspace)
     n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
+    if args.live_chat:
+        prepare_livechat(url, workspace)
 
     print(f"[*] Done! Wrote {n} chunks ({args.format}) to {workspace}/chunks/")
 

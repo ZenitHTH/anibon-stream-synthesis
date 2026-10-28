@@ -22,6 +22,14 @@ from process.knowledge import (
     resolve_reference_file,
     save_entity_glossary,
 )
+from process.livechat import (
+    align_livechat_feed,
+    download_livechat,
+    find_livechat_file,
+    has_aligned_livechat,
+    parse_livechat_feed,
+    prepare_livechat,
+)
 from process.multimodal import (
     build_multimodal_content,
     call_multimodal,
@@ -100,4 +108,10 @@ __all__ = [
     "run_local_summarizer_pass",
     "apply_vision_verify",
     "audit_and_sanitize_final_markdown",
+    "align_livechat_feed",
+    "download_livechat",
+    "find_livechat_file",
+    "has_aligned_livechat",
+    "parse_livechat_feed",
+    "prepare_livechat",
 ]

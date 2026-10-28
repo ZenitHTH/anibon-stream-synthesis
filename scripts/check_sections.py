@@ -78,6 +78,24 @@ def _evaluate_section_status(line_count: int) -> tuple[str, str, bool]:
     return "✅ OK    ", "✅ ", False
 
 
+_OPENING_VERBS = ("วิเคราะห์", "อึ้ง!", "พูดถึง", "ส่อง", "ชำแหละ", "เม้าท์มอย", "เจาะลึก", "กางทฤษฎี", "ถกประเด็น", "เทียบ", "แซว")
+
+
+def check_verb_diversity(text: str) -> list[str]:
+    """Audit timestamp descriptions for consecutive (>=3) or excessive (>20%) repeated opening verbs."""
+    descs = [m.group(1).strip() for m in re.finditer(r"^\d{2}:\d{2}:\d{2}\s*-\s*(?:\[[^\]]+\])+\s*(.+)$", text, re.M)]
+    if len(descs) < 5:
+        return []
+    verbs = [next((v for v in _OPENING_VERBS if d.startswith(v)), "") for d in descs]
+    warnings = [f"  ⚠️  Opening verb '{v}' used {verbs.count(v)}/{len(descs)} times (>20%)"
+                for v in _OPENING_VERBS if verbs.count(v) / len(descs) > 0.20]
+    for i in range(len(verbs) - 2):
+        if verbs[i] and verbs[i] == verbs[i + 1] == verbs[i + 2]:
+            warnings.append(f"  ⚠️  Consecutive verb repetition (3× '{verbs[i]}') around stamp #{i+1}")
+            break
+    return warnings
+
+
 def _scan_asr_garbles(text: str) -> list[str]:
     """Scan text for known ASR garbled patterns. Returns list of warnings."""
     warnings = []
@@ -165,6 +183,14 @@ def main():
         print()
     else:
         print("✅ All section headers are complete and clean.")
+
+    verb_warnings = check_verb_diversity(text)
+    if verb_warnings:
+        print("\n⚠️  Repetitive Opening Verbs Detected:")
+        for vw in verb_warnings:
+            print(vw)
+    else:
+        print("✅ Lexical verb diversity passed.")
 
 if __name__ == "__main__":
     main()

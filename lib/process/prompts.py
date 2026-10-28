@@ -233,14 +233,41 @@ def build_chunk_entity_context(
     return "## VERIFIED DOMAIN ENTITIES (WORLD IDENTITY):\n" + "\n".join(selected_lines)
 
 
+_KNOWN_OPENING_PREFIXES = (
+    "วิเคราะห์", "อึ้ง!", "อึ้ง", "พูดถึง", "ส่อง", "ชำแหละ", "เม้าท์มอย",
+    "เจาะลึก", "กางทฤษฎี", "ถกประเด็น", "เทียบ", "แซว", "เหวอ!", "เหวอ",
+    "ฮาลั่น!", "จวกยับ", "สับเละ", "สรุป", "รีวิว", "เปิดประเด็น",
+)
+
+
+def _extract_recent_opening_verbs(recent_timestamps: List[str]) -> List[str]:
+    """Extract opening verb prefixes from recent timestamp lines."""
+    used: List[str] = []
+    for ts in recent_timestamps[-4:]:
+        m = re.match(r"^\d{2}:\d{2}:\d{2}\s*-\s*(?:\[[^\]]+\])+\s*(.+)$", ts.strip())
+        if not m:
+            continue
+        desc = m.group(1).strip()
+        for prefix in _KNOWN_OPENING_PREFIXES:
+            if desc.startswith(prefix) and prefix not in used:
+                used.append(prefix)
+                break
+    return used
+
+
 def _format_recent_timestamps(recent_timestamps: Optional[List[str]]) -> str:
-    """Format recent emitted timestamps block to avoid duplicate stamps."""
+    """Format recent emitted timestamps block to avoid duplicate stamps and repeated verbs."""
     if not recent_timestamps:
         return ""
     stamps = "\n".join(f"- {ts}" for ts in recent_timestamps if ts)
     if not stamps:
         return ""
-    return f"Recent Emitted Timestamps (DO NOT re-stamp the same ongoing topic):\n{stamps}\n"
+    used_verbs = _extract_recent_opening_verbs(recent_timestamps)
+    ban_note = (
+        f"\nBANNED OPENING WORDS FOR THIS CHUNK (already used recently): {', '.join(used_verbs)} — You MUST start with a different verb or lead directly with the noun/topic!"
+        if used_verbs else ""
+    )
+    return f"Recent Emitted Timestamps (DO NOT re-stamp the same ongoing topic):\n{stamps}{ban_note}\n"
 
 
 def _format_previous_topic_section(
@@ -381,14 +408,15 @@ Rules:
      2) OR an unambiguous gameplay milestone occurs (Boss encounter, Death, Victory, Gacha roll, Donation).
      If Pu Boat only mentions something briefly in passing without deep-dive discussion, you MUST IGNORE IT or output [].
    - Tags: {tags_list} (Strictly use allowed tags).
-   - First-verb: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, ส่อง, อึ้ง!, เหวอ.
-   - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
+   - Opening Style (ROTATE & VARY): Rotate across diverse openings (ส่อง, ชำแหละ, เจาะลึก, เม้าท์มอย, กางทฤษฎี, ถกประเด็น, เทียบ, แซว, ขนลุก!, ไฮป์หนักมาก!, ตีแผ่, ย้อนรำลึก) or lead directly with the subject noun. NEVER default to 'วิเคราะห์' or 'อึ้ง!' on consecutive chunks.
+   - PROPER NOUN IN EVERY STAMP (NO REPETITIVE SUFFIX): Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). Do NOT mechanically append 'ใน <MainTitle>' or 'ของ <MainTitle>' to the end of every line when the entire section is already about that title. The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
    - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
    - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts or mishearing (e.g. "บัวใคร" = Blue Archive). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
    - STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต' ห้ามขึ้นต้นบรรทัด Timestamp หรือหัวข้อด้วยคำว่า 'ปู่โบ๊ต' (ผู้ชมรู้อยู่แล้วว่าเป็นไลฟ์ปู่โบ๊ต) และห้ามขึ้นต้นด้วยคำกริยาเดิมซ้ำๆ ติดกัน (เช่น 'พูดถึง...', 'วิเคราะห์...' ซ้ำทุกบรรทัด) ให้เขียนแบบ Caveman กระชับ ตรงประเด็น ขึ้นต้นด้วยกริยาหลากหลายหรือชื่อเรื่อง/ประเด็นทันที
    - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
    - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
    - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
+   - DUAL-TRACK INVARIANT (GAMEPLAY STATE VS. TALK TOPIC): Pu Boat often initiates an in-game mechanism/plan (e.g. summoning boss-vs-boss, setting up AFK farm, long crafting, waiting for respawn) and proceeds to discuss an unrelated talk/news/donation topic for 5-30+ minutes while the game runs in the background. Track BOTH tracks in rolling_summary: (a) the active in-game goal/quest state, and (b) the spoken discussion topic. Do NOT confuse an on-screen entity for an active fight unless dialogue or HUD confirms it. When both a substantive discussion and a background game plan are active, describe BOTH in the timestamp (e.g. '[Talk] เฝ้า <Plan/Action> พร้อมถกประเด็น <DiscussionTopic>').
 
 3. garbled_notes:
    - Array of phonetic hybrids / garbled words spotted in transcript that survived cleaning (e.g. Thai-Latin hybrids like "ดองซam", "โinaa" or phonetically mutilated proper nouns) with timestamp: ["word @ HH:MM:SS", ...].

@@ -17,6 +17,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 ## Companion Skills & Required Sub-Skills
 
 - **`anibon-world-identity` (MANDATORY)**: Must be loaded whenever the stream covers gaming, anime, Pokémon, Tokusatsu, or pop-culture topics. The agent must verify character names, game titles, and terms against local references (`references/INDEX.md`, `atlas_fgo.db`, `pokemon.db`, `garbled_replacements.json`) before finalizing timestamps.
+- **`anibon-livechat-analysis`**: Download, parse, and align YouTube LiveChat replays, or extract burned-in on-screen chat via vision OCR fallback. Provides dual-side perspective (streamer + watchers), SuperChat highlights, and viewer reaction peaks.
 - **`whisper-corruption-recovery`**: Automatically invoked if Whisper transcription contains repetition loops or silence stutter.
 - **`anibon-local-transcription`**: Used when YouTube has no subtitles or auto-captions to extract 16kHz audio and run local GPU whisper.cpp.
 
@@ -28,16 +29,17 @@ Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`)
 |-------|-----------------|------------------|-------------|
 | **0. Noise Cleaning & Pre-normalization** | `lib/process/signals/detector.py` (auto) | `garbled_replacements.json` + `default_mappings.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
 | **0.5 Knowledge Self-Reading** | `lib/process/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
-| **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. |
-| **1.5 LiveChat & Mood Detection** | `scripts/analyze_555.py` / `lib/process/parity_gates.py` | `livechat/` → `mood_555.json` | Auto-detects 555/laugh bursts and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
-| **2. Topic Segmentation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`) | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth and mood tone hints. |
+| **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. Pass `--live-chat` to download & align chat in one step. |
+| **1.5 LiveChat & Mood Detection** | `scripts/align_live_chat.py` / `scripts/analyze_555.py` / `lib/process/livechat.py` | `livechat/` → `mood_555.json` | Aligns LiveChat replay events (or vision OCR fallback) to transcript chunks, auto-detects 555/laugh bursts, and classifies chunk mood/tone (`*_PULSE`, `HOT`, `WARM`, `QUIET`) for prompt tone guidance. |
+| **2. Topic Segmentation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`), `livechat/` | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth, LiveChat highlights, and mood tone hints. |
 | **2.5 Vision Ground Truth (Optional)** | `lib/process/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
 | **3. Summarizer & Assembly (Pass 2)** | `lib/process/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
 | **4. Garbled Collector & Whisper Ground Truth** | `scripts/whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
-| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m) and `scripts/check_sections.py` (audits timestamp line counts [target 15–20, max 25 lines/part] and ASR garble patterns). |
+| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m), `scripts/check_sections.py` (audits timestamp line counts [target 15–20, max 25 lines/part] and ASR garble patterns), and `scripts/validate_mood.py` (validates mood-bearing timestamps honour mood_555 verdicts). |
 
 ### Modular Library Architecture (`lib/`)
 
+- `lib/process/livechat.py`: End-to-end LiveChat replay downloader (yt-dlp), raw event parser, chunk boundary aligner (`align_livechat_feed`), and mood pulse detection hook.
 - `lib/process/multimodal.py`: Storyboard slide unpacking, adaptive scene-change & evaluation-batch keyframe selector (1–16 frames per chunk, 16×9 RGB sidecar caching, Thai deictic cue pinning), OpenAI-compatible multi-image payload construction, and VLM execution.
 - `lib/process/knowledge_reader.py`: Automated domain knowledge discovery from `signals.json`, regex table/bullet entity parser, SQLite DB enricher (`atlas_fgo.db`, `pokemon.db`), and `entity_glossary.json` generator.
 - `lib/process/timestamps.py`: Tag normalization (`TAG_REMAP`), timestamp line sanitization, collision guards ($\ge 45\text{s}$ spacing), window validation.
@@ -74,13 +76,15 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
    - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'` (Thai community/official name followed by English name in parentheses).
    - Enforces `CAVEMAN TIMESTAMP STYLE INVARIANT`:
      - NEVER start timestamp descriptions or section titles with `'ปู่โบ๊ต'`.
-     - Prohibit consecutive repetitive opening verbs (`'วิเคราะห์...'`, `'พูดถึง...'`).
+     - **Dynamic Recent-Verb Blacklist**: Extracts opening verbs from `recent_timestamps` and explicitly bans reusing them in the next chunk.
+     - **No Redundant Title Suffixes**: When a whole section covers one main title, name specific characters/events rather than appending `'ใน <Title>'` to every line.
      - Use varied action-first or topic-first verbs: `ส่อง`, `ชำแหละ`, `เทียบ`, `เจาะลึก`, `เม้าท์มอย`, `สรุปดราม่า`, `กางทฤษฎี`, `รีวิว`, `พักเบรก`, `ปิดไลฟ์`.
      - Keep 100% of proper nouns while eliminating redundant conversational padding.
 
 4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
    - Automatically executes `sanitize_and_audit_timestamps()` during Pass 2 summary assembly.
    - Deterministically corrects residual speaker misspellings and canonical dictionary patterns (`garbled_replacements.json`, e.g. `Archen` → `Arcane`, `Victor` → `Viktor`).
+   - **Lexical Diversity Sanitizer & Gate (`world_sanitizer.py` & `check_sections.py`)**: Deterministically rotates overused opening verbs (`วิเคราะห์`, `อึ้ง!`, `พูดถึง`) and audits that no single opening verb exceeds 2 consecutive lines or 20% of total stamps.
    - Audits timestamp lines for unverified capitalized Latin words against whitelisted tags and glossaries, raising deterministic audit warnings for suspect hallucinations.
 
 ---
@@ -124,6 +128,74 @@ python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
 ```powershell
 python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
 ```
+
+#### 1.5 Download & Align LiveChat (Optional but preferred)
+Gives the local model the watchers' chat for its own chunk, so situation + emotion are read from BOTH talks and chat. Requires network; if a VOD has no `live_chat` subtitle, skip this step and rely on transcript-only emotion.
+
+**Automated 1-Step (via prepare_video.py):**
+```bash
+python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
+    --workspace "~/youtube_<VIDEO_ID>_workspace" \
+    --format txt --block 300 --overlap 30 --live-chat
+```
+
+**Manual / Step-by-Step Execution:**
+```bash
+# 1. Download LiveChat replay (network required)
+yt-dlp --sub-langs live_chat --write-sub --skip-download "https://www.youtube.com/watch?v=<VIDEO_ID>" -o "<workspace>/%(id)s.%(ext)s"
+
+# 2. Parse to coarse chunks + a seconds-prefixed raw event feed
+python3 -X utf8 skills/anibon-livechat-analysis/scripts/parse_live_chat.py <workspace>/<id>.live_chat.json --chunk-minutes 90 --raw-events <workspace>/livechat_events.txt -o <workspace>/livechat_90/
+
+# 3. Align raw feed to transcript chunk windows
+python3 -X utf8 scripts/align_live_chat.py --events <workspace>/livechat_events.txt --chunks <workspace>/chunks/ -o <workspace>/livechat/
+
+# 4. Detect Thai-Laugh / Meme Pulses (auto-run by process_chunks_local.py or run manually)
+python3 -X utf8 scripts/analyze_555.py \
+  --livechat ~/youtube_<id>_workspace/livechat/ \
+  --index ~/youtube_<id>_workspace/livechat/livechat_index.json \
+  --out ~/youtube_<id>_workspace/mood_555.json
+```
+
+Output: `<workspace>/livechat/livechat_chunk_NN.txt` + `livechat/livechat_index.json` and `mood_555.json`.
+
+**Fallback for Edited Livestreams / Missing `.live_chat.json` (Visual Chat Extraction):**
+When a livestream has been trimmed or edited in YouTube Studio, YouTube permanently deletes the `.live_chat.json` chat replay track. Use `extract_visual_livechat.py` from `anibon-livechat-analysis` to OCR the burned-in chat overlay:
+```bash
+# 1. Spot-extract visual livechat for target chunk time range
+python3 -X utf8 skills/anibon-livechat-analysis/scripts/extract_visual_livechat.py \
+  --video-id <VIDEO_ID> \
+  --range HH:MM:SS-HH:MM:SS \
+  -o <workspace>/visual_livechat_events.txt
+
+# 2. Align visual raw event feed directly to chunk windows
+python3 -X utf8 scripts/align_live_chat.py \
+  --events <workspace>/visual_livechat_events.txt \
+  --chunks <workspace>/chunks/ \
+  -o <workspace>/livechat/
+```
+
+> [!NOTE]
+> **Emoji Dictionary Reference**: Refer to [`references/anibon_emoji_dictionary.md`](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local/references/anibon_emoji_dictionary.md) for channel-exclusive emote mapping (`:_CunnyBoat:`, `:_MonkeyBoat:`, `:_Nerd:`, `:_shutup:`, `:Grind:`, `:_Ripfish:`, `:_noname:`, `:_What:`, `:_WOW:`, `:_Ahh:`, `:_Meh:`, `:_MoneyBoat:`, `:_Tahaan:`, `:_KonDee:`, `:_NeoSlim:`, `:_Slim:`, `:_BoatSOM:`) and YouTube global emotes to mood pulse weights.
+
+#### 1.9 Verify Model is Resident in VRAM (MANDATORY)
+`/v1/models` lists all models on disk, not those currently loaded in VRAM. If inference starts without an active model, calls will timeout after 60s or return `"Model is unloaded."`. Always check:
+```bash
+curl -s http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
+```
+If empty, explicitly load the recommended profile before starting the run:
+```bash
+curl -s -X POST http://100.115.25.30:1234/api/v1/models/load \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/gemma-4-12b-qat",
+    "context_length": 262144,
+    "eval_batch_size": 1024,
+    "flash_attention": true,
+    "offload_kv_cache_to_gpu": true
+  }'
+```
+Smoke-test with `--max-chunks 1` before launching a full 50+ chunk run.
 
 #### 2. Run Timestamper Directly (Foreground)
 **macOS / Linux:**
@@ -189,24 +261,19 @@ rm -f anibon_timestamper_state.json all_timestamps.txt anibon_timestamps.md time
 #### 3. Detached Background Launch (3 OS Families)
 Runs inference detached in background so agent sessions or timeouts do not kill the run.
 
-**macOS (Zsh / Bash):**
-```zsh
-./scripts/launch_local.zsh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
-```
-
-**Linux (Bash):**
+**macOS / Linux (Bash):**
 ```bash
-./scripts/launch_local.sh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
+./skills/anibon-timestamper-local/scripts/launch_local.sh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
 ```
 
 **Windows (PowerShell):**
 ```powershell
-powershell -ExecutionPolicy Bypass -File "scripts\launch_local.ps1" -Workspace "$HOME\youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
+powershell -ExecutionPolicy Bypass -File "skills\anibon-timestamper-local\scripts\launch_local.ps1" -Workspace "$HOME\youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
 ```
 
 **Windows (CMD Batch):**
 ```cmd
-scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
+skills\anibon-timestamper-local\scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
 ```
 
 > [!NOTE]
@@ -267,10 +334,14 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
    - **Anime / Gacha Titles**: Verify against `references/*.md` (e.g. `Chaos_Zero_Nightmare.md`, `Genshin_Impact.md`, `Honkai_Star_Rail.md`, `Wuthering_Waves.md`).
    - **Unfamiliar Indie / Web / Thai Games**: If the streamer plays an unindexed game genre (e.g. probability life sims like *1 in 8 Billion*, *1 ชีวิต ณ กรุงศรี*, *หนึ่งในอสงไขย*), research and scaffold `references/<Topic>.md` first, then reconstruct timestamps directly from `raw_transcript.json`.
    - **New Competitive Games (Deadlock, etc.)**: Cross-reference hero names (Baba / Baba Yaga, Celeste, Abrams) via web search or patch notes.
-2. **Audit Against `raw_transcript.json` for 3 Local-Model Distortion Patterns**:
+2. **Audit Against `raw_transcript.json` for 4 Local-Model Distortion Patterns**:
    - **Domain Context Bleeding**: Check non-gaming talk segments adjacent to gaming segments. Local 12B models often distort general words (e.g. `"บริษัทนั้น"` in a food/political news story) into `"บริษัทเกม"`. Verify the actual subject in `raw_transcript.json`.
    - **Comparative Analogy Promotion**: When a secondary title (e.g. *Heaven Burns Red*, *Yu-Gi-Oh! GX*, *Bleach*) appears in a section dedicated to another main topic (e.g. *Wuthering Waves*), verify whether it was only used as a comparative example (e.g. ensemble cast or companion writing) and frame the timestamp around the primary topic.
    - **Gameplay vs. Gacha Pulling Transitions**: During gameplay segments of gacha games (*Nikke*, *Arknights: Endfield*, *WuWa*), check the transcript for gacha pull keywords (`หลุดเรท`, `ตู้ถาวร`, `เพชรหมด`, `Token Exchange`) so gacha sessions are not mislabeled as continuing gameplay mechanics (e.g. factory/belt building).
+   - **Dual-Track Desync (Gameplay State vs. Talk Topic)**: Pu Boat often sets up an in-game action (summoning mobs to fight each other, AFK farms, long crafts, waiting for a boss) and then talks about something unrelated for 5–40 minutes while it runs. Track both every time:
+     1. **Gameplay Track**: Find the *plan statement* that explains the current scene. Search the transcript backward (up to ~20 min) for intent verbs (`เดี๋ยวให้มันสู้กัน`, `รอ`, `ปล่อยไว้`, `เสก`, `ล่อ`). Confirm it with storyboard frames: quest tracker text, boss bar name, and the mobs actually present. A creature on screen does NOT mean Boat is fighting it.
+     2. **Talk Track**: Find the topic Boat is actually speaking about (donations, news, Q&A).
+     3. **Label Rule**: If both tracks run at the same time, write one stamp that names both. Use the talk tag when speech dominates, and keep the game state as context (e.g. `[Talk] เฝ้า <Mob_A> สู้กับ <Mob_B> พร้อมถกประเด็น <Topic>`). Never drop either track. Close the gameplay arc with a payoff stamp when it resolves (e.g. loot collected, quest completed).
 3. **Apply Entity & Chronology Corrections**: Correct phonetic drifts, inverted topic order, or LLM hallucinations directly in `anibon_timestamps.md`, and verify spacing ($\ge 45\text{s}$ min gap, $\le 600\text{s}$ max gap).
 4. **Persist Knowledge**:
    - Add confirmed phonetic drift patterns (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` across root and skill resources.
@@ -310,12 +381,19 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 - Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
 - Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
 - Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
+- Labeling a stamp `[Gameplay] สู้กับ X` only because X appears in a frame, without verifying the boss bar, quest HUD, or the streamer's stated plan. Equally wrong: replacing it with a pure `[Talk]` stamp that erases the running game state.
+
+### Pre-Roll Standby / Waiting Screen Invariant
+If the opening transcript (chunk 00) contains predominantly `[เพลง]`, sound effect markers, or isolated foreign ASR phonetic tokens (Japanese, Korean, English lyrics) before the streamer speaks the first coherent Thai sentence:
+- MUST mark `00:00:00 - [Intro]` (e.g. `00:00:00 - [Intro] เปิดไลฟ์ทักทายยามเย็น...`).
+- Anchor the first topical timestamp strictly to the streamer's opening Thai speech.
+- NEVER infer stream topics, reactions, or anime titles from background waiting music (e.g. mistaking opening waiting BGM for "ดูอนิเมะสาวน้อยเวทมนตร์").
 
 ### Stream Ending / Outro Invariant
 In `--mode recursive`, long unbroken gameplay or concluding sessions must not allow `is_continuation=True` to swallow the stream outro.
 The final 5 minutes of transcript must always be checked for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `เจอกัน`, `บ๊ายบาย`) and emit:
-1. **SuperChat / Birthday Shoutouts**: Use `[Donation]` for reading donor lists, SuperChats, and member birthday blessings (`HH:MM:SS - [Donation] ปู่โบ๊ตขอบคุณผู้ชม ผู้สนับสนุนโดเนท และอวยพรวันเกิดสมาชิก`).
-2. **Closing Sign-off**: Use `[Ending]` for the final wrap-up statement and next-stream announcements (`HH:MM:SS - [Ending] ปู่โบ๊ตกล่าวปิดสตรีม...`).
+1. **SuperChat / Birthday Shoutouts**: Use `[Donation]` for reading donor lists, SuperChats, and member birthday blessings (`HH:MM:SS - [Donation] อ่านโดเนท ขอบคุณผู้สนับสนุน และอวยพรวันเกิดสมาชิก`).
+2. **Closing Sign-off**: Use `[Ending]` for the final wrap-up statement and next-stream announcements (`HH:MM:SS - [Ending] กล่าวปิดสตรีมและแจ้งกำหนดการไลฟ์รอบถัดไป...`). Do NOT begin descriptions with `'ปู่โบ๊ต'`.
 3. **Recurring Live Routine Guardrail**: Pu Boat frequently schedules a 22:00 Tokusatsu stream ("ไลฟ์โทกุ", "คอนเทนต์โทกุ 3 เรื่อง 3 รส"). Phonetic ASR artifacts (`โทกกู`, `ทั่วกุ`, `คอนเทนทุกคึ`) must strictly map to `โทคุซัตสึ (Tokusatsu)`, NEVER "Tokyo Ghoul".
 
 ### Macro-Thematic Part Grouping Invariant (No 3,500-Byte Cap Over-Splitting)
@@ -327,6 +405,8 @@ Prioritize viewer navigation and thematic cohesion: keep related discussions (su
 When generating timestamps from long livestreams (4–8 hours), follow these operating standards:
 1. **Primary Output Focus**: Present the primary result as a curated essential edition (~40–60 timestamps for a 7–8 hour stream, or approximately 8–15 stamps per macro-thematic part).
    - **Automated Essential Pruning (`prune_essential`)**: For streams yielding >60 timestamps, `finalize_and_assemble_timestamps()` automatically queries the local model to distill essential pivot points, news, gameplay milestones, and core conclusions down to ~40–60 stamps. The pipeline enforces strict verbatim matching against raw timestamps, guarantees retention of opening and `[Ending]` timestamps, and falls back cleanly if the LLM call fails.
+     > [!NOTE]
+     > If `prune_essential` fails to extract matches (e.g. local 12B model emits modified text that fails verbatim matching), the pipeline falls back to the full timestamp list. Reviewers should manually prune micro-talk stamps down to essential milestones before delivery.
 2. **Essential Selection Criteria**:
    - Major topic starts or pivot points (Topic Shift / Pivot).
    - Official news, announcements, releases, or statistical data (Official News, Releases, Data).
@@ -361,6 +441,10 @@ NEVER deliver the final timestamp output without performing an `anibon-world-ide
 Proper nouns, mod names, and franchise titles in the stream's own YouTube metadata (`info.json` title, description) are ground-truth anchors.
 1. **Title Token Priority**: When an emitted timestamp description contains a phonetic near-match or truncated form of an entity present in the stream title (e.g. ASR transcribed `Vity` while the title explicitly specifies `Verity`, or `Nania` vs `Narnia`), the pipeline must deterministically snap to the title's canonical spelling.
 2. **Title vs. ASR Phonetic Drift**: Stream titles reflect the streamer's deliberate broadcast topic. ASR phonetic drift within the video must never overwrite or degrade entities verified in the title.
+
+### LiveChat Dual-Side & Mood Invariants
+1. **READ BOTH SIDES Invariant**: When `livechat/` exists, prompt context automatically loads `LiveChat Highlights:` (prioritizing SuperChats, donations, and direct questions to Pu Boat). The model must evaluate both streamer dialogue and audience reactions to prevent one-sided factual misinterpretations.
+2. **HONOUR THE MOOD VERDICT Invariant**: When `mood_555.json` exists, each chunk receives `Viewer Reaction:` mood classification and Thai tone hints (`tone` + suggested `verbs`). The model keeps its own verb creativity, but must not flatline high-energy meme peaks (`MEME_PULSE`, `SHOCK_HYPE_PULSE`) into dry, detached monologues.
 
 ---
 

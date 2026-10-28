@@ -64,6 +64,7 @@ from interface import (
     load_config,
     load_garbled_replacements,
     load_mappings,
+    prepare_livechat,
     prepare_storyboard_slides,
     reload_config,
     resolve_endpoint,
@@ -168,6 +169,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument("--video-file", default=None)
     ap.add_argument("--vision-model", default=None)
     ap.add_argument("--no-knowledge-reader", action="store_true")
+    ap.add_argument("--live-chat", action="store_true", help="Download and align live chat replay into livechat/ chunks")
     ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"))
     return ap
 
@@ -368,6 +370,16 @@ def _finalize_garbled_collector(workspace: Path, args: argparse.Namespace, model
         print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
 
 
+def _ensure_livechat_if_requested(workspace: Path, args: argparse.Namespace) -> None:
+    """Download and align livechat if --live-chat flag passed."""
+    if not getattr(args, "live_chat", False):
+        return
+    url_file = workspace / ".video_url"
+    url = args.video_url or (url_file.read_text(encoding="utf-8").strip() if url_file.is_file() else None)
+    if url:
+        prepare_livechat(url, workspace)
+
+
 def main() -> None:
     """Main CLI entry point for local timestamp runner."""
     _apply_early_config_override()
@@ -381,6 +393,7 @@ def main() -> None:
         sys.exit(1)
 
     model, world_identity_dir = _resolve_runtime_targets(args, workspace)
+    _ensure_livechat_if_requested(workspace, args)
     ensure_mood_555(workspace)
 
     if args.summarize_only:
