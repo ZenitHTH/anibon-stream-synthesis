@@ -21,6 +21,7 @@ _LIB_DIR = str(Path(__file__).resolve().parents[1] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 from interface import chunk_sort_key
+from process.music.sensor import has_music_chat_surge
 
 
 def load_events(events_path: Path) -> list[tuple[int, str]]:
@@ -98,7 +99,13 @@ def _write_chunk_livechat(out_dir: Path, name: str, lines: list[str], start: int
     return {"file": str(out_file), "count": len(lines), "start": start, "end": end}
 
 
-def align(events_path: Path, chunks_dir: Path, out_dir: Path) -> None:
+def annotate_music_surges(index: dict[str, dict], slices: dict[str, list[str]]) -> None:
+    """Flag chunks in index where chat music density indicates active background song."""
+    for name, meta in index.items():
+        meta["music_detected"] = has_music_chat_surge(slices.get(name, []))
+
+
+def align(events_path: Path, chunks_dir: Path, out_dir: Path, scan_music_surge: bool = False) -> None:
     """Align raw events feed to chunk windows and write per-chunk files."""
     out_dir.mkdir(parents=True, exist_ok=True)
     events = load_events(events_path)
@@ -107,10 +114,13 @@ def align(events_path: Path, chunks_dir: Path, out_dir: Path) -> None:
         print(f"[!] Missing chunks or events ({chunks_dir}, {events_path})", file=sys.stderr)
         return
 
+    slices = {name: slice_events(events, start, end) for name, start, end in windows}
     index = {
-        name: _write_chunk_livechat(out_dir, name, slice_events(events, start, end), start, end)
+        name: _write_chunk_livechat(out_dir, name, slices[name], start, end)
         for name, start, end in windows
     }
+    if scan_music_surge:
+        annotate_music_surges(index, slices)
     (out_dir / "livechat_index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
     total = sum(v["count"] for v in index.values())
     print(f"[*] Wrote {len(index)} aligned chat logs, {total} events total.")
@@ -121,5 +131,6 @@ if __name__ == "__main__":
     ap.add_argument("--events", required=True, help="Raw event feed from parse_live_chat.py --raw-events")
     ap.add_argument("--chunks", required=True, help="Transcript chunk directory")
     ap.add_argument("-o", "--output-dir", default="livechat", help="Output dir for per-chunk chat logs")
+    ap.add_argument("--scan-music", action="store_true", help="Scan chat for music mentions and annotate index")
     args = ap.parse_args()
-    align(Path(args.events), Path(args.chunks), Path(args.output_dir))
+    align(Path(args.events), Path(args.chunks), Path(args.output_dir), scan_music_surge=args.scan_music)
