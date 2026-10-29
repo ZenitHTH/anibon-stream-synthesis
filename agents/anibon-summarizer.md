@@ -89,7 +89,8 @@ Do NOT split on:
   1. Major topic start or pivot (จุดเริ่มต้นหรือการเปลี่ยนประเด็นหลัก)
   2. Official news, reveals, and data (ข่าวทางการ, การประกาศใหญ่, ข้อมูลสถิติ)
   3. In-depth analytical conclusions (บทวิเคราะห์เจาะลึก, ข้อสรุปสำคัญ)
-  4. Key gameplay milestones (เข้าโหมดฝึกสอน, สำรวจตัวละครใหม่, คราฟต์ของสำคัญ, บอสเกิด, ไฟต์ตัดสิน, ชนะ/ตาย)
+  4. Key gameplay milestones (เข้าโหมดฝึกสอน, สำรวจตัวละครใหม่, บอสเกิด, ไฟต์ตัดสิน, ชนะ/ตาย)
+     - *Passive Gameplay Guard*: Casual menu browsing, item sorting, or minor recipe crafting during continuous conversation are NOT milestones — filter them out in favor of spoken talk/humor highlights.
   5. Outro / Closing (กล่าวขอบคุณและปิดสตรีม)
 - **Eliminate Micro-Chatter**: Prune conversational micro-loops, repetitive affirmations, and minor 1-minute chatter tangents. If streamer discusses a single topic for 15 minutes, 1–2 well-anchored timestamps are sufficient.
 - **PROPER NOUN PRESERVATION (CRITICAL)**: Never drop or omit proper nouns (game titles, character names, people, organizations) from timestamp descriptions or part headers. Always name the exact entity.

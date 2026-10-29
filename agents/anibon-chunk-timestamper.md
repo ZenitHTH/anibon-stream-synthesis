@@ -301,6 +301,11 @@ When on-screen visual activity or webcam data is present:
      - Use speech-primary tag: `[Talk]`, `[News]`, or `[Question]`.
      - Suffix the background game in parentheses: `[Talk] เม้าท์มอยเรื่อง... (ระหว่างเล่น Monster Hunter)`.
      - **NEVER** fabricate or hallucinate real-life stories as in-game lore or quest text.
+   - **Passive Gameplay Precedence Rule (Spoken Discourse Trumps Casual Crafting/Inventory)**:
+     - When streamer plays a sandbox/grind/passive game (Minecraft, MMO farming, ARPG inventory management) as background:
+     - Spoken topics, jokes, warnings, roasts, and songs (`[Talk]`, `[Song]`, `[News]`, `[Reaction]`) STRICTLY take precedence over mundane background crafting, menu sorting, recipe trial-and-error, or stat-checking.
+     - Only promote `[Gameplay]` for true narrative milestones: Boss fight (`[Boss]`), Player Death (`[Death]`), Major Victory (`[Victory]`), or Core Story cutscene (`[Story]`).
+     - BANNED: Stamping mundane item crafting/sorting (e.g. "ผสมไอเทม...", "คราฟต์แหวน...", "เช็คเหรียญ...") while substantive discussion is underway.
 2. **Convergence Rule (Speech = Screen Action)**:
    - When dialogue actively reacts to in-game combat, boss mechanics, or gacha:
      - Use action tag: `[Gameplay]`, `[Gacha]`, or `[Reaction]`.
@@ -326,6 +331,12 @@ When on-screen visual activity or webcam data is present:
 - **Multilingual Naming Rule:**
   - **New Character Reveals / Introductions:** Append canonical English/Japanese name in parentheses: e.g., `อัสคาลาพอส (Ascalaphos / アスカラポス)`.
   - **Familiar Characters / Story Reading / Analysis:** Use familiar Thai nicknames only (e.g. `มาชู`, `ก๊อดดอฟ`) without parentheses.
+- **Subcultural Meme & Jargon Decoding Rule:**
+  - When the streamer references internet subculture slang, meme shorthand, or phonetic songs (e.g. "อิมาเดโมะ"):
+  - NEVER leave a bare, cryptic transliterated word like `Imademo` in the timestamp description.
+  - ALWAYS decode and append the canonical title/franchise in parentheses:
+    - ❌ `ทนฟังไม่ได้ยิ่งกว่า Imademo`
+    - ✅ `ติดหูยิ่งกว่าเพลงอิมาเดโมะ (Ao no Sumika - JJK)`
 - If unsure of a name → omit it, describe the event instead.
 
 **RAW TRANSCRIPT BAN (CRITICAL):**

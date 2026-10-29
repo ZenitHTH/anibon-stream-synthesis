@@ -438,6 +438,7 @@ Rules:
    - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
    - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
    - DUAL-TRACK INVARIANT (GAMEPLAY STATE VS. TALK TOPIC): Pu Boat often initiates an in-game mechanism/plan (e.g. summoning boss-vs-boss, setting up AFK farm, long crafting, waiting for respawn) and proceeds to discuss an unrelated talk/news/donation topic for 5-30+ minutes while the game runs in the background. Track BOTH tracks in rolling_summary: (a) the active in-game goal/quest state, and (b) the spoken discussion topic. Do NOT confuse an on-screen entity for an active fight unless dialogue or HUD confirms it. When both a substantive discussion and a background game plan are active, describe BOTH in the timestamp (e.g. '[Talk] เฝ้า <Plan/Action> พร้อมถกประเด็น <DiscussionTopic>').
+   - PASSIVE GAMEPLAY & MEME DECODING GUARD: When casual crafting/inventory management runs in a sandbox game (e.g. Minecraft), SPOKEN DISCOURSE STRICTLY TRUMPS CASUAL GAMEPLAY. Never displace substantive talk, humor, chat roasts, or songs with minor recipe crafting or inventory actions. When referencing slang/memes (e.g. 'อิมาเดโมะ'), always append the canonical entity in parentheses: e.g. 'เพลงอิมาเดโมะ (Ao no Sumika - JJK)'.
 
 3. garbled_notes:
    - Array of phonetic hybrids / garbled words spotted in transcript that survived cleaning (e.g. Thai-Latin hybrids like "ดองซam", "โinaa" or phonetically mutilated proper nouns) with timestamp: ["word @ HH:MM:SS", ...].
@@ -595,6 +596,7 @@ Rules:
   * Do NOT emit micro-stamps for minor conversational pauses within the same topic.
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
   * STRICT PASSING MENTIONS FILTER: Do NOT stamp brief passing remarks or 1-3 sentence off-hand mentions where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. reading a chat comment, casual mentions of other games/consoles, fleeting remarks). Timestamp ONLY when speaker actively dwells and analyzes the topic for >1-2 minutes or several paragraphs.
+  * PASSIVE GAMEPLAY GUARD: When casual crafting/inventory occurs in a sandbox game (e.g. Minecraft), spoken discussion strictly trumps casual in-game actions. Never stamp minor recipe crafting or item checking over substantive discourse, roasts, or songs.
   * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.
 - PROPER NOUN IN EVERY STAMP: Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "คนนี้"). The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
 - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
