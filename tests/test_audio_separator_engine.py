@@ -1,6 +1,9 @@
 """Unit tests for audio_separator_engine following Clean Code standards."""
 from __future__ import annotations
 
+import base64
+import io
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -13,10 +16,14 @@ if _LIB not in sys.path:
 
 from process.audio_separator_engine import (
     SeparationResult,
+    _decode_and_save_stems,
     calculate_audio_duration,
     convert_audio_to_16k_mono,
+    ensure_44k_stereo_wav,
     recover_speech_from_mixed_audio,
+    run_stem_separation,
     run_whisper_transcription,
+    separate_via_audiocpp_api,
 )
 
 
@@ -31,6 +38,58 @@ class TestAudioSeparatorEngine(unittest.TestCase):
         args = mock_run.call_args[0][0]
         self.assertIn("-ar", args)
         self.assertIn("16000", args)
+
+    @patch("subprocess.run")
+    def test_ensure_44k_stereo_wav_invokes_ffmpeg(self, mock_run: MagicMock) -> None:
+        src = Path("/tmp/in_48k.wav")
+        dst = Path("/tmp/out_44k.wav")
+        res = ensure_44k_stereo_wav(src, dst)
+        self.assertEqual(res, dst)
+        mock_run.assert_called_once()
+        args = mock_run.call_args[0][0]
+        self.assertIn("-ar", args)
+        self.assertIn("44100", args)
+        self.assertIn("-ac", args)
+        self.assertIn("2", args)
+
+    def test_decode_and_save_stems(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            out_dir = Path(tmpdir)
+            sample_data = base64.b64encode(b"RIFFdummydata").decode("utf-8")
+            outputs = [
+                {"id": "vocals", "audio": sample_data},
+                {"id": "other", "audio": sample_data},
+            ]
+            voc, inst = _decode_and_save_stems(outputs, out_dir)
+            self.assertTrue(voc.exists())
+            self.assertTrue(inst.exists())
+            self.assertEqual(voc.read_bytes(), b"RIFFdummydata")
+
+    @patch("urllib.request.urlopen")
+    @patch("process.audio_separator_engine.ensure_44k_stereo_wav")
+    def test_separate_via_audiocpp_api(self, mock_resample: MagicMock, mock_urlopen: MagicMock) -> None:
+        with TemporaryDirectory() as tmpdir:
+            out_dir = Path(tmpdir)
+            in_file = out_dir / "in.wav"
+            in_file.write_bytes(b"dummy")
+
+            # Mock 44k resample file write
+            resampled = out_dir / "input_44k.wav"
+            resampled.write_bytes(b"dummy44k")
+
+            mock_resp = MagicMock()
+            payload = {
+                "named_audio_outputs": [
+                    {"id": "vocals", "audio": base64.b64encode(b"voc").decode("utf-8")},
+                    {"id": "other", "audio": base64.b64encode(b"inst").decode("utf-8")},
+                ]
+            }
+            mock_resp.read.return_value = json.dumps(payload).encode("utf-8")
+            mock_urlopen.return_value.__enter__.return_value = mock_resp
+
+            voc, inst = separate_via_audiocpp_api(in_file, out_dir)
+            self.assertEqual(voc.name, "vocals.wav")
+            self.assertEqual(inst.name, "other.wav")
 
     @patch("subprocess.run")
     def test_run_whisper_transcription_cleans_stdout(self, mock_run: MagicMock) -> None:

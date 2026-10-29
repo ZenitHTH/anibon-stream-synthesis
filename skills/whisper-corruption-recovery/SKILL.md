@@ -70,6 +70,17 @@ Use when background music (especially rap, 808 bass, or repetitive vocal hooks) 
 
 #### Workflow
 
+0. **High-Speed GGUF Stem Separation via `audio.cpp` (Recommended: 10x Real-Time)**:
+   Uses quantized HTDemucs GGUF via remote ROCm/HIP server (`100.115.25.30:8080`) or local Metal GPU:
+   ```bash
+   # Pre-resample to 44.1kHz stereo (mandatory for HTDemucs)
+   ffmpeg -y -i mixed_audio.wav -ar 44100 -ac 2 /tmp/mixed_44k.wav
+
+   # Remote HTTP or local audiocpp_cli:
+   audiocpp_cli --task sep --family htdemucs --model models/htdemucs-q8_0.gguf \
+     --backend metal --audio /tmp/mixed_44k.wav --out-dir sep_out
+   ```
+
 1. **Stem Isolation via `audio-separator` (BS-RoFormer)**:
    Eliminates heavy drums, 808 sub-bass, and synths that hijack Whisper attention.
    ```bash
@@ -101,6 +112,7 @@ Use when background music (especially rap, 808 bass, or repetitive vocal hooks) 
 | Acoustic Situation | Technique | Command / Script |
 | :--- | :--- | :--- |
 | Repeating phrases, silence, or sound effects | BFS Divide-and-Conquer | `scripts/fix_hallucinations.py` |
+| Rap / heavy music (fastest GPU recovery) | GGUF HTDemucs via `audio.cpp` | `audio.cpp` (10.2x RTF) |
 | Background song with unknown/no reference track | BS-RoFormer Stem Isolation | `scripts/separate_and_recover.py` |
 | Background song with known reference track | DSP Phase Subtraction | `vocal_subtractor.py` |
 | Whisper repeats last sentence in next 30s chunk | Anti-Loop Context Reset | `whisper-cli --max-context 0` |
@@ -117,3 +129,4 @@ Use when background music (especially rap, 808 bass, or repetitive vocal hooks) 
 4. **Pipeline Sequencing Invariant**: Never launch downstream timestamping scripts (`process_chunks_local.py`, etc.) until the recovery lifecycle is fully finished: D&C recovery completed, uncertain frames extracted/reviewed, phantom loops pruned, and a verified `raw_transcript.json` generated.
 5. **Music Interference Guardrail**: When attention collapse is caused by background music, do NOT rely on audio splitting alone. Slicing preserves the interfering beat in each sub-chunk. Always isolate vocal stems with BS-RoFormer or cancel reference audio via DSP phase subtraction, and decode using `whisper-cli --max-context 0`.
 6. **Post-Recovery Timestamp Backfill Invariant**: When speech recovery is performed on a workspace that already contains generated timestamps, never leave coarse placeholder timestamps intact. Immediately unpack recovered ground-truth dialogue into granular timestamps (respecting $\ge 45\text{s}$ spacing) and atomically synchronize all three files: `all_timestamps.txt`, `anibon_timestamps_full.md`, and `anibon_timestamps.md`.
+7. **`audio.cpp` 44.1kHz Stereo Resampling Invariant**: HTDemucs under `audio.cpp` strictly requires 44,100 Hz stereo PCM (`expected 44100, got 48000`). All stream audio (defaulting to 48kHz) MUST be converted via `ffmpeg -ar 44100 -ac 2` before submitting to `audio.cpp` CLI or `POST /v1/tasks/run`.

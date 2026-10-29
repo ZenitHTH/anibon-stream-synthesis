@@ -1,11 +1,15 @@
 """Clean Code Audio Separation and Speech Recovery Engine.
 
-Uses audio-separator (BS-RoFormer / MDX-Net) to isolate vocal stems from
+Uses audio.cpp (GGUF HTDemucs) or audio-separator (BS-RoFormer) to isolate vocal stems from
 music-polluted livestream recordings, then transcribes clean speech via whisper-cli.
 """
 from __future__ import annotations
 
+import base64
+import json
+import os
 import subprocess
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -13,6 +17,7 @@ from typing import Optional
 from process.whisper_dispatcher import find_whisper_cli, find_whisper_model
 
 DEFAULT_MODEL = "model_bs_roformer_ep_317_sdr_12.9755.ckpt"
+DEFAULT_AUDIOCPP_URL = "http://100.115.25.30:8080/v1/tasks/run"
 
 
 @dataclass(frozen=True)
@@ -23,11 +28,64 @@ class SeparationResult:
     duration_sec: float
 
 
+def ensure_44k_stereo_wav(input_path: Path, output_path: Path) -> Path:
+    """Resample to 44.1kHz stereo WAV required by HTDemucs in audio.cpp."""
+    cmd = [
+        "ffmpeg", "-y", "-i", str(input_path),
+        "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le",
+        str(output_path),
+    ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return output_path
+
+
+def _decode_and_save_stems(outputs: list[dict], output_dir: Path) -> tuple[Path, Path]:
+    """Decode base64 audio stems and return (vocals, instrumental) paths."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stems = {}
+    for item in outputs:
+        name = item["id"]
+        path = output_dir / f"{name}.wav"
+        path.write_bytes(base64.b64decode(item["audio"]))
+        stems[name] = path
+
+    vocals = stems.get("vocals", output_dir / "vocals.wav")
+    inst = stems.get("other", output_dir / "other.wav")
+    return vocals, inst
+
+
+def separate_via_audiocpp_api(
+    audio_path: Path,
+    output_dir: Path,
+    server_url: str = DEFAULT_AUDIOCPP_URL,
+) -> tuple[Path, Path]:
+    """Isolate vocal and instrumental stems using remote or local audio.cpp server."""
+    resampled = output_dir / "input_44k.wav"
+    ensure_44k_stereo_wav(audio_path, resampled)
+    b64_audio = base64.b64encode(resampled.read_bytes()).decode("utf-8")
+
+    payload = {"model": "htdemucs", "request": {"audio_base64": b64_audio}}
+    req = urllib.request.Request(
+        server_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req, timeout=300) as resp:
+        res = json.loads(resp.read().decode("utf-8"))
+
+    return _decode_and_save_stems(res.get("named_audio_outputs", []), output_dir)
+
+
 def run_stem_separation(
     audio_path: Path,
     output_dir: Path,
     model_name: str = DEFAULT_MODEL,
 ) -> tuple[Path, Path]:
+    """Run stem separation via audio.cpp API if specified, or audio_separator library."""
+    if model_name == "audio.cpp" or os.environ.get("USE_AUDIOCPP"):
+        url = os.environ.get("AUDIOCPP_URL", DEFAULT_AUDIOCPP_URL)
+        return separate_via_audiocpp_api(audio_path, output_dir, server_url=url)
+
     from audio_separator.separator import Separator
 
     output_dir.mkdir(parents=True, exist_ok=True)
