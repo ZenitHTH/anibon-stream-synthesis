@@ -104,6 +104,40 @@ def load_garbled_replacements(path: Optional[Path] = None) -> list[dict]:
 
 # ── Text Cleaning & Normalization ──────────────────────────────────────────
 
+MUSIC_ANCHOR_RE = re.compile(
+    r"(\[(?:เพลง|ดนตรี|เสียงดนตรี|Music)\]|\((?:เพลง|ดนตรี|เสียงดนตรี|Music)\)|[♪♫♬♩]+)",
+    flags=re.IGNORECASE,
+)
+
+
+def extract_and_clean_music_anchors(text: str, offset_ms: int = 0) -> tuple[str, list[dict]]:
+    """Extract music marker anchors and strip them from transcript text."""
+    if not text:
+        return "", []
+    anchors: list[dict] = []
+    for m in MUSIC_ANCHOR_RE.finditer(text):
+        anchors.append({
+            "symbol": m.group(0),
+            "offset_ms": offset_ms,
+            "start_ms": offset_ms,
+        })
+    cleaned = MUSIC_ANCHOR_RE.sub(" ", text)
+    return clean_transcript_noise(cleaned), anchors
+
+
+def save_music_anchors(anchors: list[dict], workspace_path: Path | str) -> Path:
+    """Save extracted music anchors to music_anchors.json in workspace."""
+    target = Path(workspace_path) / "music_anchors.json"
+    existing: list[dict] = []
+    if target.exists():
+        try:
+            existing = json.loads(target.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            existing = []
+    merged = existing + anchors
+    target.write_text(json.dumps(merged, ensure_ascii=False, indent=2), encoding="utf-8")
+    return target
+
 
 def clean_transcript_noise(text: str) -> str:
     """Clean ASR artifacts, non-speech sound tags, speaker markers, and character loops."""
