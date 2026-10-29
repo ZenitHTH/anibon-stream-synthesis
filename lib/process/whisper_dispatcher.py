@@ -155,6 +155,25 @@ def format_time_sec(sec: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
+def detect_repetition_anomaly(transcript_text: str, max_repeat_ratio: float = 0.20) -> bool:
+    """Detect Whisper attention collapse / repetition loops in Thai/mixed speech."""
+    if not transcript_text or len(transcript_text.strip()) < 10:
+        return False
+    text = transcript_text.strip()
+    match = re.search(r"(.{1,40}?)(?:\s*\1){3,}", text)
+    if match:
+        span_ratio = len(match.group(0)) / len(text)
+        if span_ratio >= max_repeat_ratio or len(match.group(0)) >= 30:
+            return True
+    words = text.split()
+    if len(words) < 4:
+        return False
+    from collections import Counter
+    counts = Counter(words)
+    most_common, freq = counts.most_common(1)[0]
+    return freq >= 4 and (freq * len(most_common) / len(text)) >= max_repeat_ratio
+
+
 def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
     candidates = []
     
@@ -742,6 +761,8 @@ def dispatch_verification(
         with fail_lock:
             consecutive_fails = 0
         full_text, segments = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker, device_id=profile.device_id)
+        if detect_repetition_anomaly(full_text):
+            sys.stderr.write(f"[!] Repetition anomaly detected in slice {slice_name}: {full_text[:40]}...\n")
         return (cid, full_text, segments)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
