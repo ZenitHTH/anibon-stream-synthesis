@@ -12,6 +12,7 @@ from process.media.types import ChunkMediaInput, MediaCandidate, load_media_cata
 from process.media.trigger import detect_media_trigger
 from process.media.phonetic import thai_phonetic_skeleton, phonetic_phrase_similarity
 from process.media.identifier import identify_active_media
+from process.media.separator import separate_chunk_media, build_media_separation_prompt_block
 
 
 class TestMediaSeparation(unittest.TestCase):
@@ -68,5 +69,35 @@ class TestMediaSeparation(unittest.TestCase):
         matched_ids = [m.media_id for m in matched]
         self.assertIn("mairom_phi_mai_rak", matched_ids)
         self.assertIn("ksc_return_happiness", matched_ids)
+
+    def test_separator_splits_midline_collision_and_preserves_gameplay(self) -> None:
+        inp = ChunkMediaInput(
+            raw_lines=(
+                "(03:48:11) >> แล้วถึงจะยอดเยี่ยมนะครับอือุ้ยnล scap",
+                "(03:48:27) ผีไม่ได้ดักเจ้าพี่ไม่ได้ดักเจ้าพี่ไม่",
+                "(03:48:32) ได้ดักเจ้าพี่ไม่ได้เไม่ได้รักไงเออก็ไม่เข้าใจไง",
+                "(03:52:18) >> เดี๋ยวนะโอตกใจเหมือนกูว่ากูลบดาบไอ้เหี้ย",
+                "(03:57:26) วันนี้ชาติเผชิญผ่านภัยไฟลุใครไม่พร้อมออกจากช่องกูออกไปเลย",
+            ),
+            livechat_lines=("[03:46:10] UserA: เพลงอาจารย์ไม้ร่ม + คืนความสุข",),
+            gameplay_keywords=("scap", "ลบดาบ", "nether", "วิลเลเจอร์"),
+        )
+        segments = separate_chunk_media(inp)
+        by_ts = {}
+        for seg in segments:
+            by_ts.setdefault(seg.timestamp, []).append(seg)
+
+        self.assertEqual(by_ts["03:48:27"][0].label, "MEDIA_AUDIO")
+        self.assertIn("พี่ไม่รักน้องเจ้า", by_ts["03:48:27"][0].ground_truth)
+        self.assertEqual(by_ts["03:52:18"][0].label, "BOAT_GAMEPLAY")
+
+        labels_5726 = [s.label for s in by_ts["03:57:26"]]
+        self.assertEqual(labels_5726, ["MEDIA_AUDIO", "BOAT_SPEECH"])
+
+        block = build_media_separation_prompt_block(inp)
+        self.assertIn("## DETECTED MEDIA & LYRIC SEPARATION (GROUND TRUTH)", block)
+        self.assertIn("[MEDIA_AUDIO", block)
+        self.assertIn("[BOAT_SPEECH]", block)
+
 
 

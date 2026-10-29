@@ -6,7 +6,8 @@ TURN_THRESHOLD = 6
 SCORE_THRESHOLD = 2.0
 SCORE_TURNS = 0.75
 SCORE_TRANSCRIPT_CUE = 1.5
-SCORE_CHAT_CUE = 1.0
+SCORE_CHAT_GENERIC = 1.0
+SCORE_CHAT_TITLE = 1.0
 
 MEDIA_INTENT_CUES: tuple[str, ...] = (
     "เปิดเพลง",
@@ -23,19 +24,29 @@ MEDIA_INTENT_CUES: tuple[str, ...] = (
     "โลกุตตระ",
     "ร้องเลียนแบบ",
     "เพลงที่เพราะที่สุด",
+    "ผีไม่ได้ดักเจ้า",
+    "พี่ไม่ได้ดักเจ้า",
+    "พี่ไม่รักน้องเจ้า",
+    "คืนความสุข",
+    "เราจะทำตามสัญญา",
+    "มหาจุฬาลงกรณ์",
+    "น้ำใจน้องพี่สีชมพู",
 )
 
-CHAT_MEDIA_CUES: tuple[str, ...] = (
+CHAT_GENERIC_CUES: tuple[str, ...] = (
     "เพลง",
+    "ร้องสด",
+    "เปิดคลิป",
+    "รีมิกซ์",
+    "remix",
+)
+
+CHAT_TITLE_CUES: tuple[str, ...] = (
     "ไม้ร่ม",
     "อาจารย์ไม้ร่ม",
     "ลุงตู่",
     "คืนความสุข",
     "จุฬา",
-    "ร้องสด",
-    "เปิดคลิป",
-    "รีมิกซ์",
-    "remix",
 )
 
 
@@ -50,7 +61,8 @@ def _find_transcript_cues(lines: tuple[str, ...]) -> list[str]:
 
 def _find_chat_hints(chat_lines: tuple[str, ...]) -> list[str]:
     combined = " ".join(chat_lines)
-    return [cue for cue in CHAT_MEDIA_CUES if cue in combined]
+    all_cues = CHAT_GENERIC_CUES + CHAT_TITLE_CUES
+    return [cue for cue in all_cues if cue in combined]
 
 
 def detect_media_trigger(media_input: ChunkMediaInput) -> MediaTriggerResult:
@@ -63,9 +75,13 @@ def detect_media_trigger(media_input: ChunkMediaInput) -> MediaTriggerResult:
     if trans_cues:
         score += SCORE_TRANSCRIPT_CUE
         reasons.append(f"transcript_cues:{','.join(trans_cues[:3])}")
+    chat_str = " ".join(media_input.livechat_lines)
+    if any(c in chat_str for c in CHAT_GENERIC_CUES):
+        score += SCORE_CHAT_GENERIC
+    if any(c in chat_str for c in CHAT_TITLE_CUES):
+        score += SCORE_CHAT_TITLE
     chat_hints = _find_chat_hints(media_input.livechat_lines)
     if chat_hints:
-        score += SCORE_CHAT_CUE
         reasons.append(f"chat_hints:{','.join(chat_hints[:3])}")
     return MediaTriggerResult(
         triggered=score >= SCORE_THRESHOLD,
