@@ -99,6 +99,9 @@ def _process_line(
     ts, text = _parse_line(line)
     if not text:
         return []
+    if any(text.startswith(m) for m in BOAT_MARKERS):
+        label = "BOAT_GAMEPLAY" if _is_gameplay(text, keywords) else "BOAT_SPEECH"
+        return [SeparatedSegment(ts, label, text, text, "")]
     split = _find_midline_split(text, candidates)
     if split:
         prefix, suffix, cand = split
