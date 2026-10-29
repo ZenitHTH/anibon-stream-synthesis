@@ -33,12 +33,20 @@ def _load_lore_catalog(path: Path | None = None) -> tuple[dict, ...]:
     return _load_cached_catalog(str(target))
 
 
-def _entry_matches_query(entry: dict, q: str) -> bool:
+def _match_score(entry: dict, q: str) -> int:
     if not q:
-        return False
-    if q in entry.get("title", "").lower() or q in entry.get("artist", "").lower():
-        return True
-    return any(q in kw.lower() or kw.lower() in q for kw in entry.get("keywords", []))
+        return 0
+    score = 0
+    title_l = entry.get("title", "").lower()
+    if title_l and (title_l in q or q in title_l):
+        score = max(score, len(title_l) * 2)
+    for kw in entry.get("keywords", []):
+        if not kw:
+            continue
+        kw_l = kw.lower()
+        if kw_l in q or q in kw_l:
+            score = max(score, len(kw_l))
+    return score
 
 
 def _build_brief(entry: dict) -> SongContextBrief:
@@ -53,9 +61,15 @@ def _build_brief(entry: dict) -> SongContextBrief:
 
 def fetch_song_lore_summary(query: str, catalog_path: Path | None = None) -> SongContextBrief:
     q = query.strip().lower()
+    best_entry: dict | None = None
+    best_score = 0
     for entry in _load_lore_catalog(catalog_path):
-        if _entry_matches_query(entry, q):
-            return _build_brief(entry)
+        score = _match_score(entry, q)
+        if score > best_score:
+            best_score = score
+            best_entry = entry
+    if best_entry and best_score > 0:
+        return _build_brief(best_entry)
     return SongContextBrief(
         title=query,
         artist="Unknown",

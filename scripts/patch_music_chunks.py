@@ -44,6 +44,17 @@ def _extract_header(lines: list[str]) -> str:
     return ""
 
 
+BRIEFING_BLOCK_RE = re.compile(
+    r"\[Song Context Briefing\].*?(?=(?:\n\(\d{2}:\d{2}:\d{2}\)|\Z))",
+    flags=re.DOTALL,
+)
+
+
+def _strip_existing_briefings(text: str) -> str:
+    cleaned = BRIEFING_BLOCK_RE.sub("", text)
+    return cleaned.strip()
+
+
 def patch_chunk_with_song_lore(
     chunk_path: Path, brief: SongContextBrief, clean_speech: str
 ) -> None:
@@ -51,7 +62,8 @@ def patch_chunk_with_song_lore(
     lines = original.splitlines()
     header = _extract_header(lines)
     briefing = format_song_context_briefing(brief)
-    parts = [p for p in (header, briefing, clean_speech.strip()) if p]
+    pure_speech = _strip_existing_briefings(clean_speech)
+    parts = [p for p in (header, briefing, pure_speech) if p]
     chunk_path.write_text("\n\n".join(parts) + "\n", encoding="utf-8")
 
 
@@ -60,12 +72,39 @@ def _is_anchor_in_window(anchor: dict, start_sec: int, end_sec: int) -> bool:
     return start_sec <= offset_sec < end_sec
 
 
+def score_lore_against_text(brief: SongContextBrief, text: str) -> int:
+    t = text.lower()
+    score = 0
+    if brief.title.lower() in t:
+        score += len(brief.title) * 3
+    for kw in brief.keywords:
+        if kw and kw.lower() in t:
+            score += len(kw)
+    return score
+
+
+def find_matching_lore(
+    chat_lines: Sequence[str],
+    transcript_lines: Sequence[str] = (),
+) -> SongContextBrief:
+    all_lines = list(chat_lines) + list(transcript_lines)
+    best_brief = fetch_song_lore_summary("เพลงคลอหลังฉาก")
+    best_score = 0
+    candidate_briefs: dict[tuple[str, str], SongContextBrief] = {}
+    for line in all_lines:
+        b = fetch_song_lore_summary(line)
+        if b.artist != "Unknown":
+            candidate_briefs[(b.title, b.artist)] = b
+    for brief in candidate_briefs.values():
+        total_score = sum(score_lore_against_text(brief, line) for line in all_lines)
+        if total_score > best_score:
+            best_score = total_score
+            best_brief = brief
+    return best_brief
+
+
 def find_matching_lore_from_chat(chat_lines: Sequence[str]) -> SongContextBrief:
-    for line in chat_lines:
-        brief = fetch_song_lore_summary(line)
-        if brief.artist != "Unknown":
-            return brief
-    return fetch_song_lore_summary("เพลงคลอหลังฉาก")
+    return find_matching_lore(chat_lines)
 
 
 def scan_and_patch_workspace(workspace_dir: Path) -> int:
@@ -86,7 +125,8 @@ def scan_and_patch_workspace(workspace_dir: Path) -> int:
 def _process_single_chunk(chunk_path: Path, anchors: list[dict], chat_idx: dict) -> bool:
     name = chunk_path.stem
     meta = chat_idx.get(name, {})
-    lines = chunk_path.read_text(encoding="utf-8").splitlines()
+    raw_content = _strip_existing_briefings(chunk_path.read_text(encoding="utf-8"))
+    lines = raw_content.splitlines()
     chat_lines = []
     if "file" in meta and Path(meta["file"]).exists():
         chat_lines = Path(meta["file"]).read_text(encoding="utf-8").splitlines()
@@ -94,7 +134,7 @@ def _process_single_chunk(chunk_path: Path, anchors: list[dict], chat_idx: dict)
     has_surge = has_music_chat_surge(chat_lines)
     if not (has_anchor or has_surge):
         return False
-    brief = find_matching_lore_from_chat(chat_lines)
+    brief = find_matching_lore(chat_lines, lines)
     speech = "\n".join(lines[1:]) if len(lines) > 1 else ""
     patch_chunk_with_song_lore(chunk_path, brief, speech)
     return True

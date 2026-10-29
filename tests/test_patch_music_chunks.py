@@ -83,6 +83,16 @@ class TestPatchMusicChunks(unittest.TestCase):
             self.assertIn("[Song Context Briefing]", patched)
             self.assertIn("ไม้ร่ม", patched)
 
+    def test_find_matching_lore_resolves_chalawan_and_ploy_trong_nee(self):
+        from scripts.patch_music_chunks import find_matching_lore
+        chalawan_chat = ["เพลงชาละวัน 5555", "เพลงวงเหล้า"]
+        chalawan_brief = find_matching_lore(chalawan_chat)
+        self.assertIn("ชาละวัน", chalawan_brief.title)
+
+        ploy_chat = ["ปล่อยตรงนี้ GETFLIX", "เพลงนี้หยาบมั้ย"]
+        ploy_brief = find_matching_lore(ploy_chat)
+        self.assertIn("ปล่อยตรงนี้", ploy_brief.title)
+
 
 if __name__ == "__main__":
     unittest.main()
