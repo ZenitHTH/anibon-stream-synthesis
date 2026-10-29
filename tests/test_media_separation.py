@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 import sys
@@ -8,6 +9,8 @@ _LIB = str(Path(__file__).resolve().parent.parent / "lib")
 if _LIB not in sys.path:
     sys.path.insert(0, _LIB)
 
+from chunk.state import load_chunk_file
+from process.prompts import build_recursive_prompt
 from process.media.types import ChunkMediaInput, MediaCandidate, load_media_catalog
 from process.media.trigger import detect_media_trigger
 from process.media.phonetic import thai_phonetic_skeleton, phonetic_phrase_similarity
@@ -98,6 +101,69 @@ class TestMediaSeparation(unittest.TestCase):
         self.assertIn("## DETECTED MEDIA & LYRIC SEPARATION (GROUND TRUTH)", block)
         self.assertIn("[MEDIA_AUDIO", block)
         self.assertIn("[BOAT_SPEECH]", block)
+
+    def test_end_to_end_chunk_load_and_recursive_prompt_injects_media_separation(self) -> None:
+        sample_chunk = (
+            "# chunk_50 (03:45:00–03:50:30, cutoff=03:50:30)\n"
+            "(03:45:46) >> อ่าเพลงที่ผมจะร้องให้นี้\n"
+            "(03:47:00) >> ศิลปินโลกุตตระเชิญฟังนะครับ\n"
+            "(03:47:06) >> รอก่อนไอ้สัตว์อย่ารีบเออคนฟังอ่ะช่องแชท\n"
+            "(03:48:27) ผีไม่ได้ดักเจ้าพี่ไม่ได้ดักเจ้าพี่ไม่\n"
+            "(03:48:32) ได้ดักเจ้าพี่ไม่ได้เไม่ได้รักไงเออก็ไม่เข้าใจไง\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "chunk_50.txt"
+            p.write_text(sample_chunk, encoding="utf-8")
+            chunk_data = load_chunk_file(p)
+            self.assertIn("raw_text", chunk_data["items"][0])
+            self.assertTrue(chunk_data["items"][0]["raw_text"].startswith(">>"))
+
+            prompt = build_recursive_prompt(
+                chunk=chunk_data,
+                current_topic="เล่น Minecraft สำรวจ Nether",
+                rolling_summary="ปู่โบ๊ตสำรวจ Nether",
+                lang="th",
+                livechat="[03:46:10] UserA: เพลงอาจารย์ไม้ร่ม 555",
+            )
+            self.assertIn("## DETECTED MEDIA & LYRIC SEPARATION (GROUND TRUTH)", prompt)
+            self.assertIn("พี่ไม่รักน้องเจ้า", prompt)
+            self.assertIn("[BOAT_SPEECH]", prompt)
+
+    def test_real_workspace_chunks_detect_all_core_songs(self) -> None:
+        chunks_dir = Path("/Users/zenithth/youtube_l00khgGzmIg_workspace/chunks")
+        if not (chunks_dir / "chunk_50.txt").is_file():
+            self.skipTest("Real workspace chunks not present on local machine")
+        expected_map = {
+            50: "mairom_phi_mai_rak",
+            51: "mairom_phi_mai_rak_remix",
+            52: "ksc_return_happiness",
+            53: "ksc_return_happiness",
+            54: "maha_chulalongkorn",
+        }
+        for chunk_idx, expected_id in expected_map.items():
+            data = load_chunk_file(chunks_dir / f"chunk_{chunk_idx}.txt")
+            raw_lines = tuple(
+                f"({it['timestamp']}) {it.get('raw_text') or it.get('text', '')}"
+                for it in data["items"]
+            )
+            inp = ChunkMediaInput(
+                raw_lines=raw_lines,
+                gameplay_keywords=("scap", "ดาบ", "nether", "วิลเลเจอร์", "way stone"),
+            )
+            active = identify_active_media(inp)
+            active_ids = {c.media_id for c in active}
+            self.assertIn(
+                expected_id,
+                active_ids,
+                f"Chunk {chunk_idx} failed to detect expected media {expected_id}",
+            )
+            segs = separate_chunk_media(inp, active)
+            has_media = any(s.label == "MEDIA_AUDIO" for s in segs)
+            has_speech = any(s.label == "BOAT_SPEECH" for s in segs)
+            self.assertTrue(has_media, f"Chunk {chunk_idx} has no MEDIA_AUDIO segments")
+            self.assertTrue(has_speech, f"Chunk {chunk_idx} has no BOAT_SPEECH segments")
+
+
 
 
 

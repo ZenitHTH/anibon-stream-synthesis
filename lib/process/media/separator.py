@@ -12,6 +12,7 @@ from process.media.types import (
 )
 
 BOAT_MARKERS: tuple[str, ...] = (
+    "แป๊บนึง",
     "ใครไม่พร้อม",
     "ใครได้บอก",
     "ออกจากช่องกู",
@@ -46,12 +47,12 @@ def _is_gameplay(text: str, keywords: tuple[str, ...]) -> bool:
 
 
 def _match_media(text: str, candidate: MediaCandidate) -> bool:
-    if any(g and (g in text or text in g) for g in candidate.garble_patterns):
+    if any(len(g) >= 4 and g in text for g in candidate.garble_patterns if g):
         return True
     for p in candidate.canonical_phrases:
-        if not p:
+        if not p or len(p) < 4:
             continue
-        if p in text or text in p or phonetic_phrase_similarity(text, p) >= 0.65:
+        if p in text or phonetic_phrase_similarity(text, p) >= 0.65:
             return True
     return False
 
@@ -129,18 +130,8 @@ def _format_segment_line(seg: SeparatedSegment) -> str:
     return f"- {ts_prefix}[{seg.label}] {seg.raw_text}"
 
 
-def build_media_separation_prompt_block(media_input: ChunkMediaInput) -> str:
-    trig = detect_media_trigger(media_input)
-    if not trig.triggered:
-        return ""
-    candidates = identify_active_media(media_input)
-    if not candidates:
-        return ""
-    segments = separate_chunk_media(media_input, candidates)
-    if not any(s.label == "MEDIA_AUDIO" for s in segments):
-        return ""
-    titles = ", ".join(c.title for c in candidates)
-    lines = [
+def _build_block_header(titles: str) -> list[str]:
+    return [
         "## DETECTED MEDIA & LYRIC SEPARATION (GROUND TRUTH)",
         f"> Active Media/Song: {titles}",
         "> CRITICAL RULE: Lines marked [MEDIA_AUDIO] are external audio / song lyrics playing in background. "
@@ -148,5 +139,18 @@ def build_media_separation_prompt_block(media_input: ChunkMediaInput) -> str:
         "Pu Boat's actual spoken commentary is marked [BOAT_SPEECH] or [BOAT_GAMEPLAY].",
         "",
     ]
+
+
+def build_media_separation_prompt_block(media_input: ChunkMediaInput) -> str:
+    if not detect_media_trigger(media_input).triggered:
+        return ""
+    candidates = identify_active_media(media_input)
+    if not candidates:
+        return ""
+    segments = separate_chunk_media(media_input, candidates)
+    if not any(s.label == "MEDIA_AUDIO" for s in segments):
+        return ""
+    lines = _build_block_header(", ".join(c.title for c in candidates))
     lines.extend(_format_segment_line(s) for s in segments)
     return "\n".join(lines)
+

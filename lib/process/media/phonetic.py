@@ -6,8 +6,6 @@ import re
 CONSONANT_MAP: dict[str, str] = {
     "ผ": "พ",
     "ภ": "พ",
-    "ด": "ร",
-    "ล": "ร",
     "ข": "ค",
     "ฆ": "ค",
     "ศ": "ส",
@@ -65,7 +63,9 @@ def _scan_best_window_ratio(haystack: str, needle: str) -> float:
 def phonetic_phrase_similarity(text_a: str, text_b: str) -> float:
     sk_a = thai_phonetic_skeleton(text_a)
     sk_b = thai_phonetic_skeleton(text_b)
-    if not sk_a or not sk_b:
+    if len(sk_a) < 6 or len(sk_b) < 6:
+        return 0.0
+    if min(len(sk_a), len(sk_b)) < int(max(len(sk_a), len(sk_b)) * 0.45):
         return 0.0
     if len(sk_b) > len(sk_a):
         sk_a, sk_b = sk_b, sk_a

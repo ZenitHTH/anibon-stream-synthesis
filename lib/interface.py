@@ -106,6 +106,7 @@ from process import (
     audit_and_sanitize_final_markdown,
     audit_timestamps_against_glossary,
     build_group_prompt,
+    build_media_separation_prompt_block,
     build_multimodal_content,
     build_recursive_prompt,
     call_multimodal,
@@ -137,6 +138,7 @@ from process import (
     sample_chunk_keyframes,
     sanitize_and_audit_timestamps,
     save_entity_glossary,
+    separate_chunk_media,
 )
 
 # Unified module namespace exports for clean structured access
@@ -251,6 +253,9 @@ __all__ = [
     "audit_and_sanitize_final_markdown",
     "WORLD_IDENTITY_DIR",
     "build_group_prompt",
+    "build_media_separation_prompt_block",
     "build_recursive_prompt",
     "load_world_identity_context",
+    "separate_chunk_media",
 ]
+

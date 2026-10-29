@@ -65,8 +65,15 @@ def _find_chat_hints(chat_lines: tuple[str, ...]) -> list[str]:
     return [cue for cue in all_cues if cue in combined]
 
 
+def _calculate_chat_score(chat_lines: tuple[str, ...]) -> float:
+    chat_str = " ".join(chat_lines)
+    generic = SCORE_CHAT_GENERIC if any(c in chat_str for c in CHAT_GENERIC_CUES) else 0.0
+    title = SCORE_CHAT_TITLE if any(c in chat_str for c in CHAT_TITLE_CUES) else 0.0
+    return generic + title
+
+
 def detect_media_trigger(media_input: ChunkMediaInput) -> MediaTriggerResult:
-    score = 0.0
+    score = _calculate_chat_score(media_input.livechat_lines)
     reasons: list[str] = []
     if _count_turn_markers(media_input.raw_lines) >= TURN_THRESHOLD:
         score += SCORE_TURNS
@@ -75,17 +82,7 @@ def detect_media_trigger(media_input: ChunkMediaInput) -> MediaTriggerResult:
     if trans_cues:
         score += SCORE_TRANSCRIPT_CUE
         reasons.append(f"transcript_cues:{','.join(trans_cues[:3])}")
-    chat_str = " ".join(media_input.livechat_lines)
-    if any(c in chat_str for c in CHAT_GENERIC_CUES):
-        score += SCORE_CHAT_GENERIC
-    if any(c in chat_str for c in CHAT_TITLE_CUES):
-        score += SCORE_CHAT_TITLE
     chat_hints = _find_chat_hints(media_input.livechat_lines)
     if chat_hints:
         reasons.append(f"chat_hints:{','.join(chat_hints[:3])}")
-    return MediaTriggerResult(
-        triggered=score >= SCORE_THRESHOLD,
-        score=score,
-        reasons=tuple(reasons),
-        chat_hints=tuple(chat_hints),
-    )
+    return MediaTriggerResult(score >= SCORE_THRESHOLD, score, tuple(reasons), tuple(chat_hints))

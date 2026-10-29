@@ -30,6 +30,10 @@ from process.livechat import (
     parse_livechat_feed,
     prepare_livechat,
 )
+from process.media import (
+    build_media_separation_prompt_block,
+    separate_chunk_media,
+)
 from process.multimodal import (
     build_multimodal_content,
     call_multimodal,
@@ -88,8 +92,10 @@ __all__ = [
     "run_parity_gates",
     "WORLD_IDENTITY_DIR",
     "build_group_prompt",
+    "build_media_separation_prompt_block",
     "build_recursive_prompt",
     "load_world_identity_context",
+    "separate_chunk_media",
     "run_group_mode",
     "run_recursive_mode",
     "detect_signals_for_chunks",

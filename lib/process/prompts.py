@@ -291,11 +291,29 @@ def _format_previous_topic_section(
     return "\n".join(lines) + "\n"
 
 
+def _build_chunk_media_block(chunk: dict, livechat: str = "") -> str:
+    """Build automated media separation ground-truth block for a chunk."""
+    from process.media.separator import build_media_separation_prompt_block
+    from process.media.types import ChunkMediaInput
+    items = chunk.get("items", [])
+    raw_lines = tuple(
+        f"({it.get('timestamp', '')}) {it.get('raw_text') or it.get('text', '')}"
+        for it in items
+        if (it.get("raw_text") or it.get("text"))
+    )
+    if not raw_lines:
+        return ""
+    chat_lines = tuple(livechat.splitlines()) if livechat else ()
+    return build_media_separation_prompt_block(
+        ChunkMediaInput(raw_lines=raw_lines, livechat_lines=chat_lines)
+    )
+
+
 def build_recursive_prompt(
     chunk: dict,
     current_topic: str,
     rolling_summary: str,
-    lang: str,
+    lang: str = "th",
     signal: Optional[dict] = None,
     livechat: str = "",
     activity: str = "",
@@ -370,6 +388,9 @@ def build_recursive_prompt(
         context_extras.append(f"LiveChat Highlights:\n{livechat}")
     if web_context:
         context_extras.append(f"VERIFIED EXTERNAL CONTEXT:\n{web_context}")
+    media_block = _build_chunk_media_block(chunk, livechat)
+    if media_block:
+        context_extras.append(media_block)
 
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
@@ -474,6 +495,7 @@ def build_group_prompt(
 
     transcript_blocks = []
     collected_domain_blocks = []
+    collected_media_blocks = []
     extra_tags_collected = set()
     best_group_signal: Optional[dict] = None
     best_group_score: float = 0.0
@@ -497,6 +519,10 @@ def build_group_prompt(
         lc = livechat_loader(workspace, idx_str) if livechat_loader else ""
         act = activity_loader(workspace, idx_str) if activity_loader else ""
         mood = mood_loader(workspace, idx_str) if mood_loader else ""
+
+        mb = _build_chunk_media_block(ch, lc)
+        if mb and mb not in collected_media_blocks:
+            collected_media_blocks.append(mb)
 
         lines = [f"({it.get('timestamp', fmt_ts(it.get('start', 0)))}) {it.get('text', '').strip()}"
                  for it in c_items if it.get("text", "").strip()]
@@ -522,6 +548,9 @@ def build_group_prompt(
     domain_guidance = "\n".join(collected_domain_blocks)
     if domain_guidance:
         domain_guidance = f"\n## DOMAIN LORE GUIDANCE\n{domain_guidance}\n"
+
+    media_guidance = "\n\n".join(collected_media_blocks)
+    media_section = f"\n{media_guidance}\n" if media_guidance else ""
 
     wi_ref = load_world_identity_context(best_group_signal, world_identity_dir)
     world_identity_section = f"{wi_ref}\n" if wi_ref else ""
@@ -549,7 +578,7 @@ def build_group_prompt(
 You are an expert timestamper processing Group {group_idx} (chunks {chunks[0].get('_idx', 0):02d} to {chunks[-1].get('_idx', 0):02d}) of a Thai livestream by Pu Boat (Anibon Official).
 Group Time Range: {group_start} - {group_end} (~{len(chunks)*4} minutes)
 
-{prev_section}{domain_guidance}{candidate_weights_section}{world_identity_section}{entity_section}
+{prev_section}{domain_guidance}{media_section}{candidate_weights_section}{world_identity_section}{entity_section}
 ## YOUR TASK
 
 Read the entire group transcript. Output 2 to 4 notable timestamps for major topics or moments in this group.

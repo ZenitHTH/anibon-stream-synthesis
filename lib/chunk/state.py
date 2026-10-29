@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """State persistence, chunk file loading, and multimodal context utilities.
 
 Handles:
@@ -128,46 +130,56 @@ def scrub_speaker_identity(text: str) -> str:
     return re.sub(r"(?:ปู่บอท|ลุงบอท|ปู่โบต)", "ปู่โบ๊ต", text)
 
 
+def _load_json_chunk(path: Path, mappings: Optional[list]) -> dict:
+    from process.signals import normalize_transcript
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    for it in data.get("items", []):
+        if it.get("text"):
+            if "raw_text" not in it:
+                it["raw_text"] = it["text"]
+            txt = scrub_speaker_identity(it["text"])
+            it["text"] = normalize_transcript(txt, mappings or [])
+    return data
+
+
+def _parse_chunk_header(header: str) -> tuple[int, int, int]:
+    start_sec = end_sec = cutoff = 0
+    m = re.search(r"(\d{2}:\d{2}:\d{2})[–-](\d{2}:\d{2}:\d{2})", header)
+    if m:
+        start_sec, end_sec = parse_ts(m.group(1)), parse_ts(m.group(2))
+    mc = re.search(r"cutoff=(\d{2}:\d{2}:\d{2})", header)
+    cutoff = parse_ts(mc.group(1)) if mc else end_sec
+    return start_sec, end_sec, cutoff
+
+
+def _parse_chunk_items(lines: list[str], cutoff: int, mappings: Optional[list]) -> list[dict]:
+    from process.signals import normalize_transcript
+    items = []
+    for line in lines:
+        lm = re.match(r"\((\d{2}:\d{2}:\d{2})\)\s+(.*)", line)
+        if not lm:
+            continue
+        ts, raw_text = lm.group(1), lm.group(2)
+        sec = parse_ts(ts)
+        if cutoff and sec > cutoff:
+            continue
+        txt = scrub_speaker_identity(raw_text)
+        clean = normalize_transcript(txt, mappings or [])
+        items.append({"start": float(sec), "timestamp": ts, "text": clean, "raw_text": raw_text})
+    return items
+
+
 def load_chunk_file(path: Path, mappings: Optional[list] = None) -> dict:
     """Load and normalize transcript items from a single chunk file."""
-    from process.signals import normalize_transcript
     if path.suffix == ".json":
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        for it in data.get("items", []):
-            if it.get("text"):
-                txt = scrub_speaker_identity(it["text"])
-                it["text"] = normalize_transcript(txt, mappings or [])
-        return data
-
+        return _load_json_chunk(path, mappings)
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
-    items = []
-    start_sec = 0
-    end_sec = 0
-    cutoff = 0
-
-    if lines:
-        header = lines[0]
-        m = re.search(r"(\d{2}:\d{2}:\d{2})[–-](\d{2}:\d{2}:\d{2})", header)
-        if m:
-            start_sec = parse_ts(m.group(1))
-            end_sec = parse_ts(m.group(2))
-        mc = re.search(r"cutoff=(\d{2}:\d{2}:\d{2})", header)
-        if mc:
-            cutoff = parse_ts(mc.group(1)) if mc else end_sec
-
-        for line in lines[1:]:
-            lm = re.match(r"\((\d{2}:\d{2}:\d{2})\)\s+(.*)", line)
-            if lm:
-                ts = lm.group(1)
-                sec = parse_ts(ts)
-                if cutoff and sec > cutoff:
-                    continue
-                raw_text = lm.group(2)
-                txt = scrub_speaker_identity(raw_text)
-                clean_text = normalize_transcript(txt, mappings or [])
-                items.append({"start": float(sec), "timestamp": ts, "text": clean_text})
-
+    if not lines:
+        return {"start_sec": 0, "end_sec": 0, "items": []}
+    start_sec, end_sec, cutoff = _parse_chunk_header(lines[0])
+    items = _parse_chunk_items(lines[1:], cutoff, mappings)
     return {"start_sec": start_sec, "end_sec": end_sec, "items": items}
+
 
