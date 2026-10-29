@@ -1500,7 +1500,8 @@
       "โดโรโรป"
     ],
     "Double": [
-      "douบoอ"
+      "douบoอ",
+      "Doble"
     ],
     "Double Battle": [
       "DBE Battle"
@@ -2653,6 +2654,9 @@
       "intิidate",
       "กิidate"
     ],
+    "Intricate": [
+      "Intricิcate"
+    ],
     "Intro": [
       "อินทro"
     ],
@@ -2831,6 +2835,9 @@
     ],
     "Kid Icarus": [
       "Kidิัสนะ"
+    ],
+    "Kieslet": [
+      "Retis"
     ],
     "Kim Ji-hoon": [
       "คิมจgุนเ้า"
@@ -3472,6 +3479,9 @@
     ],
     "Mold Breaker": [
       "โมรaker"
+    ],
+    "Monarchy": [
+      "monary"
     ],
     "Monkey Brain": [
       "monkeี้เบน"
@@ -4342,6 +4352,9 @@
       "กึฟerence",
       "Referน"
     ],
+    "reforging": [
+      "reforing"
+    ],
     "Refresh": [
       "refรช"
     ],
@@ -5160,6 +5173,9 @@
     ],
     "sweet (หวานเจี๊ยบ)": [
       "sweท"
+    ],
+    "Swiftnet": [
+      "Swiftet"
     ],
     "Swiss cheese": [
       "switวิตชีท"
@@ -6814,6 +6830,10 @@
     "อะดรีนาลีนหลั่ง": [
       "adดินีหลัง"
     ],
+    "อันครับ": [
+      "อันcฟ",
+      "uncft"
+    ],
     "อันลิมิเต็ดเบลดเวิร์ก (Unlimited Blade Works)": [
       "unลิมิเวิร์ค"
     ],
@@ -7505,16 +7525,5 @@
     "ไฮป์ Bleach": [
       "ไฮบriิด"
     ]
-  },
-  "ผีไม่ได้ดักเจ้า": "พี่ไม่รักน้องเจ้า",
-  "พี่ไม่ได้ดักเจ้า": "พี่ไม่รักน้องเจ้า",
-  "พี่ไม่ได้ดักน้อง": "พี่ไม่รักน้อง",
-  "พี่ดักแต่น้อง": "พี่รักแต่น้อง",
-  "อาจารย์ร่มไม้": "อาจารย์ไม้ร่ม",
-  "อ.ร่มไม้": "อ.ไม้ร่ม",
-  "ดร.อภินันท์ โพสยานนท์": "ดร.อภินันท์ โปษยานนท์",
-  "Key stone of vi": "Keystone of Void",
-  "key stone of vi": "Keystone of Void",
-  "n scap": "Netherite Scrap",
-  "n scrap": "Netherite Scrap"
+  }
 }
