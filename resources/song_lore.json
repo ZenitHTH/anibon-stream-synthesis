@@ -1,0 +1,28 @@
+{
+  "songs": [
+    {
+      "id": "mairom_a_cappella",
+      "title": "พี่ไม่รักน้องเจ้า",
+      "artist": "อ.ไม้ร่ม ธรรมชาติอโศก",
+      "theme": "เพลงร้องสดไม่มีดนตรี (A cappella)",
+      "meme_lore": "โบ๊ตล้อเลียนเสียงเอื้อน แซวมุกดักเจ้า แชททักขอเพลงรักพ่อและทักเรื่องแก่ตัว",
+      "keywords": ["พี่ไม่ได้ดักเจ้า", "พี่ไม่รักน้องเจ้า", "ไม้ร่ม", "ดักเจ้า", "ธรรมชาติอโศก"]
+    },
+    {
+      "id": "add_carabao_gunner",
+      "title": "แอ๊ดคาราบาว",
+      "artist": "GUNNER (feat. YOUNGGU)",
+      "theme": "แร็ปดราม่า",
+      "meme_lore": "แซวยอดวิว 4 ล้าน ท่อนฮุกแร็ปเนเน่นายแน่มาก โบ๊ตบ่นเรื่องคนไทยฟังเพลง",
+      "keywords": ["แอ๊ดคาราบาว", "YOUNGGU", "เนเน่", "GUNNER", "ยังกู"]
+    },
+    {
+      "id": "pinkguy_are_you_serious",
+      "title": "Are You Serious",
+      "artist": "Pink Guy",
+      "theme": "BGM มีมสากล",
+      "meme_lore": "เพลงมีมคลอระหว่างเล่นเกม",
+      "keywords": ["Are You Serious", "Pink Guy", "pink guy"]
+    }
+  ]
+}
