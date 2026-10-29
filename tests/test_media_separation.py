@@ -10,6 +10,8 @@ if _LIB not in sys.path:
 
 from process.media.types import ChunkMediaInput, MediaCandidate, load_media_catalog
 from process.media.trigger import detect_media_trigger
+from process.media.phonetic import thai_phonetic_skeleton, phonetic_phrase_similarity
+from process.media.identifier import identify_active_media
 
 
 class TestMediaSeparation(unittest.TestCase):
@@ -47,4 +49,24 @@ class TestMediaSeparation(unittest.TestCase):
         chat_lines = ("[01:00:05] UserA: ดาบแรงมากครับปู่",)
         res = detect_media_trigger(ChunkMediaInput(raw_lines=raw_lines, livechat_lines=chat_lines))
         self.assertFalse(res.triggered)
+
+    def test_thai_phonetic_skeleton_matches_melisma_garbles(self) -> None:
+        sim1 = phonetic_phrase_similarity("ผีไม่ได้ดักเจ้าพี่ไม่ได้ดักเจ้า", "พี่ไม่รักน้องเจ้า")
+        sim2 = phonetic_phrase_similarity("หมาก็ยังหยุดเหาเลยครับ", "หมาก็ยังหยุดเห่าเลยครับ")
+        self.assertGreaterEqual(sim1, 0.65)
+        self.assertGreaterEqual(sim2, 0.85)
+
+    def test_identify_active_media_resolves_mairom_and_ksc_from_chunk(self) -> None:
+        inp = ChunkMediaInput(
+            raw_lines=(
+                "(03:48:27) ผีไม่ได้ดักเจ้าพี่ไม่ได้ดักเจ้า",
+                "(03:57:18) >> ขอดูแลคุ้มครองด้วยใจนี่คือคำสัญญา",
+            ),
+            livechat_lines=("[03:46:10] UserA: อาจารย์ไม้ร่มมาแล้ว",),
+        )
+        matched = identify_active_media(inp)
+        matched_ids = [m.media_id for m in matched]
+        self.assertIn("mairom_phi_mai_rak", matched_ids)
+        self.assertIn("ksc_return_happiness", matched_ids)
+
 
