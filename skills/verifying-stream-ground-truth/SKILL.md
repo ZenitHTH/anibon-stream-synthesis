@@ -90,12 +90,8 @@ yt-dlp --cookies-from-browser chrome \
 ffmpeg -ss 00:00:30 -i target_slice.mp4.webm -frames:v 1 -q:v 2 target_frame.jpg -y
 
 # Method B: Zero-Cookie Storyboard Fallback (Always works, immune to HTTP 403 / macOS TCC)
-# 1. Download storyboard MHTML (sb0 = 960x540 grid, sb3 = 1080p+ grid)
 yt-dlp -f "sb0" "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/sb0.mhtml"
-
-# 2. Extract slide: slide_idx = int(target_sec / duration_per_slide)
-# Duration is listed in storyboard.mhtml or calculate ~90s/slide for sb0
-# 3. Crop 3x3 tile grid corresponding to the exact second
+# Extract slide: slide_idx = int(target_sec / duration_per_slide); crop 3x3 tile grid
 ```
 
 ---
@@ -126,6 +122,20 @@ Streamers speak rapidly using gaming slang and abbreviations that ASR tools (Whi
 
 ---
 
+## Played Media / Song Verification (Audio Ground Truth)
+
+Trigger: any `[Song]`/`[Reaction]` stamp, chat asking "เพลงอะไร", Boat naming a song, or `>>` turn markers inside a music cluster.
+
+1. **Fingerprint first**: slice 30s with `ffmpeg -ss <sec> -t 30` from `yt-dlp -g -f 140`, then `uv run --with shazamio`. A match is final.
+2. **No match** (indie, Mairom, drinking parody songs) → slice 60–120s and run `whisper-cli -l th` (large-v3-turbo). Read second by second.
+3. **Played ≠ mentioned**: tag `[Song]` only if lyrics/melody are audible. News clips, 10s intros, or spoken titles → `[Reaction]`/`[Talk]`.
+4. **Onset snapping**: stamp first `>>` lyric line, NOT Boat's setup line or chunk boundary (e.g. Chalawan `07:43:45` not `07:43:31`).
+5. **Split by clip**: one artist ≠ one song. Check each lyric change; persist new songs to `resources/media_catalog.json`.
+
+Full cheatsheet & workflows: `references/media-verification.md`
+
+---
+
 ## VLM Prompt Engineering & Anti-Hallucination Discipline
 
 When dispatching video frames to local VLMs (Gemma 4 VLM, Qwen-VL):
@@ -137,14 +147,11 @@ When dispatching video frames to local VLMs (Gemma 4 VLM, Qwen-VL):
    - The topic boundary MUST immediately break at the transition second.
    - Never bleed previous game entities or topics (e.g., *FGO*) into the newly opened game's UI or gameplay.
    - Specific game terms (e.g., "หอรี", "Apocalyptic Shadow", "เลือดมอนเฟ้อ", "เพล่า", "ฮั่วฮั่ว") belong exclusively to the active on-screen game.
-6. **Donation Alert Media vs. Product Showcase**: When character art, VTuber avatars, or figure photos abruptly appear on screen:
-   - **Check Donation Overlay**: Inspect bottom screen corners for donation alerts, donor handles (e.g., `SymboliRudolf`), and currency tickers (`THB ...`).
-   - **Cross-Reference Audio**: If the streamer reads a pun/joke, laughs, or says *"ขอบคุณมากนะครับ [ชื่อ] ที่โดเนทมา"*, classify as `[Donation]` or `[SuperChat]`, NEVER `[Talk] โชว์ฟิกเกอร์` or `[Review]`.
-   - **Capture Joke / Lore Interaction**: Note the donor's joke and streamer/chat reaction (e.g., *มุกแป้กคนชงชารินชา จนแชท Mood Down*).
-   - **Anchor = Alert Onset**: Timestamp starts at the second the alert box appears / chime plays, NOT at the streamer's laugh or reaction. Scan frames backward from the reaction (1–2s step) until the overlay first appears.
-   - **Screen Text Beats Whisper**: Donation text MUST be transcribed from the frame (crop the alert box). Never reconstruct it from audio — viewers write bait jokes in romaji/karaoke/mixed scripts (e.g. `Wei wai wei wai zumigat nan damu kimi kwayt rayt`) that Whisper renders as nonsense Thai.
-   - **Bait-Joke Detection**: If donation text contains romaji/foreign syllables the streamer reads phonetically, followed by an instant outburst/laugh, it is a read-aloud trap. Record the bait syllable and the streamer's reaction in internal notes.
-   - **Non-Spoiler Title**: Public title teases without revealing the punchline or follow-on mishaps (e.g. `[Highlight] ข้อความโดเนทสุดล้ำจาก "ท่านประธาน Symboli Rudolf" และเหตุการณ์ไม่คาดคิดบนหน้าจอสตรีม`).
+6. **Donation Alert Media vs Product Showcase**:
+   - **Detect Alert**: Check bottom corners for donor handles and tickers (`THB ...`). If streamer laughs or thanks donor, tag `[Donation]`/`[SuperChat]`, NEVER `[Talk] โชว์ฟิกเกอร์`.
+   - **Anchor Onset**: Stamp exact second alert overlay appears, not streamer's laugh. Scan frames backward 1–2s.
+   - **Screen Text Beats Whisper**: Transcribe donor text from cropped frame, never audio (avoids phonetic bait traps).
+   - **Non-Spoiler Title**: E.g. `[Highlight] ข้อความโดเนทสุดล้ำจาก "ท่านประธาน" และเหตุการณ์ไม่คาดคิดบนหน้าจอ`.
 
 ---
 
@@ -160,14 +167,10 @@ Agents under pressure find excuses to avoid visual inspection. Every excuse belo
 | *"The transcript is enough to guess the topic."* | Guessing produces hallucinations that degrade audience trust. When challenged, verify with frames. |
 
 ### Red Flags - STOP and Run Vision
-- Quoting download numbers > 1,000 ล้าน for a mobile game.
-- Seeing LiveChat laugh (`555`, `ถถถ`) or type numbers immediately following streamer statements.
-- Removing campaign titles entirely because "the streamer sounded confused".
-- Attributing endgame mechanics ("หอรี", "เฟ้อกว่าเวเนซุเอลา") to a previously discussed game when a new game was booted up.
-- Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
-- Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
-- Donation stamp placed at the streamer's laugh instead of alert onset.
-- Quoting donation text from Whisper output instead of the on-screen alert box.
+- Quoting download numbers > 1,000 ล้าน for mobile games; LiveChat laughing (`555`) or typing corrections.
+- Bleeding prior game entities/terms into newly launched games; hallucinating unmentioned lore from pre-training.
+- Labeling viewer donation alerts as product reviews; stamping donation at laugh instead of alert onset.
+- Quoting donation text from Whisper output instead of on-screen alert box.
 
 ---
 
@@ -180,6 +183,9 @@ Agents under pressure find excuses to avoid visual inspection. Every excuse belo
 | **WatchParty Chapter/Season Misattribution** | When streamer translates on-screen chapter/expansion titles (e.g. *"Promise of Snow"*), check the video title and channel badge. It is an update for the game being watchpartied (*Chaos Zero Nightmare*), not a new game. |
 | **Subagents hallucinating from fluffed speech** | Inject extracted frame OCR keywords into subagent prompts before timestamping. |
 | **Ignoring LiveChat correction timestamps** | Cross-reference LiveChat comments within ±30 seconds of the controversial statement. |
+| **Stamp song from spoken title** | Verify audible lyrics in Whisper; news clip / intro = `[Reaction]` / `[Talk]`. |
+| **Stamp at streamer setup line** | Snap to first `>>` lyric line (e.g. Chalawan `07:43:45` not `07:43:31`). |
+| **Merge same-artist clips** | Split per lyric change (Mairom: *น้องเนเน่* → *บทเพลงวันแม่* → skip unplayed *อุ๊งอิ๊ง*). |
 
 ---
 
