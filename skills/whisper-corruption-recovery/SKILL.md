@@ -1,6 +1,6 @@
 ---
 name: whisper-corruption-recovery
-description: Use when Whisper transcription contains repetition loops, repeated identical phrases, or long-audio transcripts contain corrupt segments.
+description: Use when Whisper transcription contains repetition loops, repeated identical phrases, long-audio corrupt segments, or when speaker dialogue is drowned out by background music and songs.
 ---
 
 # Whisper Corruption Recovery
@@ -64,6 +64,49 @@ agy --model "Gemini 3.8 Flash (High)" --dangerously-skip-permissions `
 
 ---
 
+### 3. Music-Polluted Speech Recovery (Stem Separation & DSP Subtraction)
+
+Use when background music (especially rap, 808 bass, or repetitive vocal hooks) triggers Whisper attention collapse (`คุณคุณคุณ...`) or drops spoken dialogue.
+
+#### Workflow
+
+1. **Stem Isolation via `audio-separator` (BS-RoFormer)**:
+   Eliminates heavy drums, 808 sub-bass, and synths that hijack Whisper attention.
+   ```bash
+   python3 scripts/separate_and_recover.py --audio mixed_audio.wav --output-dir sep_out --model model_bs_roformer_ep_317_sdr_12.9755.ckpt
+   ```
+
+2. **DSP Reference Phase Subtraction (`vocal_subtractor.py`)**:
+   When the backing song is identified (via Shazam or chat lore) and an official studio track is available, align and phase-cancel studio vocals/music:
+   ```python
+   from src.music_pipeline.vocal_subtractor import process_subtraction_files
+
+   res = process_subtraction_files(
+       mixed_path="stream_audio.wav",
+       ref_path="official_song.wav",
+       output_path="isolated_speech.wav",
+   )
+   # Aligns lag via FFT cross-correlation and scales optimal gain:
+   # cleaned = mixed - (gain * aligned_ref)
+   ```
+
+3. **Anti-Loop Whisper Decoding (`--max-context 0`)**:
+   Standard Whisper cascades hallucinations forward across 30s chunks via text context memory. To break the feedback loop on music-polluted speech, disable context carryover:
+   ```bash
+   ffmpeg -y -i isolated_speech.wav -ar 16000 -ac 1 /tmp/speech_16k.wav
+   whisper-cli -m ggml-large-v3-turbo.bin -l th -t 4 --max-context 0 /tmp/speech_16k.wav
+   ```
+
+#### Decision Matrix: Which Technique to Use
+| Acoustic Situation | Technique | Command / Script |
+| :--- | :--- | :--- |
+| Repeating phrases, silence, or sound effects | BFS Divide-and-Conquer | `scripts/fix_hallucinations.py` |
+| Background song with unknown/no reference track | BS-RoFormer Stem Isolation | `scripts/separate_and_recover.py` |
+| Background song with known reference track | DSP Phase Subtraction | `vocal_subtractor.py` |
+| Whisper repeats last sentence in next 30s chunk | Anti-Loop Context Reset | `whisper-cli --max-context 0` |
+
+---
+
 ## Key Rules & Prohibitions
 
 1. **Never re-run Whisper on the full audio file**. Full re-runs repeat the same corruption boundaries. Always split into 30s chunks first.
@@ -72,3 +115,5 @@ agy --model "Gemini 3.8 Flash (High)" --dangerously-skip-permissions `
    - **In-segment word repeats** $\to$ Mark with `"[?] "` for review (DO NOT trigger audio splitting).
 3. **Data Integrity**: Never silently discard sub-second or uncertain items; preserve text attempts prepended with `"[?] "`.
 4. **Pipeline Sequencing Invariant**: Never launch downstream timestamping scripts (`process_chunks_local.py`, etc.) until the recovery lifecycle is fully finished: D&C recovery completed, uncertain frames extracted/reviewed, phantom loops pruned, and a verified `raw_transcript.json` generated.
+5. **Music Interference Guardrail**: When attention collapse is caused by background music, do NOT rely on audio splitting alone. Slicing preserves the interfering beat in each sub-chunk. Always isolate vocal stems with BS-RoFormer or cancel reference audio via DSP phase subtraction, and decode using `whisper-cli --max-context 0`.
+6. **Post-Recovery Timestamp Backfill Invariant**: When speech recovery is performed on a workspace that already contains generated timestamps, never leave coarse placeholder timestamps intact. Immediately unpack recovered ground-truth dialogue into granular timestamps (respecting $\ge 45\text{s}$ spacing) and atomically synchronize all three files: `all_timestamps.txt`, `anibon_timestamps_full.md`, and `anibon_timestamps.md`.

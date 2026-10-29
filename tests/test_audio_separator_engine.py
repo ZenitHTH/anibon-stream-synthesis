@@ -1,10 +1,15 @@
 """Unit tests for audio_separator_engine following Clean Code standards."""
 from __future__ import annotations
 
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, patch
+
+_LIB = str(Path(__file__).resolve().parent.parent / "lib")
+if _LIB not in sys.path:
+    sys.path.insert(0, _LIB)
 
 from process.audio_separator_engine import (
     SeparationResult,

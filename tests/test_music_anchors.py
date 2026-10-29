@@ -2,9 +2,18 @@
 from __future__ import annotations
 
 import json
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+_ROOT = Path(__file__).resolve().parent.parent
+_LIB = str(_ROOT / "lib")
+if _LIB not in sys.path:
+    sys.path.insert(0, _LIB)
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from process.signals.detector import extract_and_clean_music_anchors
 from scripts.prepare_video import chunk_transcript
 
