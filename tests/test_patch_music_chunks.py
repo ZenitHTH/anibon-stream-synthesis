@@ -31,6 +31,23 @@ class TestPatchMusicChunks(unittest.TestCase):
             self.assertNotIn("คุณคุณคุณคุณ", content)
             self.assertTrue(content.startswith("[03:45:00 - 03:50:00]"))
 
+    def test_patch_chunk_preserves_standard_chunk_header(self):
+        with TemporaryDirectory() as tmpdir:
+            chunk_file = Path(tmpdir) / "chunk_45.txt"
+            chunk_file.write_text("CHUNK 45 | 03:45:00–03:50:00 | cutoff=03:50:00\nข้อความสตรีม", encoding="utf-8")
+            brief = SongContextBrief(
+                title="พี่ไม่รักน้องเจ้า",
+                artist="อ.ไม้ร่ม",
+                theme="A cappella",
+                meme_lore="ดักเจ้า",
+                keywords=["ไม้ร่ม"]
+            )
+            patch_chunk_with_song_lore(chunk_file, brief, "เสียงพูดคลีน")
+            content = chunk_file.read_text(encoding="utf-8")
+            self.assertTrue(content.startswith("CHUNK 45 | 03:45:00–03:50:00 | cutoff=03:50:00"))
+            self.assertIn("[Song Context Briefing]", content)
+            self.assertIn("เสียงพูดคลีน", content)
+
     def test_scan_and_patch_workspace(self):
         with TemporaryDirectory() as tmpdir:
             ws = Path(tmpdir)

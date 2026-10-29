@@ -24,6 +24,18 @@ from interface import (
     write_chunk_txt,
     write_chunk_xml,
 )
+from process.signals.detector import extract_and_clean_music_anchors, save_music_anchors
+
+
+def _extract_and_save_anchors(cleaned: list, workspace: Path) -> None:
+    anchors = []
+    for item in cleaned:
+        offset_ms = int(item.get("start", 0) * 1000)
+        clean_text, item_anchors = extract_and_clean_music_anchors(item.get("text", ""), offset_ms=offset_ms)
+        item["text"] = clean_text
+        anchors.extend(item_anchors)
+    if anchors:
+        save_music_anchors(anchors, workspace)
 
 
 def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int:
@@ -31,9 +43,9 @@ def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int
     transcript = load_transcript(workspace)
     mappings = load_default_mappings()
     cleaned = correct_transcript(transcript, mappings)
-
     if not cleaned:
         return 0
+    _extract_and_save_anchors(cleaned, workspace)
 
     chunk_dir = workspace / "chunks"
     chunk_dir.mkdir(exist_ok=True)

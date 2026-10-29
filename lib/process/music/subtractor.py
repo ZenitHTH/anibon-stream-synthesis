@@ -12,7 +12,11 @@ def _align_and_compute_gain(mixed: np.ndarray, ref_slice: np.ndarray) -> float:
 
 
 def _find_best_lag(mixed: np.ndarray, ref: np.ndarray) -> int:
-    corr = np.correlate(mixed, ref, mode="full")
+    try:
+        from scipy.signal import correlate
+        corr = correlate(mixed, ref, mode="full", method="fft")
+    except ImportError:
+        corr = np.correlate(mixed, ref, mode="full")
     return int(np.argmax(corr) - (len(ref) - 1))
 
 

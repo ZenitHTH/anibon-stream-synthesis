@@ -20,6 +20,12 @@ class TestMusicSubsystem(unittest.TestCase):
         brief = fetch_song_lore_summary("พี่ไม่ได้ดักเจ้า")
         self.assertIn("ไม้ร่ม", brief.artist)
 
+    def test_empty_query_returns_default(self):
+        brief = fetch_song_lore_summary("")
+        self.assertEqual(brief.artist, "Unknown")
+        brief_spaces = fetch_song_lore_summary("   \n\t  ")
+        self.assertEqual(brief_spaces.artist, "Unknown")
+
     def test_chat_music_density(self):
         chat = [
             "สวัสดีครับ",
@@ -29,6 +35,16 @@ class TestMusicSubsystem(unittest.TestCase):
         ]
         self.assertGreater(scan_chat_music_density(chat), 0.25)
         self.assertTrue(has_music_chat_surge(chat, threshold=0.20))
+
+    def test_gaming_cries_do_not_trigger_music_surge(self):
+        chat = [
+            "โบ๊ตร้องไห้แล้ว 5555",
+            "ร้องเลยดิเกมนี้",
+            "ร้องกรี๊ดลั่นบ้าน",
+            "555555555",
+        ]
+        self.assertEqual(scan_chat_music_density(chat), 0.0)
+        self.assertFalse(has_music_chat_surge(chat, threshold=0.15))
 
     def test_subtraction_with_negative_offset(self):
         sr = 16000

@@ -105,25 +105,37 @@ def annotate_music_surges(index: dict[str, dict], slices: dict[str, list[str]]) 
         meta["music_detected"] = has_music_chat_surge(slices.get(name, []))
 
 
-def align(events_path: Path, chunks_dir: Path, out_dir: Path, scan_music_surge: bool = False) -> None:
+def align(events_path: Path, chunks_dir: Path, out_dir: Path) -> dict:
     """Align raw events feed to chunk windows and write per-chunk files."""
     out_dir.mkdir(parents=True, exist_ok=True)
     events = load_events(events_path)
     windows = load_chunk_windows(chunks_dir)
     if not windows or not events:
         print(f"[!] Missing chunks or events ({chunks_dir}, {events_path})", file=sys.stderr)
-        return
+        return {}
 
     slices = {name: slice_events(events, start, end) for name, start, end in windows}
     index = {
         name: _write_chunk_livechat(out_dir, name, slices[name], start, end)
         for name, start, end in windows
     }
-    if scan_music_surge:
-        annotate_music_surges(index, slices)
     (out_dir / "livechat_index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
     total = sum(v["count"] for v in index.values())
     print(f"[*] Wrote {len(index)} aligned chat logs, {total} events total.")
+    return index
+
+
+def align_with_music_scan(events_path: Path, chunks_dir: Path, out_dir: Path) -> dict:
+    """Align chat logs and annotate chunks exhibiting background music surges."""
+    index = align(events_path, chunks_dir, out_dir)
+    if not index:
+        return {}
+    events = load_events(events_path)
+    windows = load_chunk_windows(chunks_dir)
+    slices = {name: slice_events(events, start, end) for name, start, end in windows}
+    annotate_music_surges(index, slices)
+    (out_dir / "livechat_index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    return index
 
 
 if __name__ == "__main__":
@@ -133,4 +145,7 @@ if __name__ == "__main__":
     ap.add_argument("-o", "--output-dir", default="livechat", help="Output dir for per-chunk chat logs")
     ap.add_argument("--scan-music", action="store_true", help="Scan chat for music mentions and annotate index")
     args = ap.parse_args()
-    align(Path(args.events), Path(args.chunks), Path(args.output_dir), scan_music_surge=args.scan_music)
+    if args.scan_music:
+        align_with_music_scan(Path(args.events), Path(args.chunks), Path(args.output_dir))
+    else:
+        align(Path(args.events), Path(args.chunks), Path(args.output_dir))

@@ -174,6 +174,18 @@ def detect_repetition_anomaly(transcript_text: str, max_repeat_ratio: float = 0.
     return freq >= 4 and (freq * len(most_common) / len(text)) >= max_repeat_ratio
 
 
+def scrub_repetition_loop(text: str) -> str:
+    """Scrub attention-collapse repetition loops down to a single clean utterance."""
+    if not text:
+        return ""
+    cleaned = re.sub(r"(.{2,40}?)(?:\s*\1){2,}", r"\1", text)
+    cleaned = re.sub(r"(.)\1{4,}", r"\1", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if len(cleaned) <= 3 and len(text) >= 15:
+        return ""
+    return cleaned
+
+
 def load_raw_candidates(notes_dir_or_file: str) -> List[Dict]:
     candidates = []
     
@@ -762,7 +774,8 @@ def dispatch_verification(
             consecutive_fails = 0
         full_text, segments = run_whisper_slice(w_bin, m_bin, slice_wav, profile.threads_per_worker, device_id=profile.device_id)
         if detect_repetition_anomaly(full_text):
-            sys.stderr.write(f"[!] Repetition anomaly detected in slice {slice_name}: {full_text[:40]}...\n")
+            sys.stderr.write(f"[!] Repetition anomaly detected in slice {slice_name}: scrubbing loop...\n")
+            full_text = scrub_repetition_loop(full_text)
         return (cid, full_text, segments)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:

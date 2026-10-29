@@ -32,9 +32,15 @@ def format_song_context_briefing(brief: SongContextBrief) -> str:
     return "\n".join(lines)
 
 
+HEADER_TIME_RE = re.compile(r"(\d{2}:\d{2}:\d{2})[–-](\d{2}:\d{2}:\d{2})")
+
+
 def _extract_header(lines: list[str]) -> str:
-    if lines and lines[0].startswith("["):
-        return lines[0].strip()
+    if not lines:
+        return ""
+    first = lines[0].strip()
+    if first.startswith("CHUNK ") or first.startswith("[") or HEADER_TIME_RE.search(first):
+        return first
     return ""
 
 
