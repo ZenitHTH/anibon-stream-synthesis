@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import subprocess
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,6 +31,12 @@ class SeparationResult:
 
 def ensure_44k_stereo_wav(input_path: Path, output_path: Path) -> Path:
     """Resample to 44.1kHz stereo WAV required by HTDemucs in audio.cpp."""
+    if input_path.resolve() == output_path.resolve():
+        tmp_target = output_path.with_name(f"{output_path.stem}_tmp.wav")
+        ensure_44k_stereo_wav(input_path, tmp_target)
+        tmp_target.replace(output_path)
+        return output_path
+
     cmd = [
         "ffmpeg", "-y", "-i", str(input_path),
         "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le",
@@ -39,8 +46,20 @@ def ensure_44k_stereo_wav(input_path: Path, output_path: Path) -> Path:
     return output_path
 
 
+def mix_instrumental_stems(drums: Path, bass: Path, other: Path, out_path: Path) -> Path:
+    """Mix drums, bass, and other stems into a single full instrumental track."""
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", str(drums), "-i", str(bass), "-i", str(other),
+        "-filter_complex", "amix=inputs=3:normalize=0",
+        str(out_path),
+    ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return out_path
+
+
 def _decode_and_save_stems(outputs: list[dict], output_dir: Path) -> tuple[Path, Path]:
-    """Decode base64 audio stems and return (vocals, instrumental) paths."""
+    """Decode base64 audio stems and return (vocals, complete_instrumental) paths."""
     output_dir.mkdir(parents=True, exist_ok=True)
     stems = {}
     for item in outputs:
@@ -50,8 +69,25 @@ def _decode_and_save_stems(outputs: list[dict], output_dir: Path) -> tuple[Path,
         stems[name] = path
 
     vocals = stems.get("vocals", output_dir / "vocals.wav")
-    inst = stems.get("other", output_dir / "other.wav")
+    if all(k in stems for k in ("drums", "bass", "other")):
+        inst = mix_instrumental_stems(stems["drums"], stems["bass"], stems["other"], output_dir / "instrumental.wav")
+    else:
+        inst = stems.get("other", output_dir / "other.wav")
     return vocals, inst
+
+
+def _post_json_request(server_url: str, payload: dict, timeout: int = 180) -> dict:
+    """Post JSON payload to audio.cpp server with descriptive error handling."""
+    req = urllib.request.Request(
+        server_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.URLError as err:
+        raise RuntimeError(f"Failed to connect to audio.cpp server at {server_url}: {err}") from err
 
 
 def separate_via_audiocpp_api(
@@ -63,16 +99,8 @@ def separate_via_audiocpp_api(
     resampled = output_dir / "input_44k.wav"
     ensure_44k_stereo_wav(audio_path, resampled)
     b64_audio = base64.b64encode(resampled.read_bytes()).decode("utf-8")
-
     payload = {"model": "htdemucs", "request": {"audio_base64": b64_audio}}
-    req = urllib.request.Request(
-        server_url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req, timeout=300) as resp:
-        res = json.loads(resp.read().decode("utf-8"))
-
+    res = _post_json_request(server_url, payload)
     return _decode_and_save_stems(res.get("named_audio_outputs", []), output_dir)
 
 

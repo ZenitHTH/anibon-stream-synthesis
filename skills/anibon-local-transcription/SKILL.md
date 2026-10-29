@@ -62,7 +62,7 @@ Running `whisper-cli` on a monolithic 8-hour WAV (~1GB) incurs a massive mel-spe
 > - Keep `audio.cpp server` on port **8080**.
 > - Launch `whisper-server` on port **8081** (`whisper-server.exe -m ggml-large-v3-turbo.bin --port 8081 -l th`).
 
-1. **Probe Server**: Check `http://100.115.25.30:8081` (fallback `http://100.115.25.30:8080`, `http://127.0.0.1:8081`).
+1. **Probe Server**: Check `http://100.115.25.30:8081` (fallback `http://127.0.0.1:8081`, `http://127.0.0.1:8080`).
 2. **10-Minute Sliced Batching**:
    - Slice `audio_16k.wav` into 600-second (10-min) WAV segments using `ffmpeg -ss <offset> -t 600 -i audio_16k.wav -c copy slice.wav`.
    - `POST` multipart form data (`file=@slice.wav`, `language=th`, `response_format=json`, `temperature=0.0`) to `/inference`.
