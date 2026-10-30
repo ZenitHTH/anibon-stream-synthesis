@@ -64,7 +64,7 @@ fi
 
 EXTRA_ARGS=()
 if [[ -n "$VIDEO_URL" ]]; then
-    EXTRA_ARGS+=(--video-url "$VIDEO_URL")
+    EXTRA_ARGS+=(--video-url "$VIDEO_URL" --live-chat)
 fi
 if [[ $# -ge 7 ]]; then
     EXTRA_ARGS+=("${@:7}")

@@ -83,6 +83,8 @@ def align_livechat_feed(events_path: Path, chunks_dir: Path, out_dir: Path) -> b
         "-o", str(out_dir),
     ]
     res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if res.returncode != 0 and res.stderr:
+        sys.stderr.write(f"[livechat] Warning: align_live_chat failed: {res.stderr}\n")
     return res.returncode == 0 and (out_dir / "livechat_index.json").is_file()
 
 

@@ -46,6 +46,10 @@ flowchart TD
    - **Symptom**: Model generates titles like `ในเกม [ชื่อตัวละคร]` (e.g. `ในเกม Tenebria`).
    - **Mechanism**: A viewer asks a question in LiveChat (e.g. `หลุด Tenebria เก่งไหม`) while the streamer is discussing an in-game feature (e.g. card skins, deck building). The LLM fuses the character name with the feature to invent a non-existent game title.
    - **Iron Rule**: Never convert viewer inquiries about character names in chat into standalone game titles. Always cross-reference the on-screen game title or HUD. Tenebria is a character, not a game.
+9. **Streamer Background Music & BGM Identification**:
+   - **Symptom**: Streamer plays or changes background music, hums lyrics, or BGM carries cultural/political relevance.
+   - **Iron Rule of Music Identification**: NEVER guess song titles or artists based on conversational topic similarity, streamer mood, or pre-training memory (e.g., guessing Carabao when discussing politics). Always isolate vocal stems, transcribe exact lyrics via Whisper, and search the web with exact quoted phrases (`"ท่อนเนื้อเพลง 1" "ท่อนเนื้อเพลง 2"`).
+   - **Single-Action vs. Autoplay Rule**: Check LiveChat canary (e.g. *"พอดีกับตอนเพลงจบเลย"*, *"เสียงคุ้นๆ นะ"*) and streamer speech to distinguish deliberate streamer song changes from algorithmic YouTube Autoplay / continuous playlist progression.
 
 ### When NOT to Use:
 - Static podcast/radio segments where the streamer merely chats over a static background image or webcam.
@@ -93,6 +97,31 @@ ffmpeg -ss 00:00:30 -i target_slice.mp4.webm -frames:v 1 -q:v 2 target_frame.jpg
 yt-dlp -f "sb0" "https://www.youtube.com/watch?v=VIDEO_ID" -o "frames/sb0.mhtml"
 # Extract slide: slide_idx = int(target_sec / duration_per_slide); crop 3x3 tile grid
 ```
+
+---
+
+## BGM & Music Identification Protocol
+
+When identifying background songs or streamer BGM:
+
+```mermaid
+flowchart TD
+    A[Streamer Changes BGM / Music Becomes Relevant] --> B[Slice 45-90s Audio Window via yt-dlp]
+    B --> C[Resample to 44.1kHz Stereo PCM WAV]
+    C --> D[Separate Vocal Stem via audio.cpp HTDemucs]
+    D --> E[Resample Vocal Stem to 16kHz Mono]
+    E --> F[Transcribe Lyrics via whisper.cpp server]
+    F --> G[Web Search Exact Transcribed Lyrics in Quotes]
+    G --> H[Check LiveChat Canary for Deliberate Action vs Autoplay]
+    H --> I[Emit Ground-Truth Timestamp with Canonical Song & Artist]
+```
+
+1. **Slice Audio**: `yt-dlp -f "ba" --download-sections "*START-END" -o slice.webm "<URL>"`
+2. **44.1kHz Resampling Invariant**: `ffmpeg -y -i slice.webm -ar 44100 -ac 2 slice_44k.wav` (Strictly required by `audio.cpp`).
+3. **Stem Separation**: Submit base64 audio to `http://100.115.25.30:8080/v1/tasks/run` (`model: "htdemucs"`).
+4. **16kHz Vocal Transcription**: Resample isolated `vocals.wav` to 16kHz mono and submit to `http://100.115.25.30:8082/inference`.
+5. **Quoted Lyric Search**: Run web search with exact quoted phrases (e.g., `"ตราบในวันที่ฉันยังหายใจอยู่ เกิดมาเป็นนักสู้"`).
+6. **Autoplay Audit**: Verify whether the streamer explicitly commanded the song change (`"เปลี่ยนเพลงเลย"`) or if the music transitioned unattended after previous track end.
 
 ---
 

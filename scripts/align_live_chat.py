@@ -21,7 +21,11 @@ _LIB_DIR = str(Path(__file__).resolve().parents[1] / "lib")
 if _LIB_DIR not in sys.path:
     sys.path.insert(0, _LIB_DIR)
 from interface import chunk_sort_key
-from process.music.sensor import has_music_chat_surge
+try:
+    from process.music.sensor import has_music_chat_surge
+except ImportError:
+    def has_music_chat_surge(_lines: list[str]) -> bool:
+        return False
 
 
 def load_events(events_path: Path) -> list[tuple[int, str]]:

@@ -78,6 +78,8 @@ class HardwareProfile:
 def find_whisper_cli(custom_path: Optional[str] = None) -> Optional[str]:
     if custom_path and os.path.isfile(custom_path) and os.access(custom_path, os.X_OK):
         return custom_path
+    if os.environ.get("WHISPER_ENDPOINT"):
+        return "remote-server"
     
     home = os.path.expanduser("~")
     candidates = [
@@ -99,6 +101,8 @@ def find_whisper_cli(custom_path: Optional[str] = None) -> Optional[str]:
 def find_whisper_model(custom_path: Optional[str] = None) -> Optional[str]:
     if custom_path and os.path.isfile(custom_path):
         return custom_path
+    if os.environ.get("WHISPER_ENDPOINT"):
+        return "remote-model"
     
     home = os.path.expanduser("~")
     model_dirs = [
@@ -340,6 +344,38 @@ def align_whisper_segments(
     return " ".join(texts)
 
 
+def _parse_server_segments(raw_segments: List[Dict]) -> List[Dict]:
+    """Normalize whisper.cpp server segment schema to internal offsets format."""
+    normalized = []
+    for s in raw_segments:
+        start_ms = int(s.get("start", 0) * 1000)
+        end_ms = int(s.get("end", 0) * 1000)
+        normalized.append({
+            "text": s.get("text", ""),
+            "offsets": {"from": start_ms, "to": end_ms},
+            "timestamps": {"from": f"{start_ms}ms", "to": f"{end_ms}ms"},
+        })
+    return normalized
+
+
+def _query_whisper_server(endpoint: str, slice_wav: str) -> Tuple[str, List[Dict]]:
+    """Query remote whisper.cpp server with audio slice."""
+    cmd = [
+        "curl", "-s", endpoint,
+        "-H", "Content-Type: multipart/form-data",
+        "-F", f"file=@{slice_wav}",
+        "-F", "language=th",
+        "-F", "response_format=verbose_json",
+    ]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(res.stdout)
+        return (data.get("text", "").strip(), _parse_server_segments(data.get("segments", [])))
+    except Exception as e:
+        sys.stderr.write(f"[!] Whisper server query failed: {e}\n")
+        return ("", [])
+
+
 def run_whisper_slice(
     whisper_bin: str,
     model_bin: str,
@@ -347,7 +383,11 @@ def run_whisper_slice(
     threads: int = 4,
     device_id: Optional[int] = None
 ) -> Tuple[str, List[Dict]]:
-    """Run whisper-cli on audio slice and extract both full text and timed segments."""
+    """Run whisper-cli or remote whisper server on audio slice and extract segments."""
+    endpoint = os.environ.get("WHISPER_ENDPOINT")
+    if endpoint:
+        return _query_whisper_server(endpoint, slice_wav)
+
     base_no_ext = os.path.splitext(slice_wav)[0]
     json_out = base_no_ext + ".json"
     cmd = [
