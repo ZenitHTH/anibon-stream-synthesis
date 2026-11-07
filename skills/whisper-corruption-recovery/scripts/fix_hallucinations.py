@@ -7,14 +7,20 @@ Usage:
     python3 fix_hallucinations.py <whisper_json> <audio_wav> [--model PATH]
         [--threshold 0.4] [--min-duration 1.0] [--workers 2] [-o output.json]
 """
+from __future__ import annotations
+
 import sys
+import os
 import json
 import time
+import shutil
 import threading
 import argparse
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Force stdout UTF-8 encoding if available
@@ -27,6 +33,7 @@ if _LIB_DIR not in sys.path:
 
 from common.time import fmt_hhmmss
 from process.text import is_hallucinated
+from process.audio_separator_engine import separate_via_audiocpp_api
 
 WHISPER_CLI = str(Path.home() / "whisper.cpp/build/bin/whisper-cli")
 if not Path(WHISPER_CLI).exists() and Path(WHISPER_CLI + ".exe").exists():
@@ -76,17 +83,26 @@ class ProgressTracker:
             return f"[{self.level_name}] [Task {self.completed_tasks}/{self.total_tasks}] [{pct:5.1f}%] [{self._fmt_time(elapsed)}/{self._fmt_time(est_rem)}]"
 
 
-def log_event(worker_id: str, stage: str, msg: str, tracker: ProgressTracker = None, advance: bool = False):
+def _format_log_prefix(worker_id: str, stage: str, tracker_info: str) -> str:
     ts = time.strftime("%H:%M:%S")
-    if tracker:
-        if advance:
-            completed, pct, elapsed_str, rem_str = tracker.advance()
-            prefix = f"[{ts}] [{worker_id}] [{tracker.level_name}] [Task {completed}/{tracker.total_tasks}] [{pct:5.1f}%] [{elapsed_str}/{rem_str}] [{stage}]"
-        else:
-            prefix = f"[{ts}] [{worker_id}] {tracker.get_status_prefix()} [{stage}]"
-    else:
-        prefix = f"[{ts}] [{worker_id}] [{stage}]"
-    
+    if tracker_info:
+        return f"[{ts}] [{worker_id}] {tracker_info} [{stage}]"
+    return f"[{ts}] [{worker_id}] [{stage}]"
+
+
+def log_event(worker_id: str, stage: str, msg: str, tracker: Optional[ProgressTracker] = None) -> None:
+    tracker_info = tracker.get_status_prefix() if tracker else ""
+    prefix = _format_log_prefix(worker_id, stage, tracker_info)
+    print(f"{prefix} {msg}", flush=True)
+
+
+def log_event_and_advance(worker_id: str, stage: str, msg: str, tracker: Optional[ProgressTracker] = None) -> None:
+    if not tracker:
+        log_event(worker_id, stage, msg)
+        return
+    completed, pct, elapsed_str, rem_str = tracker.advance()
+    info = f"[{tracker.level_name}] [Task {completed}/{tracker.total_tasks}] [{pct:5.1f}%] [{elapsed_str}/{rem_str}]"
+    prefix = _format_log_prefix(worker_id, stage, info)
     print(f"{prefix} {msg}", flush=True)
 
 
@@ -100,87 +116,125 @@ def log_event(worker_id: str, stage: str, msg: str, tracker: ProgressTracker = N
 # ---------------------------------------------------------------------------
 
 def ffmpeg_cut(audio_wav: Path, start_ms: int, end_ms: int) -> Path:
-    """Cut [start_ms, end_ms] from audio_wav into a temp mono 16kHz WAV file."""
+    """Cut [start_ms, end_ms] from audio_wav into a temp 44.1kHz stereo WAV file."""
     tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp.close()
     out = Path(tmp.name)
-    subprocess.run(
-        [
-            "ffmpeg", "-y",
-            "-ss", str(start_ms / 1000.0),
-            "-to", str(end_ms / 1000.0),
-            "-i", str(audio_wav),
-            "-ar", "16000", "-ac", "1",
-            str(out),
-        ],
-        check=True,
-        capture_output=True,
-    )
-    return out
+    cmd = [
+        "ffmpeg", "-y",
+        "-ss", str(start_ms / 1000.0),
+        "-to", str(end_ms / 1000.0),
+        "-i", str(audio_wav),
+        "-ar", "44100", "-ac", "2", "-c:a", "pcm_s16le",
+        str(out),
+    ]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+        return out
+    except Exception:
+        out.unlink(missing_ok=True)
+        raise
 
 
-def run_whisper_on_slice(slice_wav: Path, model: str, temperature: float, device: int = 0, threads: int = 4, endpoint: str = None) -> list:
-    """
-    Run whisper-cli or remote whisper-server on slice_wav at given temperature.
-    Returns list of raw transcription dicts.
-    Offsets in the returned dicts are relative to the slice start in milliseconds.
-    """
-    if endpoint:
-        cmd = [
-            "curl", "-s", endpoint,
-            "-H", "Content-Type: multipart/form-data",
-            "-F", f"file=@{slice_wav}",
-            "-F", "language=th",
-            "-F", f"temperature={temperature}",
-            "-F", "response_format=verbose_json"
-        ]
-        try:
-            res = subprocess.check_output(cmd, timeout=120)
-            data = json.loads(res.decode("utf-8", errors="replace"))
-        except Exception:
-            return []
+def _parse_server_segments(data: dict) -> list:
+    segments = []
+    for seg in data.get("segments", []):
+        text = seg.get("text", "").strip()
+        if not text:
+            continue
+        start_ms = int(round(float(seg.get("start", 0)) * 1000))
+        end_ms = int(round(float(seg.get("end", 0)) * 1000))
+        segments.append({"text": text, "offsets": {"from": start_ms, "to": end_ms}})
+    return segments
 
-        segments = []
-        for seg in data.get("segments", []):
-            text = seg.get("text", "").strip()
-            if not text:
-                continue
-            start_ms = int(round(float(seg.get("start", 0)) * 1000))
-            end_ms = int(round(float(seg.get("end", 0)) * 1000))
-            segments.append({
-                "text": text,
-                "offsets": {
-                    "from": start_ms,
-                    "to": end_ms
-                }
-            })
-        return segments
 
-    out_base = str(slice_wav.with_suffix(""))
-    subprocess.run(
-        [
-            WHISPER_CLI,
-            "-m", model,
-            "-l", "th",
-            "-dev", str(device),
-            "-t", str(threads),
-            "-tp", str(temperature),
-            "-f", str(slice_wav),
-            "-ojf",
-            "-of", out_base,
-        ],
-        check=True,
-        capture_output=True,
-    )
+@dataclass
+class WhisperExecConfig:
+    model: str = MODEL_PATH
+    temperature: float = 0.2
+    device: int = 0
+    threads: int = 4
+    endpoint: Optional[str] = None
+
+
+def _apply_whisper_kwargs(cfg: WhisperExecConfig, kwargs: dict) -> None:
+    for k, v in kwargs.items():
+        if v is not None and hasattr(cfg, k):
+            setattr(cfg, k, v)
+
+
+def _normalize_whisper_config(
+    config: Optional[WhisperExecConfig | str] = None,
+    *args,
+    **kwargs,
+) -> WhisperExecConfig:
+    if isinstance(config, WhisperExecConfig):
+        return config
+    cfg = WhisperExecConfig()
+    if isinstance(config, str):
+        cfg.model = config
+    if len(args) > 0 and isinstance(args[0], (int, float)):
+        cfg.temperature = float(args[0])
+    _apply_whisper_kwargs(cfg, kwargs)
+    return cfg
+
+
+def _query_whisper_server(slice_wav: Path, cfg: WhisperExecConfig) -> list:
+    cmd = [
+        "curl", "-s", str(cfg.endpoint),
+        "-H", "Content-Type: multipart/form-data",
+        "-F", f"file=@{slice_wav}",
+        "-F", "language=th",
+        "-F", f"temperature={cfg.temperature}",
+        "-F", "response_format=verbose_json",
+    ]
+    try:
+        res = subprocess.check_output(cmd, timeout=120)
+        data = json.loads(res.decode("utf-8", errors="replace"))
+        return _parse_server_segments(data)
+    except Exception:
+        return []
+
+
+def _load_and_cleanup_json(slice_wav: Path) -> list:
     json_path = slice_wav.with_suffix(".json")
     if not json_path.exists():
         json_path = Path(str(slice_wav) + ".json")
     if not json_path.exists():
         return []
-    with open(json_path, "r", encoding="utf-8", errors="replace") as f:
-        data = json.load(f)
-    json_path.unlink(missing_ok=True)
-    return data.get("transcription", [])
+    try:
+        with open(json_path, "r", encoding="utf-8", errors="replace") as f:
+            data = json.load(f)
+        return data.get("transcription", [])
+    except Exception:
+        return []
+    finally:
+        json_path.unlink(missing_ok=True)
+
+
+def _run_whisper_cli(slice_wav: Path, cfg: WhisperExecConfig) -> list:
+    out_base = str(slice_wav.with_suffix(""))
+    cmd = [
+        WHISPER_CLI, "-m", cfg.model, "-l", "th",
+        "-dev", str(cfg.device), "-t", str(cfg.threads),
+        "-tp", str(cfg.temperature), "-f", str(slice_wav),
+        "-ojf", "-of", out_base,
+    ]
+    subprocess.run(cmd, check=True, capture_output=True)
+    return _load_and_cleanup_json(slice_wav)
+
+
+def run_whisper_on_slice(
+    slice_wav: Path,
+    config: Optional[WhisperExecConfig | str] = None,
+    *args,
+    **kwargs,
+) -> list:
+    """Run whisper-cli or remote whisper-server on slice_wav at given configuration."""
+    cfg = _normalize_whisper_config(config, *args, **kwargs)
+    if cfg.endpoint:
+        return _query_whisper_server(slice_wav, cfg)
+    return _run_whisper_cli(slice_wav, cfg)
 
 
 # ---------------------------------------------------------------------------
@@ -191,202 +245,323 @@ def _fmt_ts(seconds: float) -> str:
     return fmt_hhmmss(seconds)
 
 
-def _try_whisper_task(task):
-    """
-    Worker function for one BFS task. Evaluates text and logs instantly.
-    task = (worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads, [endpoint])
-    """
-    endpoint = None
-    if len(task) == 11:
-        worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads, endpoint = task
-    elif len(task) == 10:
-        worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads = task
-    else:
-        worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker = task
-        device, threads = 0, 4
+@dataclass
+class WhisperTask:
+    worker_num: int
+    start_ms: int
+    end_ms: int
+    audio_wav: Path
+    model: str
+    threshold: float
+    min_duration_s: float
+    tracker: Optional[ProgressTracker] = None
+    device: int = 0
+    threads: int = 4
+    endpoint: Optional[str] = None
+    audiocpp_url: Optional[str] = None
 
-    worker_id = f"W{worker_num}:SERVER" if endpoint else f"W{worker_num}:GPU{device}"
-    duration_s = (end_ms - start_ms) / 1000.0
-    slice_wav = None
-    
-    log_event(worker_id, "FFMPEG", f"Cutting audio {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)} ({duration_s:.1f}s)", tracker, advance=False)
-    
+    @property
+    def worker_id(self) -> str:
+        return f"W{self.worker_num}:SERVER" if self.endpoint else f"W{self.worker_num}:GPU{self.device}"
+
+    @property
+    def duration_s(self) -> float:
+        return (self.end_ms - self.start_ms) / 1000.0
+
+    @property
+    def whisper_cfg(self) -> WhisperExecConfig:
+        return WhisperExecConfig(
+            model=self.model,
+            temperature=0.2,
+            device=self.device,
+            threads=self.threads,
+            endpoint=self.endpoint,
+        )
+
+
+def _parse_task(task: tuple | WhisperTask) -> WhisperTask:
+    if isinstance(task, WhisperTask):
+        return task
+    w_num, start_ms, end_ms, audio_wav, model, threshold, min_dur = task[:7]
+    tracker = task[7] if len(task) > 7 else None
+    dev = task[8] if len(task) > 8 else 0
+    threads = task[9] if len(task) > 9 else 4
+    endpoint = task[10] if len(task) > 10 else None
+    audiocpp_url = task[11] if len(task) > 11 else None
+    return WhisperTask(
+        worker_num=w_num, start_ms=start_ms, end_ms=end_ms,
+        audio_wav=audio_wav, model=model, threshold=threshold,
+        min_duration_s=min_dur, tracker=tracker, device=dev,
+        threads=threads, endpoint=endpoint, audiocpp_url=audiocpp_url,
+    )
+
+
+def _format_segment_item(seg: dict, start_ms: int, end_ms: int) -> dict:
+    text = seg.get("text", "").strip()
+    offsets = seg.get("offsets", {})
+    abs_from = offsets.get("from", 0) + start_ms
+    abs_to = min(offsets.get("to", 0) + start_ms, end_ms)
+    return {
+        "text": text,
+        "start": abs_from / 1000.0,
+        "duration": max(0.0, (abs_to - abs_from) / 1000.0),
+        "timestamp": _fmt_ts(abs_from / 1000.0),
+    }
+
+
+def _build_uncertain_item(start_ms: int, end_ms: int, text: str = "[?]") -> dict:
+    dur_s = (end_ms - start_ms) / 1000.0
+    return {
+        "text": text,
+        "start": start_ms / 1000.0,
+        "duration": dur_s,
+        "timestamp": _fmt_ts(start_ms / 1000.0),
+        "uncertain": True,
+    }
+
+
+def _execute_slice_whisper(cfg: WhisperTask) -> tuple[Optional[Path], Optional[list]]:
+    log_event(cfg.worker_id, "FFMPEG", f"Cutting audio {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)} ({cfg.duration_s:.1f}s)", cfg.tracker)
     t0 = time.time()
     try:
-        slice_wav = ffmpeg_cut(audio_wav, start_ms, end_ms)
-        segs = run_whisper_on_slice(slice_wav, model, temperature=0.2, device=device, threads=threads, endpoint=endpoint)
+        slice_wav = ffmpeg_cut(cfg.audio_wav, cfg.start_ms, cfg.end_ms)
+        segs = run_whisper_on_slice(slice_wav, cfg.whisper_cfg)
         w_dur = time.time() - t0
-        target_info = "server" if endpoint else f"GPU {device}"
-        log_event(worker_id, "WHISPER", f"Processed slice on {target_info} in {w_dur:.1f}s -> {len(segs)} segments returned", tracker, advance=False)
+        target = "server" if cfg.endpoint else f"GPU {cfg.device}"
+        log_event(cfg.worker_id, "WHISPER", f"Processed slice on {target} in {w_dur:.1f}s -> {len(segs)} segments returned", cfg.tracker)
+        return slice_wav, segs
     except subprocess.CalledProcessError as e:
-        log_event(worker_id, "ERR", f"ffmpeg/whisper failed {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}: {e}", tracker, advance=True)
-        return worker_num, start_ms, end_ms, None, [], [(start_ms, end_ms)]
+        log_event_and_advance(cfg.worker_id, "ERR", f"ffmpeg/whisper failed {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)}: {e}", cfg.tracker)
+        return None, None
+
+
+def _eval_single_segment(seg: dict, cfg: WhisperTask) -> tuple[Optional[dict], Optional[dict], bool]:
+    text = seg.get("text", "").strip()
+    item = _format_segment_item(seg, cfg.start_ms, cfg.end_ms)
+    abs_from_s, abs_to_s = item["start"], item["start"] + item["duration"]
+    if not is_hallucinated(text, cfg.threshold):
+        log_event(cfg.worker_id, "EVAL", f"Range {_fmt_ts(abs_from_s)} -> {_fmt_ts(abs_to_s)} [✓ CLEAN] \"{text[:30]}\"", cfg.tracker)
+        return item, None, False
+    if cfg.duration_s < cfg.min_duration_s:
+        item["text"] = f"[?] {text}"
+        item["uncertain"] = True
+        log_event(cfg.worker_id, "EVAL", f"Range {_fmt_ts(abs_from_s)} -> {_fmt_ts(abs_to_s)} [?] UNCERTAIN (slice {cfg.duration_s:.1f}s < {cfg.min_duration_s:.1f}s) \"{text[:30]}\"", cfg.tracker)
+        return None, item, False
+    log_event(cfg.worker_id, "EVAL", f"Range {_fmt_ts(abs_from_s)} -> {_fmt_ts(abs_to_s)} [✗ HALLUCINATED] Loop detected: \"{text[:30]}\"", cfg.tracker)
+    return None, None, True
+
+
+def _classify_segments(segs: list, cfg: WhisperTask) -> tuple[list, list, bool]:
+    clean_sub, uncertain_sub = [], []
+    has_hallucination = False
+    for seg in segs:
+        if not seg.get("text", "").strip():
+            continue
+        c_item, u_item, is_loop = _eval_single_segment(seg, cfg)
+        if is_loop:
+            has_hallucination = True
+        elif c_item:
+            clean_sub.append(c_item)
+        elif u_item:
+            uncertain_sub.append(u_item)
+    return clean_sub, uncertain_sub, has_hallucination
+
+
+def _extract_clean_stem_segments(vocal_segs: list, cfg: WhisperTask) -> Optional[list]:
+    if not vocal_segs:
+        return None
+    valid = [s for s in vocal_segs if s.get("text", "").strip()]
+    if not valid:
+        return None
+    if any(is_hallucinated(s["text"].strip(), cfg.threshold) for s in valid):
+        return None
+    return [_format_segment_item(s, cfg.start_ms, cfg.end_ms) for s in valid]
+
+
+def _try_audiocpp_stem_recovery(slice_wav: Path, cfg: WhisperTask) -> Optional[list]:
+    tmp_dir = Path(tempfile.mkdtemp(prefix="audiocpp_stem_"))
+    try:
+        vocals_path, _ = separate_via_audiocpp_api(slice_wav, tmp_dir, server_url=cfg.audiocpp_url)
+        vocal_segs = run_whisper_on_slice(vocals_path, cfg.whisper_cfg)
+        clean_items = _extract_clean_stem_segments(vocal_segs, cfg)
+        if clean_items:
+            log_event(cfg.worker_id, "STEM-RECOVERED", f"Range {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)} [STEM-RECOVERED] Isolated vocals: {len(clean_items)} clean segments", cfg.tracker)
+            return clean_items
+    except Exception as e:
+        log_event(cfg.worker_id, "WARN", f"audio.cpp stem recovery failed: {e}", cfg.tracker)
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    log_event(cfg.worker_id, "STEM-FALLBACK", f"Range {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)} [STEM-FALLBACK] Falling back to D&C split", cfg.tracker)
+    return None
+
+
+def _resolve_hallucination(slice_wav: Path, cfg: WhisperTask) -> tuple[Optional[list], list]:
+    if cfg.audiocpp_url:
+        recovered = _try_audiocpp_stem_recovery(slice_wav, cfg)
+        if recovered is not None:
+            return recovered, []
+    mid = (cfg.start_ms + cfg.end_ms) // 2
+    next_sub = [(cfg.start_ms, mid), (mid, cfg.end_ms)]
+    log_event(cfg.worker_id, "SPLIT", f"Queueing 2 sub-tasks: {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(mid/1000.0)} & {_fmt_ts(mid/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)}", cfg.tracker)
+    return None, next_sub
+
+
+def _evaluate_and_recover_task(cfg: WhisperTask, slice_wav: Path, segs: list) -> tuple:
+    if not segs:
+        item = _build_uncertain_item(cfg.start_ms, cfg.end_ms)
+        log_event_and_advance(cfg.worker_id, "EVAL", f"Range {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)} [?] UNCERTAIN (empty text)", cfg.tracker)
+        return cfg.worker_num, cfg.start_ms, cfg.end_ms, [], [item], []
+
+    clean_sub, uncertain_sub, has_loop = _classify_segments(segs, cfg)
+    next_sub = []
+    if has_loop:
+        stem_clean, next_sub = _resolve_hallucination(slice_wav, cfg)
+        if stem_clean is not None:
+            clean_sub = stem_clean
+        else:
+            clean_sub.clear()
+
+    log_event_and_advance(cfg.worker_id, "DONE", f"Task complete: {_fmt_ts(cfg.start_ms/1000.0)} -> {_fmt_ts(cfg.end_ms/1000.0)}", cfg.tracker)
+    return cfg.worker_num, cfg.start_ms, cfg.end_ms, clean_sub, uncertain_sub, next_sub
+
+
+def _try_whisper_task(task: tuple | WhisperTask) -> tuple:
+    """
+    Worker function for one BFS task. Evaluates text and logs instantly.
+    task = (worker_num, start_ms, end_ms, audio_wav, model, threshold, min_duration_s, tracker, device, threads, [endpoint], [audiocpp_url])
+    """
+    cfg = _parse_task(task)
+    slice_wav = None
+    try:
+        slice_wav, segs = _execute_slice_whisper(cfg)
+        if segs is None:
+            return cfg.worker_num, cfg.start_ms, cfg.end_ms, None, [], [(cfg.start_ms, cfg.end_ms)]
+        return _evaluate_and_recover_task(cfg, slice_wav, segs)
     finally:
         if slice_wav is not None:
             slice_wav.unlink(missing_ok=True)
 
-    clean_sub = []
-    uncertain_sub = []
-    next_sub = []
 
-    if not segs:
-        item = {
-            "text": "[?]",
-            "start": start_ms / 1000.0,
-            "duration": duration_s,
-            "timestamp": _fmt_ts(start_ms / 1000.0),
+@dataclass
+class RecoveryOptions:
+    model: str = MODEL_PATH
+    threshold: float = 0.4
+    min_duration_s: float = 1.0
+    workers: int = 3
+    max_consec_repeat: int = 4
+    devices: int | list = 0
+    threads: int = 4
+    endpoint: Optional[str] = None
+    audiocpp_url: Optional[str] = None
+
+
+def _apply_recovery_kwargs(opts: RecoveryOptions, kwargs: dict) -> None:
+    for k, v in kwargs.items():
+        if v is not None and hasattr(opts, k):
+            setattr(opts, k, v)
+
+
+def _normalize_recovery_options(
+    options: Optional[RecoveryOptions | str] = None,
+    *args,
+    **kwargs,
+) -> RecoveryOptions:
+    if isinstance(options, RecoveryOptions):
+        return options
+    opts = RecoveryOptions()
+    if isinstance(options, str):
+        opts.model = options
+    if len(args) > 0 and isinstance(args[0], (int, float)):
+        opts.threshold = float(args[0])
+    if len(args) > 1 and isinstance(args[1], (int, float)):
+        opts.min_duration_s = float(args[1])
+    _apply_recovery_kwargs(opts, kwargs)
+    return opts
+
+
+@dataclass
+class LevelContext:
+    audio_wav: Path
+    opts: RecoveryOptions
+    level: int = 0
+
+
+def _cap_stuck_tasks(pending: list, level: int) -> list:
+    log_event("MAIN", "WARN", f"[Level {level}] MAX_LEVEL reached — marking {len(pending)} tasks as uncertain")
+    return [
+        {
+            "text": "[?] (stuck loop)",
+            "start": s / 1000.0,
+            "duration": (e - s) / 1000.0,
+            "timestamp": _fmt_ts(s / 1000.0),
             "uncertain": True,
         }
-        uncertain_sub.append(item)
-        log_event(worker_id, "EVAL", f"Range {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)} [?] UNCERTAIN (empty text)", tracker, advance=True)
-        return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
+        for s, e in pending
+    ]
 
-    has_hallucination = False
-    for seg in segs:
-        text = seg.get("text", "").strip()
-        if not text:
-            continue
-        offsets = seg.get("offsets", {})
-        abs_from = offsets.get("from", 0) + start_ms
-        abs_to   = min(offsets.get("to", 0) + start_ms, end_ms)
-        seg_dur_s = duration_s
 
-        if not is_hallucinated(text, threshold):
-            item = {
-                "text": text,
-                "start": abs_from / 1000.0,
-                "duration": max(0.0, (abs_to - abs_from) / 1000.0),
-                "timestamp": _fmt_ts(abs_from / 1000.0),
-            }
-            clean_sub.append(item)
-            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✓ CLEAN] \"{text[:30]}\"", tracker, advance=False)
-        elif seg_dur_s < min_duration_s:
-            item = {
-                "text": f"[?] {text}",
-                "start": abs_from / 1000.0,
-                "duration": max(0.0, (abs_to - abs_from) / 1000.0),
-                "timestamp": _fmt_ts(abs_from / 1000.0),
-                "uncertain": True,
-            }
-            uncertain_sub.append(item)
-            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [?] UNCERTAIN (slice {seg_dur_s:.1f}s < {min_duration_s:.1f}s) \"{text[:30]}\"", tracker, advance=False)
-        else:
-            has_hallucination = True
-            log_event(worker_id, "EVAL", f"Range {_fmt_ts(abs_from/1000.0)} -> {_fmt_ts(abs_to/1000.0)} [✗ HALLUCINATED] Loop detected: \"{text[:30]}\"", tracker, advance=False)
+def _build_whisper_task(task_spec: tuple, audio_wav: Path, opts: RecoveryOptions) -> WhisperTask:
+    idx, (s, e), tracker, dev_list = task_spec
+    return WhisperTask(
+        worker_num=idx % opts.workers + 1, start_ms=s, end_ms=e, audio_wav=audio_wav,
+        model=opts.model, threshold=opts.threshold, min_duration_s=opts.min_duration_s,
+        tracker=tracker, device=dev_list[idx % len(dev_list)], threads=opts.threads,
+        endpoint=opts.endpoint, audiocpp_url=opts.audiocpp_url,
+    )
 
-    # ponytail: split the slice at most ONCE per task, avoiding duplicate task explosion when Whisper returns multiple hallucinated segments in one slice
-    if has_hallucination:
-        mid = (start_ms + end_ms) // 2
-        next_sub.append((start_ms, mid))
-        next_sub.append((mid, end_ms))
-        log_event(worker_id, "SPLIT", f"Queueing 2 sub-tasks: {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(mid/1000.0)} & {_fmt_ts(mid/1000.0)} -> {_fmt_ts(end_ms/1000.0)}", tracker, advance=False)
 
-    log_event(worker_id, "DONE", f"Task complete: {_fmt_ts(start_ms/1000.0)} -> {_fmt_ts(end_ms/1000.0)}", tracker, advance=True)
-    return worker_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub
+def _run_bfs_level(
+    executor: ThreadPoolExecutor,
+    pending: list,
+    ctx: LevelContext,
+) -> tuple:
+    dev_list = ctx.opts.devices if isinstance(ctx.opts.devices, (list, tuple)) else [ctx.opts.devices]
+    tracker = ProgressTracker(f"Level {ctx.level}", len(pending))
+    futures = [
+        executor.submit(_try_whisper_task, _build_whisper_task((i, (s, e), tracker, dev_list), ctx.audio_wav, ctx.opts))
+        for i, (s, e) in enumerate(pending)
+    ]
+    clean_sub, uncertain_sub, next_pending = [], [], []
+    for f in as_completed(futures):
+        _, _, _, c_items, u_items, n_items = f.result()
+        clean_sub.extend(c_items or [])
+        uncertain_sub.extend(u_items)
+        next_pending.extend(n_items)
+    return clean_sub, uncertain_sub, next_pending
+
+
+def _process_bfs_queue(executor: ThreadPoolExecutor, pending: list, ctx: LevelContext) -> tuple[list, list]:
+    clean_items, uncertain_items = [], []
+    max_level = 20
+    while pending:
+        if ctx.level >= max_level:
+            uncertain_items.extend(_cap_stuck_tasks(pending, ctx.level))
+            break
+        c_items, u_items, pending = _run_bfs_level(executor, pending, ctx)
+        clean_items.extend(c_items)
+        uncertain_items.extend(u_items)
+        ctx = LevelContext(ctx.audio_wav, ctx.opts, ctx.level + 1)
+    return clean_items, uncertain_items
 
 
 def _bfs_recover(
     ranges: list,
     audio_wav: Path,
-    model: str = MODEL_PATH,
-    threshold: float = 0.4,
-    min_duration_s: float = 1.0,
-    workers: int = 3,
-    devices = 0,
-    threads: int = 4,
-    endpoint: str = None,
+    options: Optional[RecoveryOptions] = None,
+    *args,
+    **kwargs,
 ) -> tuple:
-    """
-    BFS parallel divide-and-conquer recovery across single or multiple GPUs, or remote whisper-server.
-    """
-    clean_items = []
-    uncertain_items = []
-    pending = list(ranges)  # list of (start_ms, end_ms)
-    level = 0
-    MAX_LEVEL = 20  # ponytail: hard cap — anything still bad at depth 20 is marked [?]; prevents infinite splitting on regions Whisper can never clean
-
-    dev_list = devices if isinstance(devices, (list, tuple)) else [devices]
-
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        while pending:
-            n = len(pending)
-            avg_s = sum(e - s for s, e in pending) / n / 1000.0 if n else 0
-            level_name = f"Level {level}"
-            tracker = ProgressTracker(level_name, n)
-
-            # Hard cap: force-mark all remaining ranges as uncertain
-            if level >= MAX_LEVEL:
-                log_event("MAIN", "WARN", f"[{level_name}] MAX_LEVEL={MAX_LEVEL} reached — marking {n} remaining task(s) as [?] UNCERTAIN (stuck loop)")
-                for s, e in pending:
-                    uncertain_items.append({
-                        "text": "[?] (stuck loop)",
-                        "start": s / 1000.0,
-                        "duration": (e - s) / 1000.0,
-                        "timestamp": _fmt_ts(s / 1000.0),
-                        "uncertain": True,
-                    })
-                break
-
-            target_desc = f"server {endpoint}" if endpoint else f"GPU(s) {dev_list}"
-            log_event("MAIN", "START", f"[{level_name}] Launching {n} task(s) on {workers} worker(s) across {target_desc}... (avg {avg_s:.1f}s each)")
-
-            future_to_task = {
-                executor.submit(
-                    _try_whisper_task,
-                    (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker, dev_list[i % len(dev_list)], threads, endpoint)
-                ): (s, e)
-                for i, (s, e) in enumerate(pending)
-            }
-
-            next_pending = []
-            level_clean = level_uncertain = level_recurse = 0
-
-            for future in as_completed(future_to_task):
-                try:
-                    w_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub = future.result()
-                    clean_items.extend(clean_sub)
-                    uncertain_items.extend(uncertain_sub)
-                    next_pending.extend(next_sub)
-
-                    level_clean += len(clean_sub)
-                    level_uncertain += len(uncertain_sub)
-                    level_recurse += len(next_sub) // 2
-                except Exception as e:
-                    log_event("MAIN", "ERR", f"Error in worker task: {e}")
-
-            log_event("MAIN", "SUMMARY", f"[{level_name} Complete] Tasks: {n}/{n} [100.0%] | Clean: {level_clean} | Split: {level_recurse} ({len(next_pending)} new tasks) | Uncertain: {level_uncertain}")
-            pending = next_pending
-            level += 1
-
-    return clean_items, uncertain_items
+    """BFS parallel divide-and-conquer recovery across single or multiple GPUs, or remote whisper-server."""
+    opts = _normalize_recovery_options(options, *args, **kwargs)
+    ctx = LevelContext(audio_wav=audio_wav, opts=opts, level=0)
+    with ThreadPoolExecutor(max_workers=opts.workers) as executor:
+        return _process_bfs_queue(executor, list(ranges), ctx)
 
 
-def _second_chance_pass(
-    uncertain_items: list,
-    audio_wav: Path,
-    model: str = MODEL_PATH,
-    threshold: float = 0.4,
-    min_duration_s: float = 1.0,
-    workers: int = 3,
-    devices = 0,
-    threads: int = 4,
-    endpoint: str = None,
-) -> tuple:
-    """
-    Merge consecutive [?] runs spanning > 1s and retry recovery in parallel across GPUs or remote whisper-server.
-
-    Returns (recovered_items, still_uncertain_items).
-    """
-    if not uncertain_items:
-        return [], []
-
-    uncertain_items = sorted(uncertain_items, key=lambda x: x["start"])
-
-    # Group consecutive uncertain items into runs
-    runs = []
-    run = [uncertain_items[0]]
-    for item in uncertain_items[1:]:
-        # consecutive = next item starts where this one ends (within 0.1s gap tolerance)
+def _partition_uncertain_runs(items: list, min_dur: float) -> tuple:
+    runs, run = [], [items[0]]
+    for item in items[1:]:
         prev_end = run[-1]["start"] + run[-1]["duration"]
         if item["start"] - prev_end < 0.1:
             run.append(item)
@@ -394,190 +569,163 @@ def _second_chance_pass(
             runs.append(run)
             run = [item]
     runs.append(run)
+    retry_runs = [r for r in runs if sum(i["duration"] for i in r) > min_dur]
+    keep_runs = [r for r in runs if sum(i["duration"] for i in r) <= min_dur]
+    return retry_runs, [item for r in keep_runs for item in r]
 
-    # Split into retry-eligible (span > 1s) and keep-as-is (span <= 1s)
-    retry_runs = []
-    keep_runs = []
-    for run in runs:
-        span = sum(i["duration"] for i in run)
-        if span > min_duration_s:
-            retry_runs.append(run)
-        else:
-            keep_runs.append(run)
 
-    still_uncertain = [item for run in keep_runs for item in run]
-    recovered = []
-
-    if not retry_runs:
-        return recovered, still_uncertain
-
-    dev_list = devices if isinstance(devices, (list, tuple)) else [devices]
-    level_name = "Second-Chance"
-    n_retry = len(retry_runs)
-    tracker = ProgressTracker(level_name, n_retry)
-    target_desc = f"server {endpoint}" if endpoint else f"GPU(s) {dev_list}"
-    log_event("MAIN", "START", f"[{level_name}] Launching retry for {n_retry} uncertain region(s) > {min_duration_s:.1f}s on {workers} worker(s) across {target_desc}...")
-
-    # Build retry tasks
-    retry_ranges = []
-    for run in retry_runs:
-        start_ms = int(run[0]["start"] * 1000)
-        end_ms   = int((run[-1]["start"] + run[-1]["duration"]) * 1000)
-        retry_ranges.append((start_ms, end_ms))
-
+def _execute_second_chance_tasks(retry_runs: list, audio_wav: Path, opts: RecoveryOptions) -> tuple:
+    dev_list = opts.devices if isinstance(opts.devices, (list, tuple)) else [opts.devices]
+    tracker = ProgressTracker("Second-Chance", len(retry_runs))
+    ranges = [(int(r[0]["start"] * 1000), int((r[-1]["start"] + r[-1]["duration"]) * 1000)) for r in retry_runs]
     tasks = [
-        (i % workers + 1, s, e, audio_wav, model, threshold, min_duration_s, tracker, dev_list[i % len(dev_list)], threads, endpoint)
-        for i, (s, e) in enumerate(retry_ranges)
+        _build_whisper_task((i, (s, e), tracker, dev_list), audio_wav, opts)
+        for i, (s, e) in enumerate(ranges)
     ]
-
-    with ThreadPoolExecutor(max_workers=workers) as executor:
+    with ThreadPoolExecutor(max_workers=opts.workers) as executor:
         results = list(executor.map(_try_whisper_task, tasks))
-
-    for run, (w_num, start_ms, end_ms, clean_sub, uncertain_sub, next_sub) in zip(retry_runs, results):
-        if clean_sub:
-            recovered.extend(clean_sub)
-            still_uncertain.extend(uncertain_sub)
+    recovered, still_uncertain = [], []
+    for run, (_, _, _, c_sub, u_sub, _) in zip(retry_runs, results):
+        if c_sub:
+            recovered.extend(c_sub)
+            still_uncertain.extend(u_sub)
         else:
             still_uncertain.extend(run)
-
-    log_event("MAIN", "SUMMARY", f"[{level_name} Complete] Regions: {n_retry}/{n_retry} [100.0%] | Recovered: {len(recovered)} | Still Uncertain: {len(still_uncertain)}")
     return recovered, still_uncertain
 
 
-
-def detect_and_recover(
-    items: list,
+def _second_chance_pass(
+    uncertain_items: list,
     audio_wav: Path,
-    model: str = MODEL_PATH,
-    threshold: float = 0.4,
-    min_duration_s: float = 1.0,
-    workers: int = 3,
-    max_consec_repeat: int = 4,
-    devices = 0,
-    threads: int = 4,
-    endpoint: str = None,
-) -> list:
-    """
-    Scan items for in-segment phoneme loops and cross-segment repetition loops.
-    Merges contiguous corrupt items into 5-minute audio slice tasks, running D&C
-    recovery across N workers concurrently across single or multiple GPUs.
-    Returns merged, timestamp-sorted list.
-    """
-    is_corrupt = [False] * len(items)
+    options: Optional[RecoveryOptions] = None,
+    *args,
+    **kwargs,
+) -> tuple:
+    """Merge consecutive [?] runs spanning > 1s and retry recovery in parallel across GPUs or remote whisper-server."""
+    if not uncertain_items:
+        return [], []
+    opts = _normalize_recovery_options(options, *args, **kwargs)
+    sorted_items = sorted(uncertain_items, key=lambda x: x["start"])
+    retry_runs, still_uncertain = _partition_uncertain_runs(sorted_items, opts.min_duration_s)
+    if not retry_runs:
+        return [], still_uncertain
+    recovered, retry_uncertain = _execute_second_chance_tasks(retry_runs, audio_wav, opts)
+    return recovered, still_uncertain + retry_uncertain
 
-    # 1. In-segment phoneme/word loop detection — mark for human review ([?] prefix), do NOT trigger D&C audio split
-    for i, item in enumerate(items):
+
+def _mark_phoneme_loops(items: list, threshold: float) -> None:
+    for item in items:
         text = item.get("text", "")
         if is_hallucinated(text, threshold) and not text.startswith("[?]"):
             item["text"] = f"[?] {text}"
             item["uncertain"] = True
 
-    # 2. Cross-segment pattern loop detection (A-A-A-A, A-B-A-B, A-B-C-A-B-C) — trigger D&C audio recovery
+
+def _match_pattern_at_index(texts: list, i: int, pat_len: int, min_rep: int) -> int:
+    pattern = texts[i : i + pat_len]
+    if not any(len(t) > 1 for t in pattern):
+        return 0
+    matches, curr, n = 0, i, len(texts)
+    while curr + pat_len <= n and texts[curr : curr + pat_len] == pattern:
+        matches += 1
+        curr += pat_len
+    return curr if matches >= min_rep else 0
+
+
+def _find_pattern_loops(items: list) -> list:
     n = len(items)
     texts = [items[k].get("text", "").replace("[?] ", "").strip() for k in range(n)]
-
-    for pattern_len in range(1, 4):  # Check 1-sentence, 2-sentence (A-B), and 3-sentence (A-B-C) pattern loops
+    is_corrupt = [False] * n
+    for pat_len in range(1, 4):
+        min_rep = 4 if pat_len == 1 else 3
         i = 0
-        min_repeats = 4 if pattern_len == 1 else 3  # A-A-A-A (4x) or A-B-A-B-A-B (3x pattern = 6 items)
-        while i <= n - (pattern_len * min_repeats):
-            pattern = texts[i : i + pattern_len]
-            if not any(len(t) > 1 for t in pattern):
-                i += 1
-                continue
-
-            matches = 0
-            curr = i
-            while curr + pattern_len <= n and texts[curr : curr + pattern_len] == pattern:
-                matches += 1
-                curr += pattern_len
-
-            if matches >= min_repeats:
-                for k in range(i, curr):
+        while i <= n - (pat_len * min_rep):
+            match_end = _match_pattern_at_index(texts, i, pat_len, min_rep)
+            if match_end > 0:
+                for k in range(i, match_end):
                     is_corrupt[k] = True
-                i = curr
+                i = match_end
             else:
                 i += 1
+    return is_corrupt
 
-    # Group contiguous corrupt items into merged time ranges [start_ms, end_ms]
-    ranges = []
-    curr_start = None
-    curr_end = None
 
+def _extract_corrupt_ranges(items: list, is_corrupt: list) -> list:
+    ranges, curr_start, curr_end = [], None, None
     for i, item in enumerate(items):
         if is_corrupt[i]:
             start_ms = int(item["start"] * 1000)
             end_ms = int((item["start"] + item.get("duration", 0)) * 1000)
-            if curr_start is None:
-                curr_start = start_ms
-                curr_end = end_ms
-            else:
-                curr_end = max(curr_end, end_ms)
-        else:
-            if curr_start is not None:
-                ranges.append((curr_start, curr_end))
-                curr_start = None
-                curr_end = None
-
+            curr_start = start_ms if curr_start is None else curr_start
+            curr_end = end_ms if curr_end is None else max(curr_end, end_ms)
+        elif curr_start is not None:
+            ranges.append((curr_start, curr_end))
+            curr_start, curr_end = None, None
     if curr_start is not None:
         ranges.append((curr_start, curr_end))
+    return ranges
 
-    clean_items = [item for i, item in enumerate(items) if not is_corrupt[i]]
-    num_corrupt = sum(is_corrupt)
-    log_event("MAIN", "SCAN", f"Found {num_corrupt} corrupt segments ({len(ranges)} merged ranges) out of {len(items)} total segments.")
-    
-    if not ranges:
-        return items
 
-    if not audio_wav.exists():
-        log_event("MAIN", "WARN", f"audio_wav {audio_wav} not found — dropping corrupt segments")
-        return clean_items
-
-    # Split large ranges (> 30s) into 30s sub-chunks to match Whisper's native 30s context window
-    chunked_ranges = []
-    MAX_CHUNK_MS = 30 * 1000  # 30 seconds (Whisper native context window)
+def _chunk_ranges(ranges: list, max_chunk_ms: int = 30000) -> list:
+    chunked = []
     for st, en in ranges:
         curr = st
         while curr < en:
-            nxt = min(curr + MAX_CHUNK_MS, en)
-            chunked_ranges.append((curr, nxt))
+            nxt = min(curr + max_chunk_ms, en)
+            chunked.append((curr, nxt))
             curr = nxt
+    return chunked
 
-    log_event("MAIN", "CHUNK", f"Split into {len(chunked_ranges)} recovery tasks (max 30s each).")
-    clean_recovered, uncertain_items = _bfs_recover(
-        chunked_ranges, audio_wav, model, threshold, min_duration_s, workers, devices=devices, threads=threads, endpoint=endpoint
-    )
-    sc_recovered, sc_uncertain = _second_chance_pass(
-        uncertain_items, audio_wav, model, threshold, min_duration_s, workers, devices=devices, threads=threads, endpoint=endpoint
-    )
-    recovered_items = clean_recovered + sc_recovered + sc_uncertain
 
-    result = clean_items + recovered_items
-    result.sort(key=lambda x: x["start"])
-
-    # Final post-recovery pass: strip residual consecutive repetitions (>= 3)
-    final_dedup = []
-    i = 0
+def _dedup_consecutive_repeats(items: list) -> list:
+    dedup, i, n = [], 0, len(items)
     fillers = {"โอเค", "เออ", "อืม", "อื้อ", "เอ่อ", "อ้าว"}
-    while i < len(result):
+    while i < n:
         j = i + 1
-        t = result[i].get("text", "").strip()
-        while j < len(result) and result[j].get("text", "").strip() == t:
+        t = items[i].get("text", "").strip()
+        while j < n and items[j].get("text", "").strip() == t:
             j += 1
-        count = j - i
-        if count >= 3 and len(t) > 2 and t not in fillers:
-            final_dedup.append(result[i])
+        if (j - i) >= 3 and len(t) > 2 and t not in fillers:
+            dedup.append(items[i])
         else:
-            final_dedup.extend(result[i:j])
+            dedup.extend(items[i:j])
         i = j
+    return dedup
 
-    result = final_dedup
 
-    n_uncertain = sum(1 for i in result if i.get("uncertain"))
-    n_clean_orig = len(items) - num_corrupt
-    n_recovered  = len(result) - n_clean_orig - n_uncertain
-    log_event("MAIN", "SUMMARY", f"Completed recovery. Total: {len(result):,} | Recovered: {n_recovered:,} | Preserved Uncertain [?]: {n_uncertain:,} | Original Clean: {n_clean_orig:,}")
+def _scan_corruptions(items: list, threshold: float) -> tuple[list, list]:
+    _mark_phoneme_loops(items, threshold)
+    is_corrupt = _find_pattern_loops(items)
+    ranges = _extract_corrupt_ranges(items, is_corrupt)
+    return is_corrupt, ranges
 
-    return result
+
+def _recover_corrupt_ranges(ranges: list, audio_wav: Path, opts: RecoveryOptions) -> list:
+    chunked = _chunk_ranges(ranges)
+    clean_rec, uncertain = _bfs_recover(chunked, audio_wav, opts)
+    sc_rec, sc_unc = _second_chance_pass(uncertain, audio_wav, opts)
+    return clean_rec + sc_rec + sc_unc
+
+
+def detect_and_recover(
+    items: list,
+    audio_wav: Path,
+    options: Optional[RecoveryOptions] = None,
+    *args,
+    **kwargs,
+) -> list:
+    """Scan items for loops, run D&C recovery, and return timestamp-sorted list."""
+    opts = _normalize_recovery_options(options, *args, **kwargs)
+    is_corrupt, ranges = _scan_corruptions(items, opts.threshold)
+    if not ranges:
+        return items
+    clean_orig = [item for i, item in enumerate(items) if not is_corrupt[i]]
+    if not audio_wav.exists():
+        return clean_orig
+
+    recovered = _recover_corrupt_ranges(ranges, audio_wav, opts)
+    result = sorted(clean_orig + recovered, key=lambda x: x["start"])
+    return _dedup_consecutive_repeats(result)
 
 
 
@@ -605,6 +753,8 @@ def main():
                     help="CPU threads per worker (default: 4)")
     ap.add_argument("--endpoint", default=None,
                     help="Remote or local whisper-server endpoint URL (e.g. http://100.115.25.30:8080/v1/audio/transcriptions)")
+    ap.add_argument("--audiocpp-url", default=os.environ.get("AUDIOCPP_URL", None),
+                    help="audio.cpp HTDemucs stem separation server URL (default: $AUDIOCPP_URL or None)")
     ap.add_argument("-o", "--output", default=None,
                     help="Output JSON path (default: overwrite input)")
     args = ap.parse_args()
@@ -659,11 +809,17 @@ def main():
                 "timestamp": _fmt_ts(start_s),
             })
 
-    fixed = detect_and_recover(
-        raw, audio_path, args.model, args.threshold, args.min_duration,
-        workers=args.workers, devices=parsed_devices, threads=args.threads,
-        endpoint=args.endpoint
+    opts = RecoveryOptions(
+        model=args.model,
+        threshold=args.threshold,
+        min_duration_s=args.min_duration,
+        workers=args.workers,
+        devices=parsed_devices,
+        threads=args.threads,
+        endpoint=args.endpoint,
+        audiocpp_url=args.audiocpp_url,
     )
+    fixed = detect_and_recover(raw, audio_path, opts)
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(fixed, f, ensure_ascii=False, indent=2)

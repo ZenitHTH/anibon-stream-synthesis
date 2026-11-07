@@ -20,6 +20,7 @@ TAGS = (
 )
 
 TAG_REMAP = {
+    "Viktory": "Victory",
     "ปิดสตรีม": "Ending",
     "ปิดไลฟ์": "Ending",
     "จบไลฟ์": "Ending",
@@ -171,6 +172,7 @@ def deduplicate_consecutive_timestamps(
             "elden ring", "fgo", "fate", "minecraft", "jojo", "yugioh", "yu-gi-oh",
             "รางดาว", "star rail", "honkai", "lol", "league of legends", "limbus",
             "nikke", "genshin", "dark souls", "deadlock", "monster hunter",
+            "where winds meet", "wwm", "phantom blade zero", "pbz", "phantom blade",
         ]
         desc_lower = desc.lower()
         for ent in common_entities:
@@ -212,8 +214,15 @@ def deduplicate_consecutive_timestamps(
         else:
             topic_dedup_gap = max_dedup_gap_sec
 
-        # Exception: Don't drop Boss / Death / Victory / Gacha / Donation / Highlight milestones unless < 2 mins apart
-        is_milestone = bool(re.search(r"\[(Boss|Death|Victory|Gacha|Donation|Highlight)\]", curr_stamp))
+        # Drop consecutive identical or repetitive failure loops (e.g. "พ่ายแพ้บอส... อีกครั้ง")
+        clean_prev = prev_desc.split("อีก")[0].strip()
+        clean_curr = curr_desc.split("อีก")[0].strip()
+        if clean_prev and clean_curr and clean_prev == clean_curr:
+            continue
+
+        # Exception: Don't drop Boss / Victory / Gacha / Donation / Highlight milestones unless < 2 mins apart
+        # Note: Death is excluded to prevent boss fight retry loops
+        is_milestone = bool(re.search(r"\[(Boss|Victory|Gacha|Donation|Highlight)\]", curr_stamp))
 
         # Filter out superficial reactions/off-hand micro-stamps (< 2.5 min apart from previous talk)
         is_reaction = bool(re.search(r"\[Reaction\]", curr_stamp))

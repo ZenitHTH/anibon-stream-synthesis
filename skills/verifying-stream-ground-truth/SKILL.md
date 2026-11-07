@@ -50,6 +50,11 @@ flowchart TD
    - **Symptom**: Streamer plays or changes background music, hums lyrics, or BGM carries cultural/political relevance.
    - **Iron Rule of Music Identification**: NEVER guess song titles or artists based on conversational topic similarity, streamer mood, or pre-training memory (e.g., guessing Carabao when discussing politics). Always isolate vocal stems, transcribe exact lyrics via Whisper, and search the web with exact quoted phrases (`"ท่อนเนื้อเพลง 1" "ท่อนเนื้อเพลง 2"`).
    - **Single-Action vs. Autoplay Rule**: Check LiveChat canary (e.g. *"พอดีกับตอนเพลงจบเลย"*, *"เสียงคุ้นๆ นะ"*) and streamer speech to distinguish deliberate streamer song changes from algorithmic YouTube Autoplay / continuous playlist progression.
+10. **Boss Encounter Verification & HP Bar Inspection (On-Screen HUD)**:
+    - **Symptom**: Streamer enters a boss fight, battles an enemy with a dedicated health bar, or talks about difficulty (*"ตัวนี้ยากมาก"*, *"สู้มา 3 ชั่วโมง"*).
+    - **Mechanism of Failure**: Audio-only models guess boss names from streamer commentary reminiscing about previous games (*Malenia*, *Sekiro*) or prior stream episodes (e.g. reminiscing about *"เจ๊งู / ไป๋ชื่อเลี่ยน"* from Part 2), or invent speculative descriptive names (*"บอสเทคโน"*).
+    - **Iron Rule of Boss Verification**: The boss's canonical in-game name is **ALWAYS printed directly under the boss health bar (Top Center HUD)** on screen. Never emit a `[Boss]` timestamp with a guessed, translated, or remembered boss name without inspecting at least one frame during the active boss encounter.
+    - **Action**: Extract 1 frame during the fight (`ffmpeg -ss <HH:MM:SS> -i "$VURL" -vframes 1 frame.jpg`) and read the exact text under the HP bar (e.g. `หุ่นมารสามพักตร์`, `ชายชุดดำหน้ากากทอง`, `เจ้าสาวขาว`, `จิ๋วปี้ ผู้เฝ้าประตู`).
 
 ### When NOT to Use:
 - Static podcast/radio segments where the streamer merely chats over a static background image or webcam.

@@ -468,6 +468,7 @@ def _evaluate_single_chunk_signal(
     idf_weights: dict[str, float],
     chained_weights: dict[str, float],
     chain_decay: float,
+    meta_anchors: Optional[dict[str, float]] = None,
 ) -> dict:
     """Evaluate signals for a single chunk, updating chained weights in place."""
     raw_scores, matched_kws, special_kws = _score_chunk_keywords(
@@ -480,6 +481,8 @@ def _evaluate_single_chunk_signal(
         prev = chained_weights.get(f, 0.0)
         curr = raw_scores.get(f, 0.0)
         chained_weights[f] = chain_decay * prev + curr
+        if meta_anchors and f in meta_anchors:
+            chained_weights[f] = max(chained_weights[f], meta_anchors[f])
 
     ranked_cands, best_file, confidence, primary_topic = _rank_chained_candidates(chained_weights)
 
@@ -530,11 +533,12 @@ def detect_signals_for_chunks(
     df_counts, idf_weights = compute_chunk_idf_weights(loaded_chunks, entries)
     meta_signals = extract_metadata_signals(workspace)
     chained_weights = seed_metadata_chained_weights(meta_signals, entries)
+    meta_anchors = {f: w * 0.4 for f, w in chained_weights.items()}
 
     signals = {}
     for chunk in loaded_chunks:
         signals[chunk["id"]] = _evaluate_single_chunk_signal(
-            chunk, entries, df_counts, idf_weights, chained_weights, chain_decay
+            chunk, entries, df_counts, idf_weights, chained_weights, chain_decay, meta_anchors
         )
 
     return signals

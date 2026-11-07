@@ -21,6 +21,7 @@ Game reference files live alongside this index in `references/`.
 - [Limbus Company Reference](Limbus_Company.md)
 - [Minecraft Vanilla & Mod Community (CurseForge) Reference](Minecraft.md)
 - [Minecraft: Cisco's Fantasy Medieval RPG Reference](Minecraft_Cisco.md)
+- [Phantom Blade Zero Reference](Phantom_Blade_Zero.md)
 - [Pokémon Translation & Names Reference](Pokemon_Names.md)
 - [Pokémon PvP & Champions Reference](Pokemon_PvP.md)
 - [Pokémon Radical Red Reference](Pokemon_Radical_Red.md)
@@ -28,10 +29,12 @@ Game reference files live alongside this index in `references/`.
 - [Wuthering Waves Reference](Wuthering_Waves.md)
 - [Japan Events & Conventions Reference](Japan_Event_Convention.md)
 - [Thai Book Fairs & Conventions Reference](Thai_Book_Fair_Convention.md)
+- [gamescom asia x Thailand Game Show 2026 Reference](Thailand_Game_Show_2026.md)
 - [Zenless Zone Zero Reference](Zenless_Zone_Zero.md)
 - [Tokusatsu & Project R.E.D. Reference](Tokusatsu_Project_RED.md)
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
 - [The Legend of Zelda: Breath of the Wild Reference](Zelda_Breath_of_the_Wild.md)
+- [The Great Villainess: Strategy of Lily (เผด็จการยูริ) Reference](The_Great_Villainess_Strategy_of_Lily.md)
 
 ## Database-backed Games
 

@@ -108,6 +108,7 @@
 ## 💬 ชื่อเล่นและศัพท์คอมมูนิตี้ไทย (Thai Community Nicknames)
 
 *   **คลื่นเวฟ / คลื่นวิทยุกระจายเสียง:** คำเรียกประชดกวน ๆ ของเกม Wuthering Waves ในหมู่ผู้เล่นไทย
+*   **Second Coming of Solaris (Unwritten Dream):** โปรเจกต์เกมแยก (Spin-off / Meta / Web game) แนว Visual Novel ผสมจีบสาวในจักรวาล Solaris ของ Kuro Games เปิดตัว พ.ย. 2026
 *   **ซั่วหมิง:** Suoming (ตัวละครดาบสายฟ้าบัฟ Unison ตู้ปัจจุบัน ต.ค. 2026)
 *   **ซิน:** Hsin (ตัวละครเรคติไฟเออร์สายฟ้า 5 ดาวบท 3.7)
 *   **ผู้ดูแลชายฝั่ง / แม่ชอร์:** ชื่อเล่นของตัวละคร **The Shorekeeper**

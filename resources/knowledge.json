@@ -1,6 +1,6 @@
 {
  "version": 2,
- "updated": "2026-10-24",
+ "updated": "2026-11-07",
  "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
  "entries": {
   "a-n-i-m-e": {
@@ -468,6 +468,26 @@
    "kind": "publisher",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
   },
+  "phantom blade": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  },
+  "phantom blade zero": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  },
+  "pbz": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  },
+  "แฟนทอมเบลด": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  },
+  "แฟนทอม เบลด": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  },
   "pipeline": {
    "kind": "domain",
    "file": "references/stream/talk-stream.md"
@@ -804,6 +824,22 @@
   "งานหนังสือ": {
    "kind": "event",
    "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+  },
+  "งาน tgs": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+  },
+  "tgs": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+  },
+  "thailand game show": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+  },
+  "gamescom": {
+   "kind": "event",
+   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
   },
   "ชูเอน": {
    "kind": "game",
@@ -1184,6 +1220,10 @@
   "จันทรกรี": {
    "kind": "game",
    "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+  },
+  "แฟนทอม เบลด์": {
+   "kind": "game",
+   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
   }
  },
  "_discovered": {

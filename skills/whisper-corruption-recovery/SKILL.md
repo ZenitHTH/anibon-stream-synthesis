@@ -6,7 +6,7 @@ description: Use when Whisper transcription contains repetition loops, repeated 
 # Whisper Corruption Recovery
 
 ## Overview
-Whisper on audio ≥2h can enter repetition loops — in-segment phoneme repeats or cross-segment multi-line loops (e.g. A-B-A-B). The `whisper-corruption-recovery` skill provides a **BFS Parallel Divide-and-Conquer (D&C)** engine with sub-1-second mathematical base-case guarantees, `[?]` text prepending, and visual frame context extraction.
+Whisper on audio ≥2h can enter repetition loops — in-segment phoneme repeats or cross-segment multi-line loops (e.g. A-B-A-B). The `whisper-corruption-recovery` skill provides a **BFS Parallel Divide-and-Conquer (D&C)** engine with sub-1-second mathematical base-case guarantees, `[?]` text prepending, automated `audio.cpp` vocal stem separation, and visual frame context extraction.
 
 ---
 
@@ -14,21 +14,25 @@ Whisper on audio ≥2h can enter repetition loops — in-segment phoneme repeats
 
 ### 1. BFS Parallel Audio Recovery (`scripts/fix_hallucinations.py`)
 
-Scans transcripts for in-segment phoneme loops and cross-segment multi-sentence loops ($A-A-A-A$, $A-B-A-B$, $A-B-C-A-B-C$), chunks corrupt ranges into 30s tasks matching Whisper's native context window, and executes parallel BFS D&C recovery down to sub-1-second slices.
+Scans transcripts for in-segment phoneme loops and cross-segment multi-sentence loops ($A-A-A-A$, $A-B-A-B$, $A-B-C-A-B-C$), chunks corrupt ranges into 30s tasks matching Whisper's native context window, and executes parallel BFS D&C recovery down to sub-1-second slices. When `--audiocpp-url` is configured, it automatically isolates vocal stems via `audio.cpp` HTDemucs before falling back to recursive time splits.
 
 ```bash
 # Single GPU (Fastest: RX 7600 Vulkan matrix cores)
-python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 -w 3 -o recovered_transcript.json
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_file> --devices 0 -w 3 -o recovered_transcript.json
 
 # Dual-GPU Parallel (RX 7600 + Tesla P100 concurrently)
-python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --devices 0 1 -w 4 -o recovered_transcript.json
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_file> --devices 0 1 -w 4 -o recovered_transcript.json
 
-# Remote/Local Whisper Server Mode (HTTP OpenAI-compatible endpoint)
-python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --endpoint http://100.115.25.30:8080/v1/audio/transcriptions -w 2 -o recovered_transcript.json
+# Remote/Local Whisper Server Mode with Automated audio.cpp Vocal Stem Separation
+python3 scripts/fix_hallucinations.py <whisper_json> <audio_file> \
+  --endpoint http://100.115.25.30:8082/inference \
+  --audiocpp-url http://100.115.25.30:8080/v1/tasks/run \
+  -w 2 -o recovered_transcript.json
 ```
 
 **Options**:
-- `--endpoint URL` — Remote or local whisper-server endpoint (e.g. `http://100.115.25.30:8080/v1/audio/transcriptions`).
+- `--endpoint URL` — Remote or local whisper-server endpoint (e.g. `http://100.115.25.30:8082/inference`).
+- `--audiocpp-url URL` — `audio.cpp` HTDemucs stem separation server (e.g. `http://100.115.25.30:8080/v1/tasks/run`).
 - `-dev` / `--devices` — GPU device ID(s) pool (e.g., `--devices 0` for single GPU or `--devices 0 1` for dual-GPU load balancing, default: `0`).
 - `-w 4` / `--workers 4` — Number of concurrent worker threads (default: `4`).
 - `-t 4` / `--threads 4` — CPU thread count per worker (default: `4`).
@@ -37,8 +41,9 @@ python3 scripts/fix_hallucinations.py <whisper_json> <audio_wav> --endpoint http
 - `-o output.json` — Path for final recovered transcript JSON.
 
 **Key Guarantees**:
-- **Task Deduplication**: Each audio slice splits at most once per task, preventing task explosion.
-- **Sub-1-Second Guarantee**: Task bounds halving $(start + end) // 2$ strictly reduces slice duration down to $< 1.0\text{s}$ (max 9 levels).
+- **Stem-Separation Preemption**: If a segment is flagged as a loop, `fix_hallucinations.py` first sends the 44.1kHz stereo slice to `audio.cpp` to isolate `vocals.wav`. If clean, it accepts the segment immediately (`[STEM-RECOVERED]`), avoiding unnecessary time splits.
+- **Task Deduplication & Clean Fallback**: If stem separation fails or still loops, parent segments are cleared to prevent duplicates, and the range splits at most once per task (`[STEM-FALLBACK]`).
+- **Sub-1-Second Guarantee**: Task bounds halving $(start + end) // 2$ strictly reduces slice duration down to $< 1.0\text{s}$ (max 20 levels).
 - **Data Preservation (`[?]`)**: Low-confidence/uncertain items are **never deleted**. The original text attempt is prepended with `"[?] "` (e.g., `"[?] มา มา มา มา"`) so human/vision reviewers can verify by listening or inspecting video frames.
 
 ---
@@ -66,28 +71,41 @@ agy --model "Gemini 3.8 Flash (High)" --dangerously-skip-permissions `
 
 ### 3. Music-Polluted Speech Recovery (Stem Separation & DSP Subtraction)
 
-Use when background music (especially rap, 808 bass, or repetitive vocal hooks) triggers Whisper attention collapse (`คุณคุณคุณ...`) or drops spoken dialogue.
+Use when background music (especially rap, 808 bass, EDM, boss music, or repetitive vocal hooks) triggers Whisper attention collapse (`คุณคุณคุณ...`) or drops spoken dialogue.
 
 #### Workflow
 
-0. **High-Speed GGUF Stem Separation via `audio.cpp` (Recommended: 10x Real-Time)**:
+0. **Fast Fingerprinting via Shazam (`shazamio`)**:
+   Before initiating full stem separation or model re-runs, run a 15–20s slice through `shazamio` to verify whether the corruption loop is caused by external commercial music (e.g. boss battle tracks like DMC *Bury the Light*, *Metal Gear Rising* OST, or meme tracks):
+   ```python
+   from shazamio import Shazam
+   shazam = Shazam()
+   res = await shazam.recognize(wav_slice_path)
+   # Returns track title and artist if matched
+   ```
+   If a track is identified, you immediately obtain the exact song title for timestamp attribution (`[Meme]` / `[Talk]`) and can route directly to vocal stem isolation.
+
+1. **High-Speed GGUF Stem Separation via `audio.cpp` (Recommended: 10x Real-Time)**:
    Uses quantized HTDemucs GGUF via remote ROCm/HIP server (`100.115.25.30:8080`) or local Metal GPU:
    ```bash
    # Pre-resample to 44.1kHz stereo (mandatory for HTDemucs)
    ffmpeg -y -i mixed_audio.wav -ar 44100 -ac 2 /tmp/mixed_44k.wav
 
-   # Remote HTTP or local audiocpp_cli:
-   audiocpp_cli --task sep --family htdemucs --model models/htdemucs-q8_0.gguf \
-     --backend metal --audio /tmp/mixed_44k.wav --out-dir sep_out
+   # Automated end-to-end recovery via fix_hallucinations.py:
+   python3 skills/whisper-corruption-recovery/scripts/fix_hallucinations.py \
+     whisper_output.json audio.opus \
+     --endpoint "http://100.115.25.30:8082/inference" \
+     --audiocpp-url "http://100.115.25.30:8080/v1/tasks/run" \
+     -o raw_transcript.json
    ```
 
-1. **Stem Isolation via `audio-separator` (BS-RoFormer)**:
+2. **Stem Isolation via `audio-separator` (BS-RoFormer)**:
    Eliminates heavy drums, 808 sub-bass, and synths that hijack Whisper attention.
    ```bash
    python3 scripts/separate_and_recover.py --audio mixed_audio.wav --output-dir sep_out --model model_bs_roformer_ep_317_sdr_12.9755.ckpt
    ```
 
-2. **DSP Reference Phase Subtraction (`vocal_subtractor.py`)**:
+3. **DSP Reference Phase Subtraction (`vocal_subtractor.py`)**:
    When the backing song is identified (via Shazam or chat lore) and an official studio track is available, align and phase-cancel studio vocals/music:
    ```python
    from src.music_pipeline.vocal_subtractor import process_subtraction_files
@@ -104,15 +122,15 @@ Use when background music (especially rap, 808 bass, or repetitive vocal hooks) 
 3. **Anti-Loop Whisper Decoding (`--max-context 0`)**:
    Standard Whisper cascades hallucinations forward across 30s chunks via text context memory. To break the feedback loop on music-polluted speech, disable context carryover:
    ```bash
-   ffmpeg -y -i isolated_speech.wav -ar 16000 -ac 1 /tmp/speech_16k.wav
-   whisper-cli -m ggml-large-v3-turbo.bin -l th -t 4 --max-context 0 /tmp/speech_16k.wav
+   ffmpeg -y -i isolated_speech.wav -ar 44100 -ac 2 /tmp/speech_44k.wav
+   whisper-cli -m ggml-large-v3-turbo.bin -l th -t 4 --max-context 0 /tmp/speech_44k.wav
    ```
 
 #### Decision Matrix: Which Technique to Use
 | Acoustic Situation | Technique | Command / Script |
 | :--- | :--- | :--- |
 | Repeating phrases, silence, or sound effects | BFS Divide-and-Conquer | `scripts/fix_hallucinations.py` |
-| Rap / heavy music (fastest GPU recovery) | GGUF HTDemucs via `audio.cpp` | `audio.cpp` (10.2x RTF) |
+| Rap / heavy music / boss BGM (fastest GPU recovery) | GGUF HTDemucs via `audio.cpp` | `scripts/fix_hallucinations.py --audiocpp-url http://100.115.25.30:8080/v1/tasks/run` |
 | Background song with unknown/no reference track | BS-RoFormer Stem Isolation | `scripts/separate_and_recover.py` |
 | Background song with known reference track | DSP Phase Subtraction | `vocal_subtractor.py` |
 | Whisper repeats last sentence in next 30s chunk | Anti-Loop Context Reset | `whisper-cli --max-context 0` |
@@ -127,7 +145,9 @@ Use when background music (especially rap, 808 bass, or repetitive vocal hooks) 
    - **In-segment word repeats** $\to$ Mark with `"[?] "` for review (DO NOT trigger audio splitting).
 3. **Data Integrity**: Never silently discard sub-second or uncertain items; preserve text attempts prepended with `"[?] "`.
 4. **Pipeline Sequencing Invariant**: Never launch downstream timestamping scripts (`process_chunks_local.py`, etc.) until the recovery lifecycle is fully finished: D&C recovery completed, uncertain frames extracted/reviewed, phantom loops pruned, and a verified `raw_transcript.json` generated.
-5. **Music Interference Guardrail**: When attention collapse is caused by background music, do NOT rely on audio splitting alone. Slicing preserves the interfering beat in each sub-chunk. Always isolate vocal stems with BS-RoFormer or cancel reference audio via DSP phase subtraction, and decode using `whisper-cli --max-context 0`.
+5. **Music Interference Guardrail**: When attention collapse is caused by background music, do NOT rely on audio splitting alone. Slicing preserves the interfering beat in each sub-chunk. Always isolate vocal stems with `audio.cpp` / BS-RoFormer or cancel reference audio via DSP phase subtraction.
 6. **Post-Recovery Timestamp Backfill Invariant**: When speech recovery is performed on a workspace that already contains generated timestamps, never leave coarse placeholder timestamps intact. Immediately unpack recovered ground-truth dialogue into granular timestamps (respecting $\ge 45\text{s}$ spacing) and atomically synchronize all three files: `all_timestamps.txt`, `anibon_timestamps_full.md`, and `anibon_timestamps.md`.
-7. **`audio.cpp` 44.1kHz Stereo Resampling Invariant**: HTDemucs under `audio.cpp` strictly requires 44,100 Hz stereo PCM (`expected 44100, got 16000/48000`). Never send 16kHz mono audio to `audio.cpp`. All stream audio MUST be converted via `ffmpeg -ar 44100 -ac 2` before submitting to `POST /v1/tasks/run`.
-8. **`whisper.cpp` Server Contract**: When using remote `whisper-server`, queries must target `POST /inference` with multipart form-data (`file=@<path>`, `language=th`, `response_format=verbose_json`).
+7. **44.1kHz Stereo Standard Invariant**: Both `audio.cpp` (HTDemucs) and `whisper.cpp` server require $\ge 44.1\text{kHz}$ stereo PCM (`ffmpeg -ar 44100 -ac 2 -c:a pcm_s16le`). 16kHz mono audio is strictly banned across all stream extraction, cutting, and server submissions.
+8. **Server Allocation & Ports**:
+   - `audio.cpp server` (HTDemucs): `http://100.115.25.30:8080/v1/tasks/run`
+   - `whisper.cpp server`: `http://100.115.25.30:8082/inference` (multipart form-data with `file=@<path>`, `language=th`, `response_format=verbose_json`).

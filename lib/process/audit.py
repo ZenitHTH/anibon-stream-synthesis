@@ -10,11 +10,29 @@ import sys
 from pathlib import Path
 from typing import Optional, Tuple, List
 
-from common.cleaner import _SPEAKER_SCRUB_RE, compile_mapping_entries
+from common.cleaner import _SPEAKER_SCRUB_RE, clean_text, compile_mapping_entries, load_replacements
 from process.signals.detector import load_garbled_replacements
 from download.transcript_source import is_youtube_auto_transcript
 
 _get_compiled_garbled = compile_mapping_entries
+
+
+def clean_workspace_chunks(workspace: Path) -> int:
+    """Replace noise words in workspace/chunks using garbled_replacements.json before signal detection."""
+    chunks_dir = Path(workspace) / "chunks"
+    if not chunks_dir.is_dir():
+        return 0
+    compiled = load_replacements()
+    changed_files = 0
+    for cf in sorted(chunks_dir.glob("chunk_*.txt")):
+        orig = cf.read_text(encoding="utf-8")
+        cleaned = clean_text(orig, compiled)
+        if cleaned != orig:
+            cf.write_text(cleaned, encoding="utf-8")
+            changed_files += 1
+    if changed_files:
+        print(f"[clean] Replaced noise words across {changed_files} chunk file(s).")
+    return changed_files
 
 
 def _scrub_speaker_drift(text: str) -> Tuple[str, int]:

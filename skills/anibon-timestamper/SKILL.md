@@ -55,6 +55,20 @@ Downloads transcript, creates `<workspace>/chunks/chunk_*.xml`.
 > [!IMPORTANT]
 > **Check Corruption**: If transcript is from local Whisper transcription (or audio ≥2h), verify tail entries for repetition loops. If corruption found (>0.5 match ratio), load `whisper-corruption-recovery` skill to split, re-run corrupted tail segment, and dedup-merge before chunking.
 
+### 2.5 Reconcile Post-Stream YouTube Edits (เมื่อคลิปถูกตัดต่อหลังไลฟ์)
+
+If the streamer edited/trimmed the livestream via YouTube Studio after broadcast (e.g. cutting toxic drama, bio-breaks, or multi-hour failure loops):
+1. **Preflight Duration Check**: Compare `yt-dlp --get-duration "URL"` with local `audio.opus` duration.
+2. **Acoustic Reconciliation**: If online duration is shorter, run `scripts/reconcile_edited_stream.py` to auto-detect cut points via 1000Hz FFT cross-correlation and shift timestamps without re-transcribing:
+   ```bash
+   python3 scripts/reconcile_edited_stream.py \
+     --orig-audio ~/youtube_<id>_workspace/audio.opus \
+     --video-url "https://www.youtube.com/watch?v=<id>" \
+     --timestamps ~/youtube_<id>_workspace/anibon_timestamps.md \
+     -o ~/youtube_<id>_workspace/anibon_timestamps.md
+   ```
+3. Never re-transcribe from scratch when a video has only been trimmed; preserve all verified descriptions and shift timestamps automatically.
+
 ### 3. Clean Transcript (Optional)
 
 Normalizes Thai-Whisper garbled English before signal detection. The script lives in the `cleaning-auto-transcripts` skill — resolve from the timestamper skill root.

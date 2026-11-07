@@ -179,10 +179,10 @@ CHUNK_MAX_TOKENS: int = 4096
 CHUNK_TIMEOUT_SEC: int = 180
 MULTIMODAL_TIMEOUT_SEC: int = 120
 
-PRUNE_MAX_TOKENS: int = 4000
+PRUNE_MAX_TOKENS: int = 8192
 PRUNE_TIMEOUT_SEC: int = 600
 
-SUMMARIZER_MAX_TOKENS: int = 4096
+SUMMARIZER_MAX_TOKENS: int = 8192
 SUMMARIZER_TIMEOUT_SEC: int = 600
 
 ENTITY_CONTEXT_MAX_TOKENS: int = 300
@@ -233,10 +233,10 @@ def reload_config() -> None:
     CHUNK_TIMEOUT_SEC = cfg_int("chunk_timeout_sec", 180)
     MULTIMODAL_TIMEOUT_SEC = cfg_int("multimodal_timeout_sec", 120)
 
-    PRUNE_MAX_TOKENS = cfg_int("prune_max_tokens", 4000)
+    PRUNE_MAX_TOKENS = cfg_int("prune_max_tokens", 8192)
     PRUNE_TIMEOUT_SEC = cfg_int("prune_timeout_sec", 600)
 
-    SUMMARIZER_MAX_TOKENS = cfg_int("summarizer_max_tokens", 4096)
+    SUMMARIZER_MAX_TOKENS = cfg_int("summarizer_max_tokens", 8192)
     SUMMARIZER_TIMEOUT_SEC = cfg_int("summarizer_timeout_sec", 600)
 
     ENTITY_CONTEXT_MAX_TOKENS = cfg_int("entity_context_max_tokens", 300)

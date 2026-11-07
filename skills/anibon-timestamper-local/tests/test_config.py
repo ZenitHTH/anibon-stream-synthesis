@@ -24,8 +24,8 @@ class TestConfig(unittest.TestCase):
     def test_skill_config_json_exists_and_loads_defaults(self):
         self.assertTrue(SKILL_CONFIG_PATH.is_file())
         self.assertEqual(CHUNK_MAX_TOKENS, 4096)
-        self.assertEqual(SUMMARIZER_MAX_TOKENS, 4096)
-        self.assertEqual(PRUNE_MAX_TOKENS, 4000)
+        self.assertEqual(SUMMARIZER_MAX_TOKENS, 8192)
+        self.assertEqual(PRUNE_MAX_TOKENS, 8192)
         self.assertEqual(BYTE_CAP_LIMIT, 3500)
 
     def test_load_config_parses_json_values(self):

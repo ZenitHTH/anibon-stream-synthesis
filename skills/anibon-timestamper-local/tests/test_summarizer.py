@@ -134,7 +134,7 @@ class TestSummarizer(unittest.TestCase):
         from unittest.mock import patch
         from process.summarizer import run_local_summarizer_pass
 
-        stamps = [f"00:{i:02d}:00 - [Talk] " + ("ก" * 120) for i in range(25)]
+        stamps = [f"{i * 5 // 60:02d}:{i * 5 % 60:02d}:00 - [Talk] หัวข้อ {i} " + ("ก" * 120) for i in range(25)]
         fake_llm_output = (
             "Part 1: 00:00:00\nSummary: เปิดสตรีมคุยข่าวใหญ่\n\n"
             "Part 2: 00:20:00\nSummary: ปิดท้ายสตรีม\n"

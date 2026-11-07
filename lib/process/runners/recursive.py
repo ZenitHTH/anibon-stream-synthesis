@@ -304,7 +304,7 @@ def _wait_for_network_recovery(endpoint: str, poll_interval: float = NETWORK_POL
     """Pause execution and poll until unreachable host/endpoint recovers."""
     parsed = urlparse(endpoint)
     host = parsed.hostname or PRIMARY_HOST
-    port = parsed.port or 1234
+    port = parsed.port or (443 if parsed.scheme == "https" else (80 if parsed.scheme == "http" else 1234))
     print(f"\n[network] Endpoint {host}:{port} unreachable (blackout/cutout). Waiting...", flush=True)
     while not is_host_reachable(host, port, timeout=2.0):
         time.sleep(poll_interval)

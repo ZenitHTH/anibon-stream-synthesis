@@ -6,8 +6,8 @@
   "probe_timeout_sec": 1.0,
 
   "chunk_max_tokens": 4096,
-  "prune_max_tokens": 4000,
-  "summarizer_max_tokens": 4096,
+  "prune_max_tokens": 8192,
+  "summarizer_max_tokens": 8192,
   "entity_context_max_tokens": 300,
 
   "chunk_timeout_sec": 180,

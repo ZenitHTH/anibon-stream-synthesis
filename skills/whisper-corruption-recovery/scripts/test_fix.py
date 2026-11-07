@@ -186,6 +186,218 @@ class TestPatternLoopScanner(unittest.TestCase):
         self.assertEqual(res[0]["offsets"]["from"], 500)
         self.assertEqual(res[0]["offsets"]["to"], 2500)
 
+
+class TestAudioFormatInvariant(unittest.TestCase):
+
+    @patch("subprocess.run")
+    def test_ffmpeg_cut_44k_stereo_default(self, mock_run):
+        """ffmpeg_cut must extract 44.1kHz stereo audio (-ar 44100 -ac 2 -c:a pcm_s16le)."""
+        fh.ffmpeg_cut(pathlib.Path("/tmp/input.wav"), 0, 1000)
+        mock_run.assert_called_once()
+        cmd = mock_run.call_args[0][0]
+        self.assertIn("-ar", cmd)
+        idx_ar = cmd.index("-ar")
+        self.assertEqual(cmd[idx_ar + 1], "44100")
+        self.assertIn("-ac", cmd)
+        idx_ac = cmd.index("-ac")
+        self.assertEqual(cmd[idx_ac + 1], "2")
+        self.assertIn("-c:a", cmd)
+        idx_ca = cmd.index("-c:a")
+        self.assertEqual(cmd[idx_ca + 1], "pcm_s16le")
+
+    @patch("subprocess.run")
+    def test_ffmpeg_cut_unlinks_on_failure(self, mock_run):
+        """ffmpeg_cut must unlink temporary file when subprocess.run fails."""
+        import subprocess as sp
+        mock_run.side_effect = sp.CalledProcessError(1, "ffmpeg")
+        with patch("pathlib.Path.unlink") as mock_unlink:
+            with self.assertRaises(sp.CalledProcessError):
+                fh.ffmpeg_cut(pathlib.Path("/tmp/input.wav"), 0, 1000)
+            mock_unlink.assert_called_once_with(missing_ok=True)
+
+
+class TestAudioCppStemRecovery(unittest.TestCase):
+
+    @patch("fix_hallucinations.separate_via_audiocpp_api")
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_stem_recovered_when_initial_slice_hallucinated(self, mock_whisper, mock_cut, mock_separate):
+        """When initial slice is hallucinated, but stem separation returns clean vocal text, [STEM-RECOVERED] succeeds without D&C split."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        fake_vocals = MagicMock(__str__=lambda s: "/tmp/fake_vocals.wav", unlink=lambda missing_ok=True: None)
+        fake_inst = MagicMock(__str__=lambda s: "/tmp/fake_inst.wav", unlink=lambda missing_ok=True: None)
+        mock_separate.return_value = (fake_vocals, fake_inst)
+
+        call_count = [0]
+        def whisper_side_effect(path, model, temperature=0.2, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return [_clean_seg(" กกกกกกกก", 0, 4000)]
+            return [_clean_seg(" สวัสดีครับชาวเน็ต", 0, 4000)]
+
+        mock_whisper.side_effect = whisper_side_effect
+
+        with patch("fix_hallucinations.log_event") as mock_log:
+            clean, uncertain = fh._bfs_recover(
+                [(0, 4000)], pathlib.Path("audio.wav"),
+                fh.MODEL_PATH, 0.4, 1.0, workers=1,
+                audiocpp_url="http://fake-audiocpp:8080/v1/tasks/run"
+            )
+            stem_recovered_logged = any(
+                call[0][1] == "STEM-RECOVERED" or "[STEM-RECOVERED]" in str(call)
+                for call in mock_log.call_args_list
+            )
+            self.assertTrue(stem_recovered_logged, "Expected [STEM-RECOVERED] event in logs")
+
+        mock_separate.assert_called_once()
+        self.assertEqual(len(clean), 1)
+        self.assertEqual(clean[0]["text"], "สวัสดีครับชาวเน็ต")
+        self.assertEqual(len(uncertain), 0)
+
+    @patch("fix_hallucinations.separate_via_audiocpp_api")
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_stem_fallback_to_dc_split_on_audiocpp_failure(self, mock_whisper, mock_cut, mock_separate):
+        """When audio.cpp server fails / raises RuntimeError, it falls back cleanly to D&C split without crashing."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        mock_separate.side_effect = RuntimeError("Failed to connect to audio.cpp server at http://100.115.25.30:8080: Connection refused")
+
+        call_count = [0]
+        def whisper_side_effect(path, model, temperature=0.2, **kwargs):
+            call_count[0] += 1
+            if call_count[0] == 1:
+                return [_clean_seg(" กกกกกกกก", 0, 4000)]
+            return [_clean_seg(" ดีครับ", 0, 2000)]
+
+        mock_whisper.side_effect = whisper_side_effect
+
+        with patch("fix_hallucinations.log_event") as mock_log:
+            clean, uncertain = fh._bfs_recover(
+                [(0, 4000)], pathlib.Path("audio.wav"),
+                fh.MODEL_PATH, 0.4, 1.0, workers=1,
+                audiocpp_url="http://100.115.25.30:8080/v1/tasks/run"
+            )
+            stem_fallback_logged = any(
+                call[0][1] == "STEM-FALLBACK" or "[STEM-FALLBACK]" in str(call)
+                for call in mock_log.call_args_list
+            )
+            self.assertTrue(stem_fallback_logged, "Expected [STEM-FALLBACK] event in logs")
+
+        self.assertEqual(mock_separate.call_count, 1)
+        self.assertGreaterEqual(len(clean), 1)
+        self.assertEqual(len(uncertain), 0)
+
+    @patch("fix_hallucinations.separate_via_audiocpp_api")
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_stem_fallback_when_vocal_stem_still_hallucinated(self, mock_whisper, mock_cut, mock_separate):
+        """When vocal stem still contains hallucination, logs [STEM-FALLBACK] and falls back to D&C split."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        fake_vocals = MagicMock(__str__=lambda s: "/tmp/fake_vocals.wav", unlink=lambda missing_ok=True: None)
+        fake_inst = MagicMock(__str__=lambda s: "/tmp/fake_inst.wav", unlink=lambda missing_ok=True: None)
+        mock_separate.return_value = (fake_vocals, fake_inst)
+
+        call_count = [0]
+        def whisper_side_effect(path, model, temperature=0.2, **kwargs):
+            call_count[0] += 1
+            if call_count[0] in (1, 2):
+                return [_clean_seg(" กกกกกกกก", 0, 4000)]
+            return [_clean_seg(" ดีครับ", 0, 2000)]
+
+        mock_whisper.side_effect = whisper_side_effect
+
+        with patch("fix_hallucinations.log_event") as mock_log:
+            clean, uncertain = fh._bfs_recover(
+                [(0, 4000)], pathlib.Path("audio.wav"),
+                fh.MODEL_PATH, 0.4, 1.0, workers=1,
+                audiocpp_url="http://fake-audiocpp:8080/v1/tasks/run"
+            )
+            stem_fallback_logged = any(
+                call[0][1] == "STEM-FALLBACK" or "[STEM-FALLBACK]" in str(call)
+                for call in mock_log.call_args_list
+            )
+            self.assertTrue(stem_fallback_logged, "Expected [STEM-FALLBACK] event in logs")
+
+        self.assertEqual(mock_separate.call_count, 1)
+        self.assertGreaterEqual(len(clean), 1)
+        self.assertEqual(len(uncertain), 0)
+
+    @patch("fix_hallucinations.separate_via_audiocpp_api")
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_mixed_slice_clears_clean_sub_on_fallback(self, mock_whisper, mock_cut, mock_separate):
+        """When a slice has mixed segments (clean + loop) and stem recovery fails, clean_sub is cleared to avoid duplicate emission."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        mock_separate.side_effect = RuntimeError("audio.cpp server offline")
+
+        mock_whisper.return_value = [
+            _clean_seg(" สวัสดีครับ", 0, 2000),
+            _clean_seg(" กกกกกกกก", 2000, 4000),
+        ]
+        task = fh.WhisperTask(
+            worker_num=1, start_ms=0, end_ms=4000,
+            audio_wav=pathlib.Path("audio.wav"), model=fh.MODEL_PATH,
+            threshold=0.4, min_duration_s=1.0,
+            audiocpp_url="http://fake-server:8080/v1/tasks/run"
+        )
+        _, _, _, clean_sub, _, next_sub = fh._try_whisper_task(task)
+        self.assertEqual(clean_sub, [], "clean_sub must be cleared on fallback")
+        self.assertEqual(next_sub, [(0, 2000), (2000, 4000)])
+
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_mixed_slice_clears_clean_sub_without_audiocpp(self, mock_whisper, mock_cut):
+        """When audiocpp_url is None, mixed slice clears clean_sub and queues child tasks."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        mock_whisper.return_value = [
+            _clean_seg(" สวัสดีครับ", 0, 2000),
+            _clean_seg(" กกกกกกกก", 2000, 4000),
+        ]
+        task = fh.WhisperTask(
+            worker_num=1, start_ms=0, end_ms=4000,
+            audio_wav=pathlib.Path("audio.wav"), model=fh.MODEL_PATH,
+            threshold=0.4, min_duration_s=1.0,
+            audiocpp_url=None
+        )
+        _, _, _, clean_sub, _, next_sub = fh._try_whisper_task(task)
+        self.assertEqual(clean_sub, [], "clean_sub must be cleared on fallback")
+        self.assertEqual(next_sub, [(0, 2000), (2000, 4000)])
+
+    @patch("fix_hallucinations.separate_via_audiocpp_api")
+    @patch("fix_hallucinations.ffmpeg_cut")
+    @patch("fix_hallucinations.run_whisper_on_slice")
+    def test_audiocpp_exception_logged_as_warn(self, mock_whisper, mock_cut, mock_separate):
+        """When separate_via_audiocpp_api throws, a WARN event is logged with the exception context."""
+        mock_cut.return_value = MagicMock(__str__=lambda s: "/tmp/fake.wav", unlink=lambda missing_ok=True: None)
+        mock_separate.side_effect = RuntimeError("Connection timeout")
+        mock_whisper.return_value = [_clean_seg(" กกกกกกกก", 0, 4000)]
+
+        task = fh.WhisperTask(
+            worker_num=1, start_ms=0, end_ms=4000,
+            audio_wav=pathlib.Path("audio.wav"), model=fh.MODEL_PATH,
+            threshold=0.4, min_duration_s=1.0,
+            audiocpp_url="http://fake-server:8080/v1/tasks/run"
+        )
+        with patch("fix_hallucinations.log_event") as mock_log:
+            fh._try_whisper_task(task)
+            warn_logged = any(
+                call[0][1] == "WARN" and "Connection timeout" in call[0][2]
+                for call in mock_log.call_args_list
+            )
+            self.assertTrue(warn_logged, "Expected WARN log event with exception context")
+
+
+class TestRecoveryOptions(unittest.TestCase):
+
+    def test_recovery_options_object_usage(self):
+        """RecoveryOptions dataclass can be passed to detect_and_recover and _bfs_recover."""
+        opts = fh.RecoveryOptions(workers=1, threshold=0.5, min_duration_s=2.0)
+        self.assertEqual(opts.workers, 1)
+        self.assertEqual(opts.threshold, 0.5)
+        self.assertEqual(opts.min_duration_s, 2.0)
+        self.assertEqual(opts.model, fh.MODEL_PATH)
+
+
 if __name__ == "__main__":
     unittest.main()
 

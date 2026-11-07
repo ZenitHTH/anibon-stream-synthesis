@@ -13,10 +13,12 @@ if _LIB_DIR not in sys.path:
 
 from interface import (
     DEFAULT_SUB_LANGS,
+    clean_text,
     correct_transcript,
     download_storyboard,
     download_transcript,
     load_default_mappings,
+    load_replacements,
     load_transcript,
     prepare_livechat,
     save_metadata,
@@ -28,11 +30,12 @@ from process.signals.detector import extract_and_clean_music_anchors, save_music
 
 
 def _extract_and_save_anchors(cleaned: list, workspace: Path) -> None:
+    compiled_replacements = load_replacements()
     anchors = []
     for item in cleaned:
         offset_ms = int(item.get("start", 0) * 1000)
-        clean_text, item_anchors = extract_and_clean_music_anchors(item.get("text", ""), offset_ms=offset_ms)
-        item["text"] = clean_text
+        clean_t, item_anchors = extract_and_clean_music_anchors(item.get("text", ""), offset_ms=offset_ms)
+        item["text"] = clean_text(clean_t, compiled_replacements)
         anchors.extend(item_anchors)
     if anchors:
         save_music_anchors(anchors, workspace)

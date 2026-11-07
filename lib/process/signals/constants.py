@@ -117,11 +117,11 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     ],
     "Arknights.md": [
         "arknights", "rhodes island", "oripathy", "originium", "doctor", "amiya", "อาร์คไนท์", "โรดส์",
-        "wis'adel", "วิชอาเดล", "logos", "โลโกส", "theresa", "เทเรซ่า", "shu", "สุ", "degenbrecher", "pepe",
+        "wis'adel", "วิชอาเดล", "logos", "โลโกส", "theresa", "เทเรซ่า", "shu", "ซู่", "degenbrecher", "pepe",
         "closure", "โคลเชอร์", "esperanta", "เอสเปรันต้า",
     ],
     "Arknights_Endfield.md": [
-        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii", "si", "ซี", "typhoeus", "ไทฟอน",
+        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii", "si", "typhoeus", "ไทฟอน",
     ],
     "Honkai_Impact_3_Part2.md": [
         "honkai impact 3rd", "honkai impact", "hi3", "สามเค", "ฮงไก", "herrscher of time", "senadina", "เซนาดิน่า",
@@ -149,6 +149,18 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
     "Limbus_Company.md": [
         "limbus company", "limbus", "dante", "golden bough", "mephistopheles", "sinners", "canto",
         "ลิมบัส", "แดนเต้", "vergilius", "เวอร์จิล", "เมฟิสโตเฟเลส", "อีโก้", "ego", "corrosion",
+    ],
+    "Thailand_Game_Show_2026.md": [
+        "thailand game show", "tgs", "gamescom", "gamescom asia", "งานหนังสือ", "book expo",
+        "qsncc", "ศูนย์การประชุมแห่งชาติสิริกิติ์", "งาน tgs", "งานเกม", "สนามมวย", "ไทย เพลย์วิเลียน",
+        "playvilion", "บูธเกม", "บูธหนังสือ",
+    ],
+    "Phantom_Blade_Zero.md": [
+        "phantom blade zero", "phantom blade", "pbz", "แฟนทอม เบลด", "แฟนทอมเบลด",
+        "soul", "โซล", "kungfupunk", "กังฟูพังก์", "ชุยหมิง", "chui ming",
+        "ภาคีไร้นาม", "ผู้ฝืนลิขิตสวรรค์", "ดาบชำรุดรอยสนิม", "ไป๋ชื่อเลี่ยน", "ฉือไป๋เหลียน",
+        "พญางูสังเวยวิญญาณ", "chi bai lian", "จอมกระบี่คลั่ง", "เจ้าสาวขาว",
+        "สำนักทวนธารา", "หุบผาธาราโศก", "ถ้ำลับอุโมงค์", "เสี้ยนเอ๋อ",
     ],
 }
 

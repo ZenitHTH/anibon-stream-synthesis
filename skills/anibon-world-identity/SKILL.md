@@ -88,6 +88,16 @@ Whenever any Pokémon species, entity, or stream topic is detected:
 2. **Dual-Lookup Verification**: Cross-check candidate strings against `references/Pokemon DATA/pokemon.db` matching `name_en`, `name_th_official`, or `name_th_english_sound`.
 3. **No Bare English Names**: Never output bare English Pokémon names alone (e.g. write `แบกซ์แคลิเบอร์ (Baxcalibur)` or `แบกซ์แคลิเบอร์`, not just `Baxcalibur`).
 
+## Post-Stream Knowledge Harvesting Protocol
+
+Execute immediately after `anibon_timestamps.md` passes all parity gates:
+1. **Audit Unverified Entities**: Inspect `audit_timestamps_against_glossary` warnings for new proper nouns, game titles, or unindexed lore.
+2. **Category Routing**:
+   - **New Game/Franchise**: Scaffold `references/<Franchise>.md` (standard table or bold bullets) and link in `references/INDEX.md`.
+   - **Existing Franchise**: Append new patch/character/mechanic notes to `references/<Franchise>.md`.
+   - **Phonetic Corrections**: Add confirmed Whisper drift patterns to `resources/garbled_replacements.json` via `update_garbled_dictionary.py`.
+3. **Integrity Check**: Run `PYTHONPATH="lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_knowledge_reader.py` to confirm knowledge files parse cleanly.
+
 ## When to Skip
 
 - Stream covers well-known characters/games within training data cutoff

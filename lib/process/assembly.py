@@ -8,12 +8,16 @@ import argparse
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from process.audit import audit_timestamps_against_glossary
-from process.parity_gates import run_parity_gates
+from common.cleaner import _CACHE as _CLEANER_CACHE, clean_text, load_replacements
+from common.config import LINE_WARN_LIMIT
 from common.time import parse_ts as ts_to_sec
+from download.transcript_source import is_youtube_auto_transcript
+from process.audit import audit_timestamps_against_glossary
+from process.byte_cap import enforce_byte_cap, enforce_line_cap
+from process.garbled_collector import run_garbled_collector
+from process.parity_gates import run_mood_validation, run_parity_gates
 from process.summarizer import (
     assemble_parts,
-    enforce_byte_cap,
     prune_essential,
     run_local_summarizer_pass,
 )
@@ -26,6 +30,43 @@ def _write_raw_timestamps(workspace: Path, deduped: List[str]) -> Path:
     raw_ts.write_text("\n".join(deduped), encoding="utf-8")
     print(f"[done] Raw timestamps: {raw_ts}")
     return raw_ts
+
+
+def _reload_cleaned_raw_timestamps(workspace: Path, fallback: List[str]) -> List[str]:
+    """Reload all_timestamps.txt and apply updated garbled replacements in-place."""
+    _CLEANER_CACHE.clear()
+    raw_ts = workspace / "all_timestamps.txt"
+    if not raw_ts.is_file():
+        return fallback
+    compiled = load_replacements()
+    lines = [clean_text(l.strip(), compiled) for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
+    if lines:
+        raw_ts.write_text("\n".join(lines), encoding="utf-8")
+        return lines
+    return fallback
+
+
+def _collect_and_clean_garbled(
+    workspace: Path,
+    deduped: List[str],
+    endpoint: str,
+    model: str,
+    args: Optional[argparse.Namespace],
+) -> List[str]:
+    """Run Whisper garbled collector before summarization and reload cleaned timestamps."""
+    no_gc = bool(args and getattr(args, "no_garbled_collector", False))
+    if no_gc or not is_youtube_auto_transcript(workspace):
+        return deduped
+
+    run_garbled_collector(
+        workspace=workspace,
+        video_url=getattr(args, "video_url", None) if args else None,
+        whisper_bin=getattr(args, "whisper_bin", None) if args else None,
+        whisper_model=getattr(args, "whisper_model", None) if args else None,
+        endpoint=endpoint,
+        llm_model=model,
+    )
+    return _reload_cleaned_raw_timestamps(workspace, deduped)
 
 
 def _prune_and_verify_timestamps(
@@ -62,6 +103,8 @@ def _assemble_parts_content(
     if not assembled:
         print("[assemble] Using heuristic double-border part assembly.")
         assembled = assemble_parts(deduped, workspace, block_size)
+    if not no_summarizer_pass and assembled:
+        assembled = enforce_line_cap(assembled, limit=LINE_WARN_LIMIT)
     if byte_cap:
         assembled = enforce_byte_cap(assembled)
     return assembled
@@ -79,12 +122,14 @@ def finalize_and_assemble_timestamps(
     glossary: Optional[dict] = None,
     byte_cap: bool = False,
 ) -> Tuple[Path, List[str]]:
-    """Assemble final markdown timestamps document and execute Pass 2 summarizer and parity gates."""
+    """Validate mood, collect garbled words, summarize, enforce limits, and run parity gates."""
     if args and getattr(args, "byte_cap", False):
         byte_cap = True
 
     deduped = sorted(list(dict.fromkeys(all_timestamps)), key=ts_to_sec)
-    _write_raw_timestamps(workspace, deduped)
+    raw_ts = _write_raw_timestamps(workspace, deduped)
+    run_mood_validation(workspace, raw_ts)
+    deduped = _collect_and_clean_garbled(workspace, deduped, endpoint, model, args)
 
     deduped = _prune_and_verify_timestamps(
         deduped, workspace, endpoint, model, temperature, args, no_summarizer_pass

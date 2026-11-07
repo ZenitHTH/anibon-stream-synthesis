@@ -508,6 +508,11 @@ def call_multimodal(
     api_key: Optional[str] = None,
 ) -> str:
     """Send multimodal payload to OpenAI-compatible VLM endpoint."""
+    img_items = [c for c in content_list if c.get("type") == "image_url"]
+    if len(img_items) > 8 and "tokenme" in endpoint.lower():
+        keep_imgs = set(id(img_items[int(i * len(img_items) / 8.0)]) for i in range(8))
+        content_list = [c for c in content_list if c.get("type") != "image_url" or id(c) in keep_imgs]
+
     payload = {
         "model": model,
         "messages": [
@@ -532,8 +537,8 @@ def call_multimodal(
         headers["Authorization"] = f"Bearer {api_key}"
 
     url = endpoint.rstrip("/")
-    if not url.endswith("/v1/chat/completions"):
-        url = f"{url}/v1/chat/completions"
+    if not url.endswith("/chat/completions"):
+        url = f"{url}/chat/completions" if url.endswith("/v1") else f"{url}/v1/chat/completions"
 
     req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
 

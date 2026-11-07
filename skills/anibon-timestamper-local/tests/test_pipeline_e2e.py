@@ -106,7 +106,7 @@ class TestPipelineE2E(unittest.TestCase):
         from pathlib import Path
         from process_chunks_local import finalize_and_assemble_timestamps
 
-        stamps = [f"00:{i:02d}:00 - [Talk] " + ("ข" * 120) for i in range(30)]
+        stamps = [f"{i * 5 // 60:02d}:{i * 5 % 60:02d}:00 - [Talk] หัวข้อ {i} " + ("ข" * 120) for i in range(30)]
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             out_md, _ = finalize_and_assemble_timestamps(
@@ -127,7 +127,7 @@ class TestPipelineE2E(unittest.TestCase):
         from pathlib import Path
         from process_chunks_local import finalize_and_assemble_timestamps
 
-        stamps = [f"00:{i:02d}:00 - [Talk] " + ("ข" * 120) for i in range(30)]
+        stamps = [f"{i * 5 // 60:02d}:{i * 5 % 60:02d}:00 - [Talk] หัวข้อ {i} " + ("ข" * 120) for i in range(30)]
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp)
             out_md, _ = finalize_and_assemble_timestamps(
@@ -145,6 +145,32 @@ class TestPipelineE2E(unittest.TestCase):
                 if block.strip():
                     self.assertLessEqual(len(block.encode("utf-8")), 3500)
 
+    def test_pipeline_order_mood_then_garbled_then_summary_and_limit(self):
+        from unittest.mock import patch
+        from process.assembly import finalize_and_assemble_timestamps
+
+        events = []
+        stamps = ["00:01:00 - [Talk] เล่นเกม Archen สนุกมาก"]
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "raw_transcript.th-orig.json3").write_text('{"events":[]}', encoding="utf-8")
+            with patch("process.assembly.run_mood_validation", side_effect=lambda *a, **k: events.append("validate_mood")), \
+                 patch("process.assembly.run_garbled_collector", side_effect=lambda *a, **k: events.append("garbled_collecting")), \
+                 patch("process.assembly.run_local_summarizer_pass", side_effect=lambda *a, **k: (events.append("summary_timestamp"), None)[1]), \
+                 patch("process.assembly.run_parity_gates", side_effect=lambda *a, **k: events.append("limit_and_gates")):
+                finalize_and_assemble_timestamps(
+                    workspace=ws,
+                    all_timestamps=stamps,
+                    endpoint="http://127.0.0.1:1234",
+                    model="test-model",
+                    temperature=0.1,
+                    block_size=2400,
+                    no_summarizer_pass=False,
+                )
+        self.assertEqual(
+            events,
+            ["validate_mood", "garbled_collecting", "summary_timestamp", "limit_and_gates"],
+        )
 
 
 if __name__ == "__main__":

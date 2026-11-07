@@ -91,6 +91,7 @@ Whenever updating phonetic replacements or expanding domain knowledge in this pl
      - Format A (Table): `| English Name (Thai Name) | Role/Faction | Attribute/Note |`
      - Format B (Bullets): `- **Name (English / Thai)**: Description`
    - Register the file in `skills/anibon-world-identity/references/INDEX.md`.
+   - **Post-Stream Knowledge Harvesting Invariant**: After completing timestamp generation and parity gates for any stream that covers new games, unindexed spin-offs, or patch announcements, the agent MUST persist verified entities to `references/<Franchise>.md` and register them in `INDEX.md` before concluding the run, preventing recurrent unverified entity warnings.
 
 3. **Pre-Flight Domain Knowledge Verification**:
    - Before launching chunk inference, check if video metadata (title, description) references an unindexed major franchise or game.

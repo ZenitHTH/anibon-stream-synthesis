@@ -43,13 +43,14 @@ def ensure_mood_555(workspace: Path) -> None:
     _run("analyze_555.py", *args)
 
 
-def _run_mood_validation(workspace: Path, target_file: Path) -> None:
-    """Front-tier Step 11.5: label timestamps with chunk mood/tone guidance."""
+def run_mood_validation(workspace: Path, target_file: Path | None = None) -> None:
+    """Front-tier Step 11.5 / post-chunk: label timestamps with chunk mood/tone guidance."""
     mood_file = workspace / "mood_555.json"
     livechat = workspace / "livechat"
-    if not (mood_file.exists() and livechat.is_dir()):
+    target = target_file or (workspace / "all_timestamps.txt")
+    if not (mood_file.exists() and livechat.is_dir() and target.exists()):
         return
-    args = ["--timestamps", target_file, "--mood", mood_file, "--livechat", livechat]
+    args = ["--timestamps", target, "--mood", mood_file, "--livechat", livechat]
     idx = livechat / "livechat_index.json"
     if idx.exists():
         args += ["--index", idx]
@@ -57,11 +58,9 @@ def _run_mood_validation(workspace: Path, target_file: Path) -> None:
 
 
 def run_parity_gates(workspace: Path, out_md: Path) -> None:
-    """Front-tier Steps 8.5, 10, and 11.5 on the finished run."""
+    """Front-tier Steps 8.5 and 10 on the finished run."""
     target_gap_file = out_md if (out_md and out_md.exists()) else (workspace / "all_timestamps.txt")
     if target_gap_file.exists():
         _run("audit_gaps.py", target_gap_file, "--chunks-dir", workspace / "chunks")
     if out_md.exists():
         _run("check_sections.py", out_md)
-    if target_gap_file.exists():
-        _run_mood_validation(workspace, target_gap_file)

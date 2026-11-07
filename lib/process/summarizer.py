@@ -36,11 +36,13 @@ def _compute_target_parts(n: int) -> int:
         return 1
     if n <= 24:
         return 2
-    if n <= 60:
+    if n <= 54:
         return 3
-    if n <= 120:
+    if n <= 72:
         return 4
-    return 5
+    if n <= 90:
+        return 5
+    return 6
 
 
 def _partition_blocks(stamps: List[str], target_parts: int) -> List[List[str]]:

@@ -1,6 +1,20 @@
 {
   "mappings": [
     {
+      "correct": "King Hassan",
+      "patterns": [
+        "King ซัน",
+        "คิง ซัน",
+        "คิงซัน"
+      ]
+    },
+    {
+      "correct": "จอมกระบี่คลั่ง",
+      "patterns": [
+        "จอมกระบี่คั่ง"
+      ]
+    },
+    {
       "correct": "Resident Evil: Code Veronica",
       "patterns": [
         "veronica",
@@ -601,6 +615,38 @@
       "patterns": [
         "เฮนชิน",
         "เฮ็นชิน"
+      ]
+    },
+    {
+      "correct": "The Great Villainess: Strategy of Lily",
+      "patterns": [
+        "เผด็จการยูริ",
+        "the gก vinet",
+        "เก willness",
+        "great villainess",
+        "strategy of lily"
+      ]
+    },
+    {
+      "correct": "Talulah",
+      "patterns": [
+        "ทารูล่า",
+        "ทารู่า",
+        "ตาู่า",
+        "ทูลู่",
+        "ทู่า",
+        "thuluth",
+        "tarulah"
+      ]
+    },
+    {
+      "correct": "Toska",
+      "patterns": [
+        "ทอชก้า",
+        "โทสก้า",
+        "ทชก้า",
+        "ทอสก้า",
+        "toshka"
       ]
     }
   ]

@@ -27,16 +27,12 @@ Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`)
 
 | Stage | Script / Module | Inputs / Outputs | Description |
 |-------|-----------------|------------------|-------------|
-| **0. Noise Cleaning, Music Anchors & Pre-normalization** | `lib/process/signals/detector.py` (auto) | `garbled_replacements.json` + `default_mappings.json` → `music_anchors.json` | Strips ASR speaker markers (`>>`), sound effect tags (`[เพลง]`, `[Applause]`), music symbols (`♪`), extracts `music_anchors.json`, repetitive stutter loops, and corrects phonetic drift before chunk loading/signal detection. |
-| **0.5 Knowledge Self-Reading** | `lib/process/knowledge_reader.py` (auto) | `signals.json` + `references/*.md` + DBs → `entity_glossary.json` | Self-reads domain markdown references matched in signals, queries local SQLite databases (`atlas_fgo.db`, `pokemon.db`), and builds chunk-filtered verified entity glossaries. Bypass via `--no-knowledge-reader`. |
-| **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt` | Downloads subtitles and segments audio/transcript into overlapping chunks. Pass `--live-chat` to download & align chat in one step. |
-| **1.5 LiveChat, Mood & Proactive Music Detection** | `scripts/align_live_chat.py` / `scripts/patch_music_chunks.py` / `lib/process/music/` | `livechat/`, `music_anchors.json` → `mood_555.json`, patched `chunks/*.txt` | Aligns LiveChat replay events to transcript chunks, auto-detects 555 bursts, proactively detects background songs via Stage 0 anchors and chat music density, and patches chunks with `[Song Context Briefing]` and DSP vocal isolation. |
-| **2. Topic Segmentation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`), `livechat/` | Detects shifts/continuations, emits timestamps via local LLM/VLM with visual ground truth, LiveChat highlights, and mood tone hints. |
-| **2.5 Vision Ground Truth (Optional)** | `lib/process/vision_verify.py` (`--vision-verify`) | `video_360p.mp4` + ambiguous stamps | Inspects on-screen video frames via local vision model for vague proper nouns or `[?]` tags before Pass 2 assembly. |
-| **3. Summarizer & Assembly (Pass 2)** | `lib/process/summarizer.py` (auto) | `all_timestamps.txt` → `anibon_timestamps.md` | Clusters timestamps into cohesive macro-thematic parts (typically 4–6 parts) and snaps to transition cues (`find_best_boundary`). |
-| **4. Garbled Collector & Whisper Ground Truth** | `scripts/whisper_dispatcher.py` (auto post-pass) | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` | Automatically runs after summary: guards against attention collapse loops via `detect_repetition_anomaly`, slices audio on-the-fly, transcribes phonetic ground truth via local whisper.cpp, and auto-grows shared dictionary. |
-| **4.5 Post-Recovery Timestamp Unpacking & Sync** | Manual / CLI Runner | `recovery_report_*.md` → `all_timestamps.txt`, `anibon_timestamps_full.md`, `anibon_timestamps.md` | When speech is recovered from music-polluted or garbled segments, unpacks coarse single-timestamp placeholders into granular reaction/dialogue entries ($\ge 45\text{s}$ spacing) and atomically synchronizes all three output files. |
-| **5. Deterministic Parity Gates** | `lib/process/parity_gates.py` (auto post-pass) | `all_timestamps.txt`, `anibon_timestamps.md` | Runs front-tier parity checks: `scripts/audit_gaps.py` (enforces NO GAPS > 10m), `scripts/check_sections.py` (audits timestamp line counts [target 15–20, max 25 lines/part] and ASR garble patterns), and `scripts/validate_mood.py` (validates mood-bearing timestamps honour mood_555 verdicts). |
+| **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt`, `livechat/`, `mood_555.json` | Downloads subtitles, segments audio/transcript into overlapping chunks, aligns LiveChat (`--live-chat`), and computes 555 mood pulses. |
+| **1.5 Replacing Noise Words & Knowledge Discovery** | `lib/process/audit.py` (`clean_workspace_chunks`) + `lib/process/knowledge_reader.py` | `garbled_replacements.json` + `default_mappings.json` → cleaned `chunks/*.txt`, `signals.json`, `entity_glossary.json` | Replaces phonetic noise words across `chunks/` on disk first, then detects domain signals and builds chunk-filtered verified entity glossaries. |
+| **2. Topic Segmentation & Mood Validation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` + `scripts/validate_mood.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`), `livechat/`, `mood_555.json` → `all_timestamps.txt` | Detects shifts/continuations via local LLM/VLM with visual ground truth and mood hints, emits `all_timestamps.txt`, and immediately runs `validate_mood.py` on raw chunk timestamps. |
+| **3. Garbled Collector & Whisper Ground Truth** | `lib/process/garbled_collector.py` / `scripts/whisper_dispatcher.py` | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` + cleaned `all_timestamps.txt` | Runs **before** summarization: slices audio on-the-fly, transcribes phonetic ground truth via local `whisper.cpp`, updates shared dictionary, and cleans `all_timestamps.txt` and `chunks/*.txt`. |
+| **4. Summarizer, Section Limit & Parity Gates (Pass 2)** | `lib/process/summarizer.py` + `lib/process/byte_cap.py` + `lib/process/parity_gates.py` | cleaned `all_timestamps.txt` → `anibon_timestamps.md` | Prunes to essential stamps, clusters into macro-thematic parts, enforces section line/byte limits (`enforce_line_cap` ≤ 20 lines), audits against glossary, and runs `audit_gaps.py` & `check_sections.py`. |
+| **4.5 Post-Stream Trimmed VOD Reconciliation** | `scripts/reconcile_edited_stream.py` | `audio.opus` + URL + `anibon_timestamps.md` → reconciled `anibon_timestamps.md` | Checks if YouTuber edited/trimmed the stream post-broadcast; if duration shrank, computes 1000Hz FFT audio correlation to detect cut intervals and shifts timestamps without re-transcribing. |
 
 ### Modular Library Architecture (`lib/`)
 
@@ -77,9 +73,15 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
    - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'` (Thai community/official name followed by English name in parentheses).
    - Enforces `CAVEMAN TIMESTAMP STYLE INVARIANT`:
      - NEVER start timestamp descriptions or section titles with `'ปู่โบ๊ต'`.
+     - **Brevity & Novel-Style Ban**: Timestamps are punchy headlines, NOT narrative plot summaries or multi-clause paragraphs.
+       - **Length Bound**: Target 5–12 words (25–55 Thai characters) per description.
+       - **No Narrative Padding**: Ban connector bloat (`ตีแผ่ปัญหา... จนเกิดปัญหา...`, `โดยวิจารณ์ว่า... พร้อมเสนอแนะ...`, `และปิดท้ายด้วยการ...`, `ก่อนจะยินดีกับ...`).
+       - **No Embedded Timestamps in Text**: Never write bracketed time markers (`[01:23:45]`, `จากภาพในจอ`) inside the description text.
+     - **No Repetitive Activity Prefixes**: When background gameplay/farming is active across multiple chunks, state the gameplay in the section title or initial stamp. DO NOT repeat `"เฝ้าด่าน <Game> พร้อม..."` on every subsequent talk stamp. Focus each stamp directly on the spoken topic.
      - **Dynamic Recent-Verb Blacklist**: Extracts opening verbs from `recent_timestamps` and explicitly bans reusing them in the next chunk.
      - **No Redundant Title Suffixes**: When a whole section covers one main title, name specific characters/events rather than appending `'ใน <Title>'` to every line.
      - Use varied action-first or topic-first verbs: `ส่อง`, `ชำแหละ`, `เทียบ`, `เจาะลึก`, `เม้าท์มอย`, `สรุปดราม่า`, `กางทฤษฎี`, `รีวิว`, `พักเบรก`, `ปิดไลฟ์`.
+     - **Structure**: `[Action/Verb] <Core Entity/Topic> + <Key Verdict/Takeaway>`.
      - Keep 100% of proper nouns while eliminating redundant conversational padding.
 
 4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
@@ -129,6 +131,12 @@ python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
 ```powershell
 python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
 ```
+
+> [!TIP]
+> **Convention / Walking Vlog Block Sizing**:
+> For walking vlogs, convention tours (TGS, Book Fair, Comiket), and fast-moving outdoor streams:
+> - Pass `--block 150 --overlap 20` (2.5-minute blocks).
+> - Faster chunk boundaries isolate booth transitions and crowd walking segments, preventing multi-booth merging.
 
 #### 1.5 Download & Align LiveChat (Optional but preferred)
 Gives the local model the watchers' chat for its own chunk, so situation + emotion are read from BOTH talks and chat. Requires network; if a VOD has no `live_chat` subtitle, skip this step and rely on transcript-only emotion.
@@ -282,9 +290,13 @@ skills\anibon-timestamper-local\scripts\launch_local.bat "%USERPROFILE%\youtube_
 
 > [!TIP]
 > **Remote / TokenMe Endpoint Support**:
-> You can target remote OpenAI-compatible endpoints such as TokenMe (`--endpoint https://api.tokenme.limited/v1` or `api.tokenme.limited`) by passing `TOKENME_API_KEY` (or `LM_API_KEY`) in the environment or `--api-key`.
+> You can target remote OpenAI-compatible endpoints such as TokenMe (`--endpoint https://api.tokenme.limited/api/v1/chat/completions` or `api.tokenme.limited`) by passing `TOKENME_API_KEY` (or `LM_API_KEY`) in the environment or `--api-key`.
+> - **Max 8 Images Limit**: TokenMe strictly limits multimodal calls to $\le 8$ images per request. Use `--max-chunk-frames 8` (the runner also automatically subsamples $\le 8$ images for remote endpoints).
+> - **Case-Sensitive Model IDs**: TokenMe model slugs are strictly case-sensitive (e.g. `google/gemma-4-31b-it` with lowercase `b`; passing `31B` returns HTTP 400 `Model not found`). If a user-provided model ID returns 400, query `GET /api/v1/models` to resolve the exact lowercase/canonical slug.
+> - **HTTPS Recovery Port Resolution**: Network recovery socket probes (`_wait_for_network_recovery`) must resolve implicit port `443` for `https://` and `80` for `http://` before falling back to `1234`.
+> - **Endpoint Path Router**: Both `/v1/chat/completions` and `/api/v1/chat/completions` are supported and automatically routed to standard OpenAI message schema.
 > - The client sets standard `Authorization: Bearer <KEY>` and browser `User-Agent` headers to bypass Cloudflare WAF code 1010.
-> - Remote models like `nvidia/Gemma-4-26B-A4B-NVFP4` support multimodal vision inspection via base64 `image_url` payloads out-of-the-box.
+> - Remote models like `google/gemma-4-31b-it` support multimodal vision inspection via base64 `image_url` payloads out-of-the-box.
 
 > [!TIP]
 > **Configuration (`config.json` and `--config`)**:
@@ -344,9 +356,17 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
      2. **Talk Track**: Find the topic Boat is actually speaking about (donations, news, Q&A).
      3. **Label Rule**: If both tracks run at the same time, write one stamp that names both. Use the talk tag when speech dominates, and keep the game state as context (e.g. `[Talk] เฝ้า <Mob_A> สู้กับ <Mob_B> พร้อมถกประเด็น <Topic>`). Never drop either track. Close the gameplay arc with a payoff stamp when it resolves (e.g. loot collected, quest completed).
 3. **Apply Entity & Chronology Corrections**: Correct phonetic drifts, inverted topic order, or LLM hallucinations directly in `anibon_timestamps.md`, and verify spacing ($\ge 45\text{s}$ min gap, $\le 600\text{s}$ max gap).
-4. **Persist Knowledge**:
-   - Add confirmed phonetic drift patterns (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` across root and skill resources.
-   - Add newly verified franchises/characters to `anibon-world-identity/references/`.
+4. **Persist Knowledge (Post-Stream Harvesting Protocol)**:
+   - **Audit Suspect Entities**: Review `audit_timestamps_against_glossary` warnings from the assembly pass.
+   - **Phonetic Drifts**: Add confirmed speaker misspellings/drifts (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` via `update_garbled_dictionary.py`.
+   - **New Game References**: If the stream covered a newly released or previously unindexed game/franchise (e.g. `Phantom Blade Zero`, `Bleach: Mirrors High`), scaffold `anibon-world-identity/references/<Game>.md` and register in `INDEX.md`.
+   - **Patch & Lore Updates**: For existing live-service games, document newly announced characters, versions, and major system changes in `references/<Game>.md`.
+   - **Stream Chronology & Play History Expansion (Mandatory for Multi-Part Series)**: Whenever a numbered or multi-part playthrough stream finishes (e.g. `Phantom Blade Zero - #5`), append or update `## Stream Chronology & Play History` in `references/<Game>.md` with a structured 5-dimension breakdown:
+     1. **ประเด็นพูดคุย & ดราม่า** (Talk, news, drama, analogies)
+     2. **ปัญหา Hardware & Engine** (Performance, UE5, frame drops, platform limits)
+     3. **ระบบเกม บิลด์ & อุปกรณ์** (Builds, mechanics, weapons upgraded, critiques)
+     4. **การสำรวจ & เควสต์** (Locations, NPCs, quests completed)
+     5. **บอสและศึกสำคัญ** (Chronological boss fights, gimmicks, outcomes, and weapon drops)
 
 
 ---
@@ -396,6 +416,7 @@ The final 5 minutes of transcript must always be checked for closing tokens (`�
 1. **SuperChat / Birthday Shoutouts**: Use `[Donation]` for reading donor lists, SuperChats, and member birthday blessings (`HH:MM:SS - [Donation] อ่านโดเนท ขอบคุณผู้สนับสนุน และอวยพรวันเกิดสมาชิก`).
 2. **Closing Sign-off**: Use `[Ending]` for the final wrap-up statement and next-stream announcements (`HH:MM:SS - [Ending] กล่าวปิดสตรีมและแจ้งกำหนดการไลฟ์รอบถัดไป...`). Do NOT begin descriptions with `'ปู่โบ๊ต'`.
 3. **Recurring Live Routine Guardrail**: Pu Boat frequently schedules a 22:00 Tokusatsu stream ("ไลฟ์โทกุ", "คอนเทนต์โทกุ 3 เรื่อง 3 รส"). Phonetic ASR artifacts (`โทกกู`, `ทั่วกุ`, `คอนเทนทุกคึ`) must strictly map to `โทคุซัตสึ (Tokusatsu)`, NEVER "Tokyo Ghoul".
+4. **Rage-Quit Ending**: If the streamer encounters an extreme difficulty spike, frustrating boss, or sudden technical crash and abruptly terminates the stream with quit tokens (`พอ`, `เลิก`, `ไม่ไหวแล้ว`, `ปิดไลฟ์`), emit `[Ending]` anchored directly to the quit moment (e.g. `HH:MM:SS - [Ending] หัวร้อนดีไซน์บอสจนยอมแพ้และประกาศปิดสตรีมทันที`). Never allow an ongoing gameplay session to swallow an abrupt ending.
 
 ### Macro-Thematic Part Grouping Invariant (No 3,500-Byte Cap Over-Splitting)
 Timestamps are grouped strictly into broad, cohesive macro-thematic parts (typically 4–6 parts for a long stream).
@@ -519,3 +540,13 @@ Proper nouns, mod names, and franchise titles in the stream's own YouTube metada
 13. **MTP (Multi-Token Prediction) & Speculative Decoding Pauses**:
     - Pausing a long run to attach MTP speculative decoding or adjust VRAM contexts in LM Studio is fully supported.
     - Re-running the identical command automatically discovers `recursive_outputs/chunk_XX.json` and state files, resuming immediately from the paused chunk without re-billing previous inferences.
+
+14. **Multimodal Read Operation Timeout & Graceful Text Fallback**:
+    - *Symptom*: Log shows `[multimodal] fallback to text-only for chunk_XX: The read operation timed out`.
+    - *Behavior*: Non-fatal. When remote endpoint latency spikes past `MULTIMODAL_TIMEOUT_SEC` (120s), the pipeline automatically catches the timeout, falls back to text-only inference for that single chunk, and resumes subsequent chunks without interrupting the run.
+
+15. **Yuri Subculture vs. Red Alert False Friend ("เผด็จการยูริ")**:
+    - *Symptom*: Model translates "เผด็จการยูริ" into *Command & Conquer: Red Alert 2 - Yuri's Revenge*.
+    - *Cause*: ASR misses brief game trailer; LLM anchors on "ยูริ" (Yuri) and defaults to legacy RTS franchise.
+    - *Fix*: In anime/gaming streams, "เผด็จการยูริ" refers exclusively to ***The Great Villainess: Strategy of Lily*** (เกมวางแผนสงครามนางร้ายสายยูริ) on Steam/Switch. Never emit Red Alert without explicit RTS, Westwood, or Command & Conquer context.
+

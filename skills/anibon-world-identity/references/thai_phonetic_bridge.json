@@ -289,6 +289,23 @@
     "วิทยาธร": {"en": "Vidyadhara", "domain": "life_sim"},
     "วิทยาธรี": {"en": "Vidyadhari", "domain": "life_sim"},
     "จันทรกรี": {"en": "Chantharakri", "domain": "life_sim"},
-    "จันทักกรี": {"en": "Chantharakri", "domain": "life_sim"}
+    "จันทักกรี": {"en": "Chantharakri", "domain": "life_sim"},
+
+    "แฟนทอมเบลด": {"en": "Phantom Blade Zero", "domain": "pbz"},
+    "แฟนทอม เบลด": {"en": "Phantom Blade Zero", "domain": "pbz"},
+    "แฟนทอมเบลด ซีโร่": {"en": "Phantom Blade Zero", "domain": "pbz"},
+    "แฟนทอมเบลดซีโร่": {"en": "Phantom Blade Zero", "domain": "pbz"},
+    "โซล": {"en": "Soul", "domain": "pbz"},
+    "ชุยหมิง": {"en": "Chui Ming", "domain": "pbz"},
+    "ผู้ฝืนลิขิตสวรรค์": {"en": "Fate Defier", "domain": "pbz"},
+    "ไป๋ชื่อเลี่ยน": {"en": "Chi Bai Lian", "domain": "pbz"},
+    "ฉือไป๋เหลียน": {"en": "Chi Bai Lian", "domain": "pbz"},
+    "พญางูสังเวยวิญญาณ": {"en": "Soul-Sacrificing Serpent (Chi Bai Lian)", "domain": "pbz"},
+    "เจ้าสาวขาว": {"en": "White Maiden Boss", "domain": "pbz"},
+    "หุ่นมารสามพักตร์": {"en": "Three-faced Demonic Puppet", "domain": "pbz"},
+    "ชายชุดดำหน้ากากทอง": {"en": "Man in Black with Golden Mask", "domain": "pbz"},
+    "จิ๋วปี้ ผู้เฝ้าประตู": {"en": "Gatekeeper Jiupi", "domain": "pbz"},
+    "ดาบแผนนีรการ": {"en": "Nirkar Strategic Blade", "domain": "pbz"},
+    "ขวานทมิฬยักษ์": {"en": "Dark Iron Greataxe", "domain": "pbz"}
   }
 }

@@ -89,6 +89,17 @@ A boss attempt arc (encounter → die → retry → die → win) is **ONE story 
 
 **Note on proper names:** Boss names must be verified. `Ashigenjiro` ≠ `Ashina Genichiro`. `โอนิเกียบุบุ` ≠ `Gyoubu Masataka Oniwa`. Use the in-game English name (check Fandom wiki) when Thai transcription is phonetically garbled.
 
+### 4.1 Boss Marathon & External Music (เพลงปลุกใจสู้บอส)
+
+เมื่อสตรีมเมอร์ (โบ๊ต) ติดบอสมาราธอนนาน 2-4+ ชั่วโมง จนเกิดอาการเหนื่อยล้า หมดแรง หรือตาจะปิด:
+1. **พฤติกรรมเปิดเพลงปลุกใจ**: โบ๊ตจะเปิดเพลงสากล/เพลงอนิเมะ/เพลงเกมที่กระตุ้นพลัง (Hype OST) เช่น *Bury the Light* (DMC5), *Metal Gear Rising* OST, *Limbus Company*, หรือเปิดเพลงมีม/เพลงรักชาติ (*คืนความสุข*) เพื่อแก้ง่วง
+2. **กฎการลง Timestamp (Causality & Tagging)**:
+   - ต้องลง Timestamp จุดเริ่มต้นที่เปิดเพลงเสมอ โดยระบุ **สาเหตุ** (เช่น สู้บอสจนใจฝ่อ/ตาจะปิด ต้องหาเพลงปลุกใจ หรือแปลงร่างเป็นดีเจโบ๊ตตามคำขอแชท)
+   - ใช้ Tag `[Meme]` หรือ `[Talk]` สำหรับเหตุการณ์เปิดเพลงปลุกใจ (ห้ามใช้ `[Boss]` หรือ `[Gameplay]` กับเพลงที่เปิดจากบราวเซอร์ภายนอก)
+3. **ข้อห้ามเด็ดขาด (Anti-Hallucination)**:
+   - **ห้ามนำเพลงที่เปิดภายนอกไปตั้งเป็นชื่อบอสหรือกิมิกของเกม** (เช่น ได้ยินเพลงร็อก MGR แล้วห้ามหลอนสร้างชื่อ "บอสเทคโน / Techno Boss")
+   - หาก ASR รันซ้ำคำวนลูป (Looping) จากเสียงดนตรีกลบเสียงพูด ให้ใช้ Shazam หรือแยก Stem เสียงก่อนสรุปเนื้อหา
+
 ### 5. Game-Specific Research (MANDATORY)
 Before writing any boss or area name, verify it:
 - **Fandom wikis** (search `[game name] wiki fandom`) — boss names, area names, item names
@@ -96,6 +107,11 @@ Before writing any boss or area name, verify it:
 - **Official game website** — patch notes for recent content
 
 **Self-check before submitting any name:** Is this the exact in-game English name, or a Thai phonetic guess? If you didn't look it up, look it up now.
+
+### 5.1 On-Screen Boss Health Bar Verification (UI Ground Truth)
+For Action RPGs, Soulslikes, and Boss Rush games with HUD health bars (e.g. *Phantom Blade Zero*, *Elden Ring*, *Black Myth: Wukong*):
+- **Never guess boss names from streamer chatter**: Streamers often talk about other games (*Elden Ring*, *Sekiro*) or past episodes while fighting.
+- **Inspect Top-Center HUD**: Extract 1 frame during the fight (`ffmpeg -ss <time> -i "$VURL" -vframes 1 frame.jpg`) and read the exact name printed on the boss health bar (e.g. `หุ่นมารสามพักตร์`, `ชายชุดดำหน้ากากทอง`, `จิ๋วปี้ ผู้เฝ้าประตู`). That on-screen name is the single source of truth.
 
 ## Export Template
 ```

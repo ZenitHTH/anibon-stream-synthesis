@@ -96,6 +96,7 @@ def separate_via_audiocpp_api(
     server_url: str = DEFAULT_AUDIOCPP_URL,
 ) -> tuple[Path, Path]:
     """Isolate vocal and instrumental stems using remote or local audio.cpp server."""
+    output_dir.mkdir(parents=True, exist_ok=True)
     resampled = output_dir / "input_44k.wav"
     ensure_44k_stereo_wav(audio_path, resampled)
     b64_audio = base64.b64encode(resampled.read_bytes()).decode("utf-8")

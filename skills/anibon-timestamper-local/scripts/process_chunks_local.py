@@ -52,6 +52,7 @@ from interface import (
     call_multimodal,
     call_vision,
     cfg_bool,
+    clean_workspace_chunks,
     detect_signals_for_chunks,
     detect_transcript_source,
     discover_chunks,
@@ -187,7 +188,7 @@ def _discover_summary_glossary(workspace: Path, disabled: bool) -> Optional[dict
     """Discover domain glossary for summarize-only run."""
     if disabled:
         return None
-    sig_map = _load_signals_from_file(workspace)
+    sig_map = _load_or_detect_signals(workspace)
     g_path = run_knowledge_discovery(workspace, sig_map, world_identity_dir=None)
     if g_path.exists():
         try:
@@ -210,8 +211,6 @@ def _run_summarize_only(workspace: Path, model: str, args: argparse.Namespace) -
         args=args, glossary=glossary,
     )
     print(f"✅ Assembly complete: {out_md}")
-
-    _finalize_garbled_collector(workspace, args, model)
 
 
 def _apply_early_config_override() -> None:
@@ -257,16 +256,21 @@ def _discover_workspace_chunks(workspace: Path) -> List[Path]:
 
 
 def _load_or_detect_signals(workspace: Path) -> dict:
-    """Load existing workspace signals or trigger fresh detection."""
+    """Load existing workspace signals or trigger fresh detection and persist signals.json."""
     signals_file = workspace / "signals.json"
-    if not signals_file.exists():
-        print("[signals] Detecting domain signals...")
-        return detect_signals_for_chunks(workspace)
-    try:
-        with open(signals_file, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return detect_signals_for_chunks(workspace)
+    if signals_file.exists():
+        try:
+            with open(signals_file, encoding="utf-8") as f:
+                data = json.load(f)
+            if data:
+                return data
+        except Exception:
+            pass
+    print("[signals] Detecting domain signals...")
+    signals = detect_signals_for_chunks(workspace)
+    if signals:
+        signals_file.write_text(json.dumps(signals, ensure_ascii=False, indent=2), encoding="utf-8")
+    return signals
 
 
 def _load_or_discover_glossary(
@@ -355,21 +359,6 @@ def _dispatch_pipeline_mode(
         )
 
 
-def _finalize_garbled_collector(workspace: Path, args: argparse.Namespace, model: str) -> None:
-    """Run whisper audio verification if running on YouTube auto-transcript."""
-    if is_youtube_auto_transcript(workspace) and not args.no_garbled_collector:
-        run_garbled_collector(
-            workspace=workspace,
-            video_url=args.video_url,
-            whisper_bin=args.whisper_bin,
-            whisper_model=args.whisper_model,
-            endpoint=args.endpoint,
-            llm_model=model,
-        )
-    elif not is_youtube_auto_transcript(workspace):
-        print("[garbled] Skipping whisper.cpp collection (not a YouTube auto-transcript).")
-
-
 def _ensure_livechat_if_requested(workspace: Path, args: argparse.Namespace) -> None:
     """Download and align livechat if --live-chat flag passed."""
     if not getattr(args, "live_chat", False):
@@ -410,14 +399,15 @@ def main() -> None:
         print(f"[dry-run] Discovered {len(chunk_files)} chunks.")
         return
 
+    mappings, _, is_yt_auto = _prepare_transcript_mappings(workspace)
+    if is_yt_auto:
+        clean_workspace_chunks(workspace)
     signals_map = _load_or_detect_signals(workspace)
     glossary = _load_or_discover_glossary(workspace, signals_map, world_identity_dir, args.no_knowledge_reader)
-    mappings, _, is_yt_auto = _prepare_transcript_mappings(workspace)
 
     _dispatch_pipeline_mode(
         args, workspace, model, chunk_files, signals_map, mappings, world_identity_dir, glossary
     )
-    _finalize_garbled_collector(workspace, args, model)
 
 
 if __name__ == "__main__":

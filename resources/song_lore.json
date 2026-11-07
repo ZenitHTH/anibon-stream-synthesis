@@ -309,6 +309,50 @@
         "เมื่อก่อนไว้จตอนนี้ไว้เปีย",
         "เลี้ยงเมียมันเลี้ยงมะ"
       ]
+    },
+    {
+      "id": "bury_the_light",
+      "title": "Bury the Light",
+      "artist": "Casey Edwards (feat. Victor Borba)",
+      "theme": "Devil May Cry 5 Special Edition (Vergil Battle Theme)",
+      "meme_lore": "โบ๊ตเปิดระหว่างสู้บอสมาราธอน เพื่อปลุกพลัง Motivation และแก้ง่วงเมื่อติดบอสยากหลายชั่วโมง",
+      "keywords": [
+        "Bury the Light",
+        "bury the light",
+        "เบอรี่เดอะไลท์",
+        "Casey Edwards",
+        "Vergil",
+        "เวอร์จิล"
+      ]
+    },
+    {
+      "id": "mgr_revengeance_ost",
+      "title": "Metal Gear Rising: Revengeance Vocal Tracks OST",
+      "artist": "Jamie Christopherson & Various Artists",
+      "theme": "Metal Gear Rising OST (Rules of Nature, A Stranger I Remain, It Has To Be This Way)",
+      "meme_lore": "โบ๊ตเปิดเพลย์ลิสต์เพลงร้อง MGR แบบเรียงเพลงเพื่อบัฟความฮึกเหิมระหว่างสู้บอสยาวนาน",
+      "keywords": [
+        "Metal Gear Rising",
+        "Rules of Nature",
+        "A Stranger I Remain",
+        "It Has To Be This Way",
+        "The Only Thing I Know For Real",
+        "MGR"
+      ]
+    },
+    {
+      "id": "limbus_company_in_hell_we_live",
+      "title": "In Hell We Live, Lament",
+      "artist": "Mili (feat. KIHOW)",
+      "theme": "Limbus Company Theme Song / Boss Theme",
+      "meme_lore": "โบ๊ตเปิดเพลงประกอบเกม Limbus Company คลอระหว่างสู้บอส",
+      "keywords": [
+        "In Hell We Live, Lament",
+        "Limbus Company",
+        "Mili",
+        "ลิมบัส",
+        "เพลงลิมบัส"
+      ]
     }
   ]
 }

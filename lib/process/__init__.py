@@ -7,6 +7,7 @@ from __future__ import annotations
 from process.assembly import finalize_and_assemble_timestamps
 from process.audit import (
     audit_timestamps_against_glossary,
+    clean_workspace_chunks,
     sanitize_and_audit_timestamps,
 )
 from process.garbled_collector import (
@@ -40,7 +41,7 @@ from process.multimodal import (
     prepare_storyboard_slides,
     sample_chunk_keyframes,
 )
-from process.parity_gates import ensure_mood_555, run_parity_gates
+from process.parity_gates import ensure_mood_555, run_mood_validation, run_parity_gates
 from process.prompts import (
     WORLD_IDENTITY_DIR,
     build_group_prompt,
@@ -72,6 +73,7 @@ from process.world_sanitizer import audit_and_sanitize_final_markdown
 
 __all__ = [
     "finalize_and_assemble_timestamps",
+    "clean_workspace_chunks",
     "sanitize_and_audit_timestamps",
     "audit_timestamps_against_glossary",
     "resolve_garbled_notes",
@@ -89,6 +91,7 @@ __all__ = [
     "prepare_storyboard_slides",
     "sample_chunk_keyframes",
     "ensure_mood_555",
+    "run_mood_validation",
     "run_parity_gates",
     "WORLD_IDENTITY_DIR",
     "build_group_prompt",

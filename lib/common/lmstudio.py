@@ -360,7 +360,7 @@ def _prepare_request(
     api_key: Optional[str] = None,
 ) -> urllib.request.Request:
     """Prepare urllib POST request for either native or OpenAI endpoint."""
-    if "/api/v1/chat" in endpoint:
+    if endpoint.rstrip("/").endswith("/api/v1/chat"):
         payload = build_native_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
     else:
         payload = build_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
