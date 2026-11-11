@@ -72,16 +72,18 @@ Local smaller LLMs (e.g. 12B–27B) lack the vast parametric world knowledge of 
    - Enforces `ANTI-GUESSING CONSTRAINT`: Never arbitrarily translate Thai phonetic loanwords into novel English spellings. If not found in `VERIFIED DOMAIN ENTITIES`, write phonetic Thai or describe the action in Thai. Never invent novel English proper nouns.
    - Enforces `POKÉMON NAMING RULE`: Pokémon entities must strictly follow `'ชื่อไทย (English Name)'` (Thai community/official name followed by English name in parentheses).
    - Enforces `CAVEMAN TIMESTAMP STYLE INVARIANT`:
-     - NEVER start timestamp descriptions or section titles with `'ปู่โบ๊ต'`.
-     - **Brevity & Novel-Style Ban**: Timestamps are punchy headlines, NOT narrative plot summaries or multi-clause paragraphs.
-       - **Length Bound**: Target 5–12 words (25–55 Thai characters) per description.
-       - **No Narrative Padding**: Ban connector bloat (`ตีแผ่ปัญหา... จนเกิดปัญหา...`, `โดยวิจารณ์ว่า... พร้อมเสนอแนะ...`, `และปิดท้ายด้วยการ...`, `ก่อนจะยินดีกับ...`).
-       - **No Embedded Timestamps in Text**: Never write bracketed time markers (`[01:23:45]`, `จากภาพในจอ`) inside the description text.
-     - **No Repetitive Activity Prefixes**: When background gameplay/farming is active across multiple chunks, state the gameplay in the section title or initial stamp. DO NOT repeat `"เฝ้าด่าน <Game> พร้อม..."` on every subsequent talk stamp. Focus each stamp directly on the spoken topic.
+     - NEVER start timestamp descriptions or section titles with `'ปู่โบ๊ต'` (viewers already know whose stream it is).
+     - **Topic Start Anchor (Lead-in Rule - CRITICAL)**: The `HH:MM:SS` of every timestamp MUST anchor to the exact opening sentence or transition cue (`"เดี๋ยวพูดเรื่อง..."`, `"มาดู..."`, `"อีกเรื่องนึง..."`) where Pu Boat initiates the pivot. Never stamp mid-sentence when the proper noun is finally uttered 20–60s later; always scan backward to preserve full opening context for viewers clicking the link.
+     - **Thai Length Calibration (Informative Yet Bounded)**:
+       - **Length Bound**: Target **8–16 words (50–95 Thai characters)** per description.
+       - *Linguistic Rationale*: Thai script has multi-syllabic words and vertical vowels/tone marks that require adequate character density; overly compressed 4–8 word caps (< 45 chars) produce bare titles that lack substance.
+       - **Structure**: `[Action/Verb] <Core Entity/Topic> + <Specific Angle/Verdict/Takeaway>`.
+       - **No Narrative Paragraph Padding**: Ban connector bloat (`เรื่องการ...`, `พร้อมกับ...`, `ที่ทำให้...`, `โดยมีการ...`, `ก่อนจะยินดีกับ...`).
+       - **No Embedded Timestamps in Text**: Never write bracketed time markers (`[01:23:45]`, `จากภาพในจอ`) inside description text.
+     - **No Repetitive Background Prefixes**: When background gameplay/farming is active across multiple chunks, track both in `rolling_summary`, but NEVER prepend `"เฝ้าสำรวจ <Game> พร้อม..."` or `"เฝ้าด่าน <Game> พร้อม..."` on every `[Talk]` or `[News]` line. State only the direct spoken topic or primary gameplay milestone.
      - **Dynamic Recent-Verb Blacklist**: Extracts opening verbs from `recent_timestamps` and explicitly bans reusing them in the next chunk.
-     - **No Redundant Title Suffixes**: When a whole section covers one main title, name specific characters/events rather than appending `'ใน <Title>'` to every line.
+     - **No Redundant Title Suffixes**: When a whole section covers one main title, name specific characters/events rather than mechanically appending `'ใน <Title>'` to every line.
      - Use varied action-first or topic-first verbs: `ส่อง`, `ชำแหละ`, `เทียบ`, `เจาะลึก`, `เม้าท์มอย`, `สรุปดราม่า`, `กางทฤษฎี`, `รีวิว`, `พักเบรก`, `ปิดไลฟ์`.
-     - **Structure**: `[Action/Verb] <Core Entity/Topic> + <Key Verdict/Takeaway>`.
      - Keep 100% of proper nouns while eliminating redundant conversational padding.
 
 4. **Layer 4: Stage 5 Deterministic Auto-Sanitization (`process_chunks_local.py`)**
@@ -117,6 +119,7 @@ Before any signal detection or LLM analysis, `clean_transcript_noise()` automati
 #### 0.5 Knowledge Self-Reading & Entity Glossary (Stage 0.5, Automatic)
 Before processing chunks, `run_knowledge_discovery()` inspects `signals.json`, self-reads matched markdown references in `anibon-world-identity/references/*.md`, queries local databases (`atlas_fgo.db`, `pokemon.db`), and emits `<workspace>/entity_glossary.json`. Chunk prompts automatically filter relevant entities (capped to ~300 tokens) into the prompt context.
 - To bypass entity glossary discovery: pass `--no-knowledge-reader`.
+- **Pre-Stream Topic Research (Unindexed Cinema / Mythology / Pop-Culture)**: When a stream centers on an unindexed non-gaming or cultural domain (e.g. Indian cinema, *Ramayana*, historical epics), research and scaffold `anibon-world-identity/references/<Topic>.md`, `INDEX.md`, `thai_phonetic_bridge.json`, and `resources/knowledge.json` **before** running `prepare_video.py` so Stage 0.5 populates `entity_glossary.json` from `chunk_00`.
 
 
 #### 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
@@ -355,7 +358,10 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
      1. **Gameplay Track**: Find the *plan statement* that explains the current scene. Search the transcript backward (up to ~20 min) for intent verbs (`เดี๋ยวให้มันสู้กัน`, `รอ`, `ปล่อยไว้`, `เสก`, `ล่อ`). Confirm it with storyboard frames: quest tracker text, boss bar name, and the mobs actually present. A creature on screen does NOT mean Boat is fighting it.
      2. **Talk Track**: Find the topic Boat is actually speaking about (donations, news, Q&A).
      3. **Label Rule**: If both tracks run at the same time, write one stamp that names both. Use the talk tag when speech dominates, and keep the game state as context (e.g. `[Talk] เฝ้า <Mob_A> สู้กับ <Mob_B> พร้อมถกประเด็น <Topic>`). Never drop either track. Close the gameplay arc with a payoff stamp when it resolves (e.g. loot collected, quest completed).
-3. **Apply Entity & Chronology Corrections**: Correct phonetic drifts, inverted topic order, or LLM hallucinations directly in `anibon_timestamps.md`, and verify spacing ($\ge 45\text{s}$ min gap, $\le 600\text{s}$ max gap).
+3. **Apply Entity & Chronology Corrections (Dual-File Sync)**:
+   - Correct phonetic drifts, streamer self-corrections (e.g. `"Godzilla Minus One เอ้ย Zero"` → `Godzilla Minus Zero`), mis-anchored lead-ins, or LLM hallucinations in **both** `anibon_timestamps.md` (`anibon_timestamps_essential.md`) **and** `all_timestamps.txt` (`anibon_timestamps_full.md`).
+   - **Discord Guest / Co-Host Join & Leave**: When a viewer or guest joins voice chat for an extended segment, ensure both the mic-join timestamp and sign-off timestamp are preserved (never swallowed by `SAME_TOPIC` continuation).
+   - **Check `"วิพากษ์"` Verb Saturation**: Local 12B models frequently start 40%+ of lines with `"วิพากษ์"`. Verify all opening verbs (not only `"วิเคราะห์"`) stay $\le 20\%$ of total lines and never repeat $>2$ consecutive lines.
 4. **Persist Knowledge (Post-Stream Harvesting Protocol)**:
    - **Audit Suspect Entities**: Review `audit_timestamps_against_glossary` warnings from the assembly pass.
    - **Phonetic Drifts**: Add confirmed speaker misspellings/drifts (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` via `update_garbled_dictionary.py`.
@@ -449,11 +455,25 @@ When generating timestamps from long livestreams (4–8 hours), follow these ope
 Major domain/topic transitions (e.g. Thai Politics → Anime/Series review, Gaming → SuperChat Q&A) MUST NOT begin with 1–4 straggler stamps at the tail of an unrelated topic section.
 `assemble_parts()` automatically snaps partition boundaries to transition markers (`สรุปการพูดคุย... และเตรียมเปลี่ยนไปคุย`, `เตรียมเริ่มเล่นเกม`, `เตรียมเข้าสู่ช่วง`) using `find_best_boundary()`. This ensures viewer-friendly, clean topical grouping without stragglers.
 
-### Timestamp Lead-in & Analogy Attribution Invariant
+### Timestamp Lead-in & Milestone Deduplication Invariants
 1. **Lead-in Anchor**: The start time of a timestamp must always anchor to the opening sentence of the topic. Never mark the timestamp at or after the keyword appears mid-sentence, ensuring viewers who click the link do not miss critical context spoken 10–20 seconds earlier.
-2. **Off-hand Analogy Rule**: Never use the name of a work, person, or place mentioned only briefly in passing (1–2 sentences) as an analogy or rhetorical comparison as the main title of a timestamp.
+2. **Protected Milestones (`[Ending]` Guard)**: In `deduplicate_consecutive_timestamps`, `[Ending]` is a strictly protected milestone tag alongside `[Boss]`, `[Victory]`, `[Gacha]`, `[Donation]`, and `[Highlight]`. It must never be discarded by same-game deduplication windows even if gameplay preceded it within 10 minutes.
+3. **Off-hand Analogy Rule**: Never use the name of a work, person, or place mentioned only briefly in passing (1–2 sentences) as an analogy or rhetorical comparison as the main title of a timestamp.
    - *Incorrect*: `Comparing standards... with Frieren` (when the topic is a critique of One Punch Man Season 3 and Frieren was only mentioned in a single comparative sentence).
    - *Correct*: `Critiquing One Punch Man Season 3 and J.C.Staff's 'watchable' standard (noted that it cannot compare to major productions like Frieren)`.
+
+### Local LLM Prompt Engineering Contracts (`/writing-skills` TDD Validated)
+To prevent local 12B–31B models (e.g. `google/gemma-4-31b-it`, `qwen3.5-9b`) from negotiating with prohibitions, swallowing 15-minute boss retries, or generating 1-line orphan summary parts:
+1. **Positive 3-Slot Headline Recipe (`HEADLINE RECIPE`)**:
+   - Instead of relying on negative prohibitions (`"NEVER append 'ใน <Game>'"`), prompts enforce a mandatory 3-slot template:
+     `HH:MM:SS - [Tag] <Slot 1: Action Verb> <Slot 2: Specific In-Game Entity/Weapon/Boss/Mechanic OR Spoken Subject> <Slot 3: Concrete Takeaway/Effect>`
+   - Explicitly defining Slot 2 as the specific in-game item/boss/weapon (`พัดขนนกยูง`, `ดาบน้ำแข็ง`, `หุ่น 21`) satisfies the proper-noun requirement without tempting the model to append redundant `"ใน Phantom Blade Zero"` suffixes.
+2. **Computed Observable Gap Predicate (`GAP PREDICATE`)**:
+   - Local models do not reliably compute timestamp subtraction in-head during long unbroken boss fights or exploration.
+   - `prompts._compute_gap_predicate()` calculates `elapsed_min` between `recent_timestamps[-1]` and `chunk_start_sec` in Python. When `elapsed_min >= 8`, it injects an explicit `GAP PREDICATE: X minutes elapsed... >= 8 min threshold -> REQUIRED: Emit 1 timestamp` directly into `PREVIOUS TOPIC STATE`.
+3. **Structural Summarizer Range Contract & Clause Compaction**:
+   - `build_summarizer_prompt()` indexes input timestamps as `[001] HH:MM:SS - ...`, computes dynamic `min_parts`/`max_parts` so parts stay within 6–18 lines ($\le 20$ lines), and requires an explicit `Range: [001]-[010]` line before `Summary:`.
+   - `byte_cap._compact_topic_clause()` trims secondary clauses (`พร้อม...`, `เพื่อ...`, `โดย...`, `ใน <Game>`) to $\le 30$ chars per topic so heuristic split headers remain under 110 characters.
 
 
 ### World Identity Audit Invariant

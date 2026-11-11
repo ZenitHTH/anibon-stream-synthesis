@@ -2,310 +2,2209 @@
   "version": 1,
   "description": "Thai Whisper phonemes to canonical English entity keys and domains",
   "mappings": {
-    "เฟส grand ออเดอร์": {"en": "Fate/Grand Order", "domain": "fgo"},
-    "เฟท": {"en": "Fate", "domain": "fgo"},
-    "โอบารอน": {"en": "Oberon", "domain": "fgo", "class": "Pretender"},
-    "มอร์แกน": {"en": "Morgan", "domain": "fgo", "class": "Berserker"},
-    "คาซูระดรอป": {"en": "Kazuradrop", "domain": "fgo", "class": "Alter Ego"},
-    "อัลเควด": {"en": "Archetype: Earth", "domain": "fgo", "class": "MoonCancer"},
-    "เมลูซีน": {"en": "Melusine", "domain": "fgo", "class": "Lancer"},
-    "เกนไซ": {"en": "Gensai", "domain": "fgo"},
-    "ทามาโมะ": {"en": "Tamamo no Mae", "domain": "fgo", "class": "Grand Ego / Rider"},
-    "เซียล": {"en": "Ciel", "domain": "fgo", "class": "MoonCancer"},
-    "เคีย่า": {"en": "Kiara", "th": "คิอาระ", "domain": "fgo", "class": "Alter Ego"},
-    
-    "multiblood": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
-    "เมลตี้บลัด": {"en": "Melty Blood: Type Lumina", "domain": "typemoon"},
-    "t moon": {"en": "TYPE-MOON", "domain": "typemoon"},
-    "ไทป์มูน": {"en": "TYPE-MOON", "domain": "typemoon"},
-    
-    "เรดแรปเตอร์": {"en": "Raidraptor", "archetype": "Raidraptor", "domain": "yugioh"},
-    "อัลทิเมตฟอลคอน": {"en": "Raidraptor - Ultimate Falcon", "archetype": "Raidraptor", "domain": "yugioh"},
-    "แม็กซ์ ซี": {"en": "Maxx \"C\"", "domain": "yugioh"},
-    "maxx c": {"en": "Maxx \"C\"", "domain": "yugioh"},
-    "บารอนเนส": {"en": "Baronne de Fleur", "domain": "yugioh"},
-    "สเนคอาย": {"en": "Snake-Eye", "archetype": "Snake-Eye", "domain": "yugioh"},
-    "ทีอาลาเมนต์": {"en": "Tearlaments", "archetype": "Tearlaments", "domain": "yugioh"},
-    "บลูอายส์": {"en": "Blue-Eyes White Dragon", "archetype": "Blue-Eyes", "domain": "yugioh"},
-    "แบรนเด็ด": {"en": "Branded", "archetype": "Branded", "domain": "yugioh"},
-    "คัชติร่า": {"en": "Kashtira", "archetype": "Kashtira", "domain": "yugioh"},
-    
-    "การ์โชมป์": {"en": "Garchomp", "th": "การ์โชมป์", "domain": "pokemon"},
-    "เป็ดต้นหอม": {"en": "Farfetch'd", "th": "คาโมเนกิ (เป็ดต้นหอม)", "domain": "pokemon"},
-    "แบกซ์แคลิเบอร์": {"en": "Baxcalibur", "th": "แบกซ์แคลิเบอร์", "domain": "pokemon"},
-    "ม้าดำ": {"en": "Spectrier", "th": "ม้าดำ", "domain": "pokemon"},
-    "สเปกเทรียร์": {"en": "Spectrier", "th": "สเปกเทรียร์", "domain": "pokemon"},
-    "ลิซาร์ดอน": {"en": "Charizard", "th": "ลิซาร์ดอน", "domain": "pokemon"},
-    "เกงกา": {"en": "Gengar", "th": "เกงกา", "domain": "pokemon"},
-    
-    "ริมัส": {"en": "Limbus Company", "domain": "limbus"},
-    "ิม company": {"en": "Limbus Company", "domain": "limbus"},
-    "คันเ 10": {"en": "Canto X", "domain": "limbus"},
-    "ฮีธคลิฟฟ์": {"en": "Heathcliff", "domain": "limbus"},
-    "ดันเต้": {"en": "Dante", "domain": "limbus"},
-    
-    "oneพiece": {"en": "One Piece", "domain": "anime"},
-    "วันพีซ": {"en": "One Piece", "domain": "anime"},
-    "บリーチ": {"en": "Bleach", "domain": "anime"},
-    "บลีช": {"en": "Bleach", "domain": "anime"},
-    "เคมปาจิ": {"en": "Zaraki Kenpachi", "domain": "anime"},
-    "ยูฮาบัค": {"en": "Yhwach", "domain": "anime"},
-    "จูฮาบัช": {"en": "Yhwach", "domain": "anime"},
-    "จูบัส": {"en": "Yhwach", "domain": "anime"},
-    "จัวบัส": {"en": "Yhwach", "domain": "anime"},
-    "คุโบะ": {"en": "Tite Kubo", "domain": "anime"},
-    "เซ็นจูมารุ": {"en": "Senjumaru Shutara", "domain": "anime"},
-    "คาลามิตี้": {"en": "The Calamity", "domain": "anime"},
-    "เทนสะ ซันเก็ตสึ": {"en": "Tensa Zangetsu", "domain": "anime"},
-    
-    "สปาร์กซี่": {"en": "Sparxie", "domain": "hsr"},
-    "สปาร์กเคิล": {"en": "Sparkle", "domain": "hsr"},
-    "เหยาจวง": {"en": "Yao Guang", "domain": "hsr"},
-    "เพิร์ล": {"en": "Pearl", "domain": "hsr"},
-    "ไข่มุก": {"en": "Pearl", "domain": "hsr"},
-    "นิฮิรัก": {"en": "Nihilux", "domain": "hsr"},
-    "อาฮา": {"en": "Aha", "domain": "hsr"},
-    "ซันเดย์": {"en": "Sunday", "domain": "hsr"},
-    "ฟูจิ": {"en": "Fugue", "domain": "hsr"},
-    "เฟยเซียว": {"en": "Feixiao", "domain": "hsr"},
-    "ลิงชา": {"en": "Lingsha", "domain": "hsr"},
-    "เจียวชิว": {"en": "Jiaoqiu", "domain": "hsr"},
-    "หยุนหลี่": {"en": "Yunli", "domain": "hsr"},
-    "โรบิน": {"en": "Robin", "domain": "hsr"},
-    "บูทฮิลล์": {"en": "Boothill", "domain": "hsr"},
-    "อาเครอน": {"en": "Acheron", "domain": "hsr"},
-    "อะเวนทูรีน": {"en": "Aventurine", "domain": "hsr"},
-    "ไฟร์ฟลาย": {"en": "Firefly", "domain": "hsr"},
-    "แบล็กสวอน": {"en": "Black Swan", "domain": "hsr"},
-    "รวนเหมย": {"en": "Ruan Mei", "domain": "hsr"},
-    "เรโช": {"en": "Dr. Ratio", "domain": "hsr"},
-    "อาร์เจนติ": {"en": "Argenti", "domain": "hsr"},
-    "ฮั่วฮั่ว": {"en": "Huohuo", "domain": "hsr"},
-    "จิงหลิว": {"en": "Jingliu", "domain": "hsr"},
-    "โทพาส": {"en": "Topaz", "domain": "hsr"},
-    "ฟู่เสวียน": {"en": "Fu Xuan", "domain": "hsr"},
-    "คาฟคา": {"en": "Kafka", "domain": "hsr"},
-    "เบลด": {"en": "Blade", "domain": "hsr"},
-    "จิงหยวน": {"en": "Jing Yuan", "domain": "hsr"},
-    "เซเล่": {"en": "Seele", "domain": "hsr"},
-    "ทริบบี้": {"en": "Tribbie", "domain": "hsr"},
-    "อักลาเอีย": {"en": "Aglaea", "domain": "hsr"},
-    "คาสโตริเซ่": {"en": "Castorice", "domain": "hsr"},
-    "อนักซา": {"en": "Anaxa", "domain": "hsr"},
-    "แรปป้า": {"en": "Rappa", "domain": "hsr"},
-    "มาร์ช": {"en": "March 7th", "domain": "hsr"},
-    "ไฮยาซีน": {"en": "Hyacine", "domain": "hsr"},
-    "ไซเฟอร์": {"en": "Cipher", "domain": "hsr"},
-    "ไฟนอน": {"en": "Phainon", "domain": "hsr"},
-    "ไฮซิเลนส์": {"en": "Hysilens", "domain": "hsr"},
-    "เซริดร้า": {"en": "Cerydra", "domain": "hsr"},
-    "เอเวอร์ไนท์": {"en": "Evernight", "domain": "hsr"},
-    "ไซรีน": {"en": "Cyrene", "domain": "hsr"},
-    "เอวาเนสเซีย": {"en": "Evanescia", "domain": "hsr"},
-    
-    "น็อด-ไกร": {"en": "Nod-Krai", "domain": "genshin"},
-    "มาวุยก้า": {"en": "Mavuika", "domain": "genshin"},
-    "ชาสก้า": {"en": "Chasca", "domain": "genshin"},
-    "ชิโลเนน": {"en": "Xilonen", "domain": "genshin"},
-    "คินิช": {"en": "Kinich", "domain": "genshin"},
-    "มัวลานี่": {"en": "Mualani", "domain": "genshin"},
-    "ซิทลาลี": {"en": "Citlali", "domain": "genshin"},
-    "โอโรลอน": {"en": "Ororon", "domain": "genshin"},
-    "คาชิน่า": {"en": "Kachina", "domain": "genshin"},
-    "มิสึกิ": {"en": "Mizuki", "domain": "genshin"},
-    "วาเรซ่า": {"en": "Varesa", "domain": "genshin"},
-    "นิววิลเล็ต": {"en": "Neuvillette", "domain": "genshin"},
-    "ฟูริน่า": {"en": "Furina", "domain": "genshin"},
-    "อาร์เลคคิโน": {"en": "Arlecchino", "domain": "genshin"},
-    "นาเวีย": {"en": "Navia", "domain": "genshin"},
-    "คลอรินด์": {"en": "Clorinde", "domain": "genshin"},
-    "ไรท์สลีย์": {"en": "Wriothesley", "domain": "genshin"},
-    "เซียนอวิ๋น": {"en": "Xianyun", "domain": "genshin"},
-    "นาฮิดะ": {"en": "Nahida", "domain": "genshin"},
-    "อัลไฮธัม": {"en": "Alhaitham", "domain": "genshin"},
-    "สคารามุช": {"en": "Scaramouche", "domain": "genshin"},
-    "จงลี่": {"en": "Zhongli", "domain": "genshin"},
-    "ไรเดน": {"en": "Raiden Shogun", "domain": "genshin"},
-    "คาซึฮะ": {"en": "Kazuha", "domain": "genshin"},
-    "เยหลาน": {"en": "Yelan", "domain": "genshin"},
-    "ฮู่เต๋า": {"en": "Hu Tao", "domain": "genshin"},
-    "กานอวี่": {"en": "Ganyu", "domain": "genshin"},
-    
-    "มิตยา": {"en": "Mitya", "domain": "genshin"},
-    "วาเลริย์": {"en": "Valeriy", "domain": "genshin"},
-    
-    "จินซี": {"en": "Jinhsi", "domain": "wuwa"},
-    "ฉางลี่": {"en": "Changli", "domain": "wuwa"},
-    "อินหลิน": {"en": "Yinlin", "domain": "wuwa"},
-    "จี้หยาน": {"en": "Jiyan", "domain": "wuwa"},
-    "ชอร์คีปเปอร์": {"en": "Shorekeeper", "domain": "wuwa"},
-    "คาเมลเลีย": {"en": "Camellya", "domain": "wuwa"},
-    "เซียงลี่เหยา": {"en": "Xiangli Yao", "domain": "wuwa"},
-    "เจ๋อจือ": {"en": "Zhezhi", "domain": "wuwa"},
-    "เวริน่า": {"en": "Verina", "domain": "wuwa"},
-    "คาร์ล็อตต้า": {"en": "Carlotta", "domain": "wuwa"},
-    "ฟีบี้": {"en": "Phoebe", "domain": "wuwa"},
-    "คันตาเรลล่า": {"en": "Cantarella", "domain": "wuwa"},
-    "ซั่วหมิง": {"en": "Suoming", "domain": "wuwa"},
-    "ซิน": {"en": "Hsin", "domain": "wuwa"},
-    "ชิงเซียว": {"en": "Qingxiao", "domain": "wuwa"},
-    "จิงหราน": {"en": "Jingran", "domain": "wuwa"},
-    
-    "วิชอาเดล": {"en": "Wis'adel", "domain": "arknights"},
-    "โลโกส": {"en": "Logos", "domain": "arknights"},
-    "เทเรซ่า": {"en": "Theresa", "domain": "arknights"},
-    "เอสเปรันต้า": {"en": "Kal'tsit - Esperanta", "domain": "arknights"},
-    "โคลเชอร์": {"en": "Closure", "domain": "arknights"},
-    
-    "คิซากิ": {"en": "Kisaki", "domain": "bluearchive"},
-    "ชิโรโกะ": {"en": "Shiroko", "domain": "bluearchive"},
-    "โฮชิโนะ": {"en": "Hoshino", "domain": "bluearchive"},
-    "ฮินะ": {"en": "Hina", "domain": "bluearchive"},
-    "มิกะ": {"en": "Mika", "domain": "bluearchive"},
-    "คุโรโกะ": {"en": "Kuroko", "domain": "bluearchive"},
-    "ริโอ": {"en": "Rio", "domain": "bluearchive"},
-    "เซยะ": {"en": "Seia", "domain": "bluearchive"},
-    "สึมุกิ": {"en": "Tsumugi", "domain": "bluearchive"},
-    
-    "มิยาบิ": {"en": "Hoshimi Miyabi", "domain": "zzz"},
-    "ยานางิ": {"en": "Tsukishiro Yanagi", "domain": "zzz"},
-    "ฮารุมาสะ": {"en": "Asaba Harumasa", "domain": "zzz"},
-    "ซีซาร์": {"en": "Caesar King", "domain": "zzz"},
-    "เบอร์นิซ": {"en": "Burnice White", "domain": "zzz"},
-    "เจนโด": {"en": "Jane Doe", "domain": "zzz"},
-    "ชิงอี้": {"en": "Qingyi", "domain": "zzz"},
-    "แอลเลน": {"en": "Ellen Joe", "domain": "zzz"},
-    "จูหยวน": {"en": "Zhu Yuan", "domain": "zzz"},
-    "ไลแคน": {"en": "Von Lycaon", "domain": "zzz"},
-    "ฟีนิกซ์": {"en": "Phoenix", "domain": "zzz"},
-    "เซเวเรียน": {"en": "Severian", "domain": "zzz"},
-    "คลาเร็ต": {"en": "Claret", "domain": "zzz"},
-    "ร็อกซี่": {"en": "Roxy", "domain": "zzz"},
-    "ซันบริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
-    "สปริงเกอร์": {"en": "Sunbringer", "domain": "zzz"},
-    "สปริเกอร์": {"en": "Sunbringer", "domain": "zzz"},
-    "เอลเดรดา": {"en": "Eldreda", "domain": "zzz"},
-    "ลินด์เวิร์น": {"en": "Lindverne", "domain": "zzz"},
-    "ดราซีน": {"en": "Dracaene", "domain": "zzz"},
-    "รอสเคลีเฟอร์": {"en": "Roscaelifer", "domain": "zzz"},
-
-    "รอสไวส์": {"en": "Rossweisse", "domain": "czn"},
-    "เบลซเบลล์": {"en": "Blazebell", "domain": "czn"},
-    "เซเรส": {"en": "Seres", "domain": "eternal_return"},
-    "เนิร์ส แฮร์โรว์": {"en": "Nurse Harrow", "domain": "deadlock"},
-    "แฮชเชอร์แห่งกาลเวลา": {"en": "Herrscher of Time", "domain": "hi3"},
-
-    "สเกิร์ก": {"en": "Skirk", "domain": "genshin"},
-    "เอสคอฟฟิเยร์": {"en": "Escoffier", "domain": "genshin"},
-    "อิเนฟฟา": {"en": "Ineffa", "domain": "genshin"},
-    "เนเฟอร์": {"en": "Nefer", "domain": "genshin"},
-    "ดูริน": {"en": "Durin", "domain": "genshin"},
-    "โคลัมบินา": {"en": "Columbina", "domain": "genshin"},
-    "วาร์กา": {"en": "Varka", "domain": "genshin"},
-    "มาดามปิง": {"en": "Madame Ping", "domain": "genshin"},
-
-    "คาร์เทเธีย": {"en": "Cartethyia", "domain": "wuwa"},
-    "ลูปา": {"en": "Lupa", "domain": "wuwa"},
-    "เอมีธ": {"en": "Aemeath", "domain": "wuwa"},
-    "ฮิยูกิ": {"en": "Hiyuki", "domain": "wuwa"},
-    "เดเนีย": {"en": "Denia", "domain": "wuwa"},
-
-    "ไดลิน": {"en": "Dialyn", "domain": "zzz"},
-    "ป้านเยว่": {"en": "Banyue", "domain": "zzz"},
-    "เย่ชุนกวง": {"en": "Ye Shunguang", "domain": "zzz"},
-
-    "อซูมิเรีย": {"en": "Azur Promilia", "domain": "game"},
-    "อาซูร์ โพรมีเลีย": {"en": "Azur Promilia", "domain": "game"},
-    "โพรมีเลีย": {"en": "Azur Promilia", "domain": "game"},
-
-    "นิกเกะ": {"en": "Goddess of Victory: Nikke", "domain": "nikke"},
-    "ก็อดเดส ออฟ วิกตอรี": {"en": "Goddess of Victory: Nikke", "domain": "nikke"},
-    "มาเรียน": {"en": "Marian", "domain": "nikke"},
-    "โมเดิร์นเนีย": {"en": "Modernia", "domain": "nikke"},
-    "โมเดอน่า": {"en": "Modernia", "domain": "nikke"},
-    "เรดฮูด": {"en": "Red Hood", "domain": "nikke"},
-    "หมวกแดง": {"en": "Red Hood", "domain": "nikke"},
-    "สโนว์ไวท์": {"en": "Snow White", "domain": "nikke"},
-    "สโนไวท์": {"en": "Snow White", "domain": "nikke"},
-    "ไวท์จิ๋ว": {"en": "Snow White: Innocent Days", "domain": "nikke"},
-    "โดโรธี": {"en": "Dorothy", "domain": "nikke"},
-    "ยัยบัวขาว": {"en": "Dorothy", "domain": "nikke"},
-    "สการ์เล็ต": {"en": "Scarlet", "domain": "nikke"},
-    "ฮงรยอน": {"en": "Scarlet", "domain": "nikke"},
-    "ราพันเซล": {"en": "Rapunzel", "domain": "nikke"},
-    "หลวงเจ๊": {"en": "Rapunzel", "domain": "nikke"},
-    "ซินเดอเรลล่า": {"en": "Cinderella", "domain": "nikke"},
-    "ซินเดอเรลลา": {"en": "Cinderella", "domain": "nikke"},
-    "อนาคิโร": {"en": "Anachiro", "domain": "nikke"},
-    "เกรฟ": {"en": "Grave", "domain": "nikke"},
-    "คราวน์": {"en": "Crown", "domain": "nikke"},
-    "ไชม์": {"en": "Chime", "domain": "nikke"},
-    "กิโล": {"en": "Kilo", "domain": "nikke"},
-    "ลิลิธ": {"en": "Lilith", "domain": "nikke"},
-    "ลิลิไวส์": {"en": "Liliweiss", "domain": "nikke"},
-    "ราพี": {"en": "Rapi", "domain": "nikke"},
-    "แรพี": {"en": "Rapi", "domain": "nikke"},
-    "อนิส": {"en": "Anis", "domain": "nikke"},
-    "อานิส": {"en": "Anis", "domain": "nikke"},
-    "นีออน": {"en": "Neon", "domain": "nikke"},
-    "ลิเตอร์": {"en": "Liter", "domain": "nikke"},
-    "ลิตเตอร์": {"en": "Liter", "domain": "nikke"},
-    "ยายลิเตอร์": {"en": "Liter", "domain": "nikke"},
-    "เซนติ": {"en": "Centi", "domain": "nikke"},
-    "ลาพลาส": {"en": "Laplace", "domain": "nikke"},
-    "เดรค": {"en": "Drake", "domain": "nikke"},
-    "แมกซ์เวลล์": {"en": "Maxwell", "domain": "nikke"},
-    "พริวาตี": {"en": "Privaty", "domain": "nikke"},
-    "พริวาตี้": {"en": "Privaty", "domain": "nikke"},
-    "บล็อง": {"en": "Blanc", "domain": "nikke"},
-    "บลังก์": {"en": "Blanc", "domain": "nikke"},
-    "นัวร์": {"en": "Noir", "domain": "nikke"},
-    "รูจ": {"en": "Rouge", "domain": "nikke"},
-    "นากา": {"en": "Naga", "domain": "nikke"},
-    "เทีย": {"en": "Tia", "domain": "nikke"},
-    "นิฮิลิสเตอร์": {"en": "Nihilister", "domain": "nikke"},
-    "อินดิวีเลีย": {"en": "Indivilia", "domain": "nikke"},
-    "ลิเบอราลิโอ": {"en": "Liberalio", "domain": "nikke"},
-    "แชตเตอร์บ็อกซ์": {"en": "Chatterbox", "domain": "nikke"},
-    "เบฮีมอธ": {"en": "Behemoth", "domain": "nikke"},
-    "ชูเอน": {"en": "Syuen", "domain": "nikke"},
-    "ซูเอน": {"en": "Syuen", "domain": "nikke"},
-    "อิงกริด": {"en": "Ingrid", "domain": "nikke"},
-    "มัสแตง": {"en": "Mustang", "domain": "nikke"},
-    "เอนิกค์": {"en": "Enikk", "domain": "nikke"},
-    "เบลอร์ต้า": {"en": "Belorta", "domain": "nikke"},
-    "กิลตี้": {"en": "Guilty", "domain": "nikke"},
-    "เอเลกก์": {"en": "Elegg", "domain": "nikke"},
-    "โทรนี": {"en": "Trony", "domain": "nikke"},
-
-    "วันอินเอบิลเลียน": {"en": "1 in 8 Billion", "domain": "life_sim"},
-    "วันอินบิลเลียน": {"en": "1 in 8 Billion", "domain": "life_sim"},
-    "หนึ่งในอสงไขย": {"en": "One in an Asankhya", "domain": "life_sim"},
-    "หนึ่งในอด่งไข": {"en": "One in an Asankhya", "domain": "life_sim"},
-    "หนึ่งแน่สงไข": {"en": "One in an Asankhya", "domain": "life_sim"},
-    "นึงส่งขาย": {"en": "One in an Asankhya", "domain": "life_sim"},
-    "1 ชีวิต ณ กรุงศรี": {"en": "One Life in Ayutthaya", "domain": "life_sim"},
-    "หนึ่งชีวิตนักกรุงสี่": {"en": "One Life in Ayutthaya", "domain": "life_sim"},
-    "วิทยาธร": {"en": "Vidyadhara", "domain": "life_sim"},
-    "วิทยาธรี": {"en": "Vidyadhari", "domain": "life_sim"},
-    "จันทรกรี": {"en": "Chantharakri", "domain": "life_sim"},
-    "จันทักกรี": {"en": "Chantharakri", "domain": "life_sim"},
-
-    "แฟนทอมเบลด": {"en": "Phantom Blade Zero", "domain": "pbz"},
-    "แฟนทอม เบลด": {"en": "Phantom Blade Zero", "domain": "pbz"},
-    "แฟนทอมเบลด ซีโร่": {"en": "Phantom Blade Zero", "domain": "pbz"},
-    "แฟนทอมเบลดซีโร่": {"en": "Phantom Blade Zero", "domain": "pbz"},
-    "โซล": {"en": "Soul", "domain": "pbz"},
-    "ชุยหมิง": {"en": "Chui Ming", "domain": "pbz"},
-    "ผู้ฝืนลิขิตสวรรค์": {"en": "Fate Defier", "domain": "pbz"},
-    "ไป๋ชื่อเลี่ยน": {"en": "Chi Bai Lian", "domain": "pbz"},
-    "ฉือไป๋เหลียน": {"en": "Chi Bai Lian", "domain": "pbz"},
-    "พญางูสังเวยวิญญาณ": {"en": "Soul-Sacrificing Serpent (Chi Bai Lian)", "domain": "pbz"},
-    "เจ้าสาวขาว": {"en": "White Maiden Boss", "domain": "pbz"},
-    "หุ่นมารสามพักตร์": {"en": "Three-faced Demonic Puppet", "domain": "pbz"},
-    "ชายชุดดำหน้ากากทอง": {"en": "Man in Black with Golden Mask", "domain": "pbz"},
-    "จิ๋วปี้ ผู้เฝ้าประตู": {"en": "Gatekeeper Jiupi", "domain": "pbz"},
-    "ดาบแผนนีรการ": {"en": "Nirkar Strategic Blade", "domain": "pbz"},
-    "ขวานทมิฬยักษ์": {"en": "Dark Iron Greataxe", "domain": "pbz"}
+    "เฟส grand ออเดอร์": {
+      "en": "Fate/Grand Order",
+      "domain": "fgo"
+    },
+    "เฟท": {
+      "en": "Fate",
+      "domain": "fgo"
+    },
+    "โอบารอน": {
+      "en": "Oberon",
+      "domain": "fgo",
+      "class": "Pretender"
+    },
+    "มอร์แกน": {
+      "en": "Morgan",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "คาซูระดรอป": {
+      "en": "Kazuradrop",
+      "domain": "fgo",
+      "class": "Alter Ego"
+    },
+    "อัลเควด": {
+      "en": "Archetype: Earth",
+      "domain": "fgo",
+      "class": "MoonCancer"
+    },
+    "เมลูซีน": {
+      "en": "Melusine",
+      "domain": "fgo",
+      "class": "Lancer"
+    },
+    "เกนไซ": {
+      "en": "Gensai",
+      "domain": "fgo"
+    },
+    "ทามาโมะ": {
+      "en": "Tamamo no Mae",
+      "domain": "fgo",
+      "class": "Grand Ego / Rider"
+    },
+    "เซียล": {
+      "en": "Ciel",
+      "domain": "fgo",
+      "class": "MoonCancer"
+    },
+    "เคีย่า": {
+      "en": "Kiara",
+      "th": "คิอาระ",
+      "domain": "fgo",
+      "class": "Alter Ego"
+    },
+    "multiblood": {
+      "en": "Melty Blood: Type Lumina",
+      "domain": "typemoon"
+    },
+    "เมลตี้บลัด": {
+      "en": "Melty Blood: Type Lumina",
+      "domain": "typemoon"
+    },
+    "t moon": {
+      "en": "TYPE-MOON",
+      "domain": "typemoon"
+    },
+    "ไทป์มูน": {
+      "en": "TYPE-MOON",
+      "domain": "typemoon"
+    },
+    "เรดแรปเตอร์": {
+      "en": "Raidraptor",
+      "archetype": "Raidraptor",
+      "domain": "yugioh"
+    },
+    "อัลทิเมตฟอลคอน": {
+      "en": "Raidraptor - Ultimate Falcon",
+      "archetype": "Raidraptor",
+      "domain": "yugioh"
+    },
+    "แม็กซ์ ซี": {
+      "en": "Maxx \"C\"",
+      "domain": "yugioh"
+    },
+    "maxx c": {
+      "en": "Maxx \"C\"",
+      "domain": "yugioh"
+    },
+    "บารอนเนส": {
+      "en": "Baronne de Fleur",
+      "domain": "yugioh"
+    },
+    "สเนคอาย": {
+      "en": "Snake-Eye",
+      "archetype": "Snake-Eye",
+      "domain": "yugioh"
+    },
+    "ทีอาลาเมนต์": {
+      "en": "Tearlaments",
+      "archetype": "Tearlaments",
+      "domain": "yugioh"
+    },
+    "บลูอายส์": {
+      "en": "Blue-Eyes White Dragon",
+      "archetype": "Blue-Eyes",
+      "domain": "yugioh"
+    },
+    "แบรนเด็ด": {
+      "en": "Branded",
+      "archetype": "Branded",
+      "domain": "yugioh"
+    },
+    "คัชติร่า": {
+      "en": "Kashtira",
+      "archetype": "Kashtira",
+      "domain": "yugioh"
+    },
+    "การ์โชมป์": {
+      "en": "Garchomp",
+      "th": "การ์โชมป์",
+      "domain": "pokemon"
+    },
+    "เป็ดต้นหอม": {
+      "en": "Farfetch'd",
+      "th": "คาโมเนกิ (เป็ดต้นหอม)",
+      "domain": "pokemon"
+    },
+    "แบกซ์แคลิเบอร์": {
+      "en": "Baxcalibur",
+      "th": "แบกซ์แคลิเบอร์",
+      "domain": "pokemon"
+    },
+    "ม้าดำ": {
+      "en": "Spectrier",
+      "th": "ม้าดำ",
+      "domain": "pokemon"
+    },
+    "สเปกเทรียร์": {
+      "en": "Spectrier",
+      "th": "สเปกเทรียร์",
+      "domain": "pokemon"
+    },
+    "ลิซาร์ดอน": {
+      "en": "Charizard",
+      "th": "ลิซาร์ดอน",
+      "domain": "pokemon"
+    },
+    "เกงกา": {
+      "en": "Gengar",
+      "th": "เกงกา",
+      "domain": "pokemon"
+    },
+    "ริมัส": {
+      "en": "Limbus Company",
+      "domain": "limbus"
+    },
+    "ิม company": {
+      "en": "Limbus Company",
+      "domain": "limbus"
+    },
+    "คันเ 10": {
+      "en": "Canto X",
+      "domain": "limbus"
+    },
+    "ฮีธคลิฟฟ์": {
+      "en": "Heathcliff",
+      "domain": "limbus"
+    },
+    "ดันเต้": {
+      "en": "Dante",
+      "domain": "limbus"
+    },
+    "oneพiece": {
+      "en": "One Piece",
+      "domain": "anime"
+    },
+    "วันพีซ": {
+      "en": "One Piece",
+      "domain": "anime"
+    },
+    "บリーチ": {
+      "en": "Bleach",
+      "domain": "anime"
+    },
+    "บลีช": {
+      "en": "Bleach",
+      "domain": "anime"
+    },
+    "เคมปาจิ": {
+      "en": "Zaraki Kenpachi",
+      "domain": "anime"
+    },
+    "ยูฮาบัค": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "จูฮาบัช": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "จูบัส": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "จัวบัส": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "คุโบะ": {
+      "en": "Tite Kubo",
+      "domain": "anime"
+    },
+    "เซ็นจูมารุ": {
+      "en": "Senjumaru Shutara",
+      "domain": "anime"
+    },
+    "คาลามิตี้": {
+      "en": "The Calamity",
+      "domain": "anime"
+    },
+    "เทนสะ ซันเก็ตสึ": {
+      "en": "Tensa Zangetsu",
+      "domain": "anime"
+    },
+    "สปาร์กซี่": {
+      "en": "Sparxie",
+      "domain": "hsr"
+    },
+    "สปาร์กเคิล": {
+      "en": "Sparkle",
+      "domain": "hsr"
+    },
+    "เหยาจวง": {
+      "en": "Yao Guang",
+      "domain": "hsr"
+    },
+    "เพิร์ล": {
+      "en": "Pearl",
+      "domain": "hsr"
+    },
+    "ไข่มุก": {
+      "en": "Pearl",
+      "domain": "hsr"
+    },
+    "นิฮิรัก": {
+      "en": "Nihilux",
+      "domain": "hsr"
+    },
+    "อาฮา": {
+      "en": "Aha",
+      "domain": "hsr"
+    },
+    "ซันเดย์": {
+      "en": "Sunday",
+      "domain": "hsr"
+    },
+    "ฟูจิ": {
+      "en": "Fugue",
+      "domain": "hsr"
+    },
+    "เฟยเซียว": {
+      "en": "Feixiao",
+      "domain": "hsr"
+    },
+    "ลิงชา": {
+      "en": "Lingsha",
+      "domain": "hsr"
+    },
+    "เจียวชิว": {
+      "en": "Jiaoqiu",
+      "domain": "hsr"
+    },
+    "หยุนหลี่": {
+      "en": "Yunli",
+      "domain": "hsr"
+    },
+    "โรบิน": {
+      "en": "Robin",
+      "domain": "hsr"
+    },
+    "บูทฮิลล์": {
+      "en": "Boothill",
+      "domain": "hsr"
+    },
+    "อาเครอน": {
+      "en": "Acheron",
+      "domain": "hsr"
+    },
+    "อะเวนทูรีน": {
+      "en": "Aventurine",
+      "domain": "hsr"
+    },
+    "ไฟร์ฟลาย": {
+      "en": "Firefly",
+      "domain": "hsr"
+    },
+    "แบล็กสวอน": {
+      "en": "Black Swan",
+      "domain": "hsr"
+    },
+    "รวนเหมย": {
+      "en": "Ruan Mei",
+      "domain": "hsr"
+    },
+    "เรโช": {
+      "en": "Dr. Ratio",
+      "domain": "hsr"
+    },
+    "อาร์เจนติ": {
+      "en": "Argenti",
+      "domain": "hsr"
+    },
+    "ฮั่วฮั่ว": {
+      "en": "Huohuo",
+      "domain": "hsr"
+    },
+    "จิงหลิว": {
+      "en": "Jingliu",
+      "domain": "hsr"
+    },
+    "โทพาส": {
+      "en": "Topaz",
+      "domain": "hsr"
+    },
+    "ฟู่เสวียน": {
+      "en": "Fu Xuan",
+      "domain": "hsr"
+    },
+    "คาฟคา": {
+      "en": "Kafka",
+      "domain": "hsr"
+    },
+    "เบลด": {
+      "en": "Blade",
+      "domain": "hsr"
+    },
+    "จิงหยวน": {
+      "en": "Jing Yuan",
+      "domain": "hsr"
+    },
+    "เซเล่": {
+      "en": "Seele",
+      "domain": "hsr"
+    },
+    "ทริบบี้": {
+      "en": "Tribbie",
+      "domain": "hsr"
+    },
+    "อักลาเอีย": {
+      "en": "Aglaea",
+      "domain": "hsr"
+    },
+    "คาสโตริเซ่": {
+      "en": "Castorice",
+      "domain": "hsr"
+    },
+    "อนักซา": {
+      "en": "Anaxa",
+      "domain": "hsr"
+    },
+    "แรปป้า": {
+      "en": "Rappa",
+      "domain": "hsr"
+    },
+    "มาร์ช": {
+      "en": "March 7th",
+      "domain": "hsr"
+    },
+    "ไฮยาซีน": {
+      "en": "Hyacine",
+      "domain": "hsr"
+    },
+    "ไซเฟอร์": {
+      "en": "Cipher",
+      "domain": "hsr"
+    },
+    "ไฟนอน": {
+      "en": "Phainon",
+      "domain": "hsr"
+    },
+    "ไฮซิเลนส์": {
+      "en": "Hysilens",
+      "domain": "hsr"
+    },
+    "เซริดร้า": {
+      "en": "Cerydra",
+      "domain": "hsr"
+    },
+    "เอเวอร์ไนท์": {
+      "en": "Evernight",
+      "domain": "hsr"
+    },
+    "ไซรีน": {
+      "en": "Cyrene",
+      "domain": "hsr"
+    },
+    "เอวาเนสเซีย": {
+      "en": "Evanescia",
+      "domain": "hsr"
+    },
+    "น็อด-ไกร": {
+      "en": "Nod-Krai",
+      "domain": "genshin"
+    },
+    "มาวุยก้า": {
+      "en": "Mavuika",
+      "domain": "genshin"
+    },
+    "ชาสก้า": {
+      "en": "Chasca",
+      "domain": "genshin"
+    },
+    "ชิโลเนน": {
+      "en": "Xilonen",
+      "domain": "genshin"
+    },
+    "คินิช": {
+      "en": "Kinich",
+      "domain": "genshin"
+    },
+    "มัวลานี่": {
+      "en": "Mualani",
+      "domain": "genshin"
+    },
+    "ซิทลาลี": {
+      "en": "Citlali",
+      "domain": "genshin"
+    },
+    "โอโรลอน": {
+      "en": "Ororon",
+      "domain": "genshin"
+    },
+    "คาชิน่า": {
+      "en": "Kachina",
+      "domain": "genshin"
+    },
+    "มิสึกิ": {
+      "en": "Mizuki",
+      "domain": "genshin"
+    },
+    "วาเรซ่า": {
+      "en": "Varesa",
+      "domain": "genshin"
+    },
+    "นิววิลเล็ต": {
+      "en": "Neuvillette",
+      "domain": "genshin"
+    },
+    "ฟูริน่า": {
+      "en": "Furina",
+      "domain": "genshin"
+    },
+    "อาร์เลคคิโน": {
+      "en": "Arlecchino",
+      "domain": "genshin"
+    },
+    "นาเวีย": {
+      "en": "Navia",
+      "domain": "genshin"
+    },
+    "คลอรินด์": {
+      "en": "Clorinde",
+      "domain": "genshin"
+    },
+    "ไรท์สลีย์": {
+      "en": "Wriothesley",
+      "domain": "genshin"
+    },
+    "เซียนอวิ๋น": {
+      "en": "Xianyun",
+      "domain": "genshin"
+    },
+    "นาฮิดะ": {
+      "en": "Nahida",
+      "domain": "genshin"
+    },
+    "อัลไฮธัม": {
+      "en": "Alhaitham",
+      "domain": "genshin"
+    },
+    "สคารามุช": {
+      "en": "Scaramouche",
+      "domain": "genshin"
+    },
+    "จงลี่": {
+      "en": "Zhongli",
+      "domain": "genshin"
+    },
+    "ไรเดน": {
+      "en": "Raiden Shogun",
+      "domain": "genshin"
+    },
+    "คาซึฮะ": {
+      "en": "Kazuha",
+      "domain": "genshin"
+    },
+    "เยหลาน": {
+      "en": "Yelan",
+      "domain": "genshin"
+    },
+    "ฮู่เต๋า": {
+      "en": "Hu Tao",
+      "domain": "genshin"
+    },
+    "กานอวี่": {
+      "en": "Ganyu",
+      "domain": "genshin"
+    },
+    "มิตยา": {
+      "en": "Mitya",
+      "domain": "genshin"
+    },
+    "วาเลริย์": {
+      "en": "Valeriy",
+      "domain": "genshin"
+    },
+    "จินซี": {
+      "en": "Jinhsi",
+      "domain": "wuwa"
+    },
+    "ฉางลี่": {
+      "en": "Changli",
+      "domain": "wuwa"
+    },
+    "อินหลิน": {
+      "en": "Yinlin",
+      "domain": "wuwa"
+    },
+    "จี้หยาน": {
+      "en": "Jiyan",
+      "domain": "wuwa"
+    },
+    "ชอร์คีปเปอร์": {
+      "en": "Shorekeeper",
+      "domain": "wuwa"
+    },
+    "คาเมลเลีย": {
+      "en": "Camellya",
+      "domain": "wuwa"
+    },
+    "เซียงลี่เหยา": {
+      "en": "Xiangli Yao",
+      "domain": "wuwa"
+    },
+    "เจ๋อจือ": {
+      "en": "Zhezhi",
+      "domain": "wuwa"
+    },
+    "เวริน่า": {
+      "en": "Verina",
+      "domain": "wuwa"
+    },
+    "คาร์ล็อตต้า": {
+      "en": "Carlotta",
+      "domain": "wuwa"
+    },
+    "ฟีบี้": {
+      "en": "Phoebe",
+      "domain": "wuwa"
+    },
+    "คันตาเรลล่า": {
+      "en": "Cantarella",
+      "domain": "wuwa"
+    },
+    "ซั่วหมิง": {
+      "en": "Suoming",
+      "domain": "wuwa"
+    },
+    "ซิน": {
+      "en": "Hsin",
+      "domain": "wuwa"
+    },
+    "ชิงเซียว": {
+      "en": "Qingxiao",
+      "domain": "wuwa"
+    },
+    "จิงหราน": {
+      "en": "Jingran",
+      "domain": "wuwa"
+    },
+    "วิชอาเดล": {
+      "en": "Wis'adel",
+      "domain": "arknights"
+    },
+    "โลโกส": {
+      "en": "Logos",
+      "domain": "arknights"
+    },
+    "เทเรซ่า": {
+      "en": "Theresa",
+      "domain": "arknights"
+    },
+    "เอสเปรันต้า": {
+      "en": "Kal'tsit - Esperanta",
+      "domain": "arknights"
+    },
+    "โคลเชอร์": {
+      "en": "Closure",
+      "domain": "arknights"
+    },
+    "คิซากิ": {
+      "en": "Kisaki",
+      "domain": "bluearchive"
+    },
+    "ชิโรโกะ": {
+      "en": "Shiroko",
+      "domain": "bluearchive"
+    },
+    "โฮชิโนะ": {
+      "en": "Hoshino",
+      "domain": "bluearchive"
+    },
+    "ฮินะ": {
+      "en": "Hina",
+      "domain": "bluearchive"
+    },
+    "มิกะ": {
+      "en": "Mika",
+      "domain": "bluearchive"
+    },
+    "คุโรโกะ": {
+      "en": "Kuroko",
+      "domain": "bluearchive"
+    },
+    "ริโอ": {
+      "en": "Rio",
+      "domain": "bluearchive"
+    },
+    "เซยะ": {
+      "en": "Seia",
+      "domain": "bluearchive"
+    },
+    "สึมุกิ": {
+      "en": "Tsumugi",
+      "domain": "bluearchive"
+    },
+    "มิยาบิ": {
+      "en": "Hoshimi Miyabi",
+      "domain": "zzz"
+    },
+    "ยานางิ": {
+      "en": "Tsukishiro Yanagi",
+      "domain": "zzz"
+    },
+    "ฮารุมาสะ": {
+      "en": "Asaba Harumasa",
+      "domain": "zzz"
+    },
+    "ซีซาร์": {
+      "en": "Caesar King",
+      "domain": "zzz"
+    },
+    "เบอร์นิซ": {
+      "en": "Burnice White",
+      "domain": "zzz"
+    },
+    "เจนโด": {
+      "en": "Jane Doe",
+      "domain": "zzz"
+    },
+    "ชิงอี้": {
+      "en": "Qingyi",
+      "domain": "zzz"
+    },
+    "แอลเลน": {
+      "en": "Ellen Joe",
+      "domain": "zzz"
+    },
+    "จูหยวน": {
+      "en": "Zhu Yuan",
+      "domain": "zzz"
+    },
+    "ไลแคน": {
+      "en": "Von Lycaon",
+      "domain": "zzz"
+    },
+    "ฟีนิกซ์": {
+      "en": "Phoenix",
+      "domain": "zzz"
+    },
+    "เซเวเรียน": {
+      "en": "Severian",
+      "domain": "zzz"
+    },
+    "คลาเร็ต": {
+      "en": "Claret",
+      "domain": "zzz"
+    },
+    "ร็อกซี่": {
+      "en": "Roxy",
+      "domain": "zzz"
+    },
+    "ซันบริงเกอร์": {
+      "en": "Sunbringer",
+      "domain": "zzz"
+    },
+    "สปริงเกอร์": {
+      "en": "Sunbringer",
+      "domain": "zzz"
+    },
+    "สปริเกอร์": {
+      "en": "Sunbringer",
+      "domain": "zzz"
+    },
+    "เอลเดรดา": {
+      "en": "Eldreda",
+      "domain": "zzz"
+    },
+    "ลินด์เวิร์น": {
+      "en": "Lindverne",
+      "domain": "zzz"
+    },
+    "ดราซีน": {
+      "en": "Dracaene",
+      "domain": "zzz"
+    },
+    "รอสเคลีเฟอร์": {
+      "en": "Roscaelifer",
+      "domain": "zzz"
+    },
+    "รอสไวส์": {
+      "en": "Rossweisse",
+      "domain": "czn"
+    },
+    "เบลซเบลล์": {
+      "en": "Blazebell",
+      "domain": "czn"
+    },
+    "เซเรส": {
+      "en": "Seres",
+      "domain": "eternal_return"
+    },
+    "เนิร์ส แฮร์โรว์": {
+      "en": "Nurse Harrow",
+      "domain": "deadlock"
+    },
+    "แฮชเชอร์แห่งกาลเวลา": {
+      "en": "Herrscher of Time",
+      "domain": "hi3"
+    },
+    "สเกิร์ก": {
+      "en": "Skirk",
+      "domain": "genshin"
+    },
+    "เอสคอฟฟิเยร์": {
+      "en": "Escoffier",
+      "domain": "genshin"
+    },
+    "อิเนฟฟา": {
+      "en": "Ineffa",
+      "domain": "genshin"
+    },
+    "เนเฟอร์": {
+      "en": "Nefer",
+      "domain": "genshin"
+    },
+    "ดูริน": {
+      "en": "Durin",
+      "domain": "genshin"
+    },
+    "โคลัมบินา": {
+      "en": "Columbina",
+      "domain": "genshin"
+    },
+    "วาร์กา": {
+      "en": "Varka",
+      "domain": "genshin"
+    },
+    "มาดามปิง": {
+      "en": "Madame Ping",
+      "domain": "genshin"
+    },
+    "คาร์เทเธีย": {
+      "en": "Cartethyia",
+      "domain": "wuwa"
+    },
+    "ลูปา": {
+      "en": "Lupa",
+      "domain": "wuwa"
+    },
+    "เอมีธ": {
+      "en": "Aemeath",
+      "domain": "wuwa"
+    },
+    "ฮิยูกิ": {
+      "en": "Hiyuki",
+      "domain": "wuwa"
+    },
+    "เดเนีย": {
+      "en": "Denia",
+      "domain": "wuwa"
+    },
+    "ไดลิน": {
+      "en": "Dialyn",
+      "domain": "zzz"
+    },
+    "ป้านเยว่": {
+      "en": "Banyue",
+      "domain": "zzz"
+    },
+    "เย่ชุนกวง": {
+      "en": "Ye Shunguang",
+      "domain": "zzz"
+    },
+    "อซูมิเรีย": {
+      "en": "Azur Promilia",
+      "domain": "game"
+    },
+    "อาซูร์ โพรมีเลีย": {
+      "en": "Azur Promilia",
+      "domain": "game"
+    },
+    "โพรมีเลีย": {
+      "en": "Azur Promilia",
+      "domain": "game"
+    },
+    "นิกเกะ": {
+      "en": "Goddess of Victory: Nikke",
+      "domain": "nikke"
+    },
+    "ก็อดเดส ออฟ วิกตอรี": {
+      "en": "Goddess of Victory: Nikke",
+      "domain": "nikke"
+    },
+    "มาเรียน": {
+      "en": "Marian",
+      "domain": "nikke"
+    },
+    "โมเดิร์นเนีย": {
+      "en": "Modernia",
+      "domain": "nikke"
+    },
+    "โมเดอน่า": {
+      "en": "Modernia",
+      "domain": "nikke"
+    },
+    "เรดฮูด": {
+      "en": "Red Hood",
+      "domain": "nikke"
+    },
+    "หมวกแดง": {
+      "en": "Red Hood",
+      "domain": "nikke"
+    },
+    "สโนว์ไวท์": {
+      "en": "Snow White",
+      "domain": "nikke"
+    },
+    "สโนไวท์": {
+      "en": "Snow White",
+      "domain": "nikke"
+    },
+    "ไวท์จิ๋ว": {
+      "en": "Snow White: Innocent Days",
+      "domain": "nikke"
+    },
+    "โดโรธี": {
+      "en": "Dorothy",
+      "domain": "nikke"
+    },
+    "ยัยบัวขาว": {
+      "en": "Dorothy",
+      "domain": "nikke"
+    },
+    "สการ์เล็ต": {
+      "en": "Scarlet",
+      "domain": "nikke"
+    },
+    "ฮงรยอน": {
+      "en": "Scarlet",
+      "domain": "nikke"
+    },
+    "ราพันเซล": {
+      "en": "Rapunzel",
+      "domain": "nikke"
+    },
+    "หลวงเจ๊": {
+      "en": "Rapunzel",
+      "domain": "nikke"
+    },
+    "ซินเดอเรลล่า": {
+      "en": "Cinderella",
+      "domain": "nikke"
+    },
+    "ซินเดอเรลลา": {
+      "en": "Cinderella",
+      "domain": "nikke"
+    },
+    "อนาคิโร": {
+      "en": "Anachiro",
+      "domain": "nikke"
+    },
+    "เกรฟ": {
+      "en": "Grave",
+      "domain": "nikke"
+    },
+    "คราวน์": {
+      "en": "Crown",
+      "domain": "nikke"
+    },
+    "ไชม์": {
+      "en": "Chime",
+      "domain": "nikke"
+    },
+    "กิโล": {
+      "en": "Kilo",
+      "domain": "nikke"
+    },
+    "ลิลิธ": {
+      "en": "Lilith",
+      "domain": "nikke"
+    },
+    "ลิลิไวส์": {
+      "en": "Liliweiss",
+      "domain": "nikke"
+    },
+    "ราพี": {
+      "en": "Rapi",
+      "domain": "nikke"
+    },
+    "แรพี": {
+      "en": "Rapi",
+      "domain": "nikke"
+    },
+    "อนิส": {
+      "en": "Anis",
+      "domain": "nikke"
+    },
+    "อานิส": {
+      "en": "Anis",
+      "domain": "nikke"
+    },
+    "นีออน": {
+      "en": "Neon",
+      "domain": "nikke"
+    },
+    "ลิเตอร์": {
+      "en": "Liter",
+      "domain": "nikke"
+    },
+    "ลิตเตอร์": {
+      "en": "Liter",
+      "domain": "nikke"
+    },
+    "ยายลิเตอร์": {
+      "en": "Liter",
+      "domain": "nikke"
+    },
+    "เซนติ": {
+      "en": "Centi",
+      "domain": "nikke"
+    },
+    "ลาพลาส": {
+      "en": "Laplace",
+      "domain": "nikke"
+    },
+    "เดรค": {
+      "en": "Drake",
+      "domain": "nikke"
+    },
+    "แมกซ์เวลล์": {
+      "en": "Maxwell",
+      "domain": "nikke"
+    },
+    "พริวาตี": {
+      "en": "Privaty",
+      "domain": "nikke"
+    },
+    "พริวาตี้": {
+      "en": "Privaty",
+      "domain": "nikke"
+    },
+    "บล็อง": {
+      "en": "Blanc",
+      "domain": "nikke"
+    },
+    "บลังก์": {
+      "en": "Blanc",
+      "domain": "nikke"
+    },
+    "นัวร์": {
+      "en": "Noir",
+      "domain": "nikke"
+    },
+    "รูจ": {
+      "en": "Rouge",
+      "domain": "nikke"
+    },
+    "นากา": {
+      "en": "Naga",
+      "domain": "nikke"
+    },
+    "เทีย": {
+      "en": "Tia",
+      "domain": "nikke"
+    },
+    "นิฮิลิสเตอร์": {
+      "en": "Nihilister",
+      "domain": "nikke"
+    },
+    "อินดิวีเลีย": {
+      "en": "Indivilia",
+      "domain": "nikke"
+    },
+    "ลิเบอราลิโอ": {
+      "en": "Liberalio",
+      "domain": "nikke"
+    },
+    "แชตเตอร์บ็อกซ์": {
+      "en": "Chatterbox",
+      "domain": "nikke"
+    },
+    "เบฮีมอธ": {
+      "en": "Behemoth",
+      "domain": "nikke"
+    },
+    "ชูเอน": {
+      "en": "Syuen",
+      "domain": "nikke"
+    },
+    "ซูเอน": {
+      "en": "Syuen",
+      "domain": "nikke"
+    },
+    "อิงกริด": {
+      "en": "Ingrid",
+      "domain": "nikke"
+    },
+    "มัสแตง": {
+      "en": "Mustang",
+      "domain": "nikke"
+    },
+    "เอนิกค์": {
+      "en": "Enikk",
+      "domain": "nikke"
+    },
+    "เบลอร์ต้า": {
+      "en": "Belorta",
+      "domain": "nikke"
+    },
+    "กิลตี้": {
+      "en": "Guilty",
+      "domain": "nikke"
+    },
+    "เอเลกก์": {
+      "en": "Elegg",
+      "domain": "nikke"
+    },
+    "โทรนี": {
+      "en": "Trony",
+      "domain": "nikke"
+    },
+    "วันอินเอบิลเลียน": {
+      "en": "1 in 8 Billion",
+      "domain": "life_sim"
+    },
+    "วันอินบิลเลียน": {
+      "en": "1 in 8 Billion",
+      "domain": "life_sim"
+    },
+    "หนึ่งในอสงไขย": {
+      "en": "One in an Asankhya",
+      "domain": "life_sim"
+    },
+    "หนึ่งในอด่งไข": {
+      "en": "One in an Asankhya",
+      "domain": "life_sim"
+    },
+    "หนึ่งแน่สงไข": {
+      "en": "One in an Asankhya",
+      "domain": "life_sim"
+    },
+    "นึงส่งขาย": {
+      "en": "One in an Asankhya",
+      "domain": "life_sim"
+    },
+    "1 ชีวิต ณ กรุงศรี": {
+      "en": "One Life in Ayutthaya",
+      "domain": "life_sim"
+    },
+    "หนึ่งชีวิตนักกรุงสี่": {
+      "en": "One Life in Ayutthaya",
+      "domain": "life_sim"
+    },
+    "วิทยาธร": {
+      "en": "Vidyadhara",
+      "domain": "life_sim"
+    },
+    "วิทยาธรี": {
+      "en": "Vidyadhari",
+      "domain": "life_sim"
+    },
+    "จันทรกรี": {
+      "en": "Chantharakri",
+      "domain": "life_sim"
+    },
+    "จันทักกรี": {
+      "en": "Chantharakri",
+      "domain": "life_sim"
+    },
+    "แฟนทอมเบลด": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอม เบลด": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอมเบลด ซีโร่": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอมเบลดซีโร่": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "โซล": {
+      "en": "Soul",
+      "domain": "pbz"
+    },
+    "ชุยหมิง": {
+      "en": "Chui Ming",
+      "domain": "pbz"
+    },
+    "ผู้ฝืนลิขิตสวรรค์": {
+      "en": "Fate Defier",
+      "domain": "pbz"
+    },
+    "ไป๋ชื่อเลี่ยน": {
+      "en": "Chi Bai Lian",
+      "domain": "pbz"
+    },
+    "ฉือไป๋เหลียน": {
+      "en": "Chi Bai Lian",
+      "domain": "pbz"
+    },
+    "พญางูสังเวยวิญญาณ": {
+      "en": "Soul-Sacrificing Serpent (Chi Bai Lian)",
+      "domain": "pbz"
+    },
+    "เจ้าสาวขาว": {
+      "en": "White Maiden Boss",
+      "domain": "pbz"
+    },
+    "หุ่นมารสามพักตร์": {
+      "en": "Three-faced Demonic Puppet",
+      "domain": "pbz"
+    },
+    "ชายชุดดำหน้ากากทอง": {
+      "en": "Man in Black with Golden Mask",
+      "domain": "pbz"
+    },
+    "จิ๋วปี้ ผู้เฝ้าประตู": {
+      "en": "Gatekeeper Jiupi",
+      "domain": "pbz"
+    },
+    "ดาบแผนนีรการ": {
+      "en": "Nirkar Strategic Blade",
+      "domain": "pbz"
+    },
+    "ขวานทมิฬยักษ์": {
+      "en": "Dark Iron Greataxe",
+      "domain": "pbz"
+    },
+    "บาเลส": {
+      "en": "Bales",
+      "domain": "pbz"
+    },
+    "มือธนูแดง": {
+      "en": "Red Archer",
+      "domain": "pbz"
+    },
+    "เรดอาเชอร์": {
+      "en": "Red Archer",
+      "domain": "pbz"
+    },
+    "กระบี่อ่อนอสรพิษ": {
+      "en": "Serpent Whipblade",
+      "domain": "pbz"
+    },
+    "แดนหิมะ": {
+      "en": "Snow Realm",
+      "domain": "pbz"
+    },
+    "แฟนท่อมเบลด": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอมเบล": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอมเบลด 0": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "แฟนทอมเบด": {
+      "en": "Phantom Blade Zero",
+      "domain": "pbz"
+    },
+    "เรดอาร์เชอร์": {
+      "en": "Red Archer",
+      "th": "มือธนูแดง",
+      "domain": "pbz"
+    },
+    "เรดอาเช่อ": {
+      "en": "Red Archer",
+      "th": "มือธนูแดง",
+      "domain": "pbz"
+    },
+    "บาเลซ": {
+      "en": "Bales",
+      "domain": "pbz"
+    },
+    "บาเรส": {
+      "en": "Bales",
+      "domain": "pbz"
+    },
+    "ชุ่ยหมิง": {
+      "en": "Chui Ming",
+      "domain": "pbz"
+    },
+    "ปี้หยวน": {
+      "en": "Pi Yuan",
+      "domain": "pbz"
+    },
+    "ปีหยวน": {
+      "en": "Pi Yuan",
+      "domain": "pbz"
+    },
+    "ปี่หยวน": {
+      "en": "Pi Yuan",
+      "domain": "pbz"
+    },
+    "ปี้เถาเถา": {
+      "en": "Bi Taotao",
+      "domain": "pbz"
+    },
+    "ปี่เถาเถา": {
+      "en": "Bi Taotao",
+      "domain": "pbz"
+    },
+    "ปีเถาเถา": {
+      "en": "Bi Taotao",
+      "domain": "pbz"
+    },
+    "มู่ซิ่วขุย": {
+      "en": "Mu Xiukui",
+      "domain": "pbz"
+    },
+    "อนันการ": {
+      "en": "Anankar",
+      "domain": "pbz"
+    },
+    "เทียนเฉียน": {
+      "en": "Tianqian",
+      "domain": "pbz"
+    },
+    "โอลมาน": {
+      "en": "Olman",
+      "domain": "pbz"
+    },
+    "แซงกวิน รีช": {
+      "en": "Sanguine Reach",
+      "th": "ดาบ Sanguine Reach",
+      "domain": "pbz"
+    },
+    "แซงกวินรีช": {
+      "en": "Sanguine Reach",
+      "th": "ดาบ Sanguine Reach",
+      "domain": "pbz"
+    },
+    "พระแม่มังควา": {
+      "en": "Mother Mengkwa",
+      "domain": "pbz"
+    },
+    "มังควา": {
+      "en": "Mother Mengkwa",
+      "domain": "pbz"
+    },
+    "มังถู": {
+      "en": "Mangtu",
+      "domain": "pbz"
+    },
+    "คาเมนไรเดอร์ ไมซ์": {
+      "en": "Kamen Rider My-Th",
+      "domain": "tokusatsu"
+    },
+    "ไรเดอร์ไมซ์": {
+      "en": "Kamen Rider My-Th",
+      "domain": "tokusatsu"
+    },
+    "วาลซ์": {
+      "en": "Kamen Rider Valtz",
+      "domain": "tokusatsu"
+    },
+    "คาคุจู": {
+      "en": "Kakuzyu",
+      "domain": "tokusatsu"
+    },
+    "เคียวคาคุ": {
+      "en": "Kyoukaku",
+      "domain": "tokusatsu"
+    },
+    "เคี้ยวคาคุ": {
+      "en": "Kyoukaku",
+      "domain": "tokusatsu"
+    },
+    "เคี้ยวกาคึ": {
+      "en": "Kyoukaku",
+      "domain": "tokusatsu"
+    },
+    "เซ็ตสึอาคุ": {
+      "en": "Setsuaku",
+      "domain": "tokusatsu"
+    },
+    "เดโกร่า": {
+      "en": "Degora",
+      "domain": "tokusatsu"
+    },
+    "อุลตร้าเมทัล": {
+      "en": "Ultrametal",
+      "domain": "tokusatsu"
+    },
+    "อุลตร้าเซเว่น": {
+      "en": "Ultraseven",
+      "domain": "tokusatsu"
+    },
+    "กาวาเรียน โดเซอร์": {
+      "en": "Cosmo Gavarion Dozer",
+      "domain": "tokusatsu"
+    },
+    "เซโนลู": {
+      "en": "Xenolhu",
+      "domain": "tokusatsu"
+    },
+    "เซนฟุ": {
+      "en": "Xenolhu",
+      "domain": "tokusatsu"
+    },
+    "ชิโรกุมิ": {
+      "en": "Shirogumi",
+      "domain": "tokusatsu"
+    },
+    "ยูกิคาเสะ": {
+      "en": "Yukikaze",
+      "domain": "tokusatsu"
+    },
+    "ซิงกูลาร์ พอยต์": {
+      "en": "Godzilla Singular Point",
+      "domain": "tokusatsu"
+    },
+    "คุณนินุ": {
+      "en": "Ninu",
+      "domain": "channel"
+    },
+    "นินุ": {
+      "en": "Ninu",
+      "domain": "channel"
+    },
+    "เจมส์ กันน์": {
+      "en": "James Gunn",
+      "domain": "news"
+    },
+    "ปีเตอร์ ซาฟราน": {
+      "en": "Peter Safran",
+      "domain": "news"
+    },
+    "สกายแดนซ์": {
+      "en": "Skydance",
+      "domain": "news"
+    },
+    "ดาร์กไซด์": {
+      "en": "Darkseid",
+      "domain": "news"
+    },
+    "ลิลี่": {
+      "en": "Lily",
+      "domain": "wuwa"
+    },
+    "น้องลิลี่": {
+      "en": "Lily",
+      "domain": "wuwa"
+    },
+    "ลัลลาบาย": {
+      "en": "Lullaby",
+      "domain": "wuwa"
+    },
+    "อันสโปกเกน รู": {
+      "en": "Unspoken Rue",
+      "domain": "wuwa"
+    },
+    "บลูมมิ่ง เจดฮาเวน": {
+      "en": "Blooming Jadehaven",
+      "domain": "wuwa"
+    },
+    "ซวนหลิง": {
+      "en": "Yangyang: Xuanling",
+      "domain": "wuwa"
+    },
+    "สุ่ยสุ่ย": {
+      "en": "Suisui",
+      "domain": "wuwa"
+    },
+    "ลูซิลล่า": {
+      "en": "Lucilla",
+      "domain": "wuwa"
+    },
+    "รถไฟวิญญาณ": {
+      "en": "Train of Souls",
+      "domain": "wuwa"
+    },
+    "ช่อดอกไม้สำหรับวันพรุ่งนี้": {
+      "en": "A Bouquet for Tomorrow",
+      "domain": "wuwa"
+    },
+    "สหพันธรัฐใหม่": {
+      "en": "New Federation",
+      "domain": "wuwa"
+    },
+    "อ่าฮ่า": {
+      "en": "Aha",
+      "domain": "hsr"
+    },
+    "อาฮ่า": {
+      "en": "Aha",
+      "domain": "hsr"
+    },
+    "เทพดาราอาฮา": {
+      "en": "Aha",
+      "domain": "hsr"
+    },
+    "นิฮิรักษ์": {
+      "en": "Nihilux",
+      "domain": "hsr"
+    },
+    "นิฮิลัก": {
+      "en": "Nihilux",
+      "domain": "hsr"
+    },
+    "นิฮิลักซ์": {
+      "en": "Nihilux",
+      "domain": "hsr"
+    },
+    "นิฮิรัค": {
+      "en": "Nihilux",
+      "domain": "hsr"
+    },
+    "เคอร์เรนซี วอร์ส": {
+      "en": "Currency Wars",
+      "domain": "hsr"
+    },
+    "สงครามสกุลเงิน": {
+      "en": "Currency Wars",
+      "domain": "hsr"
+    },
+    "หมากรางดาว": {
+      "en": "Currency Wars",
+      "domain": "hsr"
+    },
+    "เคอเรนซีวอร์": {
+      "en": "Currency Wars",
+      "domain": "hsr"
+    },
+    "มูนออฟอินดัลเจนซ์": {
+      "en": "Moon of Indulgence",
+      "domain": "hsr"
+    },
+    "ราเวอนัส เบบี้ ทูธ": {
+      "en": "Ravenous Baby Tooth",
+      "domain": "hsr"
+    },
+    "ฟันน้ำนม": {
+      "en": "Ravenous Baby Tooth",
+      "domain": "hsr"
+    },
+    "แอฟฟินิทิฟ ไอโดลอน": {
+      "en": "Affinitive Eidolon",
+      "domain": "hsr"
+    },
+    "อีเอ็กซ์ ไอโดลอน": {
+      "en": "Affinitive Eidolon",
+      "domain": "hsr"
+    },
+    "มาเรียน ควีน": {
+      "en": "Marian: Queen",
+      "domain": "nikke"
+    },
+    "มาเรียนควีน": {
+      "en": "Marian: Queen",
+      "domain": "nikke"
+    },
+    "ควีนมาเรียน": {
+      "en": "Marian: Queen",
+      "domain": "nikke"
+    },
+    "สการ์เล็ต ก็อดเดธ": {
+      "en": "Scarlet: Goddeath",
+      "domain": "nikke"
+    },
+    "สการ์เล็ตก็อดเดธ": {
+      "en": "Scarlet: Goddeath",
+      "domain": "nikke"
+    },
+    "ฮงรยอน ก็อดเดธ": {
+      "en": "Hongryeon: Goddeath",
+      "domain": "nikke"
+    },
+    "ฮงรยอนก็อดเดธ": {
+      "en": "Hongryeon: Goddeath",
+      "domain": "nikke"
+    },
+    "ก็อดเดธ": {
+      "en": "Goddeath",
+      "domain": "nikke"
+    },
+    "ราพันเซล แซงก์ทัวรี": {
+      "en": "Rapunzel: Sanctuary",
+      "domain": "nikke"
+    },
+    "ราพันเซลแซงก์ทัวรี": {
+      "en": "Rapunzel: Sanctuary",
+      "domain": "nikke"
+    },
+    "หลวงเจ๊แซงก์": {
+      "en": "Rapunzel: Sanctuary",
+      "domain": "nikke"
+    },
+    "มาเรีย แอน": {
+      "en": "MARIA-n",
+      "domain": "nikke"
+    },
+    "ลาสต์ อัฟเฟกชัน": {
+      "en": "Last Affection",
+      "domain": "nikke"
+    },
+    "โซโลเรด ซีซั่น 43": {
+      "en": "Solo Raid Season 43",
+      "domain": "nikke"
+    },
+    "มิดยา": {
+      "en": "Mitya",
+      "domain": "genshin"
+    },
+    "วาเลรี่": {
+      "en": "Valeriy",
+      "domain": "genshin"
+    },
+    "โนโวกิเทชกราด": {
+      "en": "Novokitezhgrad",
+      "domain": "genshin"
+    },
+    "วิงส์แพนพีค": {
+      "en": "Wingspan Peak",
+      "domain": "genshin"
+    },
+    "อนาสตาเซีย": {
+      "en": "Anastasya",
+      "domain": "genshin"
+    },
+    "ดานิกา": {
+      "en": "Danica",
+      "domain": "genshin"
+    },
+    "สเตลลาร์คอนดักต์": {
+      "en": "Stellar-Conduct",
+      "domain": "genshin"
+    },
+    "โอเดตต์": {
+      "en": "Odette",
+      "domain": "genshin"
+    },
+    "อาลิโอชา": {
+      "en": "Alyosha",
+      "domain": "genshin"
+    },
+    "เวสนา": {
+      "en": "Vesna",
+      "domain": "genshin"
+    },
+    "โวเดียนิตซา": {
+      "en": "Vodyanitsa",
+      "domain": "genshin"
+    },
+    "เมตาตรอน": {
+      "en": "Metatron",
+      "domain": "genshin"
+    },
+    "ฮิฟุมิ เรซซิ่ง": {
+      "en": "Racing Hifumi",
+      "domain": "bluearchive"
+    },
+    "เรซซิ่ง ฮิฟุมิ": {
+      "en": "Racing Hifumi",
+      "domain": "bluearchive"
+    },
+    "อาซึสะ เรซซิ่ง": {
+      "en": "Racing Azusa",
+      "domain": "bluearchive"
+    },
+    "เรซซิ่ง อาซึสะ": {
+      "en": "Racing Azusa",
+      "domain": "bluearchive"
+    },
+    "รานะ": {
+      "en": "Rana",
+      "domain": "bluearchive"
+    },
+    "ฟุรุฮาตะ รานะ": {
+      "en": "Furuhata Rana",
+      "domain": "bluearchive"
+    },
+    "อาโกะ เดรส": {
+      "en": "Dress Ako",
+      "domain": "bluearchive"
+    },
+    "เดรส อาโกะ": {
+      "en": "Dress Ako",
+      "domain": "bluearchive"
+    },
+    "อาโกะ ชุดเดรส": {
+      "en": "Dress Ako",
+      "domain": "bluearchive"
+    },
+    "มาโคโตะ ชุดว่ายน้ำ": {
+      "en": "Swimsuit Makoto",
+      "domain": "bluearchive"
+    },
+    "ซัตสึกิ ชุดว่ายน้ำ": {
+      "en": "Swimsuit Satsuki",
+      "domain": "bluearchive"
+    },
+    "มิโยะ": {
+      "en": "Miyo",
+      "domain": "bluearchive"
+    },
+    "ฟุยุ": {
+      "en": "Fuyu",
+      "domain": "bluearchive"
+    },
+    "ริทสึ": {
+      "en": "Ritsu",
+      "domain": "bluearchive"
+    },
+    "เดคากรัมมาทอน": {
+      "en": "Decagrammaton",
+      "domain": "bluearchive"
+    },
+    "มัลคุธ": {
+      "en": "Malkuth",
+      "domain": "bluearchive"
+    },
+    "เรมิเอล": {
+      "en": "Remielle Dan",
+      "domain": "zzz"
+    },
+    "ซิกริต": {
+      "en": "Sigrid de L'Azur",
+      "domain": "zzz"
+    },
+    "เวลิน่า": {
+      "en": "Velina Airgid",
+      "domain": "zzz"
+    },
+    "นอร์ม่า": {
+      "en": "Norma Hollowell",
+      "domain": "zzz"
+    },
+    "ทารูล่า": {
+      "en": "Talulah",
+      "domain": "arknights"
+    },
+    "ทารูลา": {
+      "en": "Talulah",
+      "domain": "arknights"
+    },
+    "ทารูร่า": {
+      "en": "Talulah",
+      "domain": "arknights"
+    },
+    "ทาลูล่า": {
+      "en": "Talulah",
+      "domain": "arknights"
+    },
+    "ทอชก้า": {
+      "en": "Toska",
+      "domain": "arknights"
+    },
+    "ทอสกา": {
+      "en": "Toska",
+      "domain": "arknights"
+    },
+    "ทอสก้า": {
+      "en": "Toska",
+      "domain": "arknights"
+    },
+    "โทสก้า": {
+      "en": "Toska",
+      "domain": "arknights"
+    },
+    "เทร์ริโทริยา": {
+      "en": "Territoriya",
+      "domain": "arknights"
+    },
+    "เทริโทริยา": {
+      "en": "Territoriya",
+      "domain": "arknights"
+    },
+    "เทอริโทเรีย": {
+      "en": "Territoriya",
+      "domain": "arknights"
+    },
+    "เคลซิท": {
+      "en": "Kal'tsit",
+      "domain": "arknights"
+    },
+    "เคลสิท": {
+      "en": "Kal'tsit",
+      "domain": "arknights"
+    },
+    "แคลซิท": {
+      "en": "Kal'tsit",
+      "domain": "arknights"
+    },
+    "คัลซิท": {
+      "en": "Kal'tsit",
+      "domain": "arknights"
+    },
+    "โคลเชอ": {
+      "en": "Closure",
+      "domain": "arknights"
+    },
+    "โคลเซอร์": {
+      "en": "Closure",
+      "domain": "arknights"
+    },
+    "วิชาเดล": {
+      "en": "Wiš'adel",
+      "domain": "arknights"
+    },
+    "แองส้ม": {
+      "en": "Angelina the Mellow Wish",
+      "domain": "arknights"
+    },
+    "ฮานะบิ": {
+      "en": "Hanabi Exiled",
+      "domain": "arknights"
+    },
+    "เมอร์โซต์": {
+      "en": "Meursault",
+      "domain": "limbus"
+    },
+    "เมอโซ": {
+      "en": "Meursault",
+      "domain": "limbus"
+    },
+    "เมอร์โซ": {
+      "en": "Meursault",
+      "domain": "limbus"
+    },
+    "เมอโซลต์": {
+      "en": "Meursault",
+      "domain": "limbus"
+    },
+    "วาลพูร์กิส": {
+      "en": "Walpurgisnacht",
+      "domain": "limbus"
+    },
+    "วาลเพอร์กิส": {
+      "en": "Walpurgisnacht",
+      "domain": "limbus"
+    },
+    "วัลพูร์กิส": {
+      "en": "Walpurgisnacht",
+      "domain": "limbus"
+    },
+    "ฮอคม่า": {
+      "en": "Hokma",
+      "domain": "limbus"
+    },
+    "ฮอกม่า": {
+      "en": "Hokma",
+      "domain": "limbus"
+    },
+    "ฮอคมา": {
+      "en": "Hokma",
+      "domain": "limbus"
+    },
+    "เว็ดจ์": {
+      "en": "Wedge Office",
+      "domain": "limbus"
+    },
+    "สำนักงานเวดจ์": {
+      "en": "Wedge Office",
+      "domain": "limbus"
+    },
+    "ซิซิฟ": {
+      "en": "Sisyphe",
+      "domain": "limbus"
+    },
+    "ซีซิฟ": {
+      "en": "Sisyphe",
+      "domain": "limbus"
+    },
+    "เรียวชูว": {
+      "en": "Ryōshū",
+      "domain": "limbus"
+    },
+    "เรียวชูว์": {
+      "en": "Ryōshū",
+      "domain": "limbus"
+    },
+    "ดอนกิโฮเต้": {
+      "en": "Don Quixote",
+      "domain": "limbus"
+    },
+    "ดอนกิโฆเต้": {
+      "en": "Don Quixote",
+      "domain": "limbus"
+    },
+    "อิชมาเอล": {
+      "en": "Ishmael",
+      "domain": "limbus"
+    },
+    "อิชเมล": {
+      "en": "Ishmael",
+      "domain": "limbus"
+    },
+    "เกรเกอร์": {
+      "en": "Gregor",
+      "domain": "limbus"
+    },
+    "อาเจนต์โฟลว์": {
+      "en": "Argent Flow",
+      "domain": "endfield"
+    },
+    "อาร์เจนท์โฟลว์": {
+      "en": "Argent Flow",
+      "domain": "endfield"
+    },
+    "อาเจนโฟลว์": {
+      "en": "Argent Flow",
+      "domain": "endfield"
+    },
+    "ซันเดอร์ไรเซชัน": {
+      "en": "Sunderization",
+      "domain": "endfield"
+    },
+    "เทพพู่กัน": {
+      "en": "Si",
+      "domain": "endfield"
+    },
+    "ไทฟอน": {
+      "en": "Typhoeus",
+      "domain": "endfield"
+    },
+    "ไทฟีอุส": {
+      "en": "Typhoeus",
+      "domain": "endfield"
+    },
+    "เพอร์เชน่า": {
+      "en": "Purrchena",
+      "domain": "endfield"
+    },
+    "เพอร์เชนา": {
+      "en": "Purrchena",
+      "domain": "endfield"
+    },
+    "หลี่จื้อเหยียน": {
+      "en": "Li Zhiyan",
+      "domain": "endfield"
+    },
+    "ลีโน่": {
+      "en": "Liino",
+      "domain": "endfield"
+    },
+    "หมี่ฝู": {
+      "en": "Mi Fu",
+      "domain": "endfield"
+    },
+    "คามิลล์": {
+      "en": "Camille",
+      "domain": "endfield"
+    },
+    "โพกรานิชนิก": {
+      "en": "Pogranichnik",
+      "domain": "endfield"
+    },
+    "โพกรานิกนิก": {
+      "en": "Pogranichnik",
+      "domain": "endfield"
+    },
+    "เอนด์ฟิลด์": {
+      "en": "Arknights: Endfield",
+      "domain": "endfield"
+    },
+    "แฮชเชอร์ ออฟ ไทม์": {
+      "en": "Herrscher of Time",
+      "domain": "hi3"
+    },
+    "แฮชเชอร์ออฟไทม์": {
+      "en": "Herrscher of Time",
+      "domain": "hi3"
+    },
+    "แฮชเชอร์กาลเวลา": {
+      "en": "Herrscher of Time",
+      "domain": "hi3"
+    },
+    "วีต้า": {
+      "en": "Vita",
+      "domain": "hi3"
+    },
+    "เจ๊วีต้า": {
+      "en": "Vita",
+      "domain": "hi3"
+    },
+    "เซนาดิน่า": {
+      "en": "Senadina",
+      "domain": "hi3"
+    },
+    "เซนาดีน่า": {
+      "en": "Senadina",
+      "domain": "hi3"
+    },
+    "วิงส์ ออฟ พานาเซีย": {
+      "en": "Wings of Panacea",
+      "domain": "hi3"
+    },
+    "ตี้เฟิง": {
+      "en": "Difeng",
+      "domain": "hi3"
+    },
+    "เมืองตี้เฟิง": {
+      "en": "Difeng",
+      "domain": "hi3"
+    },
+    "เบลสเบลล์": {
+      "en": "Blazebell",
+      "domain": "czn"
+    },
+    "เบลซเบล": {
+      "en": "Blazebell",
+      "domain": "czn"
+    },
+    "รอซไวส์": {
+      "en": "Rossweisse",
+      "domain": "czn"
+    },
+    "ฮิลเดอ": {
+      "en": "Hilde",
+      "domain": "czn"
+    },
+    "อาราเบลล่า": {
+      "en": "Arabella",
+      "domain": "czn"
+    },
+    "อาราเบลลา": {
+      "en": "Arabella",
+      "domain": "czn"
+    },
+    "วิเวียน": {
+      "en": "Vivian",
+      "domain": "czn"
+    },
+    "อีโก้ เมนิเฟสเตชัน": {
+      "en": "EGO Manifestation",
+      "domain": "czn"
+    },
+    "เนิส แฮโร่": {
+      "en": "Nurse Harrow",
+      "domain": "deadlock"
+    },
+    "เดอะ โบรคเกอร์": {
+      "en": "The Broker",
+      "domain": "deadlock"
+    },
+    "อัพโฟโล": {
+      "en": "Abrams",
+      "domain": "deadlock"
+    },
+    "วันติกเซ็น": {
+      "en": "Vindicta",
+      "domain": "deadlock"
+    },
+    "กอร์เซเวน": {
+      "en": "Seven",
+      "domain": "deadlock"
+    },
+    "ดายนามอง": {
+      "en": "Dynamo",
+      "domain": "deadlock"
+    },
+    "ดายนาโม": {
+      "en": "Dynamo",
+      "domain": "deadlock"
+    },
+    "เด็ดลอง": {
+      "en": "Deadlock",
+      "domain": "deadlock"
+    },
+    "ลูเซีย": {
+      "en": "Lucia",
+      "domain": "eternal_return"
+    },
+    "ลูเซียร์": {
+      "en": "Lucia",
+      "domain": "eternal_return"
+    },
+    "เครเวอร์": {
+      "en": "Craver",
+      "domain": "eternal_return"
+    },
+    "เคฟเวอร์": {
+      "en": "Craver",
+      "domain": "eternal_return"
+    },
+    "เดบิมาเน่": {
+      "en": "Debby & Marlene",
+      "domain": "eternal_return"
+    },
+    "เดบิมาร์ลีน": {
+      "en": "Debby & Marlene",
+      "domain": "eternal_return"
+    },
+    "เทย่าผสมสี": {
+      "en": "Tia",
+      "domain": "eternal_return"
+    },
+    "ทาเชีย": {
+      "en": "Tazia",
+      "domain": "eternal_return"
+    },
+    "เลนูอา": {
+      "en": "Lenore",
+      "domain": "eternal_return"
+    },
+    "นักข่าวไทยพีบีเอส": {
+      "en": "Martina",
+      "domain": "eternal_return"
+    },
+    "อีเทอร์นอล รีเทิร์น": {
+      "en": "Eternal Return",
+      "domain": "eternal_return"
+    },
+    "ยูฮาบาเฮะ": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "จบัส": {
+      "en": "Yhwach",
+      "domain": "anime"
+    },
+    "เทนซาซันคสึ": {
+      "en": "Tensa Zangetsu",
+      "domain": "anime"
+    },
+    "เคียวกับซุเกสึ": {
+      "en": "Kyoka Suigetsu",
+      "domain": "anime"
+    },
+    "คิมจิโอะ": {
+      "en": "Grimmjow Jaegerjaquez",
+      "domain": "anime"
+    },
+    "กิมจอ": {
+      "en": "Grimmjow Jaegerjaquez",
+      "domain": "anime"
+    },
+    "อุราคิสึเกะ": {
+      "en": "Kisuke Urahara",
+      "domain": "anime"
+    },
+    "ทากุจิโทโมี": {
+      "en": "Taguchi Tomohisa",
+      "domain": "anime"
+    },
+    "โจิอีบุรึ": {
+      "en": "jo0ji (I-BULL)",
+      "domain": "anime"
+    },
+    "เพลงราเซ็น": {
+      "en": "9Lana (Rasen)",
+      "domain": "anime"
+    },
+    "รีเบิร์ธ ออฟ โซลส์": {
+      "en": "Bleach: Rebirth of Souls",
+      "domain": "anime"
+    },
+    "เฮลล์ อาร์ค": {
+      "en": "Hell Arc",
+      "domain": "anime"
+    },
+    "คาลามิติ": {
+      "en": "The Calamity",
+      "domain": "anime"
+    },
+    "คามิคาเค": {
+      "en": "Kamikake",
+      "domain": "anime"
+    },
+    "วามิกิ": {
+      "en": "Valmiki",
+      "th": "วาลมิกิ",
+      "domain": "ramayana"
+    },
+    "ทรายพารวี": {
+      "en": "Sai Pallavi",
+      "th": "ไซ ปัลลาวี",
+      "domain": "ramayana"
+    },
+    "ทรายพลวี": {
+      "en": "Sai Pallavi",
+      "th": "ไซ ปัลลาวี",
+      "domain": "ramayana"
+    },
+    "นิทtiธิวารี": {
+      "en": "Nitesh Tiwari",
+      "th": "นิเตศ ทิวารี",
+      "domain": "ramayana"
+    },
+    "ss ราชบุรี": {
+      "en": "S. S. Rajamouli",
+      "th": "เอส.เอส. ราชามูลี",
+      "domain": "indian_cinema"
+    },
+    "พราณสี": {
+      "en": "Varanasi",
+      "th": "วราณสี",
+      "domain": "indian_cinema"
+    },
+    "วราณศรี": {
+      "en": "Varanasi",
+      "th": "วราณสี",
+      "domain": "indian_cinema"
+    },
+    "กุรุษตร": {
+      "en": "Kurukshetra: The Great War of Mahabharata",
+      "th": "กุรุเกษตร",
+      "domain": "indian_cinema"
+    },
+    "หมาพาราตะ": {
+      "en": "Mahabharata",
+      "th": "มหาภารตะ",
+      "domain": "ramayana"
+    },
+    "ปรสิราม": {
+      "en": "Parashurama",
+      "th": "ปรศุราม",
+      "domain": "ramayana"
+    },
+    "อารันณยพันธ์": {
+      "en": "Aranya Kanda",
+      "th": "อรัณยกัณฑ์",
+      "domain": "ramayana"
+    },
+    "อารัญญพันธ์": {
+      "en": "Aranya Kanda",
+      "th": "อรัณยกัณฑ์",
+      "domain": "ramayana"
+    },
+    "สมณขา": {
+      "en": "Surpanakha",
+      "th": "ศูรปนขา / สำมนักขา",
+      "domain": "ramayana"
+    },
+    "อัชิไซ": {
+      "en": "Ajisainohana",
+      "th": "คุณอาจิไซ",
+      "domain": "stream"
+    },
+    "tซีรies์": {
+      "en": "T-Series",
+      "th": "ที-ซีรีส์",
+      "domain": "indian_cinema"
+    },
+    "tซรies์": {
+      "en": "T-Series",
+      "th": "ที-ซีรีส์",
+      "domain": "indian_cinema"
+    },
+    "รามาวตาร": {
+      "en": "Ramavatar",
+      "th": "รามาวตาร",
+      "domain": "ramayana"
+    },
+    "ลาวะ": {
+      "en": "Ravana",
+      "th": "ราวัณ",
+      "domain": "ramayana"
+    },
+    "ราวัล": {
+      "en": "Ravana",
+      "th": "ราวัณ",
+      "domain": "ramayana"
+    },
+    "ราวันนะ": {
+      "en": "Ravana",
+      "th": "ราวัณ",
+      "domain": "ramayana"
+    },
+    "mdb": {
+      "en": "IMDb",
+      "th": "IMDb",
+      "domain": "indian_cinema"
+    }
   }
 }

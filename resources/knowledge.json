@@ -1,1247 +1,3115 @@
 {
- "version": 2,
- "updated": "2026-11-07",
- "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
- "entries": {
-  "a-n-i-m-e": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "abrams": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "aha": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "anachiro": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "anime": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "arknights": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Arknights.md"
-  },
-  "arknights endfield": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Arknights_Endfield.md"
-  },
-  "arona": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "azur promilia": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Azur_Promilia.md"
-  },
-  "bebop": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "behemoth": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "belorta": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "black survival": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Eternal_Return.md"
-  },
-  "bleach": {
-   "kind": "anime",
-   "file": "../anibon-world-identity/references/Bleach.md"
-  },
-  "bleach tybw": {
-   "kind": "anime",
-   "file": "../anibon-world-identity/references/Bleach.md"
-  },
-  "blue archive": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "bluearchive": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "book expo": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "book fair": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "boonboomger": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "bracket": {
-   "kind": "domain",
-   "file": "references/stream/uwufufu-knowledge.md"
-  },
-  "castorice": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "centi": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "chaos zero": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "chaos zero nightmare": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "chatterbox": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "chime": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ciel": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "cinderella": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "comic world": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "crown": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "czn": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "deadlock": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "dinoblade": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Dinoblade.md"
-  },
-  "discuss": {
-   "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
-  },
-  "discussion": {
-   "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
-  },
-  "donate": {
-   "kind": "domain",
-   "file": "references/stream/donation-classifier.md"
-  },
-  "donation": {
-   "kind": "domain",
-   "file": "references/stream/donation-classifier.md"
-  },
-  "donbrothers": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "dorothy": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "dracaene": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "drake": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "elation": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "eldreda": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "elegg": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "endfield": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Arknights_Endfield.md"
-  },
-  "eternal return": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Eternal_Return.md"
-  },
-  "event": {
-   "kind": "stream_type",
-   "file": "references/stream/event-stream.md"
-  },
-  "fate": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "fate grand order": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "fgo": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "first page pro": {
-   "kind": "publisher",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "game": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "gameplay": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "gaming": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "gavv": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "geats": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "genshin": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Genshin_Impact.md"
-  },
-  "genshin impact": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Genshin_Impact.md"
-  },
-  "goddess of victory": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "goddess of victory: nikke": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "gotchard": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "grand order": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "grand score": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "grand servant": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "grand substitute": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "grave": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "heartopia": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Heartopia.md"
-  },
-  "hongryeon": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "honkai": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
-  },
-  "honkai impact": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
-  },
-  "honkai impact 3rd": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
-  },
-  "honkai star rail": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "hoshino": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "hsr": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "hunter": {
-   "kind": "anime",
-   "file": null,
-   "_discovered_by": "web",
-   "_confidence": 0.7,
-   "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
-   "_added": "2026-07-27T09:08:06"
-  },
-  "indivilia": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "japan expo": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "kamen": {
-   "kind": "stream_type",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "kamen rider": {
-   "kind": "stream_type",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "kilo": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "king-ohger": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "kinokuniya": {
-   "kind": "bookstore",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "krampus": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "laplace": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "last kingdom": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "liberalio": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "limbus": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Limbus_Company.md"
-  },
-  "limbus company": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Limbus_Company.md"
-  },
-  "lindverne": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "liter": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "lore": {
-   "kind": "domain",
-   "file": "references/stream/story-enrichment.md"
-  },
-  "manga": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "marathon": {
-   "kind": "stream_type",
-   "file": "references/stream/marathon-stream.md"
-  },
-  "marian": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "marvel": {
-   "kind": "game",
-   "file": null,
-   "_discovered_by": "web",
-   "_confidence": 0.7,
-   "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
-   "_added": "2026-07-27T09:08:06"
-  },
-  "modernia": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "momotalk": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "nexon": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "nexton": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "nihilister": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "nihilux": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "nikke": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "nippon haku": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "nod-krai": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Genshin_Impact.md"
-  },
-  "old tales": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "one punch man": {
-   "kind": "anime",
-   "file": null,
-   "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
-  },
-  "over zone": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "palworld": {
-   "kind": "game",
-   "file": null
-  },
-  "parrying extinction": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Dinoblade.md"
-  },
-  "patch": {
-   "kind": "stream_type",
-   "file": "references/stream/event-stream.md"
-  },
-  "pearl": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "phoenix": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "phoenix next": {
-   "kind": "publisher",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "phantom blade": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
-  },
-  "phantom blade zero": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
-  },
-  "pbz": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
-  },
-  "แฟนทอมเบลด": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
-  },
-  "แฟนทอม เบลด": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
-  },
-  "pipeline": {
-   "kind": "domain",
-   "file": "references/stream/talk-stream.md"
-  },
-  "play": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "plot": {
-   "kind": "domain",
-   "file": "references/stream/story-enrichment.md"
-  },
-  "pokemon": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
-  },
-  "pokémon": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
-  },
-  "pyroxene": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "radical red": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Pokemon_Radical_Red.md"
-  },
-  "rapi": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "rapunzel": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "red ash": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "red hood": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "revice": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "roscaelifer": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "saber": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "scarlet": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "seele leaks": {
-   "kind": "domain",
-   "file": null,
-   "_note": "Twitter leaker account covering all MiHoYo/HoYoverse games (Genshin, HSR, HI3, ZZZ)"
-  },
-  "sekiro": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
-  },
-  "series": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "servant": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "shadow die twice": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
-  },
-  "shadows die twice": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
-  },
-  "shiroko": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "snezhnaya": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Genshin_Impact.md"
-  },
-  "snow white": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "sparxie": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "springer": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "star rail": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "story": {
-   "kind": "domain",
-   "file": "references/stream/story-enrichment.md"
-  },
-  "subathon": {
-   "kind": "stream_type",
-   "file": "references/stream/marathon-stream.md"
-  },
-  "sunbringer": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "super sentai": {
-   "kind": "stream_type",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "superchat": {
-   "kind": "domain",
-   "file": "references/stream/donation-classifier.md"
-  },
-  "syuen": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "talk": {
-   "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
-  },
-  "tamamo": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "tamamo no mae": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "tokusatsu": {
-   "kind": "stream_type",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "total assault": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "trony": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ultraman": {
-   "kind": "stream_type",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "update": {
-   "kind": "stream_type",
-   "file": "references/stream/event-stream.md"
-  },
-  "uwufufu": {
-   "kind": "domain",
-   "file": "references/stream/uwufufu-knowledge.md"
-  },
-  "vindicta": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "vlog": {
-   "kind": "stream_type",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "wing wave": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "work": {
-   "kind": "domain",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "world cup": {
-   "kind": "domain",
-   "file": "references/stream/uwufufu-knowledge.md"
-  },
-  "wuthering": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "wuthering wave": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "wuthering waves": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "wuwa": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "yao guang": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "ygo": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
-  },
-  "yu-gi-oh": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
-  },
-  "yugioh": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
-  },
-  "zenkaiger": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "zenless": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "zenless zone zero": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "zero-one": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "zzz": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "กัฟฟ์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "กาฟ": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "การ์ตูน": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "กาวบ์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "กีทส์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ก็อตชาร์ด": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ก๊อตชาร์ด": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ขบวนการห้าสี": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ขบวนการเซนไต": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ของเล่น dx": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "คราวน์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "คลื่นเวฟ": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Wuthering_Waves.md"
-  },
-  "คาเซนา": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "คาเซน่า": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "คาเมน ไรเดอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "คาเมนไรเดอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "คิงโอเจอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "คิโนะ": {
-   "kind": "bookstore",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "คิโนะคุนิยะ": {
-   "kind": "bookstore",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "คุย": {
-   "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
-  },
-  "งบจำกัด": {
-   "kind": "vlog_theme",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "งาน": {
-   "kind": "domain",
-   "file": "references/stream/talk-stream.md"
-  },
-  "งานญี่ปุ่น": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "งานหนังสือ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "งาน tgs": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
-  },
-  "tgs": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
-  },
-  "thailand game show": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
-  },
-  "gamescom": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
-  },
-  "ชูเอน": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ซันบริงเกอร์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "ซินเดอเรลล่า": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ซีโร่วัน": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ซื้อมาดอง": {
-   "kind": "vlog_theme",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "ซุปเปอร์เซนไต": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ซุปเปอร์แชท": {
-   "kind": "domain",
-   "file": "references/stream/donation-classifier.md"
-  },
-  "ดองหนังสือ": {
-   "kind": "vlog_theme",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "ดอนบราเธอร์ส": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ทำงาน": {
-   "kind": "domain",
-   "file": "references/stream/talk-stream.md"
-  },
-  "นิกเกะ": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "นิปปอน ฮาคุ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "นิฮิรัก": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "น้องข้าว": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "บลูอาร์ไคฟ์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "บัวไค": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "บุมบุมเจอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "บูนบูมเจอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "บูไค": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "ปิติสุข": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "พาเที่ยว": {
-   "kind": "stream_type",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "ฟีนิกซ์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "มหกรรมหนังสือ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "มหกรรมหนังสือแห่งชาติ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "มังงะ": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "มาสค์ไรเดอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ยัยบัวขาว": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ยายลิเตอร์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "ยูกิ": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
-  },
-  "รางดาว": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "รีไวซ์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ร่างพัฒนา": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ร่างสุดยอด": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ลิมบัส": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Limbus_Company.md"
-  },
-  "วล็อก": {
-   "kind": "stream_type",
-   "file": "references/stream/vlog-stream.md"
-  },
-  "สปริงเกอร์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "สปริเกอร์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "สปาร์กซี่": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "สัปดาห์หนังสือ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "สัปดาห์หนังสือแห่งชาติ": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
-  },
-  "สามเค": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
-  },
-  "หมวกแดง": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "หลวงเจ๊": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "อนิเมะ": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "อาร์กนก": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Arknights.md"
-  },
-  "อาร์กไนท์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Arknights.md"
-  },
-  "อาฮา": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "อีเวนท์": {
-   "kind": "stream_type",
-   "file": "references/stream/event-stream.md"
-  },
-  "อุลตร้าแมน": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ฮาร์โทเปีย": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Heartopia.md"
-  },
-  "ฮาโทเปีย": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Heartopia.md"
-  },
-  "เกนชิน": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Genshin_Impact.md"
-  },
-  "เกม": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "เกรฟ": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Nikke.md"
-  },
-  "เข็มขัดแปลงร่าง": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "เข็มขัดไรเดอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "เคออสซีโร่": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
-  },
-  "เจแปน เอ็กซ์โป": {
-   "kind": "event",
-   "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
-  },
-  "เซกิโร": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
-  },
-  "เซนเลส": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
-  },
-  "เซนไคเจอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "เซนไต": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "เซอร์แวนท์": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "เซเบอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "เดดล็อก": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "เดดล็อค": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Deadlock.md"
-  },
-  "เนื้อเรื่อง": {
-   "kind": "domain",
-   "file": "references/stream/story-enrichment.md"
-  },
-  "เน็กซอน": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "เพิร์ล": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "เฟท": {
-   "kind": "game",
-   "file": "references/stream/fgo-knowledge.md"
-  },
-  "เม้าท์": {
-   "kind": "stream_type",
-   "file": "references/stream/talk-stream.md"
-  },
-  "เรื่อง anime": {
-   "kind": "anime",
-   "file": "references/stream/phuboat-anime-talking-style.md"
-  },
-  "เล่น": {
-   "kind": "stream_type",
-   "file": "references/stream/gaming-stream.md"
-  },
-  "เหยาจวง": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "เฮนชิน": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "แปลงร่าง": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "โทคุ": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "โทคุซัตสึ": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "โทคุสะสึ": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "โปเกม่อน": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Pokemon_PvP.md"
-  },
-  "ไข่มุก": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
-  },
-  "ไคจู": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ไดโนเบลด": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Dinoblade.md"
-  },
-  "ไฟนอลฟอร์ม": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ไรเดอร์": {
-   "kind": "tokusatsu",
-   "file": "references/stream/tokusatsu-stream.md"
-  },
-  "ブルーアーカイブ": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Blue_Archive.md"
-  },
-  "心动小镇": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Heartopia.md"
-  },
-  "1 in 8 billion": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "one in 8 billion": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "1 ชีวิต ณ กรุงศรี": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "หนึ่งในอสงไขย": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "ป่าหิมพานต์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "สุ่มเกิด": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "วิทยาธร": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "จันทรกรี": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
-  },
-  "แฟนทอม เบลด์": {
-   "kind": "game",
-   "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+  "version": 2,
+  "updated": "2026-11-11",
+  "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
+  "entries": {
+    "1 in 8 billion": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "1 ชีวิต ณ กรุงศรี": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "4th anniversary": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "9lana": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "a bouquet for tomorrow": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "a promise upon the snow": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "a-n-i-m-e": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "abrams": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "adipurush": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "aeon aha": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "affinitive eidolon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "aha": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "ajisainohana": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ako (dress)": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "alyosha": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "anachiro": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "anastasya": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "angelina the mellow wish": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "anime": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "animonium": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "arabella": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "argent flow": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "arknights": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "arknights endfield": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "armorer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "arona": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ashveil": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "azur promilia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Azur_Promilia.md"
+    },
+    "azusa (racing)": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "baahubali": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "bales": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "bambietta": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "bebop": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "behemoth": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "belorta": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "belorta: pumpkin witch": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "bi taotao": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "black survival": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "blazebell": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "bleach": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "bleach tybw": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "blooming jadehaven": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "blue archive": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "bluearchive": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "bollywood": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "book expo": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "book fair": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "boonboomger": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "boutique du rouge ishmael": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "bracket": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "broken rust sword": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "burning millennium": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "calamity effigy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "camille": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "canto x": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "cardfight": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "cardfight vanguard": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "castorice": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "celestial bulwark": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "centi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "chaos zero": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "chaos zero nightmare": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "chatterbox": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "chen qianyu": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "chime": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "chui ming": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ciel": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "cinderella": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "city never sleeps": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "claret flint": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "comic world": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "contingency contract indigo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "craver": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "crown": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "currency wars": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "czn": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "danica": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "dark iron greataxe": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "darkseid": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "dc studios": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "deadlock": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "deadman danny": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "death bet": {
+      "kind": "skill",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "debby & marlene": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "decagrammaton": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "deepspace anchor": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "degora": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "demonic cinder": {
+      "kind": "item",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "difeng": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "dinoblade": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Dinoblade.md"
+    },
+    "discuss": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "discussion": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "divine skull of indulgence": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "dneg": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "donate": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "donation": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "donbrothers": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "doorman": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "dorothy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "dracaene": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "drake": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "drake: great villain": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "dress ako": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ego manifestation": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "elation": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "eldreda": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "elegg": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "endfield": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "endministrator": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "esperanta": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "eternal return": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "evanescia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "event": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "ex eidolon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "exusiai the new covenant": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "fading affection": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "fate": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "fate grand order": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "fest godzilla": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "fgo": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "first page pro": {
+      "kind": "publisher",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "flames rising over a snowfield": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "flicker blade": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "flint workshop": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "fukashigi": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "furuhata rana": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "game": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "gameplay": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "gamescom": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+    },
+    "gaming": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "gavan infinity": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "gavv": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "geats": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "genshin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "genshin impact": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "ghidorah": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "gilberta": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "goddess of victory": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "goddess of victory statue": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "goddess of victory: nikke": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "godzilla": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "godzilla boy": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "godzilla minus zero": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "godzilla singular point": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "gotchard": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "gozyuger": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "grand magasin sisyphe": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "grand order": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "grand score": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "grand servant": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "grand substitute": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "grave": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "gt trinity": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "guilty: mighty bunny": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "hanabi exiled": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "hanuman": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "heartopia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Heartopia.md"
+    },
+    "hell arc": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "herald of judgment": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "herrscher of time": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "hifumi (racing)": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "hilde": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "himeko nova": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "hokma": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "holliday": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "holy grace": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "hongryeon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "hongryeon goddeath": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "hongryeon: goddeath": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "honkai": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
+    },
+    "honkai impact": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
+    },
+    "honkai impact 3rd": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
+    },
+    "honkai star rail": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "hoshiguma the breacher": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "hoshino": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "hour of ruin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "hsin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "hsr": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "hunter": {
+      "kind": "anime",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "hunter's pot skin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "indivilia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "is5": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "is6": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "james gunn": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "japan expo": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "jeremy latcham": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "jingran": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "jo0ji": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "joint operation: core break": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "kabuto 20th": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kakuzyu": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kal'tsit": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "kalki 2898 ad": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "kamen": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kamen rider": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kamen rider maou": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kamen rider my-th": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kamen rider zen shinobi": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "katja": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "keizer ghidorah": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "key of mirroring": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "kilo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "king ghidorah": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "king-ohger": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kinokuniya": {
+      "kind": "bookstore",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "kollywood": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "krampus": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "kungfupunk": {
+      "kind": "genre",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "kurukshetra": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "kyoka suigetsu": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "kyoukaku": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "laevatain": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "laplace": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "lappland the decadenza": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "last affection": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "last kingdom": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "le noir ryoshu": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "le noir ryōshū": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "lemuen": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "lenore": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "li zhiyan": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "liberalio": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "liino": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "lilies in a dying dream": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "limbus": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "limbus company": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "lindverne": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "liter": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "lone planetfarer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "lore": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "lucia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "lucilla": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "lullaby": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "luxier": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "mahabharata": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "malkuth": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "manga": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "marathon": {
+      "kind": "stream_type",
+      "file": "references/stream/marathon-stream.md"
+    },
+    "maria-n": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "marian": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "marian queen": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "marian: queen": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "martina": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "marvel": {
+      "kind": "game",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "mechagodzilla": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "metatron": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "meursault": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "mi fu": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "mimihagi": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "mirrors high": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "mitya": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "modernia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "mollywood": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "momotalk": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "monster x": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "moon of indulgence": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "mortenax blade": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "mu xiukui": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "młynar": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "new federation": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "nexon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "nexton": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "nihilister": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "nihilux": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "nikke": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ninu": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "nippon haku": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "nitesh tiwari": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "nod-krai": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "norma": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "novokitezhgrad": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "now, lay laughter to all stars": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "nurse harrow": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "odette": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "old tales": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "omegahorn": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "one in 8 billion": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "one punch man": {
+      "kind": "anime",
+      "file": null,
+      "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
+    },
+    "over zone": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "palworld": {
+      "kind": "game",
+      "file": null
+    },
+    "pan-indian": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "parashurama": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "parrying extinction": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Dinoblade.md"
+    },
+    "patch": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "pbz": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "pearl": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "perfect world": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "perlica": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "peter safran": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "phantom blade": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "phantom blade zero": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "phoenix": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "phoenix next": {
+      "kind": "publisher",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "pi yuan": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "pipeline": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "pitterus": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "play": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "plot": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "pogranichnik": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "pokemon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Pokemon_PvP.md"
+    },
+    "pokémon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Pokemon_PvP.md"
+    },
+    "purrchena": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "pyroxene": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "qingxiao": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "queen marian": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "racing azusa": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "racing hifumi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "radical red": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Pokemon_Radical_Red.md"
+    },
+    "rajamouli": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ramakien": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ramayana": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ramayana: rise of a legend": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "rana": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ranbir kapoor": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ranked beta season 2": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "rapi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "rapunzel": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "rapunzel sanctuary": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "rapunzel: sanctuary": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "rat king": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "ravana": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ravenous baby tooth": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "rebirth of souls": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "recruitment charges": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "red archer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "red ash": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "red hood": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "remielle": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "revice": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "rigedoh": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "ripples of the void": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "roscaelifer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "rossi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "roxy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "saber": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "sagius": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "sai pallavi": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "sanctuary of ink": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "sandalwood": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "sanguine reach": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "sarkaz's furnaceside fables": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "scarlet": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "scarlet goddeath": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "scarlet: goddeath": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "season 13: glory": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "see you at the world's end": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "seele leaks": {
+      "kind": "domain",
+      "file": null,
+      "_note": "Twitter leaker account covering all MiHoYo/HoYoverse games (Genshin, HSR, HI3, ZZZ)"
+    },
+    "sekiro": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
+    },
+    "senadina astralop": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "senjumaru": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "seres": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "series": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "serpent whipblade": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "servant": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "setsuaku": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "severian": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "shadow die twice": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
+    },
+    "shadow moon": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "shadows die twice": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
+    },
+    "shinden": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "shirakura": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "shirogumi": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "shiroko": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "si feranmut": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "sigrid": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "silver wolf lv. 999": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "silverdawn": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "sin: swift bunny": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "singular point": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "skydance": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "snezhnaya": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "snow white": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "solo raid s43": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "solo raid season 43": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "sparxie": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "spring cultivation": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "springer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "star rail": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "starsealed edict": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "start your engines": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "stellar conduct": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "stellar-conduct": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "sternritter": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "story": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "studium punctum": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "stúdĭum punctum": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "subathon": {
+      "kind": "stream_type",
+      "file": "references/stream/marathon-stream.md"
+    },
+    "sui's garden of grotesqueries": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "suisui": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "sunbringer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "sunderization": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "suoming": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "super sentai": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "superchat": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "swimsuit makoto": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "swimsuit satsuki": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "syuen": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "t-series": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "talk": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "talulah": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "talulah the willpower": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "tamamo": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "tamamo no mae": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "tangtang": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "tazia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "territoriya": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "tgs": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+    },
+    "thailand game show": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+    },
+    "the broker": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "the gaze bearing": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "the sword sharpened with tears": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "theater g-rosso": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "therizirus": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "thousand-year blood war": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "tokusatsu": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "tollywood": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "toska": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "total assault": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "train of souls": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "trony": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "tsumugi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "tybw": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "ultraman": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ultraman teo": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ultrametal": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ultraseven": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "unspoken rue": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "update": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "upon the first echo of aha": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "uwufufu": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "valeriy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "valmiki": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "valtz": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "vanguard": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "vanya": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "varanasi": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "vector gate": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "velina": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "vesna": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "vindicta": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "virtual aptitude exam": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "vita astralop": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "vlog": {
+      "kind": "stream_type",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "vodyanitsa": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "walpurgisnacht": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "wandenreich": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "wedge office": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "weight of ages": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "wing wave": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "wings of panacea": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "wingspan peak": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "work": {
+      "kind": "domain",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "world cup": {
+      "kind": "domain",
+      "file": "references/stream/uwufufu-knowledge.md"
+    },
+    "wulfgard": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "wuthering": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "wuthering wave": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "wuthering waves": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "wuwa": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "xenolhu": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "xiukai": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "xuanling": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "yao guang": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "yash": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ygo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
+    },
+    "yu-gi-oh": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
+    },
+    "yugioh": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
+    },
+    "yukikaze": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "zack snyder": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "zenkaiger": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "zenless": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "zenless zone zero": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "zero-one": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "zhuang fangyi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "zzz": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "กระบองดูดเลือด": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "กระบี่วิหกโอลมาน": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "กระบี่หมึกโลหิต": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "กระบี่อ่อนอสรพิษ": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "กังฟูพังก์": {
+      "kind": "genre",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "กัฟฟ์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "กัลกิ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "กาฟ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "การ์ตูน": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "กาวบ์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "กีทส์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "กุรุเกษตร": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ก็อดซิลล่า": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "ก็อตชาร์ด": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ก๊อตชาร์ด": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ก๊อตซิลล่า": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "ขบวนการห้าสี": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ขบวนการเซนไต": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ขวานทมิฬยักษ์": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ของเล่น dx": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คราวน์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "คลาเร็ต": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "คลื่นเวฟ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "คาคุจู": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คาบูโตะ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คามิคาเคะ": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "คามิลล์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "คาเซนา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "คาเซน่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "คาเมน ไรเดอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คาเมนไรเดอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คิงกิโดราห์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "คิงโอเจอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "คิโนะ": {
+      "kind": "bookstore",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "คิโนะคุนิยะ": {
+      "kind": "bookstore",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "คืนวาลพูร์กิส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "คุณนินุ": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "คุณอาจิไซ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "คุย": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "ค้อนต้าตกเพลิง": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "งบจำกัด": {
+      "kind": "vlog_theme",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "งาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "งาน tgs": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
+    },
+    "งานญี่ปุ่น": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "งานหนังสือ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "จันทรกรี": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "จิงหราน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "จิ๋วปี้": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ชิงเซียว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ชินก๊อตซิลล่า": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "ชุยหมิง": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ชูเอน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ซวนหลิง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ซันบริงเกอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "ซั่วหมิง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ซิกริต": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "ซิน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ซินเดอเรลล่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ซีโร่วัน": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ซื้อมาดอง": {
+      "kind": "vlog_theme",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "ซุปเปอร์เซนไต": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ซุปเปอร์แชท": {
+      "kind": "domain",
+      "file": "references/stream/donation-classifier.md"
+    },
+    "ฐานหอปราณ": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดวงตาขุนเชิด": {
+      "kind": "item",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดองหนังสือ": {
+      "kind": "vlog_theme",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "ดอนบราเธอร์ส": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ดานิกา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "ดาบ sanguine reach": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาบชำรุดรอยสนิม": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาบดูเลอร์": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาบนายน้อย": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาบน้ำแข็ง": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาบอ่อนอสรพิษ": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ดาร์กไซด์": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "ดีซี สตูดิโอ": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "ตระกูลหลาน": {
+      "kind": "clan",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ตรีมูรติ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ตี้เฟิง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "ถ่านเพลิงมาร": {
+      "kind": "item",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ทศกัณฐ์": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ทอชก้า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ทอลลีวูด": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ทารูล่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ทำงาน": {
+      "kind": "domain",
+      "file": "references/stream/talk-stream.md"
+    },
+    "นอร์ม่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "นักรบมนต์ตรา": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "นางสีดา": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "นารายณ์ 10 ปาง": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "นิกเกะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "นินุ": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "นิปปอน ฮาคุ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "นิฮิรัก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "นิเตศ ทิวารี": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "น้องข้าว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "บลูอาร์ไคฟ์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "บอลลีวูด": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "บัดนี้ จงหัวเราะแด่หมู่ดาว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "บัวไค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "บาฮูบาลี": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "บาเลส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "บุมบุมเจอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "บูนบูมเจอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "บูไค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ปรศุราม": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ปิติสุข": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "ปีเตอร์ ซาฟราน": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "ปี้หยวน": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ปี้เถาเถา": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ปูมูน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ป่าหิมพานต์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "ผู้คุมอนันการ": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "พญางูสังเวยวิญญาณ": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "พระราม": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "พระแม่มังควา": {
+      "kind": "lore",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "พัดเรียกวิญญาณ": {
+      "kind": "item",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "พาลกัณฑ์": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "พาเที่ยว": {
+      "kind": "stream_type",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "พี่สาวนาข้าว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ฟีนิกซ์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "มหกรรมหนังสือ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "มหกรรมหนังสือแห่งชาติ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "มหาภารตะ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "มังควา": {
+      "kind": "lore",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "มังงะ": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "มาสค์ไรเดอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "มาสค์ไรเดอร์ ไมซ์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "มาเรียนควีน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "มิตยา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "มือธนูแดง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "มู่ซิ่วขุย": {
+      "kind": "character",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ยอดพรงภัยสีชาติ": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ยัยบัวขาว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ยายลิเตอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ยูกิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Yu-Gi-Oh DATA/ygo_cards.db"
+    },
+    "รถไฟวิญญาณ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "รอสเคลีเฟอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "รากษส": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "รางดาว": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "ราชามูลี": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "รานะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "รามายณะ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "รามาวตาร": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "รามเกียรติ์": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ราวัณ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "รีไวซ์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ร็อกซี่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "ร่างพัฒนา": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ร่างสุดยอด": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ลัลลาบาย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ลิมบัส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ลีโน่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "ลุงมู": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ลูซิลล่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "ลูเซีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "วราณสี": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "วล็อก": {
+      "kind": "stream_type",
+      "file": "references/stream/vlog-stream.md"
+    },
+    "วัดคู่เหยียบ": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "วาลมิกิ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "วาเลริย์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "วิงส์แพนพีค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "วิทยาธร": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "วิศวามิตร": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "สกายแดนซ์": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "สงครามสกุลเงิน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "สปริงเกอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "สปริเกอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "สปาร์กซี่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "สวนพิศวงซุย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "สหพันธรัฐใหม่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "สัปดาห์หนังสือ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "สัปดาห์หนังสือแห่งชาติ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
+    },
+    "สามเค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3.md"
+    },
+    "สำนักงานเวดจ์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "สำนักทวนธารา": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "สุ่มเกิด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "สุ่ยสุ่ย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "สเตลลาร์คอนดักต์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "หงหลู่น้ำตา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "หนึ่งในอสงไขย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "หนุมาน": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "หมวกแดง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "หมี่ฝู": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "หมู่บ้านสิ้นจิต": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "หลวงเจ๊": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "หลวงเจ๊แซงก์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "หลี่จื้อเหยียน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "หัวหน้าผู้คุมอนันการ": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "หุ่นมารสามพักตร์": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ห้องกระสอน": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ห้างซิซิฟ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "อดิปุรุษ": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "อนาสตาเซีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "อนิเมะ": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "อรัณยกัณฑ์": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "อาซึสะ เรซซิ่ง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "อาราเบลล่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "อาร์กนก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "อาร์กไนท์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "อาลิโอชา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "อาฮา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "อาเจนต์โฟลว์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "อีเวนท์": {
+      "kind": "stream_type",
+      "file": "references/stream/event-stream.md"
+    },
+    "อุลตร้าเซเว่น": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "อุลตร้าแมน": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "อุลตร้าแมนเทโอ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "อโยธยากัณฑ์": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ฮงรยอนก็อดเดธ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "ฮอคม่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ฮานาบิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ฮาร์โทเปีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Heartopia.md"
+    },
+    "ฮาโทเปีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Heartopia.md"
+    },
+    "ฮิฟุมิ เรซซิ่ง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ฮิลเดอ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "เกนชิน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "เกม": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "เกรฟ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "เข็มขัดแปลงร่าง": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เข็มขัดไรเดอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เครเวอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "เคลซิท": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "เคออสซีโร่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "เคียวคาคุ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เจมส์ กันน์": {
+      "kind": "topic",
+      "file": "references/stream/channel-and-news-knowledge.md"
+    },
+    "เจแปน เอ็กซ์โป": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
+    },
+    "เซกิโร": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Sekiro_Shadows_Die_Twice.md"
+    },
+    "เซนเลส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "เซนไคเจอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เซนไต": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เซอร์แวนท์": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "เซเบอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เซเรส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "เซเวเรียน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "เซโนลู": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "เซ็ตสึอาคุ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เดคากรัมมาทอน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "เดดล็อก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "เดดล็อค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "เดรสอาโกะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "เดอะ โบรคเกอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "เดิมพันสิ้นชีพ": {
+      "kind": "skill",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "เดโกร่า": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "เทร์ริโทริยา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "เทียนเฉียน": {
+      "kind": "weapon",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "เนิร์ส แฮร์โรว์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Deadlock.md"
+    },
+    "เนื้อเรื่อง": {
+      "kind": "domain",
+      "file": "references/stream/story-enrichment.md"
+    },
+    "เน็กซอน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "เบลซเบลล์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "เพอร์เชน่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "เพิร์ล": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "เฟท": {
+      "kind": "game",
+      "file": "references/stream/fgo-knowledge.md"
+    },
+    "เมก้าก็อตซิลล่า": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "เมตาตรอน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "เมอร์โซต์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "เมืองผาง": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "เม้าท์": {
+      "kind": "stream_type",
+      "file": "references/stream/talk-stream.md"
+    },
+    "เรมิเอล": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "เรื่อง anime": {
+      "kind": "anime",
+      "file": "references/stream/phuboat-anime-talking-style.md"
+    },
+    "เล่น": {
+      "kind": "stream_type",
+      "file": "references/stream/gaming-stream.md"
+    },
+    "เวดจ์อูทิส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "เวลิน่า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "เวสนา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "เหยาจวง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "เฮนชิน": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "แดนหิมะ": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แบมบิเอ็ตต้า": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "แปรสามสภาวะ": {
+      "kind": "mechanic",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แปลงร่าง": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "แฟนทอม เบลด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แฟนทอม เบลด์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แฟนทอมเบลด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แมปธรรมะ": {
+      "kind": "location",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "แองส้ม": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "แฮชเชอร์แห่งกาลเวลา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Impact_3_Part2.md"
+    },
+    "โกจิระ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "โทคุ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "โทคุซัตสึ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "โทคุสะสึ": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "โนโวกิเทชกราด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "โปเกม่อน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Pokemon_PvP.md"
+    },
+    "โพกรานิชนิก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "โวเดียนิตซา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "โอเดตต์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "โอเมก้าฮอร์น": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "โฮชิเกราะเวท": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ไข่มุก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "ไคจู": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ไซ ปัลลาวี": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ไดโนเบลด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Dinoblade.md"
+    },
+    "ไนน์ลาน่า": {
+      "kind": "anime",
+      "file": "../anibon-world-identity/references/Bleach.md"
+    },
+    "ไป๋ชื่อเลี่ยน": {
+      "kind": "boss",
+      "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "ไฟนอลฟอร์ม": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ไม้หนีบผ้า": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "ไรเดอร์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ไรเดอร์ไมซ์": {
+      "kind": "tokusatsu",
+      "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "ブルーアーカイブ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "心动小镇": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Heartopia.md"
+    }
+  },
+  "_discovered": {
+    "marvel": {
+      "kind": "game",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
+      "_added": "2026-07-27T09:08:06"
+    },
+    "hunter": {
+      "kind": "anime",
+      "file": null,
+      "_discovered_by": "web",
+      "_confidence": 0.7,
+      "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
+      "_added": "2026-07-27T09:08:06"
+    }
   }
- },
- "_discovered": {
-  "marvel": {
-   "kind": "game",
-   "file": null,
-   "_discovered_by": "web",
-   "_confidence": 0.7,
-   "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
-   "_added": "2026-07-27T09:08:06"
-  },
-  "hunter": {
-   "kind": "anime",
-   "file": null,
-   "_discovered_by": "web",
-   "_confidence": 0.7,
-   "_snippet": "Hunter × Hunter (pronounced &quot;hunter hunter&quot;) is a Japanese manga series written and illustrated by Yoshihiro Togashi. It has been serialized",
-   "_added": "2026-07-27T09:08:06"
-  }
- }
 }

@@ -13,6 +13,8 @@ Game reference files live alongside this index in `references/`.
 - [Dinoblade Reference](Dinoblade.md)
 - [Eternal Return Reference](Eternal_Return.md)
 - [Genshin Impact Reference](Genshin_Impact.md)
+- [Godzilla Minus Zero & Godzilla Reference](Godzilla_Minus_Zero.md)
+- [Indian Cinema & Ramayana (2026) Reference](Ramayana_Indian_Cinema.md)
 - [Goddess of Victory: Nikke Reference](Nikke.md)
 - [Heartopia Reference](Heartopia.md)
 - [Honkai Impact 3rd Reference](Honkai_Impact_3.md)
@@ -35,6 +37,8 @@ Game reference files live alongside this index in `references/`.
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
 - [The Legend of Zelda: Breath of the Wild Reference](Zelda_Breath_of_the_Wild.md)
 - [The Great Villainess: Strategy of Lily (เผด็จการยูริ) Reference](The_Great_Villainess_Strategy_of_Lily.md)
+
+- [Channel Crew, Co-Hosts & Film News Reference](../../../references/stream/channel-and-news-knowledge.md)
 
 ## Database-backed Games
 
