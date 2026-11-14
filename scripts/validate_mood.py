@@ -20,6 +20,30 @@ TS_RE = re.compile(r"^(\d{2}):(\d{2}):(\d{2})")
 _FALLBACK_TONE = {"tone": "เขียนตามอารมณ์ของเหตุการณ์", "verbs": ["แซว", "วิเคราะห์", "สรุป"]}
 
 _OLD_FALLBACK = {
+    "RAGE_QUIT_PULSE": {
+        "tone": "ปู่โบ๊ตฟิวส์ขาด/อารมณ์เสียจัดจนประกาศเลิกเล่น ห้ามใช้คำว่าแซว/ขำ/ถกประเด็น",
+        "verbs": ["ฟิวส์ขาด", "เทเกม", "สับแหลก", "เดือดจัด", "โวย", "บ่นยับ"],
+    },
+    "ANGRY_TILT_PULSE": {
+        "tone": "ปู่โบ๊ตหัวร้อน/หงุดหงิดระบบเกมจริงจัง ห้ามใช้คำว่าแซว/ขำ/ถกประเด็น/เจาะลึก",
+        "verbs": ["หัวร้อน", "เดือดจัด", "โวย", "สับแหลก", "บ่นยับ", "หงุดหงิด"],
+    },
+    "SICK_AFK_PULSE": {
+        "tone": "ปู่โบ๊ตมีอาการปวดท้อง/พักเบรกเข้าห้องน้ำ",
+        "verbs": ["แจ้งอาการ", "พักเบรก", "อัปเดตอาการ", "ชี้แจง"],
+    },
+    "PANIC_SHOCK_PULSE": {
+        "tone": "ปู่โบ๊ตสะดุ้งตกใจ/ลนลาน/งานงอก/ของหายกะทันหัน",
+        "verbs": ["สะดุ้ง", "ตกใจ", "ลนลาน", "งานงอก", "โวย", "หัวจะปวด"],
+    },
+    "HYPE_CLUTCH_PULSE": {
+        "tone": "ปู่โบ๊ตสะใจ/ดีใจสุดขีดหลังเอาตัวรอดหวุดหวิดหรือได้ของแรร์",
+        "verbs": ["สะใจ", "เฮลั่น", "เอาตัวรอด", "คว้าชัย", "ชุบมือเปิบ"],
+    },
+    "SLEEPY_DRAIN_PULSE": {
+        "tone": "ปู่โบ๊ตเริ่มง่วงนอน/ล้าจากการเล่นต่อเนื่องดึกดื่น",
+        "verbs": ["บ่นง่วง", "ฝืนเล่น", "สำรวจ", "ประคองสติ"],
+    },
     "MEME_PULSE": {"tone": "ตลกปั่น ๆ แซวขำ ๆ", "verbs": ["แซว", "ล้อ", "ขำ", "ปั่น"]},
     "WARM": {"tone": "บรรยากาศเป็นกันเอง คุยเพลิน ๆ", "verbs": ["แซว", "เม้าท์", "เล่า"]},
     "HOT": {"tone": "บรรยากาศคึกคัก", "verbs": ["กระตุ้น", "ปั่น"]},
@@ -57,13 +81,33 @@ def _load_windows_from_dir(livechat_dir: Path) -> Dict[str, Tuple[int, int]]:
     return windows
 
 
-def load_chunk_windows(livechat_dir: str, index_path: str = "") -> Dict[str, Tuple[int, int]]:
-    """Resolve chunk -> (start_sec, end_sec) from index or chat logs."""
+def _load_windows_from_chunks(chunks_dir: Path) -> Dict[str, Tuple[int, int]]:
+    ts_any = re.compile(r"\b(\d{2}):(\d{2}):(\d{2})\b")
+    windows: Dict[str, Tuple[int, int]] = {}
+    for ext in (".txt", ".xml", ".json"):
+        for p in sorted(chunks_dir.glob(f"chunk_*{ext}")):
+            if not re.fullmatch(r"chunk_\d+", p.stem) or p.stem in windows:
+                continue
+            times = [to_abs_sec(*m) for m in ts_any.findall(p.read_text(encoding="utf-8", errors="ignore"))]
+            if times:
+                windows[p.stem] = (min(times), max(times) + 1)
+    return windows
+
+
+def load_chunk_windows(
+    livechat_dir: str, index_path: str = "", chunks_dir: str = ""
+) -> Dict[str, Tuple[int, int]]:
+    """Resolve chunk -> (start_sec, end_sec) from index, chat logs, or speaker chunks."""
+    windows: Dict[str, Tuple[int, int]] = {}
     if index_path and Path(index_path).is_file():
-        return _load_windows_from_index(Path(index_path))
+        windows.update(_load_windows_from_index(Path(index_path)))
     if livechat_dir and Path(livechat_dir).is_dir():
-        return _load_windows_from_dir(Path(livechat_dir))
-    return {}
+        for k, v in _load_windows_from_dir(Path(livechat_dir)).items():
+            windows.setdefault(k, v)
+    if chunks_dir and Path(chunks_dir).is_dir():
+        for k, v in _load_windows_from_chunks(Path(chunks_dir)).items():
+            windows.setdefault(k, v)
+    return windows
 
 
 def parse_timestamps(path: Path) -> List[Timestamp]:
@@ -96,9 +140,10 @@ class Validator:
         return int(h) * 3600 + int(m) * 60 + int(s)
 
     def in_mood_segment(self, chunk: str, abs_sec: int) -> bool:
-        segs = self.mood.get(chunk, {}).get("segments")
+        rec = self.mood.get(chunk, {})
+        segs = rec.get("segments")
         if not segs:
-            return True
+            return bool(rec.get("pulse")) or rec.get("verdict") not in ("", "QUIET")
         for s in segs:
             if self._seg_secs(s["start"]) <= abs_sec < self._seg_secs(s["end"]):
                 return s.get("mood") != "natural"
@@ -149,12 +194,13 @@ def main(argv=None) -> int:
     ap.add_argument("--mood", required=True)
     ap.add_argument("--livechat", default="")
     ap.add_argument("--index", default="")
+    ap.add_argument("--chunks", default="")
     a = ap.parse_args(argv)
 
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     mood = json.loads(Path(a.mood).read_text(encoding="utf-8"))
-    windows = load_chunk_windows(a.livechat, a.index)
+    windows = load_chunk_windows(a.livechat, a.index, chunks_dir=a.chunks)
     validator = Validator(mood, windows)
     stamps = parse_timestamps(Path(a.timestamps))
     print_report(report(stamps, validator))

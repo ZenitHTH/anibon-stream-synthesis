@@ -52,13 +52,18 @@ def run_mood_validation(workspace: Path, target_file: Path | None = None) -> Non
     """Front-tier Step 11.5 / post-chunk: label timestamps with chunk mood/tone guidance."""
     mood_file = workspace / "mood_555.json"
     livechat = workspace / "livechat"
+    chunks = workspace / "chunks"
     target = target_file or (workspace / "all_timestamps.txt")
-    if not (mood_file.exists() and livechat.is_dir() and target.exists()):
+    if not (mood_file.exists() and (livechat.is_dir() or chunks.is_dir()) and target.exists()):
         return
-    args = ["--timestamps", target, "--mood", mood_file, "--livechat", livechat]
-    idx = livechat / "livechat_index.json"
-    if idx.exists():
-        args += ["--index", idx]
+    args = ["--timestamps", target, "--mood", mood_file]
+    if livechat.is_dir():
+        args += ["--livechat", livechat]
+        idx = livechat / "livechat_index.json"
+        if idx.exists():
+            args += ["--index", idx]
+    if chunks.is_dir():
+        args += ["--chunks", chunks]
     _run("validate_mood.py", *args)
 
 

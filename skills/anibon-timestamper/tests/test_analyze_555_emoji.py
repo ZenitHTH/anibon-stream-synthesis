@@ -291,9 +291,101 @@ class TestAnalyze555Emoji(unittest.TestCase):
         )
         self.assertFalse(validator.in_mood_segment("chunk_00", 60))
 
+    def test_parse_speaker_chunk_handles_malformed_json_list_json_and_nested_xml(self):
+        from speaker_mood import parse_speaker_chunk
+        with tempfile.TemporaryDirectory() as tmp:
+            tdir = Path(tmp)
+            empty_json = tdir / "chunk_00.json"
+            empty_json.write_text("", encoding="utf-8")
+            self.assertEqual(parse_speaker_chunk(empty_json).n_frust, 0)
 
+            bad_json = tdir / "chunk_01.json"
+            bad_json.write_text("{not valid json หงุดหงิด", encoding="utf-8")
+            self.assertEqual(parse_speaker_chunk(bad_json).n_frust, 1)
 
+            list_json = tdir / "chunk_02.json"
+            list_json.write_text(json.dumps([{"text": "หงุดหงิด อารมณ์เสีย"}]), encoding="utf-8")
+            self.assertEqual(parse_speaker_chunk(list_json).n_frust, 2)
 
+            nested_xml = tdir / "chunk_03.xml"
+            nested_xml.write_text(
+                "<chunk><items><item>หัวร้อน ช่างแม่ง</item></items></chunk>",
+                encoding="utf-8",
+            )
+            sp_xml = parse_speaker_chunk(nested_xml)
+            self.assertGreaterEqual(sp_xml.n_frust, 1)
+
+    def test_load_jsonl_gz_chunks_handles_corrupt_lines_and_null_fields(self):
+        import gzip
+        from speaker_mood import load_jsonl_gz_chunks
+        with tempfile.TemporaryDirectory() as tmp:
+            gz = Path(tmp) / "transcript_test.jsonl.gz"
+            with gzip.open(gz, "wt", encoding="utf-8") as f:
+                f.write("not json\n")
+                f.write(json.dumps({"start": 300, "text": None}) + "\n")
+                f.write(json.dumps({"start": None, "text": "หงุดหงิด"}) + "\n")
+                f.write(json.dumps({"start": 290, "text": "อารมณ์เสีย หัวร้อน"}) + "\n")
+            chunks = load_jsonl_gz_chunks(gz)
+            self.assertIn("chunk_00", chunks)
+            self.assertIn("chunk_01", chunks)
+
+    def test_dedup_collapses_bracket_dash_and_short_timestamp_prefixes(self):
+        from speaker_mood import parse_speaker_text
+        bracket_loop = "\n".join(f"[05:51:{i:02d}] - อารมณ์เสีย" for i in range(6))
+        short_loop = "\n".join(f"05:{i:02d} | หงุดหงิด" for i in range(6))
+        self.assertEqual(parse_speaker_text(bracket_loop).n_frust, 1)
+        self.assertEqual(parse_speaker_text(short_loop).n_frust, 1)
+
+    def test_sleepy_single_mention_does_not_override_chat(self):
+        from speaker_mood import SpeakerStats
+        self.assertEqual(
+            classify(ChatStats(), Config(), SpeakerStats(n_sleepy=1)).verdict,
+            "QUIET",
+        )
+        self.assertEqual(
+            classify(ChatStats(), Config(), SpeakerStats(n_sleepy=2)).verdict,
+            "SLEEPY_DRAIN_PULSE",
+        )
+
+    def test_analyze_ignores_non_numeric_chunk_files_and_merges_partial_livechat(self):
+        from analyze_555 import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "livechat").mkdir()
+            (ws / "chunks").mkdir()
+            (ws / "livechat" / "livechat_chunk_00.txt").write_text(
+                "[00:00:10] u1: hello\n", encoding="utf-8"
+            )
+            (ws / "chunks" / "chunk_00.txt").write_text("(00:00:10) สวัสดี\n", encoding="utf-8")
+            (ws / "chunks" / "chunk_01.txt").write_text(
+                "(00:05:10) ไอ้เหี้ย อารมณ์เสีย\n"
+                "(00:05:20) หัวร้อน หงุดหงิด โคตรแย่ ไม่ไหวว่ะ\n",
+                encoding="utf-8",
+            )
+            (ws / "chunks" / "chunk_summary.json").write_text("{}", encoding="utf-8")
+            out = ws / "mood_555.json"
+            res = analyze(str(ws / "livechat"), "", str(out), chunks_dir=str(ws / "chunks"))
+            self.assertNotIn("chunk_summary", res)
+            self.assertIn("chunk_01", res)
+            self.assertEqual(res["chunk_01"]["verdict"], "ANGRY_TILT_PULSE")
+
+    def test_run_mood_validation_works_without_livechat_dir(self):
+        from process.parity_gates import run_mood_validation
+        import io
+        from contextlib import redirect_stdout
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "chunks").mkdir()
+            (ws / "chunks" / "chunk_00.txt").write_text("(00:01:00) test\n(00:02:00) end\n", encoding="utf-8")
+            (ws / "mood_555.json").write_text(
+                json.dumps({"chunk_00": {"verdict": "ANGRY_TILT_PULSE", "pulse": True, "mood": "angry"}}),
+                encoding="utf-8",
+            )
+            (ws / "all_timestamps.txt").write_text("00:01:30 - [Gameplay] เดือด\n", encoding="utf-8")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                run_mood_validation(ws)
+            self.assertIn("validate_mood.py", buf.getvalue())
 
 
 if __name__ == "__main__":

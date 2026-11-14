@@ -68,7 +68,8 @@ def _load_emoji_dictionary(path: Optional[Path] = None) -> Dict[str, bool]:
     """
     res = path or (Path(__file__).resolve().parent.parent / "resources" / "emoji_dictionary.json")
     try:
-        data = json.load(open(res, encoding="utf-8"))
+        with open(res, encoding="utf-8") as f:
+            data = json.load(f)
     except (OSError, ValueError):
         return {}
     return {code: info.get("laugh", False)
@@ -281,7 +282,8 @@ def resolve_chunk_name(chat_path: Path, index: dict) -> str:
 def load_index(index_path: str) -> dict:
     if not index_path or not Path(index_path).exists():
         return {}
-    return json.load(open(index_path, encoding="utf-8"))
+    with open(index_path, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def _resolve_chunks_dir(livechat_dir: str, chunks_dir: str) -> Optional[Path]:
@@ -313,19 +315,31 @@ def _print_summary(result: dict) -> None:
             print(f"{v_name} chunks ({len(matched)}): {matched}")
 
 
-def _collect_speaker_only(sp_dir: Path, cfg: Config) -> dict:
-    """Classify speaker-only chunks when no livechat logs exist."""
+def _iter_speaker_chunks(sp_dir: Optional[Path]) -> dict[str, Path]:
+    """Collect numeric chunk_<N>.(txt|json|xml) files, ignoring metadata files."""
+    if not sp_dir or not sp_dir.is_dir():
+        return {}
     seen: dict[str, Path] = {}
     for ext in (".txt", ".json", ".xml"):
         for f in sp_dir.glob(f"chunk_*{ext}"):
-            seen.setdefault(f.stem, f)
+            if re.fullmatch(r"chunk_\d+", f.stem):
+                seen.setdefault(f.stem, f)
+    return seen
+
+
+def _merge_missing_speaker_chunks(
+    result: dict, sp_dir: Optional[Path], gz_map: dict, cfg: Config
+) -> None:
+    """Fill chunks present in speaker dir or gz archive that lacked livechat logs."""
     key_fn = lambda c: int(re.search(r"(\d+)$", c).group(1)) if re.search(r"(\d+)$", c) else 0
-    result = {}
+    seen = _iter_speaker_chunks(sp_dir)
     for cid in sorted(seen, key=key_fn):
-        sp_stats = parse_speaker_chunk(seen[cid])
-        verdict = classify(ChatStats(), cfg, sp_stats)
-        result[cid] = serialize(ChatStats(), verdict, cfg, sp_stats)
-    return result
+        if cid not in result:
+            sp_stats = parse_speaker_chunk(seen[cid])
+            result[cid] = serialize(ChatStats(), classify(ChatStats(), cfg, sp_stats), cfg, sp_stats)
+    for cid, sp_stats in gz_map.items():
+        if cid not in result:
+            result[cid] = serialize(ChatStats(), classify(ChatStats(), cfg, sp_stats), cfg, sp_stats)
 
 
 def analyze(livechat_dir: str, index_path: str, out_path: str,
@@ -344,10 +358,7 @@ def analyze(livechat_dir: str, index_path: str, out_path: str,
         sp_path = resolve_speaker_chunk_path(sp_dir, chunk)
         sp_stats = parse_speaker_chunk(sp_path) if sp_path else gz_map.get(chunk, SpeakerStats())
         result[chunk] = serialize(stats, classify(stats, cfg, sp_stats), cfg, sp_stats)
-    if not chat_files and sp_dir:
-        result = _collect_speaker_only(sp_dir, cfg)
-    elif not chat_files and gz_map:
-        result = {c: serialize(ChatStats(), classify(ChatStats(), cfg, sp), cfg, sp) for c, sp in gz_map.items()}
+    _merge_missing_speaker_chunks(result, sp_dir, gz_map, cfg)
     with open(out_path, "w", encoding="utf-8") as out_f:
         json.dump(result, out_f, ensure_ascii=False, indent=1)
     _print_summary(result)

@@ -11,13 +11,16 @@ archives) across 7 mood dimensions:
 """
 from __future__ import annotations
 
-import gzip
-import json
 import re
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from speaker_chunk_io import (
+    read_chunk_text,
+    resolve_speaker_chunk_path,
+    slice_jsonl_gz_chunks,
+)
 
 SWEAR_RE = re.compile(
     r"(ไอ้เหี้ย|ไอเหี้ย|ไอ้เฮี้ย|ไอ้เฮีย|เหี้ยเอ้ย|ควย|ส้นตีน|ปัญญาอ่อน|"
@@ -70,7 +73,9 @@ SLEEPY_DRAIN_RE = re.compile(
     re.IGNORECASE,
 )
 
-_TS_PREFIX_RE = re.compile(r"^\s*(?:\(\d{2}:\d{2}:\d{2}\)\s*|\d{2}:\d{2}:\d{2}\s*\|\s*)")
+_TS_PREFIX_RE = re.compile(
+    r"^\s*(?:\[|\()?(?:\d{1,2}:)?\d{2}:\d{2}(?:[.,]\d+)?(?:\]|\))?\s*(?:[-|:]\s*)?"
+)
 
 
 @dataclass
@@ -132,25 +137,11 @@ def parse_speaker_text(text: str) -> SpeakerStats:
     )
 
 
-def _read_chunk_text(chunk_path: Path) -> str:
-    """Read raw dialogue text from .txt, .json, or .xml chunk files."""
-    if chunk_path.suffix == ".json":
-        data = json.loads(chunk_path.read_text(encoding="utf-8", errors="ignore"))
-        return "\n".join(it.get("text", "").strip() for it in data.get("items", []) if it.get("text"))
-    if chunk_path.suffix == ".xml":
-        try:
-            root = ET.parse(chunk_path).getroot()
-            return "\n".join((el.text or "").strip() for el in root.findall("item") if el.text)
-        except ET.ParseError:
-            pass
-    return chunk_path.read_text(encoding="utf-8", errors="ignore")
-
-
 def parse_speaker_chunk(chunk_path: Optional[Path]) -> SpeakerStats:
     """Parse one chunk file (.txt/.json/.xml) for speaker mood signals."""
     if not chunk_path or not chunk_path.exists():
         return SpeakerStats()
-    return parse_speaker_text(_read_chunk_text(chunk_path))
+    return parse_speaker_text(read_chunk_text(chunk_path))
 
 
 def classify_speaker_override(sp: SpeakerStats) -> Optional[tuple[str, str, bool]]:
@@ -169,38 +160,16 @@ def classify_speaker_override(sp: SpeakerStats) -> Optional[tuple[str, str, bool
         return ("HYPE_CLUTCH_PULSE", "hype", True)
     if sp.n_panic_shock >= 2 and (sp.n_panic_shock >= 3 or sp.n_swears >= 1):
         return ("PANIC_SHOCK_PULSE", "panic", True)
-    if sp.n_sleepy >= 1:
+    if sp.n_sleepy >= 2:
         return ("SLEEPY_DRAIN_PULSE", "sleepy", True)
     return None
 
 
-def resolve_speaker_chunk_path(chunks_dir: Optional[Path], chunk_id: str) -> Optional[Path]:
-    """Locate chunks/<chunk_id>.(txt|json|xml) (or zero-padded variant) if present."""
-    if not chunks_dir or not chunks_dir.is_dir():
-        return None
-    m = re.search(r"(\d+)$", chunk_id)
-    stems = [chunk_id] + ([f"chunk_{int(m.group(1)):02d}"] if m else [])
-    for stem in stems:
-        for ext in (".txt", ".json", ".xml"):
-            cand = chunks_dir / f"{stem}{ext}"
-            if cand.exists():
-                return cand
-    return None
-
-
-def load_jsonl_gz_chunks(gz_path: Path, step_sec: int = 270, win_sec: int = 300) -> Dict[str, SpeakerStats]:
+def load_jsonl_gz_chunks(
+    gz_path: Path, step_sec: int = 270, win_sec: int = 300
+) -> Dict[str, SpeakerStats]:
     """Slice an archived transcript_<vid>.jsonl.gz into 270s-step chunks and score each."""
-    items = []
-    with gzip.open(gz_path, "rt", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            if line.strip():
-                items.append(json.loads(line))
-    if not items:
-        return {}
-    n_chunks = (int(items[-1].get("start", 0)) // step_sec) + 1
-    out: Dict[str, SpeakerStats] = {}
-    for idx in range(n_chunks):
-        st, en = idx * step_sec, idx * step_sec + win_sec
-        txt = "\n".join(it.get("text", "") for it in items if st <= it.get("start", 0) < en)
-        out[f"chunk_{idx:02d}"] = parse_speaker_text(txt)
-    return out
+    return {
+        cid: parse_speaker_text(txt)
+        for cid, txt in slice_jsonl_gz_chunks(gz_path, step_sec=step_sec, win_sec=win_sec).items()
+    }
