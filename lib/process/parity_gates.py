@@ -31,15 +31,20 @@ def _run(script: str, *args) -> int | None:
 
 
 def ensure_mood_555(workspace: Path) -> None:
-    """Front-tier Step 3.7: build mood_555.json from aligned livechat if missing."""
+    """Front-tier Step 3.7: build mood_555.json from livechat and/or speaker chunks."""
     livechat = workspace / "livechat"
+    chunks = workspace / "chunks"
     out = workspace / "mood_555.json"
-    if out.exists() or not livechat.is_dir():
+    if out.exists() or not (livechat.is_dir() or chunks.is_dir()):
         return
-    args = ["--livechat", livechat, "--out", out]
-    index = livechat / "livechat_index.json"
-    if index.exists():
-        args += ["--index", index]
+    args = ["--out", out]
+    if livechat.is_dir():
+        args += ["--livechat", livechat]
+        index = livechat / "livechat_index.json"
+        if index.exists():
+            args += ["--index", index]
+    if chunks.is_dir():
+        args += ["--chunks", chunks]
     _run("analyze_555.py", *args)
 
 

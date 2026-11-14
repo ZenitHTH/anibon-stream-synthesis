@@ -37,6 +37,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from speaker_mood import (
+    SpeakerStats,
+    classify_speaker_override,
+    load_jsonl_gz_chunks,
+    parse_speaker_chunk,
+    resolve_speaker_chunk_path,
+)
+
 LAUGH_RE = re.compile(r"(5{3,}|[xX][dD]{1,}|haha+|ฮา+|ขำ+|\blol\b|\bhaha\b)", re.IGNORECASE)
 # Stage 2.5-2.7: Unicode laugh emojis, Anibon custom emotes (:_Name:)_ and
 # YouTube global emotes (:word-word:) count as peer laugh markers even when a
@@ -86,10 +94,14 @@ class Config:
     pulse_threshold: int = 12
     # per-chunk minimum markers for the "hot" flag regardless of bucket
     hot_min: int = 14
+    # minimum markers for WARM verdict (avoid single stray 555 triggering WARM)
+    warm_min: int = 2
     # for low-message chunks (< low_msg) absolute counts understate bursts:
-    # use marker density >= low_msg_density as the pulse signal instead
+    # use marker density >= low_msg_density as the pulse signal instead,
+    # provided at least min_pulse_markers are present
     low_msg: int = 100
     low_msg_density: float = 0.20
+    min_pulse_markers: int = 3
     # bucket width for peak-window detection (seconds)
     bucket: int = 90
     # how many high buckets can be reported
@@ -163,21 +175,62 @@ class Verdict:
     pulse: bool
 
 
-def classify(stats: ChatStats, cfg: Config) -> Verdict:
-    """Stage 2c: turn parsed chat signals into a mood verdict."""
+def classify(stats: ChatStats, cfg: Config,
+             speaker: Optional[SpeakerStats] = None) -> Verdict:
+    """Stage 2c: fuse speaker transcript mood with chat signals into a verdict."""
+    if speaker is not None:
+        override = classify_speaker_override(speaker)
+        if override is not None:
+            return Verdict(*override)
     n_msgs = stats.n_messages
     n_markers = stats.n_markers
     density = n_markers / n_msgs if n_msgs else 0.0
     peak_thresh = stats.peak_windows[0][2] if stats.peak_windows else 0
-    low_msg_pulse = n_msgs < cfg.low_msg and density >= cfg.low_msg_density
+    low_msg_pulse = (
+        n_markers >= cfg.min_pulse_markers
+        and n_msgs < cfg.low_msg
+        and density >= cfg.low_msg_density
+    )
     has_peak_burst = peak_thresh >= cfg.pulse_threshold or low_msg_pulse
     if has_peak_burst:
         return Verdict("MEME_PULSE", "funny", True)
     if n_markers >= cfg.hot_min:
         return Verdict("HOT", "warm", False)
-    if n_markers >= 1:
+    if n_markers >= cfg.warm_min:
         return Verdict("WARM", "warm", False)
     return Verdict("QUIET", "neutral", False)
+
+
+TONE_HINTS = {
+    "RAGE_QUIT_PULSE": {
+        "tone": "ปู่โบ๊ตฟิวส์ขาด/อารมณ์เสียจัดจนประกาศเลิกเล่น ห้ามใช้คำว่าแซว/ขำ/ถกประเด็น",
+        "verbs": ["ฟิวส์ขาด", "เทเกม", "สับแหลก", "เดือดจัด", "โวย", "บ่นยับ"],
+    },
+    "ANGRY_TILT_PULSE": {
+        "tone": "ปู่โบ๊ตหัวร้อน/หงุดหงิดระบบเกมจริงจัง ห้ามใช้คำว่าแซว/ขำ/ถกประเด็น/เจาะลึก",
+        "verbs": ["หัวร้อน", "เดือดจัด", "โวย", "สับแหลก", "บ่นยับ", "หงุดหงิด"],
+    },
+    "PANIC_SHOCK_PULSE": {
+        "tone": "ปู่โบ๊ตสะดุ้งตกใจ/ลนลาน/งานงอก/ของหายกะทันหัน",
+        "verbs": ["สะดุ้ง", "ตกใจ", "ลนลาน", "งานงอก", "โวย", "หัวจะปวด"],
+    },
+    "SICK_AFK_PULSE": {
+        "tone": "ปู่โบ๊ตมีอาการปวดท้อง/พักเบรกเข้าห้องน้ำ",
+        "verbs": ["แจ้งอาการ", "พักเบรก", "อัปเดตอาการ", "ชี้แจง"],
+    },
+    "HYPE_CLUTCH_PULSE": {
+        "tone": "ปู่โบ๊ตสะใจ/ดีใจสุดขีดหลังเอาตัวรอดหวุดหวิดหรือได้ของแรร์",
+        "verbs": ["สะใจ", "เฮลั่น", "เอาตัวรอด", "คว้าชัย", "ชุบมือเปิบ"],
+    },
+    "SLEEPY_DRAIN_PULSE": {
+        "tone": "ปู่โบ๊ตเริ่มง่วงนอน/ล้าจากการเล่นต่อเนื่องดึกดื่น",
+        "verbs": ["บ่นง่วง", "ฝืนเล่น", "สำรวจ", "ประคองสติ"],
+    },
+    "MEME_PULSE": {"tone": "แชทขำ/ปั่นมีม (ยึดอารมณ์ผู้พูดในซับไตเติลเป็นหลัก)", "verbs": ["แซว", "ขำ", "ปั่น", "โวย", "บ่นยับ"]},
+    "HOT": {"tone": "แชทคึกคัก", "verbs": ["กระตุ้น", "ปั่น", "ลุย"]},
+    "WARM": {"tone": "บรรยากาศเป็นกันเอง", "verbs": ["เล่า", "เม้าท์", "บ่น"]},
+    "QUIET": {"tone": "คุยสบาย ๆ เลือกคำตามเหตุการณ์จริง", "verbs": ["พูดคุย", "วิเคราะห์"]},
+}
 
 
 def fmt_ts(sec: int) -> str:
@@ -186,7 +239,8 @@ def fmt_ts(sec: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 
-def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
+def serialize(stats: ChatStats, verdict: Verdict, cfg: Config,
+              speaker: Optional[SpeakerStats] = None) -> dict:
     """Build the on-disk JSON record for one chunk (schema for validate_mood.py)."""
     density = stats.n_markers / stats.n_messages if stats.n_messages else 0.0
     peak_windows = [
@@ -194,6 +248,7 @@ def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
         for a, b, c in stats.peak_windows
         if c >= cfg.pulse_threshold
     ]
+    sp = speaker or SpeakerStats()
     return {
         "density": round(density, 3),
         "n_markers": stats.n_markers,
@@ -201,7 +256,16 @@ def serialize(stats: ChatStats, verdict: Verdict, cfg: Config) -> dict:
         "pulse": verdict.pulse,
         "verdict": verdict.verdict,
         "mood": verdict.mood,
+        "tone": TONE_HINTS.get(verdict.verdict, TONE_HINTS["QUIET"]),
         "peak_windows": peak_windows,
+        "speaker_swears": sp.n_swears,
+        "speaker_frust": sp.n_frust,
+        "speaker_rage_quit": sp.n_rage_quit,
+        "speaker_sick_afk": sp.n_sick_afk,
+        "speaker_panic_shock": sp.n_panic_shock,
+        "speaker_hype_clutch": sp.n_hype_clutch,
+        "speaker_sleepy": sp.n_sleepy,
+        "speaker_cues": sp.cues,
     }
 
 
@@ -220,34 +284,86 @@ def load_index(index_path: str) -> dict:
     return json.load(open(index_path, encoding="utf-8"))
 
 
+def _resolve_chunks_dir(livechat_dir: str, chunks_dir: str) -> Optional[Path]:
+    """Return explicit chunks_dir or auto-discover <workspace>/chunks."""
+    if chunks_dir and Path(chunks_dir).is_dir():
+        return Path(chunks_dir)
+    if livechat_dir:
+        sibling = Path(livechat_dir).resolve().parent / "chunks"
+        return sibling if sibling.is_dir() else None
+    return None
+
+
+def _print_summary(result: dict) -> None:
+    """Print detected mood verdict counts and chunk lists."""
+    print(f"chunks analyzed: {len(result)}")
+    key_sort = lambda c: int(re.search(r"(\d+)$", c).group(1)) if re.search(r"(\d+)$", c) else 0
+    verdict_order = (
+        "RAGE_QUIT_PULSE",
+        "ANGRY_TILT_PULSE",
+        "PANIC_SHOCK_PULSE",
+        "SICK_AFK_PULSE",
+        "HYPE_CLUTCH_PULSE",
+        "SLEEPY_DRAIN_PULSE",
+        "MEME_PULSE",
+    )
+    for v_name in verdict_order:
+        matched = sorted([k for k, v in result.items() if v["verdict"] == v_name], key=key_sort)
+        if matched or v_name == "MEME_PULSE":
+            print(f"{v_name} chunks ({len(matched)}): {matched}")
+
+
+def _collect_speaker_only(sp_dir: Path, cfg: Config) -> dict:
+    """Classify speaker-only chunks when no livechat logs exist."""
+    seen: dict[str, Path] = {}
+    for ext in (".txt", ".json", ".xml"):
+        for f in sp_dir.glob(f"chunk_*{ext}"):
+            seen.setdefault(f.stem, f)
+    key_fn = lambda c: int(re.search(r"(\d+)$", c).group(1)) if re.search(r"(\d+)$", c) else 0
+    result = {}
+    for cid in sorted(seen, key=key_fn):
+        sp_stats = parse_speaker_chunk(seen[cid])
+        verdict = classify(ChatStats(), cfg, sp_stats)
+        result[cid] = serialize(ChatStats(), verdict, cfg, sp_stats)
+    return result
+
+
 def analyze(livechat_dir: str, index_path: str, out_path: str,
-            cfg: Optional[Config] = None) -> dict:
-    """Full pipeline: parse every chunk log, classify, write mood_555.json."""
+            cfg: Optional[Config] = None, chunks_dir: str = "",
+            transcript_gz: str = "") -> dict:
+    """Full pipeline: parse chunk livechat + speaker transcript, classify, write JSON."""
     cfg = cfg or Config()
     index = load_index(index_path)
+    sp_dir = _resolve_chunks_dir(livechat_dir, chunks_dir)
+    gz_map = load_jsonl_gz_chunks(Path(transcript_gz)) if transcript_gz and Path(transcript_gz).is_file() else {}
+    chat_files = sorted(Path(livechat_dir).glob("livechat_chunk_*.txt")) if livechat_dir and Path(livechat_dir).is_dir() else []
     result = {}
-    for f in sorted(Path(livechat_dir).glob("livechat_chunk_*.txt")):
+    for f in chat_files:
         chunk = resolve_chunk_name(f, index)
         stats = parse_chat(f)
-        verdict = classify(stats, cfg)
-        result[chunk] = serialize(stats, verdict, cfg)
-    json.dump(result, open(out_path, "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
-    # report
-    print(f"chunks analyzed: {len(result)}")
-    memes = [k for k, v in result.items() if v["verdict"] == "MEME_PULSE"]
-    print(f"MEME_PULSE chunks ({len(memes)}): {sorted(memes, key=lambda c: int(c.split('_')[1]))}")
+        sp_path = resolve_speaker_chunk_path(sp_dir, chunk)
+        sp_stats = parse_speaker_chunk(sp_path) if sp_path else gz_map.get(chunk, SpeakerStats())
+        result[chunk] = serialize(stats, classify(stats, cfg, sp_stats), cfg, sp_stats)
+    if not chat_files and sp_dir:
+        result = _collect_speaker_only(sp_dir, cfg)
+    elif not chat_files and gz_map:
+        result = {c: serialize(ChatStats(), classify(ChatStats(), cfg, sp), cfg, sp) for c, sp in gz_map.items()}
+    with open(out_path, "w", encoding="utf-8") as out_f:
+        json.dump(result, out_f, ensure_ascii=False, indent=1)
+    _print_summary(result)
     return result
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--livechat", required=True)
+    ap.add_argument("--livechat", default="")
     ap.add_argument("--index", default="")
+    ap.add_argument("--chunks", default="")
+    ap.add_argument("--transcript-gz", default="")
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
-    analyze(a.livechat, a.index, a.out)
+    analyze(a.livechat, a.index, a.out, chunks_dir=a.chunks, transcript_gz=a.transcript_gz)
     return 0
 
 

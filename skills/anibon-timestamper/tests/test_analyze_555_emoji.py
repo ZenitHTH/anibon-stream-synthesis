@@ -207,6 +207,47 @@ class TestAnalyze555Emoji(unittest.TestCase):
             sp_j = parse_speaker_chunk(jres)
             self.assertEqual(classify(ChatStats(), Config(), sp_j).verdict, "ANGRY_TILT_PULSE")
 
+    def test_analyze_runs_speaker_only_and_transcript_gz(self):
+        import gzip
+        from analyze_555 import analyze
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            cdir = ws / "chunks"
+            cdir.mkdir()
+            (cdir / "chunk_00.txt").write_text(
+                "(00:01:00) ไอ้เหี้ย อารมณ์เสีย\n"
+                "(00:01:05) หัวร้อน หงุดหงิด โคตรแย่\n"
+                "(00:01:10) ไม่เล่นแล้ว ลบเกมทิ้ง\n",
+                encoding="utf-8",
+            )
+            out = ws / "mood_555.json"
+            res = analyze(str(ws / "livechat"), "", str(out), chunks_dir=str(cdir))
+            self.assertEqual(res["chunk_00"]["verdict"], "RAGE_QUIT_PULSE")
+
+            gz = ws / "transcript.jsonl.gz"
+            with gzip.open(gz, "wt", encoding="utf-8") as gf:
+                gf.write(json.dumps({"start": 10, "text": "อุ้ยไอ้เหี้ย ตกใจหมด"}) + "\n")
+                gf.write(json.dumps({"start": 15, "text": "หัวใจจะวาย บรรลัยแล้ว"}) + "\n")
+            gz_out = ws / "mood_gz.json"
+            gz_res = analyze("", "", str(gz_out), transcript_gz=str(gz))
+            self.assertEqual(gz_res["chunk_00"]["verdict"], "PANIC_SHOCK_PULSE")
+
+    def test_ensure_mood_555_passes_chunks_without_livechat(self):
+        from process.parity_gates import ensure_mood_555
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "chunks").mkdir()
+            (ws / "chunks" / "chunk_00.txt").write_text(
+                "(00:01:00) ไอ้เหี้ย อารมณ์เสีย\n"
+                "(00:01:05) หัวร้อน หงุดหงิด โคตรแย่ ไม่เล่นแล้ว ลบเกมทิ้ง\n",
+                encoding="utf-8",
+            )
+            ensure_mood_555(ws)
+            mood_file = ws / "mood_555.json"
+            self.assertTrue(mood_file.exists(), "ensure_mood_555 should generate mood_555.json from chunks alone")
+            data = json.loads(mood_file.read_text(encoding="utf-8"))
+            self.assertEqual(data["chunk_00"]["verdict"], "RAGE_QUIT_PULSE")
+
 
 
 
