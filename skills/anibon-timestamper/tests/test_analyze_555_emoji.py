@@ -248,6 +248,50 @@ class TestAnalyze555Emoji(unittest.TestCase):
             data = json.loads(mood_file.read_text(encoding="utf-8"))
             self.assertEqual(data["chunk_00"]["verdict"], "RAGE_QUIT_PULSE")
 
+    def test_build_subagent_prompts_formats_nested_tone_and_cues(self):
+        import importlib.util
+
+        repo_root = Path(__file__).resolve().parents[3]
+        spec = importlib.util.spec_from_file_location(
+            "build_subagent_prompts",
+            repo_root / "skills" / "anibon-timestamper" / "scripts" / "build_subagent_prompts.py",
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        formatted = mod.format_chunk_mood_guidance({
+            "verdict": "ANGRY_TILT_PULSE",
+            "tone": {
+                "tone": "frustrated, tilted",
+                "verbs": ["หงุดหงิด", "อารมณ์เสีย"],
+            },
+            "speaker_cues": ["rage_profanity", "frustration"],
+        })
+        self.assertIn("verdict: ANGRY_TILT_PULSE", formatted)
+        self.assertIn("tone: frustrated, tilted", formatted)
+        self.assertIn("verbs: ['หงุดหงิด', 'อารมณ์เสีย']", formatted)
+        self.assertIn("cues: ['rage_profanity', 'frustration']", formatted)
+        self.assertNotIn("{'tone':", formatted)
+
+    def test_skill_validate_mood_matches_root_mood_rules(self):
+        import importlib.util
+
+        repo_root = Path(__file__).resolve().parents[3]
+        spec = importlib.util.spec_from_file_location(
+            "skill_validate_mood",
+            repo_root / "skills" / "anibon-timestamper" / "scripts" / "validate_mood.py",
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        self.assertIn("ANGRY_TILT_PULSE", mod._OLD_FALLBACK)
+        validator = mod.Validator(
+            {"chunk_00": {"verdict": "QUIET"}},
+            {"chunk_00": (0, 600)},
+        )
+        self.assertFalse(validator.in_mood_segment("chunk_00", 60))
+
+
 
 
 

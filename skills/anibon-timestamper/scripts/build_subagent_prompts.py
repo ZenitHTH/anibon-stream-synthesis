@@ -5,6 +5,25 @@ import re
 import sys
 import argparse
 
+
+def format_chunk_mood_guidance(cmood: dict) -> str:
+    """Format chunk mood guidance, handling both nested and flat tone schemas."""
+    if not cmood:
+        return "no mood_555"
+    raw_tone = cmood.get("tone")
+    if isinstance(raw_tone, dict):
+        tone = raw_tone.get("tone")
+        verbs = cmood.get("verbs") or raw_tone.get("verbs")
+    else:
+        tone = raw_tone
+        verbs = cmood.get("verbs")
+    parts = [f"verdict: {cmood.get('verdict')}", f"tone: {tone}", f"verbs: {verbs}"]
+    cues = cmood.get("speaker_cues")
+    if cues:
+        parts.append(f"cues: {cues}")
+    return ", ".join(parts)
+
+
 def build_prompts(workspace):
     chunks_dir = os.path.join(workspace, "chunks")
     signals_file = os.path.join(workspace, "signals.json")
@@ -66,7 +85,7 @@ def build_prompts(workspace):
 
         # Mood
         cmood = mood_data.get(cid, {})
-        mood_str = f"verdict: {cmood.get('verdict')}, tone: {cmood.get('tone')}, verbs: {cmood.get('verbs')}" if cmood else "no mood_555"
+        mood_str = format_chunk_mood_guidance(cmood)
 
         try:
             import xml.etree.ElementTree as ET
