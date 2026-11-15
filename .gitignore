@@ -66,6 +66,7 @@ package-lock.json
 
 # Scratch & temporary pipeline directories
 .superpowers/
+.worktrees/
 audio_slices/
 # Secrets & environment files
 .env
