@@ -117,7 +117,6 @@ def _set_state_phase(workspace: Path, phase: str) -> None:
 def wait_if_paused(
     workspace: Path,
     active_phase: str,
-    poll_sec: float = DEFAULT_POLL_SEC,
     label: str = "",
 ) -> bool:
     """Park worker in a sleep loop while pause marker exists, preserving state."""
@@ -128,7 +127,7 @@ def wait_if_paused(
     _set_state_phase(ws, "paused")
     print(f"[pause] Paused{suffix}. Waiting for resume...", flush=True)
     while is_paused(ws):
-        time.sleep(poll_sec)
+        time.sleep(DEFAULT_POLL_SEC)
     _set_state_phase(ws, active_phase)
     print(f"[resume] Resumed{suffix}.", flush=True)
     return True

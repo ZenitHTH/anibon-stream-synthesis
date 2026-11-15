@@ -1,3 +1,4 @@
+import inspect
 import io
 import os
 import sys
@@ -86,8 +87,11 @@ class TestPausePrimitives(unittest.TestCase):
 
         t = threading.Thread(target=unpause_soon, daemon=True)
         t.start()
-        was_paused = wait_if_paused(self.ws, active_phase="recursive_loop", poll_sec=0.02, label="chunk 4/20")
+        with patch("chunk.pause.DEFAULT_POLL_SEC", 0.02):
+            was_paused = wait_if_paused(self.ws, active_phase="recursive_loop", label="chunk 4/20")
         t.join(timeout=2.0)
+
+        self.assertLessEqual(len(inspect.signature(wait_if_paused).parameters), 3)
 
         self.assertTrue(was_paused)
         after = load_state(self.ws)
@@ -160,7 +164,7 @@ class TestRunnerPauseIntegration(unittest.TestCase):
         t = threading.Thread(target=watcher, daemon=True)
         t.start()
         with patch.object(pcl, "call_local", side_effect=fake_call_local), \
-             patch("process.runners.recursive.PAUSE_POLL_SEC", 0.02), \
+             patch("chunk.pause.DEFAULT_POLL_SEC", 0.02), \
              patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(self.ws / "anibon_timestamps.md", [])):
             pcl.run_recursive_mode(
                 workspace=self.ws,
@@ -204,7 +208,7 @@ class TestRunnerPauseIntegration(unittest.TestCase):
         t = threading.Thread(target=unpause_once_parked, daemon=True)
         t.start()
         with patch("process.runners.recursive.is_host_reachable", side_effect=[False, True]), \
-             patch("process.runners.recursive.PAUSE_POLL_SEC", 0.02), \
+             patch("chunk.pause.DEFAULT_POLL_SEC", 0.02), \
              patch("process.runners.recursive.RECOVERY_STABILIZE_SEC", 0.0):
             _wait_for_network_recovery("http://localhost:1234/v1/chat/completions", poll_interval=0.01, workspace=self.ws)
         t.join(timeout=2.0)
@@ -239,7 +243,7 @@ class TestRunnerPauseIntegration(unittest.TestCase):
         t = threading.Thread(target=watcher, daemon=True)
         t.start()
         with patch.object(pcl, "call_local", side_effect=fake_call_local), \
-             patch("process.runners.group.PAUSE_POLL_SEC", 0.02), \
+             patch("chunk.pause.DEFAULT_POLL_SEC", 0.02), \
              patch.object(pcl, "finalize_and_assemble_timestamps", return_value=(self.ws / "anibon_timestamps.md", [])):
             pcl.run_group_mode(
                 workspace=self.ws,
@@ -320,6 +324,7 @@ class TestControlChunksCLI(unittest.TestCase):
              patch("sys.argv", ["process_chunks_local.py", str(self.ws), "--no-knowledge-reader"]):
             pcl.main()
 
+        self.assertLessEqual(len(inspect.signature(pcl._run_active_pipeline).parameters), 3)
         self.assertEqual(observed_pid.get("during_run"), os.getpid())
         self.assertIsNone(read_worker_pid(self.ws))
 

@@ -290,7 +290,6 @@ def _persist_chunk_output(
 
 MAX_CHUNK_RETRIES: int = 3
 NETWORK_POLL_INTERVAL_SEC: float = 5.0
-PAUSE_POLL_SEC: float = 1.0
 RECOVERY_STABILIZE_SEC: float = 2.0
 
 
@@ -314,7 +313,7 @@ def _wait_for_network_recovery(
     port = parsed.port or (443 if parsed.scheme == "https" else (80 if parsed.scheme == "http" else 1234))
     print(f"\n[network] Endpoint {host}:{port} unreachable (blackout/cutout). Waiting...", flush=True)
     while not is_host_reachable(host, port, timeout=2.0):
-        if workspace and wait_if_paused(workspace, active_phase="recursive_loop", poll_sec=PAUSE_POLL_SEC, label="network wait"):
+        if workspace and wait_if_paused(workspace, active_phase="recursive_loop", label="network wait"):
             continue
         time.sleep(poll_interval)
     print(f"\n[network] Connection to {host}:{port} restored! Resuming...", flush=True)
@@ -539,7 +538,7 @@ def run_recursive_mode(
             rolling_summary = c_summary or rolling_summary
             continue
 
-        wait_if_paused(workspace, active_phase="recursive_loop", poll_sec=PAUSE_POLL_SEC, label=f"{chunk_idx} ({i + 1}/{total})")
+        wait_if_paused(workspace, active_phase="recursive_loop", label=f"{chunk_idx} ({i + 1}/{total})")
 
         current_topic_title, rolling_summary = _process_single_recursive_chunk(
             chunk_path=chunk_path, ch_num=ch_num, workspace=workspace, output_dir=output_dir,
@@ -556,7 +555,7 @@ def run_recursive_mode(
             print(f"[pause] Reached --max-chunks {max_chunks}.")
             break
 
-    wait_if_paused(workspace, active_phase="assemble", poll_sec=PAUSE_POLL_SEC, label="before assembly")
+    wait_if_paused(workspace, active_phase="assemble", label="before assembly")
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(

@@ -17,6 +17,7 @@ Architecture:
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import json
 import os
 import sys
@@ -371,26 +372,34 @@ def _ensure_livechat_if_requested(workspace: Path, args: argparse.Namespace) -> 
         prepare_livechat(url, workspace)
 
 
-def _run_active_pipeline(
-    args: argparse.Namespace,
-    workspace: Path,
-    model: str,
-    chunk_files: List[Path],
-    world_identity_dir: Optional[Path],
-) -> None:
+@dataclass(frozen=True)
+class _PipelineContext:
+    """Bundled runtime inputs for an active chunk processing run."""
+
+    args: argparse.Namespace
+    workspace: Path
+    model: str
+    chunk_files: List[Path]
+    world_identity_dir: Optional[Path]
+
+
+def _run_active_pipeline(ctx: _PipelineContext) -> None:
     """Prepare mappings, signals, glossary, and dispatch runner under PID tracking."""
-    write_worker_pid(workspace)
+    write_worker_pid(ctx.workspace)
     try:
-        mappings, _, is_yt_auto = _prepare_transcript_mappings(workspace)
+        mappings, _, is_yt_auto = _prepare_transcript_mappings(ctx.workspace)
         if is_yt_auto:
-            clean_workspace_chunks(workspace)
-        signals_map = _load_or_detect_signals(workspace)
-        glossary = _load_or_discover_glossary(workspace, signals_map, world_identity_dir, args.no_knowledge_reader)
+            clean_workspace_chunks(ctx.workspace)
+        signals_map = _load_or_detect_signals(ctx.workspace)
+        glossary = _load_or_discover_glossary(
+            ctx.workspace, signals_map, ctx.world_identity_dir, ctx.args.no_knowledge_reader
+        )
         _dispatch_pipeline_mode(
-            args, workspace, model, chunk_files, signals_map, mappings, world_identity_dir, glossary
+            ctx.args, ctx.workspace, ctx.model, ctx.chunk_files,
+            signals_map, mappings, ctx.world_identity_dir, glossary,
         )
     finally:
-        remove_worker_pid(workspace)
+        remove_worker_pid(ctx.workspace)
 
 
 def main() -> None:
@@ -423,7 +432,7 @@ def main() -> None:
         print(f"[dry-run] Discovered {len(chunk_files)} chunks.")
         return
 
-    _run_active_pipeline(args, workspace, model, chunk_files, world_identity_dir)
+    _run_active_pipeline(_PipelineContext(args, workspace, model, chunk_files, world_identity_dir))
 
 
 if __name__ == "__main__":

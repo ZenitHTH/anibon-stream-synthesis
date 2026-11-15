@@ -27,8 +27,6 @@ from chunk.state import (
 from common.time import fmt_ts as _fmt_ts
 from common.timestamps import is_continuation, parse_timestamps, validate_timestamps
 
-PAUSE_POLL_SEC: float = 1.0
-
 
 def _load_group_chunks(g_files: List[Path], mappings: Optional[list]) -> List[dict]:
     """Load and index all chunk objects belonging to a group."""
@@ -231,7 +229,7 @@ def run_group_mode(
             print(f"[skip] {group_idx} (output exists)")
             continue
 
-        wait_if_paused(workspace, active_phase="group_loop", poll_sec=PAUSE_POLL_SEC, label=f"{group_idx} ({g + 1}/{num_groups})")
+        wait_if_paused(workspace, active_phase="group_loop", label=f"{group_idx} ({g + 1}/{num_groups})")
 
         prev_tail, ok = _process_single_group(
             g=g, num_groups=num_groups, group_size=group_size, chunk_files=chunk_files,
@@ -246,7 +244,7 @@ def run_group_mode(
                 print(f"[pause] Reached --max-groups {max_groups}.")
                 break
 
-    wait_if_paused(workspace, active_phase="assemble", poll_sec=PAUSE_POLL_SEC, label="before assembly")
+    wait_if_paused(workspace, active_phase="assemble", label="before assembly")
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(
