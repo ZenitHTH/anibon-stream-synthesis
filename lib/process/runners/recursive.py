@@ -24,6 +24,7 @@ from process.runners.common import (
     _init_multimodal_grounding,
     _sample_chunk_multimodal_frames,
 )
+from chunk.pause import clear_pause, wait_if_paused
 from chunk.state import (
     load_chunk_activity,
     load_chunk_file,
@@ -43,6 +44,7 @@ def _reset_recursive_state(workspace: Path, output_dir: Path, no_resume: bool) -
         for stale in output_dir.glob("chunk_*.json"):
             stale.unlink(missing_ok=True)
         (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
+        clear_pause(workspace)
 
     state = load_state(workspace)
     all_timestamps = state.get("all_timestamps", []) if not no_resume else []
@@ -288,6 +290,7 @@ def _persist_chunk_output(
 
 MAX_CHUNK_RETRIES: int = 3
 NETWORK_POLL_INTERVAL_SEC: float = 5.0
+PAUSE_POLL_SEC: float = 1.0
 RECOVERY_STABILIZE_SEC: float = 2.0
 
 
@@ -300,22 +303,35 @@ def _is_network_failure(err: Exception) -> bool:
     return any(marker in msg for marker in network_markers)
 
 
-def _wait_for_network_recovery(endpoint: str, poll_interval: float = NETWORK_POLL_INTERVAL_SEC) -> None:
+def _wait_for_network_recovery(
+    endpoint: str,
+    poll_interval: float = NETWORK_POLL_INTERVAL_SEC,
+    workspace: Optional[Path] = None,
+) -> None:
     """Pause execution and poll until unreachable host/endpoint recovers."""
     parsed = urlparse(endpoint)
     host = parsed.hostname or PRIMARY_HOST
     port = parsed.port or (443 if parsed.scheme == "https" else (80 if parsed.scheme == "http" else 1234))
     print(f"\n[network] Endpoint {host}:{port} unreachable (blackout/cutout). Waiting...", flush=True)
     while not is_host_reachable(host, port, timeout=2.0):
+        if workspace and wait_if_paused(workspace, active_phase="recursive_loop", poll_sec=PAUSE_POLL_SEC, label="network wait"):
+            continue
         time.sleep(poll_interval)
     print(f"\n[network] Connection to {host}:{port} restored! Resuming...", flush=True)
     time.sleep(RECOVERY_STABILIZE_SEC)
 
 
-def _handle_inference_error(e: Exception, chunk_idx: str, endpoint: str, attempt: int, max_retries: int) -> bool:
+def _handle_inference_error(
+    e: Exception,
+    chunk_idx: str,
+    endpoint: str,
+    attempt: int,
+    max_retries: int,
+    workspace: Optional[Path] = None,
+) -> bool:
     """Handle error and decide whether network pause or normal retry delay is needed."""
     if _is_network_failure(e):
-        _wait_for_network_recovery(endpoint)
+        _wait_for_network_recovery(endpoint, workspace=workspace)
         print(f"[redo] {chunk_idx}: retrying after network recovery...", flush=True)
         return False
     print(f"\n[redo] {chunk_idx} error: {e}. Retrying ({attempt + 1}/{max_retries})...", flush=True)
@@ -333,6 +349,7 @@ def _call_chunk_model_with_retry(
     chunk_idx: str,
     args: Optional[argparse.Namespace],
     max_retries: int = MAX_CHUNK_RETRIES,
+    workspace: Optional[Path] = None,
 ) -> Optional[dict]:
     """Execute model inference with automatic network recovery and redo on failure."""
     attempt = 0
@@ -347,7 +364,7 @@ def _call_chunk_model_with_retry(
             time.sleep(2.0)
             attempt += 1
         except Exception as e:
-            if _handle_inference_error(e, chunk_idx, endpoint, attempt, max_retries):
+            if _handle_inference_error(e, chunk_idx, endpoint, attempt, max_retries, workspace=workspace):
                 attempt += 1
     return None
 
@@ -371,7 +388,7 @@ def _execute_and_persist_chunk(
     """Run model inference with redo retries and persist valid topic updates."""
     res = _call_chunk_model_with_retry(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes,
-        max_tokens=max_tokens, temperature=temperature, chunk_idx=chunk_idx, args=args,
+        max_tokens=max_tokens, temperature=temperature, chunk_idx=chunk_idx, args=args, workspace=workspace,
     )
     if not res:
         print(f"\n[error] {chunk_idx}: failed after all retry attempts", file=sys.stderr)
@@ -522,6 +539,8 @@ def run_recursive_mode(
             rolling_summary = c_summary or rolling_summary
             continue
 
+        wait_if_paused(workspace, active_phase="recursive_loop", poll_sec=PAUSE_POLL_SEC, label=f"{chunk_idx} ({i + 1}/{total})")
+
         current_topic_title, rolling_summary = _process_single_recursive_chunk(
             chunk_path=chunk_path, ch_num=ch_num, workspace=workspace, output_dir=output_dir,
             endpoint=endpoint, model=model, lang=lang, max_tokens=max_tokens, temperature=temperature,
@@ -537,6 +556,7 @@ def run_recursive_mode(
             print(f"[pause] Reached --max-chunks {max_chunks}.")
             break
 
+    wait_if_paused(workspace, active_phase="assemble", poll_sec=PAUSE_POLL_SEC, label="before assembly")
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(

@@ -15,6 +15,7 @@ from process.assembly import finalize_and_assemble_timestamps
 from common.lmstudio import call_local
 from process.prompts import build_group_prompt
 from process.runners.common import _get_runtime_hook
+from chunk.pause import clear_pause, wait_if_paused
 from chunk.state import (
     load_chunk_activity,
     load_chunk_file,
@@ -25,6 +26,8 @@ from chunk.state import (
 )
 from common.time import fmt_ts as _fmt_ts
 from common.timestamps import is_continuation, parse_timestamps, validate_timestamps
+
+PAUSE_POLL_SEC: float = 1.0
 
 
 def _load_group_chunks(g_files: List[Path], mappings: Optional[list]) -> List[dict]:
@@ -202,6 +205,7 @@ def run_group_mode(
         for stale in output_dir.glob("group_*_output.md"):
             stale.unlink(missing_ok=True)
         (workspace / "anibon_timestamper_state.json").unlink(missing_ok=True)
+        clear_pause(workspace)
 
     state = load_state(workspace)
     all_timestamps: List[str] = state.get("all_timestamps", []) if not no_resume else []
@@ -227,6 +231,8 @@ def run_group_mode(
             print(f"[skip] {group_idx} (output exists)")
             continue
 
+        wait_if_paused(workspace, active_phase="group_loop", poll_sec=PAUSE_POLL_SEC, label=f"{group_idx} ({g + 1}/{num_groups})")
+
         prev_tail, ok = _process_single_group(
             g=g, num_groups=num_groups, group_size=group_size, chunk_files=chunk_files,
             output_dir=output_dir, workspace=workspace, endpoint=endpoint, model=model, lang=lang,
@@ -240,6 +246,7 @@ def run_group_mode(
                 print(f"[pause] Reached --max-groups {max_groups}.")
                 break
 
+    wait_if_paused(workspace, active_phase="assemble", poll_sec=PAUSE_POLL_SEC, label="before assembly")
     print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(
