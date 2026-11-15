@@ -12,6 +12,7 @@ Local processing pipeline for generating YouTube timestamps and summaries from l
 ## When to Use
 
 - When processing livestreams locally on a single GPU (e.g. NVIDIA Tesla P100 16GB, Apple Silicon Metal, LM Studio, Ollama) without incurring cloud API costs.
+- When the user asks to **pause, hold, resume/continue, or inspect progress** of a running local worker (e.g. moving locations or closing a laptop) without killing its PID: use `skills/anibon-timestamper-local/scripts/control_chunks_local.py`.
 - **For Cloud / Frontier Models**: If the user has cloud API access and wants high-concurrency subagent orchestration (Claude 3.5 Sonnet, Gemini 2.0 Pro), use **`anibon-timestamper`** instead.
 
 ## Companion Skills & Required Sub-Skills
@@ -29,7 +30,7 @@ Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`)
 |-------|-----------------|------------------|-------------|
 | **1. Preparation & Chunking** | `scripts/prepare_video.py` | YouTube URL → `raw_transcript.json`, `chunks/*.txt`, `livechat/`, `mood_555.json` | Downloads subtitles, segments audio/transcript into overlapping chunks, aligns LiveChat (`--live-chat`), and computes 555 mood pulses. |
 | **1.5 Replacing Noise Words & Knowledge Discovery** | `lib/process/audit.py` (`clean_workspace_chunks`) + `lib/process/knowledge_reader.py` | `garbled_replacements.json` + `default_mappings.json` → cleaned `chunks/*.txt`, `signals.json`, `entity_glossary.json` | Replaces phonetic noise words across `chunks/` on disk first, then detects domain signals and builds chunk-filtered verified entity glossaries. |
-| **2. Topic Segmentation & Mood Validation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` + `scripts/validate_mood.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`), `livechat/`, `mood_555.json` → `all_timestamps.txt` | Detects shifts/continuations via local LLM/VLM with visual ground truth and mood hints, emits `all_timestamps.txt`, and immediately runs `validate_mood.py` on raw chunk timestamps. |
+| **2. Topic Segmentation & Mood Validation (Pass 1)** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py` + `control_chunks_local.py` + `scripts/validate_mood.py` | `chunks/`, `signals.json`, Storyboard keyframes (`--multimodal-chunks`), `livechat/`, `mood_555.json` → `all_timestamps.txt` | Detects shifts/continuations via local LLM/VLM with visual ground truth and mood hints, emits `all_timestamps.txt`, supports live `pause`/`continue`/`status` via `.pause` + `timestamper.pid`, and immediately runs `validate_mood.py` on raw chunk timestamps. |
 | **3. Garbled Collector & Whisper Ground Truth** | `lib/process/garbled_collector.py` / `scripts/whisper_dispatcher.py` | `garbled_notes_raw/` → `garbled_notes.json` → `garbled_replacements.json` + cleaned `all_timestamps.txt` | Runs **before** summarization: slices audio on-the-fly, transcribes phonetic ground truth via local `whisper.cpp`, updates shared dictionary, and cleans `all_timestamps.txt` and `chunks/*.txt`. |
 | **4. Summarizer, Section Limit & Parity Gates (Pass 2)** | `lib/process/summarizer.py` + `lib/process/byte_cap.py` + `lib/process/parity_gates.py` | cleaned `all_timestamps.txt` → `anibon_timestamps.md` | Prunes to essential stamps, clusters into macro-thematic parts, enforces section line/byte limits (`enforce_line_cap` ≤ 20 lines), audits against glossary, and runs `audit_gaps.py` & `check_sections.py`. |
 | **4.5 Post-Stream Trimmed VOD Reconciliation** | `scripts/reconcile_edited_stream.py` | `audio.opus` + URL + `anibon_timestamps.md` → reconciled `anibon_timestamps.md` | Checks if YouTuber edited/trimmed the stream post-broadcast; if duration shrank, computes 1000Hz FFT audio correlation to detect cut intervals and shifts timestamps without re-transcribing. |
@@ -45,6 +46,7 @@ Pipeline commands run from the plugin root directory (`anibon-stream-synthesis`)
 - `lib/process/prompts.py`: Recursive rolling summary and group batching prompts, World Identity reference injection, and search/vision context blocks.
 - `lib/process/summarizer.py`: Pass 2 local summarizer with semantic & chronological deduplication and macro-thematic part assembly (typically 4–6 parts).
 - `lib/process/state.py`: Checkpoint persistence (`anibon_timestamper_state.json`), chunk discovery, and multimodal loaders (LiveChat, 555 mood, activity).
+- `lib/chunk/pause.py`: Cooperative `.pause` marker, POSIX `timestamper.pid` liveness tracking, and idle wait-loop primitives (`wait_if_paused`, `wait_for_pause_ack`).
 
 ### Multi-Layer Anti-Hallucination & Verification Architecture (4-Layer Defense)
 
@@ -289,13 +291,24 @@ skills\anibon-timestamper-local\scripts\launch_local.bat "%USERPROFILE%\youtube_
 ```
 
 #### 3.1 Pause, Continue & Status Control (No PID Kill)
-Pause a running worker cleanly between chunks (e.g. before moving or closing your laptop), inspect progress, and continue the same PID later without interrupting `timestamper.log`:
+When the user asks to pause, temporarily hold, move locations, close their laptop, check progress, or continue an active local run, **ALWAYS use `control_chunks_local.py`** — **NEVER** `kill`/`SIGTERM` the worker PID or edit `timestamper.log` from another process:
 ```bash
+# Request cooperative pause and wait up to 180s until worker parks safely:
 python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace pause
+
+# Non-blocking pause (create .pause marker and return immediately):
+python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace pause --timeout 0
+
+# Inspect phase, pause state, worker PID liveness, and chunk/group progress:
 python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace status
+
+# Resume the parked worker PID cleanly:
 python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace continue
 ```
-- The worker finishes any active chunk, writes `"phase": "paused"` to `anibon_timestamper_state.json`, and sleeps with zero GPU/HTTP requests while keeping its stdout attached to `timestamper.log`.
+- **How `pause` works**: Verifies live `timestamper.pid` first (exits `1` without writing `.pause` if dead/stale), creates `<workspace>/.pause`, and waits for the worker to reach `"phase": "paused"` in `anibon_timestamper_state.json`. Pressing `Ctrl-C` during `pause` exits `0` while keeping `.pause` armed for the next boundary.
+- **Pause checkpoints**: Parks after finishing the active chunk (`--mode recursive`), active group (`--mode group`), inside blackout recovery (`_wait_for_network_recovery`), or right before Pass 2 assembly (`before assembly`), sleeping on `1.0s` polls with zero GPU/HTTP requests.
+- **Single-writer log & launcher guards**: Only the worker prints `[pause]` / `[resume]` to stdout (`timestamper.log`). Re-running `launch_local.sh` while paused safely refuses (`already running`); `--no-resume` auto-clears any leftover `.pause` on fresh runs.
+- **Scope**: PID liveness (`os.kill(pid, 0)`) targets POSIX workers (macOS/Linux) and active loop modes (`--summarize-only` runs one-shot without PID/pause tracking).
 
 > [!NOTE]
 > **Endpoint Auto-Probe & Fallback Rule**: All runners and Python client (`anibon.lmstudio.resolve_endpoint()`) automatically probe `http://100.115.25.30:1234` with a 1.0s TCP socket test. If unreachable (indicating execution on localhost itself), they immediately and safely fall back to `http://127.0.0.1:1234`.
@@ -404,10 +417,12 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 | *"I can invent tags like [วิเคราะห์] because it fits the content."* | Front-tier benchmarks reject non-standard tags; breaks comment parsers. | Normalizer automatically remaps `[วิเคราะห์]` → `[Talk]`. |
 | *"I'll just summarize the whole 3-hour transcript in 1 prompt."* | Exceeds context and degrades entity recall on 12B models. | Sequential rolling state-machine keeps prompt under 2k tokens. |
 | *"Let's write a custom Python script to speed this up."* | Ad-hoc scripts break state tracking, resume logic, and encoding. | Strictly use `process_chunks_local.py` flags. |
+| *"Kill the worker PID to pause, then relaunch later."* | Aborts active chunk, splits `timestamper.log`, risks duplicate PID on relaunch. | Run `control_chunks_local.py <ws> pause` / `continue`; worker parks cleanly with zero GPU calls. |
 | *"The timestamps look good enough without checking World Identity."* | Hallucinates post-cutoff games or uses bare English Pokémon names without community Thai transliteration. | Strictly invoke `/anibon-world-identity` gate before final handoff. |
 
 ### Red Flags — STOP and Reset
 - Delivering timestamp output to user without verifying franchise entities against `/anibon-world-identity`.
+- Killing `process_chunks_local.py` PID (`kill`, `SIGTERM`, `Ctrl-C`) or writing to `timestamper.log` when asked to pause/move locations instead of calling `control_chunks_local.py pause`.
 - Attempting to run timestamper before transcript recovery pipeline is 100% complete and validated (`whisper-corruption-recovery`).
 - Output file contains 35+ timestamps for a 2-hour stream (micro-stamping symptom).
 - Output tags include non-whitelisted words (`[วิเคราะห์]`, `[ชำแหละ]`, `[เปิดตัว]`).
