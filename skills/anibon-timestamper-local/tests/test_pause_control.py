@@ -1,9 +1,11 @@
+import io
 import os
 import sys
 import tempfile
 import threading
 import time
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -13,6 +15,7 @@ for _p in (_SCRIPTS, _LIB):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
+import control_chunks_local as ccl
 import process_chunks_local as pcl
 from process.runners.recursive import _wait_for_network_recovery
 
@@ -248,6 +251,77 @@ class TestRunnerPauseIntegration(unittest.TestCase):
             )
         t.join(timeout=2.0)
         self.assertEqual(events, ["group_0", "observed_paused", "group_1"])
+
+
+class TestControlChunksCLI(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.ws = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_pause_refuses_when_no_live_worker_and_leaves_no_dangling_marker(self):
+        write_worker_pid(self.ws, pid=999999)
+        with patch("chunk.pause.is_pid_alive", return_value=False):
+            rc = ccl.main([str(self.ws), "pause", "--timeout", "1"])
+        self.assertEqual(rc, 1)
+        self.assertFalse(is_paused(self.ws))
+
+    def test_pause_already_paused_returns_zero_immediately(self):
+        write_worker_pid(self.ws, pid=os.getpid())
+        request_pause(self.ws)
+        save_state(self.ws, {"phase": "paused", "current_chunk": 3, "total_chunks": 10})
+        rc = ccl.main([str(self.ws), "pause", "--timeout", "1"])
+        self.assertEqual(rc, 0)
+        self.assertTrue(is_paused(self.ws))
+
+    def test_pause_clears_marker_if_worker_finishes_while_waiting(self):
+        write_worker_pid(self.ws, pid=os.getpid())
+        save_state(self.ws, {"phase": "recursive_loop", "current_chunk": 9, "total_chunks": 10})
+        with patch("control_chunks_local.wait_for_pause_ack", return_value="not_running"):
+            rc = ccl.main([str(self.ws), "pause", "--timeout", "1"])
+        self.assertEqual(rc, 0)
+        self.assertFalse(is_paused(self.ws))
+
+    def test_continue_and_status_commands(self):
+        write_worker_pid(self.ws, pid=os.getpid())
+        request_pause(self.ws)
+        save_state(self.ws, {"phase": "paused", "current_chunk": 4, "total_chunks": 20})
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc_status = ccl.main([str(self.ws), "status"])
+        self.assertEqual(rc_status, 0)
+        out = buf.getvalue()
+        self.assertIn("paused", out)
+        self.assertIn("4/20", out)
+        self.assertIn(str(os.getpid()), out)
+
+        rc_cont = ccl.main([str(self.ws), "continue"])
+        self.assertEqual(rc_cont, 0)
+        self.assertFalse(is_paused(self.ws))
+
+    def test_process_chunks_local_writes_and_cleans_pid_file(self):
+        (self.ws / "chunks").mkdir()
+        (self.ws / "chunks" / "chunk_00.txt").write_text("[00:00:00] hi\n", encoding="utf-8")
+        observed_pid = {}
+
+        def fake_dispatch(*args, **kwargs):
+            observed_pid["during_run"] = read_worker_pid(self.ws)
+
+        with patch.object(pcl, "resolve_endpoint", return_value="http://localhost:1234/v1/chat/completions"), \
+             patch.object(pcl, "resolve_model", return_value="test-model"), \
+             patch.object(pcl, "ensure_mood_555"), \
+             patch.object(pcl, "_prepare_transcript_mappings", return_value=([], [], False)), \
+             patch.object(pcl, "_load_or_detect_signals", return_value={}), \
+             patch.object(pcl, "_load_or_discover_glossary", return_value={}), \
+             patch.object(pcl, "_dispatch_pipeline_mode", side_effect=fake_dispatch), \
+             patch("sys.argv", ["process_chunks_local.py", str(self.ws), "--no-knowledge-reader"]):
+            pcl.main()
+
+        self.assertEqual(observed_pid.get("during_run"), os.getpid())
+        self.assertIsNone(read_worker_pid(self.ws))
 
 
 if __name__ == "__main__":

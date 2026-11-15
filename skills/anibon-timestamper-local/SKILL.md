@@ -288,6 +288,15 @@ powershell -ExecutionPolicy Bypass -File "skills\anibon-timestamper-local\script
 skills\anibon-timestamper-local\scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
 ```
 
+#### 3.1 Pause, Continue & Status Control (No PID Kill)
+Pause a running worker cleanly between chunks (e.g. before moving or closing your laptop), inspect progress, and continue the same PID later without interrupting `timestamper.log`:
+```bash
+python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace pause
+python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace status
+python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace continue
+```
+- The worker finishes any active chunk, writes `"phase": "paused"` to `anibon_timestamper_state.json`, and sleeps with zero GPU/HTTP requests while keeping its stdout attached to `timestamper.log`.
+
 > [!NOTE]
 > **Endpoint Auto-Probe & Fallback Rule**: All runners and Python client (`anibon.lmstudio.resolve_endpoint()`) automatically probe `http://100.115.25.30:1234` with a 1.0s TCP socket test. If unreachable (indicating execution on localhost itself), they immediately and safely fall back to `http://127.0.0.1:1234`.
 
