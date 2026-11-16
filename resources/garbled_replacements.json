@@ -114,7 +114,8 @@
       "apocalypป"
     ],
     "Advance": [
-      "advวance"
+      "advวance",
+      "แวance"
     ],
     "Adventure Time": [
       "Avenger Time"
@@ -537,8 +538,12 @@
       "benฟเฟก"
     ],
     "Berserker": [
+      "แกนซerร์เกอร์",
       "raเซอร์เกอร์",
+      "เซuckกอร์",
       "บัซerกอร",
+      "avengจอร",
+      "คerเกอร",
       "เซิรk",
       "cerกอ"
     ],
@@ -862,6 +867,9 @@
     "Capcom Fortnite": [
       "มาคap forn"
     ],
+    "Captano": [
+      "คตan"
+    ],
     "Carbonara": [
       "คาบon่า"
     ],
@@ -987,6 +995,9 @@
       "Jigawa",
       "จิกาวะ",
       "จิa"
+    ],
+    "Chisukumi": [
+      "ชิซumิ"
     ],
     "Chronal": [
       "โครal"
@@ -1162,6 +1173,9 @@
     "Control May Cry": [
       "คolเมคาย"
     ],
+    "Control Resonant": [
+      "Control Resonance"
+    ],
     "Cookie Run: Kingdom": [
       "กำลังคิงดom"
     ],
@@ -1253,6 +1267,10 @@
     "Crunchyroll": [
       "คันชิโร",
       "คาชิโร"
+    ],
+    "Cult of the Lamb": [
+      "เข้า of RAMP",
+      "C of RAM"
     ],
     "Culture": [
       "ตัวCอร"
@@ -1637,6 +1655,9 @@
     "Effect": [
       "effectเฟect"
     ],
+    "EFORESET": [
+      "effesset"
+    ],
     "Eighty-Six (86)": [
       "\\bXT6\\b"
     ],
@@ -1739,7 +1760,8 @@
       "erิblัแ",
       "Blัแบแ",
       "erิ",
-      "Elิ"
+      "Elิ",
+      "อีblัแอ"
     ],
     "Errata": [
       "เอata"
@@ -1915,12 +1937,30 @@
       "Final Requม"
     ],
     "Fire Emblem": [
+      "แฟรนไชส์ frame blame",
+      "เฟรมเอมเบลม",
+      "เฟรมเบลม",
+      "ไฟเบม",
       "ไฟแมame",
       "แฟนเบม",
       "ไมame"
     ],
+    "Fire Emblem: Fortune's Weave": [
+      "Fortune Weep",
+      "Fortune VIP"
+    ],
     "Fire Emblem: Three Houses": [
+      "ไฟร์เอมเบลม 3 บ้าน",
+      "ไฟเบม 3 บ้าน",
       "FBAM 3 House"
+    ],
+    "Edelgard": [
+      "ไอเดลการ์ด",
+      "ไอเดกการ",
+      "ซึดเร"
+    ],
+    "Fódlan": [
+      "โฟรันเนส"
     ],
     "Fireteam Elite": [
       "Elิteีม"
@@ -2854,7 +2894,9 @@
       "กาเว่รบเสา"
     ],
     "Kawakami Gensai": [
-      "คามิเกนไซ"
+      "คามิเกนไซ",
+      "กิเกนไซต้า",
+      "เกนไซต้า"
     ],
     "Kekkaishi": [
       "เคคชิ"
@@ -3061,7 +3103,8 @@
       "lนมาร์ค"
     ],
     "Lantern": [
-      "lนเทิร์น"
+      "lนเทิร์น",
+      "Lนติ"
     ],
     "Lanterns": [
       "ตัวRนต",
@@ -3136,7 +3179,8 @@
       "ไnoวล"
     ],
     "Limbus": [
-      "บLimbus"
+      "บLimbus",
+      "imbบู"
     ],
     "Limbus Company": [
       "ริมimบาสเก้าอี้",
@@ -3223,9 +3267,6 @@
     "Lord Ravager": [
       "หลอดrวนจอร์",
       "หลอดrวนอร"
-    ],
-    "Lost Soul Aside": [
-      "โซต"
     ],
     "Lost Technology": [
       "Los Teทคology"
@@ -4002,6 +4043,9 @@
     "Perfect": [
       "เพfect"
     ],
+    "perfect": [
+      "เพเfค"
+    ],
     "perfection": [
       "พีฟิชion"
     ],
@@ -4211,7 +4255,8 @@
       "prชureมา"
     ],
     "Pretender": [
-      "พีender"
+      "พีender",
+      "พนer"
     ],
     "Priestess": [
       "พซess"
@@ -5678,7 +5723,10 @@
       "ไทฟon"
     ],
     "U-Olga Marie": [
-      "อ้ายูอu"
+      "อ้ายูอu",
+      "ออก้ามารี่",
+      "อรอก้ามารี่",
+      "อ้ามารี่"
     ],
     "UEFA Champions League": [
       "ยูฟAPokémon Championsสลีก"
@@ -5778,7 +5826,9 @@
       "Valนซีย"
     ],
     "Valor Mortis": [
-      "เorer Mortis"
+      "เorer Mortis",
+      "verer mortis",
+      "Verer Mortis"
     ],
     "Vampire": [
       "แวampไพ"
@@ -5877,6 +5927,11 @@
     "Waifu": [
       "Wฟู"
     ],
+    "Walpurgis Night": [
+      "perkish",
+      "bergis",
+      "perกิ"
+    ],
     "Warden": [
       "wดen"
     ],
@@ -5888,6 +5943,9 @@
     ],
     "watashi wa taikoku no": [
       "วตาชingาไทโกเนาะ"
+    ],
+    "Water": [
+      "Waterตอ"
     ],
     "Webcam": [
       "ไมเว็บแcม",
@@ -7207,13 +7265,6 @@
     "เชนซอแมน (Chainsaw Man)": [
       "เนซman"
     ],
-    "เชพเพิร์ด ซอมเมอร์ส": [
-      "เชียบเปิดซมมือ",
-      "ซัมเมา",
-      "ซมมือ",
-      "ซเมอน",
-      "ซัมเม"
-    ],
     "เซนโนะ ริคิว (Sen no Rikyu)": [
       "เซนูคิ"
     ],
@@ -7771,6 +7822,49 @@
     ],
     "ไฮป์ Bleach": [
       "ไฮบriิด"
+    ],
+    "Fallen Village": [
+      "Foren Village"
+    ],
+    "Blunderbuss": [
+      "Butter Blun"
+    ],
+    "Nephtoglobin Vial": [
+      "Net Gold Vial"
+    ],
+    "Ferrofluid Flask": [
+      "Empty Fluid Flash"
+    ],
+    "Slaughtermill": [
+      "slotter meal"
+    ],
+    "Buster Brave Chain": [
+      "Butter Brave Chain",
+      "Butter Brave Change"
+    ],
+    "Command Code": [
+      "Common Code",
+      "คมาโค้ด",
+      "คมโค้ด"
+    ],
+    "Shizuki Soujuurou": [
+      "ชูจิโร่",
+      "ชูชูโร่",
+      "โชูโร่"
+    ],
+    "Typhon Ephemeros": [
+      "ไอออน เอเมอร์ซอส",
+      "ไอon eemeros"
+    ],
+    "ด่าน 1-1-1": [
+      "ด่าน 111"
+    ],
+    "เซอร์แวนท์ชาย": [
+      "เซเว่นชาย",
+      "เซเวนชาย"
+    ],
+    "Biblically Accurate Angel": [
+      "Biblic Accurate Angel"
     ]
   }
 }

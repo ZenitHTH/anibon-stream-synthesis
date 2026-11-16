@@ -55,6 +55,221 @@
       "domain": "fgo",
       "class": "Alter Ego"
     },
+    "เอิร์ด": {
+      "en": "Urdr",
+      "th": "เอิร์ด",
+      "domain": "fgo",
+      "class": "Archer"
+    },
+    "อูลูร์": {
+      "en": "Urdr",
+      "th": "เอิร์ด / อูลูร์",
+      "domain": "fgo",
+      "class": "Archer"
+    },
+    "อัสคาลาพอส": {
+      "en": "Ascalaphus",
+      "th": "อัสคาลาพอส",
+      "domain": "fgo",
+      "class": "Alter Ego"
+    },
+    "เกรย์ ลิลี่": {
+      "en": "Gray Lily",
+      "th": "เกรย์ ลิลี่",
+      "domain": "fgo",
+      "class": "Saber / Lancer"
+    },
+    "อัซราเอล": {
+      "en": "Hassan-i Sabbah (Azrael)",
+      "th": "อัซราเอล",
+      "domain": "fgo",
+      "class": "Assassin"
+    },
+    "เบนิเอ็นมะ": {
+      "en": "Beni-Enma",
+      "th": "เบนิเอ็นมะ",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "คิงโพรเทีย": {
+      "en": "Kingprotea",
+      "th": "คิงโพรเทีย",
+      "domain": "fgo",
+      "class": "MoonCancer"
+    },
+    "คิงโพรเทีย ออลเตอร์": {
+      "en": "Kingprotea Alter",
+      "th": "คิงโพรเทีย ออลเตอร์",
+      "domain": "fgo",
+      "class": "Avenger"
+    },
+    "บิชโชเนะ": {
+      "en": "Biscione",
+      "th": "บิชโชเนะ",
+      "domain": "fgo",
+      "class": "Caster"
+    },
+    "ฮาเบทร็อต": {
+      "en": "Habetrot",
+      "th": "ฮาเบทร็อต",
+      "domain": "fgo",
+      "class": "Pretender"
+    },
+    "ฮาเบะเนียน": {
+      "en": "Habetrot",
+      "th": "ฮาเบทร็อต",
+      "domain": "fgo",
+      "class": "Pretender"
+    },
+    "ซัมเมอร์ ลิลิธ": {
+      "en": "Lilith (Summer)",
+      "th": "ลิลิธ ซัมเมอร์",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "ลิลิธ ไรเดอร์": {
+      "en": "Lilith (Rider)",
+      "th": "ลิลิธ ไรเดอร์",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "โอโนะ โนะ โคมาจิ": {
+      "en": "Ono-no-Komachi",
+      "th": "โอโนะ โนะ โคมาจิ",
+      "domain": "fgo",
+      "class": "Archer"
+    },
+    "ไดดาลอส": {
+      "en": "Daedalus",
+      "th": "ไดดาลอส",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "ทามาโมะ อาเรีย": {
+      "en": "Tamamo Aria",
+      "th": "ทามาโมะ อาเรีย",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "ทามาโมะอาเรีย": {
+      "en": "Tamamo Aria",
+      "th": "ทามาโมะ อาเรีย",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "ฮิมิโกะ": {
+      "en": "Himiko",
+      "th": "ฮิมิโกะ",
+      "domain": "fgo",
+      "class": "Ruler / Pretender"
+    },
+    "อิโยะ": {
+      "en": "Iyo",
+      "th": "อิโยะ",
+      "domain": "fgo",
+      "class": "Ruler / Pretender"
+    },
+    "ฮิมิโกะ อิโยะ": {
+      "en": "Himiko and Iyo",
+      "th": "ฮิมิโกะ และ อิโยะ",
+      "domain": "fgo",
+      "class": "Pretender"
+    },
+    "ฮิมิโกะ และ อิโยะ": {
+      "en": "Himiko and Iyo",
+      "th": "ฮิมิโกะ และ อิโยะ",
+      "domain": "fgo",
+      "class": "Pretender"
+    },
+    "ไซกะ มาโกอิจิ": {
+      "en": "Saika Magoichi",
+      "th": "ไซกะ มาโกอิจิ",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "มาโกอิจิ": {
+      "en": "Saika Magoichi",
+      "th": "ไซกะ มาโกอิจิ",
+      "domain": "fgo",
+      "class": "Rider"
+    },
+    "มัตสึนางะ": {
+      "en": "Matsunaga Hisahide",
+      "th": "มัตสึนางะ ฮิซาฮิเดะ",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "มัตสึนางะ ฮิซาฮิเดะ": {
+      "en": "Matsunaga Hisahide",
+      "th": "มัตสึนางะ ฮิซาฮิเดะ",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "มัตสึนางะ ดันโจ": {
+      "en": "Matsunaga Danjo",
+      "th": "มัตสึนางะ ดันโจ",
+      "domain": "fgo",
+      "class": "Berserker"
+    },
+    "ทาคาสุงิ": {
+      "en": "Takasugi Shinsaku",
+      "th": "ทาคาสุงิ ชินซากุ",
+      "domain": "fgo",
+      "class": "Archer"
+    },
+    "ทาคาสุงิ ชินซากุ": {
+      "en": "Takasugi Shinsaku",
+      "th": "ทาคาสุงิ ชินซากุ",
+      "domain": "fgo",
+      "class": "Archer"
+    },
+    "คาชิน โคจิ": {
+      "en": "Kashin Koji",
+      "th": "คาชิน โคจิ",
+      "domain": "fgo",
+      "class": "Assassin"
+    },
+    "มิยาโมโตะ มูซาชิ": {
+      "en": "Miyamoto Musashi",
+      "th": "มิยาโมโตะ มูซาชิ",
+      "domain": "fgo",
+      "class": "Saber"
+    },
+    "ปูนิปูนิ": {
+      "en": "GUDAGUDA Puni-Puni Wars",
+      "th": "กุดากุดะ ปูนิปูนิ วอร์ส",
+      "domain": "fgo"
+    },
+    "พูนิพูนิ": {
+      "en": "GUDAGUDA Puni-Puni Wars",
+      "th": "กุดากุดะ ปูนิปูนิ วอร์ส",
+      "domain": "fgo"
+    },
+    "ปูนิปูนิ วอร์ส": {
+      "en": "GUDAGUDA Puni-Puni Wars",
+      "th": "กุดากุดะ ปูนิปูนิ วอร์ส",
+      "domain": "fgo"
+    },
+    "กุดากุดะ": {
+      "en": "GUDAGUDA",
+      "th": "กุดากุดะ",
+      "domain": "fgo"
+    },
+    "พาสต์ คาลเดีย": {
+      "en": "Past Chaldea",
+      "th": "พาสต์ คาลเดีย",
+      "domain": "fgo"
+    },
+    "แกรนด์ ซับสติทิวท์": {
+      "en": "Grand Substitute Battle",
+      "th": "แกรนด์ ซับสติทิวท์",
+      "domain": "fgo"
+    },
+    "บอนด์ 16": {
+      "en": "Bond 16",
+      "th": "บอนด์ 16",
+      "domain": "fgo"
+    },
     "multiblood": {
       "en": "Melty Blood: Type Lumina",
       "domain": "typemoon"
@@ -2205,6 +2420,314 @@
       "en": "IMDb",
       "th": "IMDb",
       "domain": "indian_cinema"
+    },
+    "โกลเด้น จอยสติ๊ก": {
+      "en": "Golden Joystick Awards 2026",
+      "domain": "awards"
+    },
+    "โกลเดนจอยสติ๊ก": {
+      "en": "Golden Joystick Awards 2026",
+      "domain": "awards"
+    },
+    "เรซิเดนต์ อีวิล รีเควียม": {
+      "en": "Resident Evil Requiem",
+      "domain": "awards"
+    },
+    "เมคช่า คาเมเลียน": {
+      "en": "Meccha Chameleon",
+      "domain": "awards"
+    },
+    "เม็ตช่า คาเมเลียน": {
+      "en": "Meccha Chameleon",
+      "domain": "awards"
+    },
+    "คริมสัน เดสเสิร์ต": {
+      "en": "Crimson Desert",
+      "domain": "awards"
+    },
+    "ดิสแพตช์": {
+      "en": "Dispatch",
+      "domain": "awards"
+    },
+    "โอนิมูฉะ": {
+      "en": "Onimusha: Way of the Sword",
+      "domain": "awards"
+    },
+    "คอนโทรล เรโซแนนท์": {
+      "en": "Control Resonant",
+      "domain": "awards"
+    },
+    "ซับนอติกา 2": {
+      "en": "Subnautica 2",
+      "domain": "awards"
+    },
+    "ปรากมาตา": {
+      "en": "Pragmata",
+      "domain": "awards"
+    },
+    "เดอะ วิทเชอร์ 4": {
+      "en": "The Witcher 4",
+      "domain": "awards"
+    },
+    "บิ๊ก วอล์ก": {
+      "en": "Big Walk",
+      "domain": "awards"
+    },
+    "ไอรอน ลัง": {
+      "en": "Iron Lung",
+      "domain": "awards"
+    },
+    "โปโคเปีย": {
+      "en": "Pokémon Pokopia",
+      "domain": "awards"
+    },
+    "ดอนออฟฟิศ": {
+      "en": "Dawn Office",
+      "domain": "limbus"
+    },
+    "สติกม่าเวิร์คช็อป": {
+      "en": "Stigma Workshop",
+      "domain": "limbus"
+    },
+    "มังคุด": {
+      "en": "Malkuth",
+      "domain": "limbus"
+    },
+    "ซัลวาดอร์": {
+      "en": "Salvador",
+      "domain": "limbus"
+    },
+    "ออสการ์": {
+      "en": "Oscar",
+      "domain": "limbus"
+    },
+    "เฟาสต์": {
+      "en": "Faust",
+      "domain": "limbus"
+    },
+    "อูทิส": {
+      "en": "Outis",
+      "domain": "limbus"
+    },
+    "โอติส": {
+      "en": "Outis",
+      "domain": "limbus"
+    },
+    "ซินแคลร์": {
+      "en": "Sinclair",
+      "domain": "limbus"
+    },
+    "เกอเซลชาฟท์": {
+      "en": "Gesellschaft",
+      "domain": "limbus"
+    },
+    "ไทม์คิลลิ่งไทม์": {
+      "en": "Timekilling Time",
+      "domain": "limbus"
+    },
+    "บ๊อกกัง": {
+      "en": "BokGak",
+      "domain": "limbus"
+    },
+    "เคียรี่วอเตอร์": {
+      "en": "Clear Mirror, Calm Water",
+      "domain": "limbus"
+    },
+    "เบเลธ": {
+      "en": "Byleth",
+      "domain": "fire_emblem"
+    },
+    "ไบเลธ": {
+      "en": "Byleth",
+      "domain": "fire_emblem"
+    },
+    "โซธิส": {
+      "en": "Sothis",
+      "domain": "fire_emblem"
+    },
+    "เจราลท์": {
+      "en": "Jeralt",
+      "domain": "fire_emblem"
+    },
+    "เรอา": {
+      "en": "Rhea",
+      "domain": "fire_emblem"
+    },
+    "เซเทธ": {
+      "en": "Seteth",
+      "domain": "fire_emblem"
+    },
+    "เฟลน": {
+      "en": "Flayn",
+      "domain": "fire_emblem"
+    },
+    "เอเดลการ์ด": {
+      "en": "Edelgard",
+      "domain": "fire_emblem"
+    },
+    "ซึดเร": {
+      "en": "Edelgard",
+      "domain": "fire_emblem"
+    },
+    "ดิมิทรี": {
+      "en": "Dimitri",
+      "domain": "fire_emblem"
+    },
+    "คลอด วอน รีแกน": {
+      "en": "Claude von Riegan",
+      "domain": "fire_emblem"
+    },
+    "ดีดู": {
+      "en": "Dedue",
+      "domain": "fire_emblem"
+    },
+    "เฟลิกซ์": {
+      "en": "Felix",
+      "domain": "fire_emblem"
+    },
+    "เมอร์เซเดส": {
+      "en": "Mercedes",
+      "domain": "fire_emblem"
+    },
+    "แอนเน็ต": {
+      "en": "Annette",
+      "domain": "fire_emblem"
+    },
+    "ซิลแว็ง": {
+      "en": "Sylvain",
+      "domain": "fire_emblem"
+    },
+    "อาเชนะ": {
+      "en": "Ashe",
+      "domain": "fire_emblem"
+    },
+    "ดอโรเธีย": {
+      "en": "Dorothea",
+      "domain": "fire_emblem"
+    },
+    "เฟอร์ดินานด์": {
+      "en": "Ferdinand",
+      "domain": "fire_emblem"
+    },
+    "เบิร์นนาเดตต้า": {
+      "en": "Bernadetta",
+      "domain": "fire_emblem"
+    },
+    "ลิซิเทีย": {
+      "en": "Lysithea",
+      "domain": "fire_emblem"
+    },
+    "ซิเทีย": {
+      "en": "Lysithea",
+      "domain": "fire_emblem"
+    },
+    "มาริแอนน์": {
+      "en": "Marianne",
+      "domain": "fire_emblem"
+    },
+    "ฮิลดา": {
+      "en": "Hilda",
+      "domain": "fire_emblem"
+    },
+    "ลอเรนซ์": {
+      "en": "Lorenz",
+      "domain": "fire_emblem"
+    },
+    "อิกนาตซ์": {
+      "en": "Ignatz",
+      "domain": "fire_emblem"
+    },
+    "ลีโอนี": {
+      "en": "Leonie",
+      "domain": "fire_emblem"
+    },
+    "เจริตซา": {
+      "en": "Jeritza",
+      "domain": "fire_emblem"
+    },
+    "มานูเอลา": {
+      "en": "Manuela",
+      "domain": "fire_emblem"
+    },
+    "โฟดลัน": {
+      "en": "Fódlan",
+      "domain": "fire_emblem"
+    },
+    "โฟรันเนส": {
+      "en": "Fódlan",
+      "domain": "fire_emblem"
+    },
+    "การ์เร็ก มัค": {
+      "en": "Garreg Mach Monastery",
+      "domain": "fire_emblem"
+    },
+    "การักมัค": {
+      "en": "Garreg Mach Monastery",
+      "domain": "fire_emblem"
+    },
+    "แฟร์กัส": {
+      "en": "Holy Kingdom of Faerghus",
+      "domain": "fire_emblem"
+    },
+    "แอดเรสเทีย": {
+      "en": "Adrestian Empire",
+      "domain": "fire_emblem"
+    },
+    "กวางทอง": {
+      "en": "Golden Deer",
+      "domain": "fire_emblem"
+    },
+    "สิงโตน้ำเงิน": {
+      "en": "Blue Lions",
+      "domain": "fire_emblem"
+    },
+    "อินทรีดำ": {
+      "en": "Black Eagles",
+      "domain": "fire_emblem"
+    },
+    "หมาป่าเถ้า": {
+      "en": "Ashen Wolves",
+      "domain": "fire_emblem"
+    },
+    "ฟอร์จูนส์ วีฟ": {
+      "en": "Fire Emblem: Fortune's Weave",
+      "domain": "fire_emblem"
+    },
+    "เอชเมล": {
+      "en": "Eshmel",
+      "domain": "fire_emblem"
+    },
+    "ดีทริช": {
+      "en": "Dietrich",
+      "domain": "fire_emblem"
+    },
+    "ธีโอโดรา": {
+      "en": "Theodora",
+      "domain": "fire_emblem"
+    },
+    "ดักดา": {
+      "en": "Dagda",
+      "domain": "fire_emblem"
+    },
+    "ดักเซียน": {
+      "en": "Dagsion",
+      "domain": "fire_emblem"
+    },
+    "ซารามิส": {
+      "en": "Saramis",
+      "domain": "fire_emblem"
+    },
+    "บาลอร์": {
+      "en": "Balor",
+      "domain": "fire_emblem"
+    },
+    "ฟอร์ทูนา": {
+      "en": "Fortuna",
+      "domain": "fire_emblem"
+    },
+    "ฮีโรอิกเกมส์": {
+      "en": "Heroic Games",
+      "domain": "fire_emblem"
     }
   }
 }

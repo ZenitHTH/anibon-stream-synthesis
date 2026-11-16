@@ -12,8 +12,12 @@ Game reference files live alongside this index in `references/`.
 - [Deadlock Reference](Deadlock.md)
 - [Dinoblade Reference](Dinoblade.md)
 - [Eternal Return Reference](Eternal_Return.md)
+- [Fate/Grand Order Reference](Fate_Grand_Order.md)
+- [Fire Emblem: Fortune's Weave Reference](Fire_Emblem_Fortunes_Weave.md)
+- [Fire Emblem: Three Houses Reference](Fire_Emblem_Three_Houses.md)
 - [Genshin Impact Reference](Genshin_Impact.md)
 - [Godzilla Minus Zero & Godzilla Reference](Godzilla_Minus_Zero.md)
+- [Golden Joystick Awards 2026 Reference](Golden_Joystick_Awards_2026.md)
 - [Indian Cinema & Ramayana (2026) Reference](Ramayana_Indian_Cinema.md)
 - [Goddess of Victory: Nikke Reference](Nikke.md)
 - [Heartopia Reference](Heartopia.md)
@@ -37,10 +41,11 @@ Game reference files live alongside this index in `references/`.
 - [miHoYo Connected Lore Reference](miHoYo_Connected_Lore.md)
 - [The Legend of Zelda: Breath of the Wild Reference](Zelda_Breath_of_the_Wild.md)
 - [The Great Villainess: Strategy of Lily (เผด็จการยูริ) Reference](The_Great_Villainess_Strategy_of_Lily.md)
+- [Valor Mortis Reference](Valor_Mortis.md)
 
 - [Channel Crew, Co-Hosts & Film News Reference](../../../references/stream/channel-and-news-knowledge.md)
 
 ## Database-backed Games
 
-- **Fate/Grand Order**: SQLite DB at `skills/reference/FGO and DATA/atlas_fgo.db` (query guide: `references/stream/fgo-knowledge.md` in `anibon-timestamper`)
+- **Fate/Grand Order**: Markdown chronology & entity glossary at [`Fate_Grand_Order.md`](Fate_Grand_Order.md); SQLite DB at `skills/reference/FGO and DATA/atlas_fgo.db` (deep mechanics: [`FGO and DATA/fgo_knowledge_base.md`](FGO%20and%20DATA/fgo_knowledge_base.md); query & naming guide: [`../../../references/stream/fgo-knowledge.md`](../../../references/stream/fgo-knowledge.md))
 - **Yu-Gi-Oh!**: SQLite DB at `skills/reference/Yu-Gi-Oh DATA/ygo_cards.db`

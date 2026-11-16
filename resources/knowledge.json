@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "updated": "2026-11-11",
+  "updated": "2026-11-13",
   "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
   "entries": {
+    "007 first light": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "1 in 8 billion": {
       "kind": "game",
       "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
@@ -10,6 +14,22 @@
     "1 ชีวิต ณ กรุงศรี": {
       "kind": "game",
       "file": "../anibon-world-identity/references/One_in_8_Billion_Life_Sim.md"
+    },
+    "100 million downloads": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "100m dl": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "35 million downloads": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "35m dl": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "4th anniversary": {
       "kind": "game",
@@ -59,6 +79,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
     },
+    "alix wilton regan": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "alyosha": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
@@ -70,6 +94,10 @@
     "anastasya": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "angela sant'albano": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "angelina the mellow wish": {
       "kind": "game",
@@ -107,9 +135,21 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
     },
+    "ascalaphus": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "ashveil": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "azrael": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "azrael's temple": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "azur promilia": {
       "kind": "game",
@@ -122,6 +162,10 @@
     "baahubali": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "balatro": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "bales": {
       "kind": "boss",
@@ -147,9 +191,21 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
     },
+    "beni-enma": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "bi taotao": {
       "kind": "character",
       "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "big walk": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "biscione": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "black survival": {
       "kind": "game",
@@ -182,6 +238,10 @@
     "bollywood": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "bond 16": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "book expo": {
       "kind": "event",
@@ -243,6 +303,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
     },
+    "chaldea academy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "chaos zero": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
@@ -291,9 +355,17 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights_Endfield.md"
     },
+    "control resonant": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "craver": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Eternal_Return.md"
+    },
+    "crimson desert": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "crown": {
       "kind": "game",
@@ -306,6 +378,10 @@
     "czn": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
+    },
+    "daedalus": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "danica": {
       "kind": "game",
@@ -371,6 +447,10 @@
       "kind": "stream_type",
       "file": "references/stream/talk-stream.md"
     },
+    "dispatch": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "divine skull of indulgence": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
@@ -391,6 +471,10 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
     },
+    "doomsday archer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "doorman": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Deadlock.md"
@@ -410,6 +494,10 @@
     "drake: great villain": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "dramalogue": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "dress ako": {
       "kind": "game",
@@ -438,6 +526,14 @@
     "endministrator": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "ephemeral waxing moon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "escape from tarkov": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "esperanta": {
       "kind": "game",
@@ -483,6 +579,10 @@
       "kind": "game",
       "file": "references/stream/fgo-knowledge.md"
     },
+    "fgo the dramalogue": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "first page pro": {
       "kind": "publisher",
       "file": "../anibon-world-identity/references/Thai_Book_Fair_Convention.md"
@@ -498,6 +598,14 @@
     "flint workshop": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "forza horizon 6": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "fou 3000": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "fukashigi": {
       "kind": "tokusatsu",
@@ -579,6 +687,18 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
     },
+    "golden joystick": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "golden joystick 2026": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "golden joystick awards": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "gotchard": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
@@ -586,6 +706,10 @@
     "gozyuger": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "grace saif": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "grand magasin sisyphe": {
       "kind": "game",
@@ -607,17 +731,45 @@
       "kind": "game",
       "file": "references/stream/fgo-knowledge.md"
     },
+    "grand substitute battle": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "grave": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "gray lily": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "gt trinity": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
     },
+    "gudaguda": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "gudaguda puni puni wars": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "gudaguda puni-puni wars": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "guilty: mighty bunny": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "gunma singularity": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "habetrot": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "hanabi exiled": {
       "kind": "game",
@@ -626,6 +778,10 @@
     "hanuman": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "hassan-i sabbah": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "heartopia": {
       "kind": "game",
@@ -654,6 +810,18 @@
     "himeko nova": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
+    },
+    "himiko": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "himiko & iyo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "himiko and iyo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "hokma": {
       "kind": "game",
@@ -731,6 +899,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
     },
+    "iron lung": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "is5": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
@@ -738,6 +910,10 @@
     "is6": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "iyo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "james gunn": {
       "kind": "topic",
@@ -799,6 +975,10 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
     },
+    "kashin koji": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "katja": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Eternal_Return.md"
@@ -822,6 +1002,14 @@
     "king-ohger": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "kingprotea": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "kingprotea alter": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "kinokuniya": {
       "kind": "bookstore",
@@ -903,6 +1091,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Wuthering_Waves.md"
     },
+    "lilith rider": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "limbus": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
@@ -947,6 +1139,10 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
     },
+    "majimun island": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "malkuth": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
@@ -987,6 +1183,18 @@
       "_snippet": "Look up Marvel or marvel in Wiktionary, the free dictionary. Marvel may refer to: Marvel Entertainment, an American entertainment company Marvel Comic",
       "_added": "2026-07-27T09:08:06"
     },
+    "matsunaga danjo": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "matsunaga hisahide": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "meccha chameleon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "mechagodzilla": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
@@ -998,6 +1206,10 @@
     "meursault": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "mewgenics": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "mi fu": {
       "kind": "game",
@@ -1014,6 +1226,10 @@
     "mitya": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "miyamoto musashi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "modernia": {
       "kind": "game",
@@ -1075,6 +1291,10 @@
       "kind": "topic",
       "file": "references/stream/channel-and-news-knowledge.md"
     },
+    "nioh 3": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "nippon haku": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Japan_Event_Convention.md"
@@ -1107,6 +1327,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
     },
+    "okita souji alter": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "old tales": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
@@ -1123,6 +1347,22 @@
       "kind": "anime",
       "file": null,
       "_note": "S1=Madhouse, S2=JC Staff, S3=JC Staff. MAPPA rumor via @shonenleaks Dec 2022, debunked Feb 2024. Used by Boat as example of wild anime-leak speculation."
+    },
+    "one second after time": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "onimusha": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "onimusha: way of the sword": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "ono-no-komachi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "over zone": {
       "kind": "game",
@@ -1143,6 +1383,10 @@
     "parrying extinction": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Dinoblade.md"
+    },
+    "past chaldea": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "patch": {
       "kind": "stream_type",
@@ -1212,9 +1456,29 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Pokemon_PvP.md"
     },
+    "pokemon pokopia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "pokopia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "pokémon": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Pokemon_PvP.md"
+    },
+    "pragmata": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
+    "pumpkin farm slaughter": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "puni-puni wars": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "purrchena": {
       "kind": "game",
@@ -1324,6 +1588,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
     },
+    "resident evil requiem": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "revice": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
@@ -1360,6 +1628,18 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
     },
+    "saika magoichi": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "saito hajime": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "samurai remnant": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "sanctuary of ink": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights_Endfield.md"
@@ -1375,6 +1655,10 @@
     "sarkaz's furnaceside fables": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
+    },
+    "saros": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "scarlet": {
       "kind": "game",
@@ -1533,6 +1817,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
     },
+    "steam controller": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "stellar conduct": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
@@ -1561,6 +1849,10 @@
       "kind": "stream_type",
       "file": "references/stream/marathon-stream.md"
     },
+    "subnautica 2": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "sui's garden of grotesqueries": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
@@ -1568,6 +1860,10 @@
     "suisui": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Wuthering_Waves.md"
+    },
+    "summer lilith": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "sunbringer": {
       "kind": "game",
@@ -1605,6 +1901,10 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
     },
+    "takasugi shinsaku": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "talk": {
       "kind": "stream_type",
       "file": "references/stream/talk-stream.md"
@@ -1620,6 +1920,10 @@
     "tamamo": {
       "kind": "game",
       "file": "references/stream/fgo-knowledge.md"
+    },
+    "tamamo aria": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "tamamo no mae": {
       "kind": "game",
@@ -1645,6 +1949,14 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Thailand_Game_Show_2026.md"
     },
+    "the beginning of after time": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "the blood of dawnwalker": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "the broker": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Deadlock.md"
@@ -1656,6 +1968,10 @@
     "the sword sharpened with tears": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "the witcher 4": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "theater g-rosso": {
       "kind": "tokusatsu",
@@ -1701,6 +2017,10 @@
       "kind": "anime",
       "file": "../anibon-world-identity/references/Bleach.md"
     },
+    "ultimate game of the year": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "ultraman": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
@@ -1729,6 +2049,14 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
     },
+    "urdr": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "urðr": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "uwufufu": {
       "kind": "domain",
       "file": "references/stream/uwufufu-knowledge.md"
@@ -1736,6 +2064,10 @@
     "valeriy": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "valheim": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "valmiki": {
       "kind": "event",
@@ -1797,6 +2129,10 @@
       "kind": "anime",
       "file": "../anibon-world-identity/references/Bleach.md"
     },
+    "waxing moon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "wedge office": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
@@ -1816,6 +2152,10 @@
     "wingspan peak": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "witcher 4": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "work": {
       "kind": "domain",
@@ -1953,6 +2293,10 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
     },
+    "กุดากุดะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "กุรุเกษตร": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
@@ -2036,6 +2380,10 @@
     "คิงกิโดราห์": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "คิงโพรเทีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "คิงโอเจอร์": {
       "kind": "tokusatsu",
@@ -2124,6 +2472,10 @@
     "ซันบริงเกอร์": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Zenless_Zone_Zero.md"
+    },
+    "ซัมเมอร์ ลิลิธ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "ซั่วหมิง": {
       "kind": "game",
@@ -2237,6 +2589,14 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
     },
+    "ทาคาสุงิ ชินซากุ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "ทามาโมะ อาเรีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "ทารูล่า": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
@@ -2289,6 +2649,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
     },
+    "บอนด์ 16": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "บอลลีวูด": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
@@ -2308,6 +2672,10 @@
     "บาเลส": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
+    },
+    "บิชโชเนะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "บุมบุมเจอร์": {
       "kind": "tokusatsu",
@@ -2341,6 +2709,10 @@
       "kind": "character",
       "file": "../anibon-world-identity/references/Phantom_Blade_Zero.md"
     },
+    "ปูนิปูนิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "ปูมูน": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
@@ -2372,6 +2744,10 @@
     "พาลกัณฑ์": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "พาสต์ คาลเดีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "พาเที่ยว": {
       "kind": "stream_type",
@@ -2405,6 +2781,18 @@
       "kind": "anime",
       "file": "references/stream/phuboat-anime-talking-style.md"
     },
+    "มัตสึนางะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "มัตสึนางะ ดันโจ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "มัตสึนางะ ฮิซาฮิเดะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "มาสค์ไรเดอร์": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
@@ -2420,6 +2808,10 @@
     "มิตยา": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Genshin_Impact.md"
+    },
+    "มิยาโมโตะ มูซาชิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "มือธนูแดง": {
       "kind": "game",
@@ -2508,6 +2900,10 @@
     "ลิมบัส": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ลิลิธ ไรเดอร์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "ลีโน่": {
       "kind": "game",
@@ -2685,6 +3081,14 @@
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
     },
+    "อัซราเอล": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "อัสคาลาพอส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "อาซึสะ เรซซิ่ง": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
@@ -2712,6 +3116,10 @@
     "อาเจนต์โฟลว์": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "อิโยะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "อีเวนท์": {
       "kind": "stream_type",
@@ -2749,6 +3157,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Heartopia.md"
     },
+    "ฮาเบทร็อต": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "ฮาโทเปีย": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Heartopia.md"
@@ -2756,6 +3168,10 @@
     "ฮิฟุมิ เรซซิ่ง": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
+    },
+    "ฮิมิโกะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "ฮิลเดอ": {
       "kind": "game",
@@ -2772,6 +3188,10 @@
     "เกรฟ": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Nikke.md"
+    },
+    "เกรย์ ลิลี่": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "เข็มขัดแปลงร่าง": {
       "kind": "tokusatsu",
@@ -2893,6 +3313,10 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Blue_Archive.md"
     },
+    "เบนิเอ็นมะ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "เบลซเบลล์": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Chaos_Zero_Nightmare.md"
@@ -2912,6 +3336,10 @@
     "เมก้าก็อตซิลล่า": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
+    },
+    "เมคช่า คาเมเลียน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
     },
     "เมตาตรอน": {
       "kind": "game",
@@ -2957,9 +3385,17 @@
       "kind": "game",
       "file": "../anibon-world-identity/references/Honkai_Star_Rail.md"
     },
+    "เอิร์ด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "เฮนชิน": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
+    },
+    "แกรนด์ ซับสติทิวท์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "แดนหิมะ": {
       "kind": "location",
@@ -3005,6 +3441,10 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Godzilla_Minus_Zero.md"
     },
+    "โกลเด้น จอยสติ๊ก": {
+      "kind": "event",
+      "file": "../anibon-world-identity/references/Golden_Joystick_Awards_2026.md"
+    },
     "โทคุ": {
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
@@ -3041,6 +3481,10 @@
       "kind": "tokusatsu",
       "file": "../anibon-world-identity/references/Tokusatsu_Project_RED.md"
     },
+    "โอโนะ โนะ โคมาจิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
     "โฮชิเกราะเวท": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Arknights.md"
@@ -3056,6 +3500,14 @@
     "ไซ ปัลลาวี": {
       "kind": "event",
       "file": "../anibon-world-identity/references/Ramayana_Indian_Cinema.md"
+    },
+    "ไซกะ มาโกอิจิ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
+    },
+    "ไดดาลอส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fate_Grand_Order.md"
     },
     "ไดโนเบลด": {
       "kind": "game",
@@ -3092,6 +3544,402 @@
     "心动小镇": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Heartopia.md"
+    },
+    "bokgak": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "clear mirror, calm water": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "crack of dawn": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "dawn office": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "dawn office fixer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "faust": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "fire butterfly coffin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "floor of history": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "gesellschaft": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "mirror dungeon": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "salvador": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "stigma workshop": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "timekilling time": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "wedge office rep. outis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ดงกระจก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ดันเจี้ยนกระจก": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "มังคุด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "มัลคุธ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "ริ้วฉู": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "เรียวชู": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "อิชมาเอล": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "เฟาสต์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Limbus_Company.md"
+    },
+    "valor mortis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "valormortis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "verer mortis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "v mortis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "general lothaire": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "lothaire": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "iron marshall": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "nephtoglobin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "ferrofluid": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "william dowsett": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "slaughtermill": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "high justicar aurelius": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "eternal guardsman": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "louis's laboratoire": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "grande armée": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Valor_Mortis.md"
+    },
+    "fire emblem": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "three houses": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "tree house": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "byleth": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เบเลธ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "โซธิส": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เอเดลการ์ด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "ดิมิทรี": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "claude von riegan": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "บ้านกวางทอง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "กวางทอง": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "golden deer": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "บ้านสิงโตน้ำเงิน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "สิงโตน้ำเงิน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "blue lions": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "บ้านอินทรีดำ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "อินทรีดำ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "บ้านอินทรีย์ดำ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "อินทรีย์ดำ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "black eagles": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "ashen wolves": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "cindered shadows": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "garreg mach": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "การักมัค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "การ์เร็ก มัค": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "fódlan": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "fodlan": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "โฟดลัน": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "edelgard": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "dimitri": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "sothis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "dedue": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "ดีดู": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "mercedes": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "dorothea": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "ดอโรเธีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "lysithea": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "ลิซิเทีย": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "felix": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เฟลิกซ์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เจราลท์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เรอา": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "เซเทธ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "jeritza": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "maddening": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "divine pulse": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "officers academy": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Three_Houses.md"
+    },
+    "fortune's weave": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "fortune weave": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "fortune vip": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "fortune weep": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "ฟอร์จูนส์ วีฟ": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "heroic games": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "ฮีโรอิกเกมส์": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "dagda": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "dagsion": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "saramis": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "eshmel": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "dietrich": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "theodora": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "flame lords": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "balor": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
     }
   },
   "_discovered": {
