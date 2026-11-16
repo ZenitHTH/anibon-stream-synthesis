@@ -34,7 +34,8 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - **Nagisa (ナギサ / นางิสะ)** — calm, scheming tea party leader, artillery support
 - **Seia (セイア / เซยะ)** — third member of Tea Party, fox-eared prophet (4th Anniv Release)
 - **Koharu (コハル / โคฮารุ)** — healer who loves violent combat, conflicted
-- **Hifumi (ヒフミ / ฮิฟุมิ)** — Peroro obsessed, can't escape warcrimes allegations (Peroro-sama)
+- **Hifumi (ヒフミ / ฮิฟุมิ)** — Peroro obsessed, can't escape warcrimes allegations (Peroro-sama). Alternate: **Racing Hifumi (ฮิฟุมิ เรซซิ่ง)** (Gehenna Cup tank racer)
+- **Azusa (アズサ / อาซึสะ)** — Supplementary Lessons Club, tactical combat specialist. Alternate: **Racing Azusa (อาซึสะ เรซซิ่ง)** (Tactical race queen support)
 - **Hanako (ハナコ / ฮานาโกะ)** — playful, lewd jokes, Swimsuit Hanako (2.5 Anniv Sonic Fest meta)
 
 **Millennium Science School:**
@@ -57,13 +58,14 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - **Haruka (ハルカ / ฮารุกะ)** — shy, heavy weaponry
 - **Iori (イオリ / อิโอริ)** — Disciplinary Committee vanguard, acrobatic sniper (Sensei licks her feet meme)
 
-**Abydos High School:**
-- **Shiroko (シロコ / ชิโรโกะ)** — sporty wolf-eared girl, bank robbery mastermind
-- **Kuroko / Shiroko Terror (クロコ / คุโรโกะ / ชิโรโกะ เทอร์เรอร์)** — 3.5 Anniv Fest, alternate world Shiroko
-- **Hoshino (ホシノ / โฮชิโนะ)** — sleepy pink-haired girl, Battle Hoshino (3.5 Anniv stance-switch meta)
-- **Serika (セリカ / เซริกะ)** — energetic cat-eared girl, works at a convenience store
-- **Nonomi (ノノミ / โนโนมิ)** — rich girl with minigun
-- **Ayane (アヤネ / อายาเนะ)** — responsible secretary type
+**Red Winter Federal Academy:**
+- **Cherino (チェリノ / เชริโน่)** — student council president with mustache obsession
+- **Marina (マリナ / มารินะ)** — head of the security committee
+- **Tomoe (トモエ / โทโมเอะ)** — student council secretary
+- **Rana (ラナ / รานะ / ฟุรุฮาตะ รานะ)** — No. 183 Special Class member, tank mechanic & tactical support (Start Your Engines!)
+
+**Wildhunt Art Academy:**
+- **Tsumugi (ツムギ / สึมุกิ / ชิอินะ สึมุกิ)** — Occult Research Society, Wildhunt Art Academy (debut Oct 2026)
 
 **Shanhaijing:**
 - **Kisaki (キサキ / คิซากิ)** — president of Xuanwu Club, shadow mastermind, 3.5 Anniv EX skill amplifier meta
@@ -100,20 +102,90 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 | V4 | RABBIT Squad | SRT closure, RABBIT squad survival |
 | V5 | Where Cherry Blooms | Red Winter, Cherino, Mina |
 | V6 | The Nightmare of Arrival | Foam and Fire, Beatrice, Kuroko |
+| V-EX | Decagrammaton Arc | Millennium (Rio, Himari, Toki, Aris, Kei) vs 10th Prophet Malkuth (Steel Continent) |
 | F | Final Chapter | End of the world, time loop, Plana |
 
 ---
 
-## 🗓️ ทำเนียบตู้และนักเรียนล่าสุด (October 2026 Roster & Banners)
+## 🗓️ ทำเนียบตู้และนักเรียนล่าสุด (November 2026 Roster & Banners)
 
-### 🌍 Global Server (ตุลาคม 2026)
-- **Kisaki (Swimsuit / คิซากิ ชุดว่ายน้ำ)** — 3★ Striker / Support ธาตุสั่นสะเทือน (Sonic) ซัพพอร์ตยอดนิยม (13 - 27 ต.ค. 2026)
-- **Shun (Swimsuit / ชุน ชุดว่ายน้ำ)** — 3★ Striker / Dealer ธาตุ Sonic ยิงทำดาเมจแรง (13 - 27 ต.ค. 2026)
-- Nexon ปรับสปีดตารางเร่งเข้าสู่การปรับปรุงระบบ Recruitment ในเดือนพฤศจิกายน
+- **Verified Real-Time Date**: 2026-11-11 (11 พฤศจิกายน 2026)
+- **Current Live Status (JP Server)**: Cycle 4 (11 – 18 พ.ย. 2026) — Event Rerun "Whose Art Is It? ~The Forged Painting and the Whereabouts of Aesthetics~" + ตู้รีรัน 3★ Miyo, 3★ Fuyu, 3★ Ritsu (Special Operations Department) / PvP Season ใหม่ Indoor / ซ้อมรบ Joint Firing Drill (Defense)
+- **Current Live Status (Global Server)**: Cycle 3 (10 – 17 พ.ย. 2026) — อัปเดตใหญ่ระบบ Recruitment Charges (ชาร์จรับสมัครสะสม 100/200 การันตี + ชาร์จยกยอดข้ามตู้ได้) + ตู้ใหม่ฉลองพรีครบรอบ Swimsuit Makoto, Swimsuit Satsuki + แจกฟรี 200 Free Recruitments
 
-### 🇯🇵 JP Server (ตุลาคม 2026)
-- **Tsumugi (สึมุกิ)** — นักเรียนใหม่เปิดตัวช่วงต้นเดือน ต.ค. 2026
-- รีรันสำคัญ: Eri, Kanoe, S.Miyako, S.Saki, Marina (Qipao), Tomoe (Qipao), Kanna, Noa
+### ตารางสรุปนักเรียนและตู้ล่าสุด (Late Oct – Nov 2026 Roster Table)
+
+| Student / Entity | Role / Class | Attribute / Faction | Release / Period | Patch Changes, Event, & Meta Details |
+|---|---|---|---|---|
+| **Racing Hifumi (ฮิฟุมิ เรซซิ่ง)** | Striker / Attacker | Explosive / Special / Trinity | 28 Oct – 11 Nov 2026 (JP) | ตู้ลิมิตเต็ดอีเวนต์ Start Your Engines! ฮิฟุมิขับรถถังลงแข่ง Gehenna Cup เพื่อสอบแก้ตัว |
+| **Racing Azusa (อาซึสะ เรซซิ่ง)** | Special / Supporter | Explosive / Special / Trinity | 28 Oct – 11 Nov 2026 (JP) | ตู้ลิมิตเต็ดอีเวนต์ Start Your Engines! ซัพพอร์ตสไตล์เรซควีนแทคติคอล เพิ่มดาเมจระเบิด |
+| **Rana (รานะ / ฟุรุฮาตะ รานะ)** | Special / Tactical Support | Explosive / Special / Red Winter | 28 Oct – 11 Nov 2026 (JP) | นักเรียนแจกฟรี (Welfare 1★) สมาชิกห้องเรียนพิเศษหมายเลข 183 ขี่รถถังซัพพอร์ต |
+| **Swimsuit Makoto (มาโคโตะ ชุดว่ายน้ำ)** | Striker / Dealer | Mystic / Heavy / Gehenna | 10 – 17 Nov 2026 (Global) | ตู้ลิมิตเต็ดฉลองพรีครบรอบ แคมเปญแจก 200 โรลฟรี ดาเมจลึกลับเป้าหมายกว้าง |
+| **Swimsuit Satsuki (ซัตสึกิ ชุดว่ายน้ำ)** | Striker / Healer | Sonic / Light / Gehenna | 10 – 17 Nov 2026 (Global) | ตู้ลิมิตเต็ดคู่ Makoto ซัพพอร์ตฮีลเลอร์ธาตุสั่นสะเทือน (Sonic) ประจำทัพ |
+| **Dress Ako (อาโกะ ชุดเดรส)** | Striker / Supporter | Explosive / Heavy / Gehenna | 3 – 10 Nov 2026 (Global) | ตู้รีรันยอดนิยมควบอีเวนต์ Conquer the Sky Capriccioso (รถไฟไฮแลนเดอร์) |
+| **Tsumugi (สึมุกิ / ชิอินะ สึมุกิ)** | Striker / Attacker | Piercing / Light / Wildhunt | 7 – 21 Oct 2026 (JP) | นักเรียนเปิดตัวใหม่จาก สถาบันศิลปะไวลด์ฮันต์ (Wildhunt) ชมรมวิจัยไสยศาสตร์ |
+| **Miyo (มิโยะ)** | Striker / Attacker | Piercing / Heavy / Unofficial | 11 – 18 Nov 2026 (JP Rerun) | รีรันตู้กลุ่ม Special Operations Department (特殊交易部) |
+| **Fuyu (ฟุยุ)** | Special / Supporter | Mystic / Special / Unofficial | 11 – 18 Nov 2026 (JP Rerun) | รีรันตู้กลุ่ม Special Operations Department (特殊交易部) |
+| **Ritsu (ริทสึ)** | Striker / Support | Explosive / Light / Unofficial | 11 – 18 Nov 2026 (JP Rerun) | รีรันตู้กลุ่ม Special Operations Department (特殊交易部) |
+
+### 🇯🇵 JP Server (พฤศจิกายน 2026 & ย้อนหลัง 3 ไซเคิล)
+
+#### 1. Cycle 1: ตู้เปิดตัว Tsumugi & รีรันกลุ่มใหญ่ (7 – 21 ต.ค. 2026)
+- **Tsumugi (สึมุกิ / ชิอินะ สึมุกิ)** — 3★ Striker / Attacker ธาตุเจาะเกราะ (Piercing / สีเหลือง) เกราะเบา (Light) สังกัดสถาบันศิลปะไวลด์ฮันต์ (Wildhunt Art Academy) ชมรมวิจัยไสยศาสตร์
+- รีรันสำคัญ: Eri, Kanoe, S.Miyako (มิยาโกะ ชุดว่ายน้ำ), S.Saki (ซากิ ชุดว่ายน้ำ)
+
+#### 2. Cycle 2: ตู้รีรันกี่เพ้า & วาลคิรี/มิลเลนเนียม (21 – 28 ต.ค. 2026)
+- ตู้รีรันประจำสัปดาห์: Marina (Qipao / มารินะ กี่เพ้า), Tomoe (Qipao / โทโมเอะ กี่เพ้า), Kanna (คันนะ หัวหน้าความปลอดภัยสาธารณะวาลคิรี), Noa (โนอา เลขาเซมินาร์)
+
+#### 3. Cycle 3: อีเวนต์ Start Your Engines! แข่งรถถัง Gehenna Cup (28 ต.ค. – 11 พ.ย. 2026)
+- **อีเวนต์หลัก**: 「Start Your Engines！ ～183号よ永遠に！～」 (Start Your Engines! ~Forever No. 183!~) — ภาคต่อของอีเวนต์ห้องเรียนพิเศษหมายเลข 183 แห่งเรดวินเทอร์ ที่ต้องลงแข่งรถถัง Gehenna Cup
+- **Racing Hifumi (ฮิฟุมิ เรซซิ่ง)** — 3★ Striker / Attacker ธาตุระเบิด (Explosive / สีแดง) เกราะพิเศษ (Special / สีฟ้า) สังกัด Trinity General School ขับรถถังหมายเลข 183 ลงแข่งเพื่อทำแต้มสอบแก้ตัว
+- **Racing Azusa (อาซึสะ เรซซิ่ง)** — 3★ Special / Supporter ธาตุระเบิด (Explosive / สีแดง) เกราะพิเศษ (Special / สีฟ้า) สังกัด Trinity General School ชุดเรซควีนแทคติคอลที่เน้นระบายความร้อน บัฟพลังโจมตีและเพิ่มดาเมจระเบิด
+- **Rana (รานะ / ฟุรุฮาตะ รานะ)** — 1★ Special / Tactical Support (T.S.) ธาตุระเบิด (Explosive / สีแดง) เกราะพิเศษ (Special / สีฟ้า) นักเรียนแจกฟรี (Welfare) สมาชิกห้องเรียนพิเศษหมายเลข 183
+- **ระบบใหม่**: Virtual Aptitude Exam BETA (仮想適性試験 BETA) — โหมดทดสอบการจัดทีมและความเหมาะสมแบบเสมือนจริงสำหรับผู้เล่นระดับสูง
+
+#### 4. Cycle 4 (CURRENT LIVE JP as of 11 Nov 2026): รีรันนิทรรศการศิลปะ & ซ้อมรบ (11 – 18 พ.ย. 2026)
+- **อีเวนต์รีรัน**: 「誰が為の芸術～偽飾の絵画と美学の行方～」 (Whose Art Is It? ~The Forged Painting and the Whereabouts of Aesthetics~) เริ่ม 11 – 25 พ.ย. 2026
+- **ตู้รีรัน**: Miyo (มิโยะ), Fuyu (ฟุยุ), Ritsu (ริทสึ) จากชมรม Special Operations Department (特殊交易部) ระยะเวลา 11 – 18 พ.ย. 2026
+- **โหมดซ้อมรบ Joint Firing Drill (合同火力演習)**: Defense Drill (การฝึกป้องกัน) ระยะเวลา 11 – 18 พ.ย. 2026
+- **สงครามแทคติก Tactical Challenge (PvP)**: รีเซ็ตซีซั่นใหม่ เปลี่ยนภูมิประเทศเป็น สนามในร่ม (Indoor) รีเซ็ตกลุ่มและอันดับ
+- **Grand Assault ถัดไป**: Indoor War - Goz (โกซ สนามในร่ม) เริ่ม 18 พ.ย. 2026
+
+---
+
+### 🌍 Global Server (พฤศจิกายน 2026 & ย้อนหลัง 3 ไซเคิล)
+
+#### 1. Cycle 1: Shanhaijing Summer Festival (13 – 27 ต.ค. 2026)
+- **Kisaki (Swimsuit / คิซากิ ชุดว่ายน้ำ)** — 3★ Striker / Support ธาตุสั่นสะเทือน (Sonic) บัฟดาเมจสกิลและเร่งเกจ EX
+- **Shun (Swimsuit / ชุน ชุดว่ายน้ำ)** — 3★ Striker / Dealer ธาตุ Sonic ยิงทำดาเมจแรงระยะไกล
+- **Shun Small (Swimsuit / ชุนเด็ก ชุดว่ายน้ำ)** — 3★ Striker ธาตุ Sonic
+- ตู้รีรัน Limited Dash: Wakamo, Hoshino (Swimsuit), Mika
+
+#### 2. Cycle 2: Highlander Railroad Rerun & ตู้ Dress Ako (27 ต.ค. – 10 พ.ย. 2026)
+- **อีเวนต์รีรัน**: Highlander Railroad Runaway Incident (เหตุการณ์รถไฟไฮแลนเดอร์วิ่งเตลิด)
+- รีรันต้นรอบ (27 ต.ค. – 3 พ.ย.): Hikari & Nozomi, Saori (Swimsuit)
+- รีรันท้ายรอบ (3 – 10 พ.ย.):
+  - **Dress Ako (อาโกะ ชุดเดรส)** — 3★ Striker / Supporter ธาตุระเบิด (Explosive) เกราะหนัก (Heavy) ซัพพอร์ตยอดนิยมที่ผู้เล่นเก็บเพชรเปิด
+  - รีรันร่วม: Makoto (มาโคโตะ), Chiaki (จิอากิ), Satsuki (ซัตสึกิ), Kanna (Swimsuit / คันนะ ชุดว่ายน้ำ)
+
+#### 3. Cycle 3 (CURRENT LIVE Global as of 11 Nov 2026): อัปเดตระบบ Recruitment Charges & พรีครบรอบ (10 – 17 พ.ย. 2026)
+- **การปฏิรูประบบกาชา Recruitment System Revamp (10 พ.ย. 2026)**:
+  - ยกเลิกระบบ Recruitment Points เดิม (200 แต้มที่รีเซ็ตทิ้งเมื่อหมดตู้) เข้าสู่ระบบ **Recruitment Charges (ชาร์จการรับสมัคร)**
+  - **100 Charges**: การันตีนักเรียน 3★ (มีโอกาส 50% ได้รับนักเรียนหน้าตู้ Pick-Up)
+  - **200 Charges**: การันตีนักเรียนหน้าตู้ 100% (Hard Pity)
+  - **Early Pull Reset**: หากสุ่มได้นักเรียนหน้าตู้ก่อนครบ ชาร์จจะถูกรีเซ็ตใหม่
+  - **ชาร์จยกยอดข้ามตู้ (Carryover)**: ชาร์จที่เหลือไม่หาย สามารถสะสมข้ามไปยังตู้ถัดไปได้ (แยกประเภทระหว่างตู้ทั่วไป Standard Pick-Up กับตู้ลิมิตเต็ด Limited/Fest)
+  - เพิ่มระบบ **Recruitment Mileage Rewards** รับรางวัลทรัพยากรตามจำนวนโรลรวมที่สุ่ม
+- **ตู้พรีครบรอบ (Anniversary Lead-up) & แคมเปญ 200 โรลฟรี**:
+  - **Swimsuit Makoto (มาโคโตะ ชุดว่ายน้ำ)** — 3★ Striker / Dealer ธาตุลึกลับ (Mystic / สีฟ้า) เกราะหนัก (Heavy) สังกัด Gehenna Academy ทักษะยิงระเบิดถล่มพื้นที่กว้าง
+  - **Swimsuit Satsuki (ซัตสึกิ ชุดว่ายน้ำ)** — 3★ Striker / Healer ธาตุสั่นสะเทือน (Sonic / สีม่วง) เกราะเบา (Light) สังกัด Gehenna Academy ฮีลฟื้นฟูเลือดและบัฟเพื่อนร่วมทีม
+  - แคมเปญแจกโรลฟรี 200 Free Recruitments
+
+#### 4. Cycle 4 (Upcoming Global กลางเดือน พ.ย. 2026 เป็นต้นไป): เทศกาลครบรอบ (Anniversary / Fest)
+- เตรียมเข้าสู่ตู้ Fest ใหญ่ประจำปี:
+  - **Rio (ริโอ)** — 3★ Striker Fest Limited อดีตประธานเซมินาร์
+  - **Neru School Uniform (เนรุ ชุดนักเรียน)** — 3★ Striker Fest Limited หัวหน้า C&C
+  - **Swimsuit Iroha (อิโรฮะ ชุดว่ายน้ำ)** & **Swimsuit Ibuki (อิบุกิ ชุดว่ายน้ำ)**
 
 ### 🎂 ประวัติตู้ฉลองครบรอบ & เฟสติวัล (Anniversary & Fest History)
 - **5th Anniversary (ต้นปี 2026 / ม.ค. 2026 - อีเวนต์ Millennium / Decagrammaton):**
@@ -138,9 +210,14 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 ## Game Systems
 
 ### Gacha (ガチャ / ระบบกาชา)
-- **Pyroxene (ピロクセン / ไพโรซีน)** — premium currency. 120 per pull, 12000 for spark.
-- **Pickup banner — rate-up character. 0.7% for rate-up (base UR rate 3%).**
-- **Spark (天井 / เทียนจอย / การ์ดจอย)** — pity at 200 pulls (24000 pyroxene). Can spark target character.
+- **Pyroxene (ピロクセン / ไพโรซีน)** — premium currency. 120 per pull, 24000 for spark (200 pulls).
+- **Pickup banner — rate-up character. 0.7% for rate-up (base 3★ rate 3%).**
+- **Recruitment Charges (ระบบชาร์จการรับสมัคร - ปฏิรูประบบกาชา Global พ.ย. 2026)**:
+  - ยกเลิกระบบแต้มการันตีเดิม (Recruitment Points 200 แต้มที่รีเซ็ตทิ้งเมื่อหมดตู้)
+  - สะสมครบ **100 Charges**: การันตีนักเรียน 3★ (มีโอกาส 50% ได้รับนักเรียนหน้าตู้ Pick-Up)
+  - สะสมครบ **200 Charges**: การันตีนักเรียนหน้าตู้แน่นอน 100% (Hard Pity)
+  - สุ่มได้นักเรียนหน้าตู้ก่อนครบ ชาร์จจะถูกรีเซ็ต
+  - **ชาร์จยกยอดข้ามตู้ได้ (Carryover)**: ชาร์จไม่หายเมื่อหมดตู้ ยกยอดไปใช้ตู้ถัดไปในหมวดเดียวกัน (Standard vs Limited/Fest)
 - **Eleph (神名文字 / เอเลฟ / เอเลฟซีน)** — character shards for upgrading star rarity.
 - **Recruit (募集 / รับสมัคร)** — gacha banner. Limited = event exclusive.
 - **F2P income (~12000 pyroxene/month endgame)** — controversial, nerfed over time.
@@ -154,13 +231,13 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - **Insane (Insane/เกราะบ้า)** — highest difficulty, one-team clear.
 
 ### Joint Firing Drill (合同火力演習)
-- 3-team mode with special gimmicks each season.
+- 3-team mode with special gimmicks each season. (เช่น Defense Drill การฝึกป้องกัน)
 
 ### Grand Assault (大決戦)
 - 3-boss gauntlet, pick one to fight, harder version.
 
-### Decagrammaton (デカグラマトン)
-- Endgame mode with unique mechanics.
+### Decagrammaton (デカグラマトン / เดคากรัมมาทอน)
+- Main Story Volume EX (The Sky of Unity / Steel Continent / Malkuth) & Endgame Mode: ศึกต่อกรกับ 10 ผู้พยากรณ์แห่งเดคากรัมมาทอน
 
 ### Momotalk (モモトーク / โมโม่ทอล์ค)
 - Character bonding, chat-style interactions, affection system.

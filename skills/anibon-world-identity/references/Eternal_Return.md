@@ -24,13 +24,33 @@
 | **Katja (คัทจา)** | Sniper | สไนเปอร์ระยะไกล | ส่องสไนเปอร์ระยะสุดจอ เล็งจุดอ่อนศัตรู |
 | **Charlotte (ชาร์ล็อต)** | Pure Enchanter | บัฟฟื้นฟู / แสงศักดิ์สิทธิ์ | เทพธิดาแห่งแสง กางม่านแสงฮีลเพื่อนและชุบชีวิตเพื่อนร่วมทีม |
 | **Seres (เซเรส)** | Protector / Bruiser | ดาบสองมือ / ผู้พิทักษ์ | ตัวละครใหม่ Patch 12.5 (ต.ค. 2026) ดาบสองมือ ทิ้งเศษ Obsidian Shard ทำดาเมจตาม Max HP แดชได้เกราะและแทงสตัน (Pierce) กวาดดาบสโลว์ (Crushing Array) |
+| **Lucia (ลูเซีย)** | Long-range Marksman | สไนเปอร์เวท / กระสุนคริสตัล | สไนเปอร์ไรเฟิลตระกูล Ferrante ใฝ่ฝันเป็นทหารเสือ ยิงกระสุนคริสตัล เสกปืนคาบศิลา (Musketeer's Etiquette) สกิน Teatime Lady Lucia |
+| **Craver (เครเวอร์)** | Gunslinger / Skirmisher | ปืนลูกโม่ต้องคำสาป / คลั่งยิงรัว | มือปืนคาวบอย ใช้ปืนลูกโม่ต้องคำสาป (Cursed Revolver) สกิลยิงกระหน่ำ สกินเด่น Wild West Craver |
 
 ---
 
-## 🗓️ อัปเดตล่าสุดประจำเดือน (October 2026 - Patch 12.5 & 12.6)
+## 🗓️ ประวัติการอัปเดตและแพตช์ (Patch History & Seasonal Updates)
 
-*   **Patch 12.5 (1 ต.ค. 2026):** เปิดตัวทดลองใหม่ **Seres (เซเรส)** สายแทงค์ผู้พิทักษ์ดาบสองมือ
-*   **Patch 12.6 (15 ต.ค. 2026):** บัฟ Nadine (Bow) ปรับดาเมจสเกลสกิล Q (Bullseye) ให้ยิงตอดระยะไกลรุนแรงขึ้น, สกินใหม่ Mystic Bunny Sua (Epic) และ Ruthless Inquisitor Echion (Rare)
+*   **Season 13: Glory (Upcoming / 12 พ.ย. 2026 Preseason, 19 พ.ย. 2026 Season Pack):**
+    *   ธีมหลัก: อัศวินแห่งรุ่งอรุณ (Knights of the Dawn)
+    *   ระบบใหม่ **Research Tasks / Squad Specialization**: สควอดเลือกสายวิจัยเฉพาะทางในแมตช์ (Materials Science & Engineering, Energy Science & Engineering, Biotechnology) รับโบนัสเครดิตและวัตถุดิบจากการล่ามิวแทนต์ เก็บไอเทม หรือสังหารผู้เล่น
+    *   **Vector Gate**: ประตูมิติใหม่แทนที่ CNOT Gate กำหนดจุดรวมพล (Meeting Point) ช่วยดึงเพื่อนร่วมทีมกลับมารวมกลุ่ม
+    *   **Environmental Weather Effects**: ระบบสภาพอากาศไดนามิกบนเกาะลูเมีย (ฟ้าโปร่ง, ฝนตก, พายุทราย) มอบเอฟเฟกต์เฉพาะตัว
+    *   สกินประจำซีซั่น: After School Karla, Teatime Lady Lucia, Wonder Rabbit Seres, Maid Jackie, Royal Envoy Johann
+*   **Patch 12.7 (29 ต.ค. 2026):**
+    *   สกินใหม่: *Wild West Craver* (Rare), อีโมต Aiden
+    *   ระบบใหม่ **Hunter’s Pot Skin**: ปรับแต่งหม้อทำอาหารในเกมได้ครั้งแรกทางเมนู Collectibles → Miscellaneous → In-Game Style
+    *   ปรับระบบลดขั้น Inactivity Demotion สำหรับแรงก์สูง: Titan (ลดจาก 12 เหลือ 10 วัน), Immortal (ลดจาก 12 เหลือ 8 วัน) ส่วน Meteorite และ Mythril คงเดิมที่ 12 วัน
+    *   สิ้นสุดโหมดกิจกรรม S12 Lone Wolf Event Mode
+    *   ล็อคระบบ Gambit ชั่วคราว (Gambit Locked) จนกว่าจะมีการแจ้งเปลี่ยนแปลง
+    *   ปรับปรุง Esports Menu: เพิ่ม Live Tournament Indicator และฟังก์ชัน Drag Timeline ดูตารางแข่ง
+*   **Patch 12.6 (15 ต.ค. 2026):**
+    *   บัฟ Nadine (Bow) ปรับดาเมจสเกลสกิล Q (Bullseye) ให้ยิงตอดระยะไกลรุนแรงขึ้น
+    *   สกินใหม่: Mystic Bunny Sua (Epic) และ Ruthless Inquisitor Echion (Rare)
+*   **Patch 12.5 (1 ต.ค. 2026):**
+    *   เปิดตัวทดลองใหม่ **Seres (เซเรส)** สายแทงค์ผู้พิทักษ์ดาบสองมือ (Two-handed Sword)
+*   **Patch 12.4 (ก.ย. 2026):**
+    *   ปรับสมดุลเมต้าช่วงกลางซีซั่น 12 (Sailing)
 
 ---
 
@@ -43,6 +63,9 @@
 *   **Special Resources:** วัตถุดิบคราฟต์ระดับตำนาน เช่น Meteorite (เศษอุกกาบาต), Tree of Life (รากไม้แห่งชีวิต), Force Core, และ VF Blood Sample
 *   **Escape Submarine (หนีออกจากเกาะ):** เงื่อนไขการชนะพิเศษทางเลือก โดยการซื้อกุญแจหนีผ่านเรือดำน้ำที่ท่าเรือ ไม่จำเป็นต้องเป็นทีมสุดท้ายที่รอดชีวิต
 *   **Red Items (ของแดง):** ไอเทมระดับ Mythic / Transcendence ที่ทรงพลังที่สุดในเกม
+*   **Research Tasks (สายงานวิจัย):** ระบบกำหนดบทบาทวิจัยของสควอดใน Season 13 เพื่อรับโบนัสเครดิตเฉพาะทาง
+*   **Vector Gate:** ประตูมิติรวมพลใหม่แทนที่ CNOT Gate ใน Season 13
+*   **Hunter's Pot Skin:** สกินปรับแต่งรูปลักษณ์หม้อต้มทำอาหารในแมตช์
 
 ---
 
@@ -50,6 +73,10 @@
 
 | คำที่ Whisper ถอดเพี้ยน | คำที่ถูกต้องตามสารบบ | หมายเหตุ / จุดสังเกต |
 | :--- | :--- | :--- |
+| **ลูเซีย / ลูเซียร์** | **Lucia (ลูเซีย)** | สไนเปอร์สาวกระสุนคริสตัล ตระกูล Ferrante |
+| **เครเวอร์ / เคฟเวอร์** | **Craver (เครเวอร์)** | คาวบอยปืนลูกโม่ต้องคำสาป สกิน Wild West Craver |
+| **เซเรส** | **Seres (เซเรส)** | แทงค์ผู้พิทักษ์ดาบสองมือ Patch 12.5 |
+| **ซีซั่น 13 / ฤดูกาลกลอรี่** | **Season 13: Glory** | ซีซั่นธีมอัศวินแห่งรุ่งอรุณ (เริ่ม พ.ย. 2026) |
 | **เดบิมาเน่ / เดบิมาร์ลีน / เดบิมาเน** | **Debby & Marlene (เด็บบี้ แอนด์ มาร์ลีน)** | แฝดดาบคู่สลับตัว |
 | **นิกิ / นิกกี้** | **Nicky (นิกกี้)** | สายต่อยมวย เกจความโกรธ (Anger Gauge) |
 | **เทย่า / เทย่าผสมสี / เตย่า** | **Tia (เทีย)** | สตรีมเมอร์เรียกว่าน้องพู่กัน ผสมสีสาดสี |

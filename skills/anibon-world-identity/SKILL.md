@@ -66,19 +66,22 @@ When a stream covers a version update or special program for a live-service game
 1. **Match Version to Nation/Arc**: Consult the version chronology table in `references/<Game>.md`. Verify which nation/arc the patch belongs to before assigning titles to sections, characters, or bosses.
 2. **Anti-Callback Conflation**: Streamers regularly mention older regions/patches to compare character balance or meta history (e.g. Boat referencing 6.x Nod-Krai during the 7.2 Snezhnaya stream). Do NOT mistake a historical comparison for the active patch location.
 3. **Character Affiliation Integrity**: Verify newly announced characters against the active version table. New characters belong to the active patch nation unless explicitly documented otherwise.
+4. **Top-1800-Char Live Patch Snapshot Contract (`_WI_SNIPPET_LIMIT`)**: Local chunk prompts only inject the first `1,800` characters of `references/<Game>.md`. Always place a compact `## 🔥 สถานะแพตช์ล่าสุด (Current Live Patch)` summary (active event/version, newest banner units/terms, and top phonetic ASR mappings) **at the very top before the first `---` separator**, keeping total header length `<= 1,800` characters while full oldest-to-latest tables sit below `---`. Verify character count (`<= 1800`) after every edit.
 
 ## DB Bootstrap
 
-Run these before World Identity lookups for applicable games:
+Run these from plugin root (`anibon-stream-synthesis`) before World Identity lookups for applicable games:
 
 ```bash
-python3 scripts/fetch_fgo_db.py --check --db "../reference/FGO and DATA/atlas_fgo.db" || \
-  python3 scripts/fetch_fgo_db.py --db "../reference/FGO and DATA/atlas_fgo.db"
-python3 scripts/fetch_ygo_db.py --check --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
-  python3 scripts/fetch_ygo_db.py --db "../reference/Yu-Gi-Oh DATA/ygo_cards.db"
-python3 scripts/fetch_pokemon_db.py --check --db "references/Pokemon DATA/pokemon.db" || \
-  python3 scripts/fetch_pokemon_db.py --db "references/Pokemon DATA/pokemon.db"
+python3 skills/anibon-world-identity/scripts/fetch_fgo_db.py --check --db "skills/reference/FGO and DATA/atlas_fgo.db" || \
+  python3 skills/anibon-world-identity/scripts/fetch_fgo_db.py --db "skills/reference/FGO and DATA/atlas_fgo.db"
+python3 skills/anibon-world-identity/scripts/fetch_ygo_db.py --check --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db" || \
+  python3 skills/anibon-world-identity/scripts/fetch_ygo_db.py --db "skills/reference/Yu-Gi-Oh DATA/ygo_cards.db"
+python3 skills/anibon-world-identity/scripts/fetch_pokemon_db.py --check --db "skills/anibon-world-identity/references/Pokemon DATA/pokemon.db" || \
+  python3 skills/anibon-world-identity/scripts/fetch_pokemon_db.py --db "skills/anibon-world-identity/references/Pokemon DATA/pokemon.db"
 ```
+
+> **SQLite Table Note**: `atlas_fgo.db` stores Servants in `basic_servant(collectionNo, name, originalName, className, rarity, type)`, not `servants`.
 
 ## Mandatory Pokémon Naming Rules
 
@@ -96,7 +99,12 @@ Execute immediately after `anibon_timestamps.md` passes all parity gates:
    - **New Game/Franchise**: Scaffold `references/<Franchise>.md` (standard table or bold bullets) and link in `references/INDEX.md`.
    - **Existing Franchise**: Append new patch/character/mechanic notes to `references/<Franchise>.md`.
    - **Phonetic Corrections**: Add confirmed Whisper drift patterns to `resources/garbled_replacements.json` via `update_garbled_dictionary.py`.
-3. **Integrity Check**: Run `PYTHONPATH="lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_knowledge_reader.py` to confirm knowledge files parse cleanly.
+   - **Short Thai Pattern Guard**: Never add unanchored Thai substrings `<= 4` chars to `garbled_replacements.json` without verifying they cannot match inside Sinner/character names or common Thai words.
+3. **Play History Scope Discipline (GAME-ONLY CONTENT INVARIANT - STRICT)**:
+   - When recording or updating `Stream Chronology & Play History` in `references/<Game>.md`, include **ONLY topics, mechanics, builds, gear, boss encounters, exploration, questlines, and engine/hardware issues directly regarding that game**.
+   - **Strict Ban on Unrelated Talk Topics**: Never include political debates (US, French, Thai politics), personal anecdotes (food, loans, life stories), societal critiques, or reviews of unrelated movies/anime/games in a game's reference file.
+   - General stream discussions belong in timestamps (`anibon_timestamps.md`), NEVER in game-specific world identity files.
+4. **Integrity Check**: Run `PYTHONPATH="lib" python3 -m unittest skills/anibon-timestamper-local/tests/test_knowledge_reader.py` to confirm knowledge files parse cleanly.
 
 ## When to Skip
 

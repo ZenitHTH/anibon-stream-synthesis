@@ -11,17 +11,20 @@
 
 | เวอร์ชัน / ช่วงเวลา | ตัวละครใหม่ (SSR / SR) | สาย / เบิสต์ / อาวุธ | โค้ดธาตุ / สังกัด | บทบาทและรายละเอียดแพตช์ |
 | :---: | :--- | :---: | :---: | :--- |
-| 4.0 (29 ต.ค. 2026 - Upcoming) | **Marian: Queen (มาเรียน: ควีน)** | Attacker / Burst III / MG | Fire / Pilgrim | ฉลองครบรอบ 4 ปี นิกเกะพิลกริมร่างราชินี แข่งขันกับ Space Queen โจมตีหมู่และเร่งดาเมจมหาศาล (สกิน Last Affection, บทที่ 49-50, อีเวนต์ MARIA-n) |
-| 4.0 (29 ต.ค. 2026 - Upcoming) | **Scarlet: Goddeath (สการ์เล็ต: ก็อดเดธ)** | Attacker / Burst III / AR | Fire / Pilgrim | ฮงรยอนร่างอัปเกรดเทคโนโลยี Eden ถือดาบผ่าสสารมืดที่หลอมจากดาบจางฮวา เจาะเกราะทะลวงร่างลิลิธ |
-| 4.0 (29 ต.ค. 2026 - Upcoming) | **Rapunzel: Sanctuary (ราพันเซล: แซงก์ทัวรี)** | Supporter / Burst I / SR | Iron / Pilgrim | ร่างโป๊ปเทคโนโลยี Red Shoes ตัวซัพพอร์ตคล่องตัวสูง *แจกฟรี 4 ตัวในกิจกรรม 4th Anniversary* |
-| Oct 8, 2026 (Live V_0) | **Belorta: Pumpkin Witch (เบลอร์ต้า: พัมป์คิน วิทช์)** | Supporter / Burst II / RL | Water / Tetra Line | อีเวนต์ "LITTLE WITCH TRICK" เบลอร์ต้าร่าง SSR แม่มดฮาโลวีน บัฟดาเมจเพื่อนร่วมทีมเมื่อกดเบิสต์ (ไซด์สตอรี่ Gingerbread House) |
-| Sep 17, 2026 (V_-1) | **Guilty: Mighty Bunny (กิลตี้: ไมตี้ บันนี่)** | Attacker / Burst III / SG | Water / Missilis | อีเวนต์ "COIN RUSH SHOWDOWN" บันนี่เกิร์ลสายโจมตีเป้าหมายเดี่ยวรุนแรงตามสเกล ATK ตัวเอง |
-| Sep 24, 2026 (V_-1) | **Sin: Swift Bunny (ซิน: สวิฟต์ บันนี่)** | Attacker / Burst II / AR | Water / Missilis | บันนี่เกิร์ลสายโจมตีหมู่ พร้อมการปรับปรุงระบบโอเวอร์โหลด (Overload Gear QoL) และ Solo Raid S41 |
-| Sep 3, 2026 (V_-2) | **Drake: Great Villain (เดรค: เกรต วิลเลียน)** | Defender / Burst III / SG | Wind / Missilis | อีเวนต์ "GREAT VILLAIN UNION" สเกลพลังโจมตีตาม Max HP ตัวเอง พร้อมการยกเครื่องโครงสร้างไฟล์เกม (Data Architecture Redesign) |
-| Aug 13, 2026 (V_-3) | **Queen: Makoto Niijima (ควีน / มาโคโตะ)** | Attacker / Burst I / SG | Fire / Abnormal | คอลแลบ *PERSONA ON FRONTLINE* (Persona 30th Anniversary) ดาเมจไฟเบิสต์ 1 ปลดล็อกเนื้อเรื่องหลักบทที่ 47-48 (บอส Liberalio Body) |
-| Aug 20, 2026 (V_-3) | **Yukiko Amagi (ยูกิโกะ อามากิ)** | Attacker / Burst I / AR | Fire / Abnormal | ตัวละครคอลแลบ Persona 4 Golden เฟส 2 ดาเมจไฟสายเร่ง Burst |
-| Aug 13, 2026 (V_-3) | **Aigis (ไอจิส)** | Supporter / Burst I / SMG | Iron / Abnormal | แอนดรอยด์สาวจาก Persona 3 Reload ตัวซัพพอร์ตเหล็ก *แจกฟรี SR ประจำอีเวนต์* |
-| Jul 23, 2026 (V_-4) | **Laplace: Ultimate Hero (ลาพลาส: อัลติเมท ฮีโร่)** | Attacker / Burst III / RL | Wind / Missilis | อีเวนต์ "Project Matis" ลาพลาสร่างพัฒนา Missilis ยิงจรวดสะสมประจุเจาะเกราะ Pierce ดาเมจมัลติฮิตถล่มบอส |
+| เวอร์ชัน / ช่วงเวลา | ตัวละครใหม่ (SSR / SR) | สาย / เบิสต์ / อาวุธ | โค้ดธาตุ / สังกัด | บทบาทและรายละเอียดแพตช์ |
+| :---: | :--- | :---: | :---: | :--- |
+| Late Nov / Dec 2026 (V_+1 Upcoming) | **Winter Limited Units (รอประกาศ)** | TBD | TBD | เตรียมเข้าสู่อีเวนต์เทศกาลฤดูหนาว Winter/Christmas 2026, Solo Raid Season 44, Union Raid และเนื้อเรื่องส่งท้ายปี |
+| 4.0 Phase 2 (5 พ.ย. 2026 - Live V_0) | **Scarlet: Goddeath (สการ์เล็ต: ก็อดเดธ)** | Attacker / Burst III / AR | Fire / Pilgrim | ฮงรยอนร่างอัปเกรดเทคโนโลยี Eden ถือดาบผ่าสสารมืดที่หลอมจากดาบจางฮวา ตู้เรตอัป Phase 2 (5-26 พ.ย. 2026) ดาเมจ Pierce ทะลวงบอส, Solo Raid S43 (12-19 พ.ย. บอส Goddess of Victory ธาตุไฟ) |
+| 4.0 Phase 1 (29 ต.ค. 2026 - Live V_0) | **Marian: Queen (มาเรียน: ควีน)** | Attacker / Burst III / MG | Fire / Pilgrim | ฉลองครบรอบ 4 ปี นิกเกะพิลกริมร่างราชินี ปืนกล Perfect World ตู้เรตอัป (29 ต.ค. - 19 พ.ย. 2026) โจมตีหมู่และเร่งดาเมจมหาศาล (สกินกาชา Last Affection, บทที่ 49-50 สงครามกู้คืนพื้นผิวครั้งที่ 3, อีเวนต์ MARIA-n, แจกฟรี 259 โรล) |
+| 4.0 Phase 1 (29 ต.ค. 2026 - Live V_0) | **Rapunzel: Sanctuary (ราพันเซล: แซงก์ทัวรี)** | Supporter / Burst II / RL | Fire / Pilgrim | ร่างโป๊ปเทคโนโลยี Red Shoes อาวุธจรวด Holy Grace ซัพพอร์ตคล่องตัวสูง *แจกฟรี 4 ตัว (MLB) ในกิจกรรม 4th Anniversary (29 ต.ค. - 19 พ.ย. 2026)* |
+| Oct 8, 2026 (V_-1) | **Belorta: Pumpkin Witch (เบลอร์ต้า: พัมป์คิน วิทช์)** | Supporter / Burst II / RL | Water / Tetra Line | อีเวนต์ "LITTLE WITCH TRICK" เบลอร์ต้าร่าง SSR แม่มดฮาโลวีน บัฟดาเมจเพื่อนร่วมทีมเมื่อกดเบิสต์ (ไซด์สตอรี่ Gingerbread House, Solo Raid S42) |
+| Sep 17, 2026 (V_-2) | **Guilty: Mighty Bunny (กิลตี้: ไมตี้ บันนี่)** | Attacker / Burst III / SG | Water / Missilis | อีเวนต์ "COIN RUSH SHOWDOWN" บันนี่เกิร์ลสายโจมตีเป้าหมายเดี่ยวรุนแรงตามสเกล ATK ตัวเอง |
+| Sep 24, 2026 (V_-2) | **Sin: Swift Bunny (ซิน: สวิฟต์ บันนี่)** | Attacker / Burst II / AR | Water / Missilis | บันนี่เกิร์ลสายโจมตีหมู่ พร้อมการปรับปรุงระบบโอเวอร์โหลด (Overload Gear QoL) และ Solo Raid S41 |
+| Sep 3, 2026 (V_-3) | **Drake: Great Villain (เดรค: เกรต วิลเลียน)** | Defender / Burst III / SG | Wind / Missilis | อีเวนต์ "GREAT VILLAIN UNION" สเกลพลังโจมตีตาม Max HP ตัวเอง พร้อมการยกเครื่องโครงสร้างไฟล์เกม (Data Architecture Redesign) |
+| Aug 13, 2026 (V_-4) | **Queen: Makoto Niijima (ควีน / มาโคโตะ)** | Attacker / Burst I / SG | Fire / Abnormal | คอลแลบ *PERSONA ON FRONTLINE* (Persona 30th Anniversary) ดาเมจไฟเบิสต์ 1 ปลดล็อกเนื้อเรื่องหลักบทที่ 47-48 (บอส Liberalio Body) |
+| Aug 20, 2026 (V_-4) | **Yukiko Amagi (ยูกิโกะ อามากิ)** | Attacker / Burst I / AR | Fire / Abnormal | ตัวละครคอลแลบ Persona 4 Golden เฟส 2 ดาเมจไฟสายเร่ง Burst |
+| Aug 13, 2026 (V_-4) | **Aigis (ไอจิส)** | Supporter / Burst I / SMG | Iron / Abnormal | แอนดรอยด์สาวจาก Persona 3 Reload ตัวซัพพอร์ตเหล็ก *แจกฟรี SR ประจำอีเวนต์* |
+| Jul 23, 2026 (V_-5) | **Laplace: Ultimate Hero (ลาพลาส: อัลติเมท ฮีโร่)** | Attacker / Burst III / RL | Wind / Missilis | อีเวนต์ "Project Matis" ลาพลาสร่างพัฒนา Missilis ยิงจรวดสะสมประจุเจาะเกราะ Pierce ดาเมจมัลติฮิตถล่มบอส |
 
 ---
 
@@ -102,14 +105,21 @@
   - **Snow White (สโนว์ไวท์):** ผู้ถือครองอาวุธ Seven Dwarves กินทุกอย่างที่ขวางหน้าเพื่อความอยู่รอด
   - **Dorothy (โดโรธี):** เทพีผู้สง่างาม ถูกอาร์กหักหลังจนกลายเป็นผู้นำ Eden
   - **Scarlet / Hongryeon (สการ์เล็ต):** ยอดนักดาบซามูไรผู้รักการดื่มเหล้าหมัก
+  - **Scarlet: Goddeath (สการ์เล็ต: ก็อดเดธ):** ฮงรยอนร่างอัปเกรดเทคโนโลยี Eden ถือดาบผ่าสสารมืดที่หลอมจากดาบจางฮวา เจาะเกราะทะลวงร่างลิลิธ (4th Anniv Phase 2)
   - **Rapunzel (ราพันเซล):** นักบวชสาวผู้บันทึกความทรงจำของเพื่อนที่ล่วงลับ
+  - **Rapunzel: Sanctuary (ราพันเซล: แซงก์ทัวรี):** ร่างโป๊ปเทคโนโลยี Red Shoes ยิงจรวด Holy Grace ตัวซัพพอร์ตคล่องตัวสูง (แจกฟรี 4th Anniv)
 - **2nd Generation Grimms Models (โมเดลรุ่นที่สอง):**
   - **Cinderella / Anachiro (ซินเดอเรลล่า / อนาคิโร):** กระจกแก้วคริสตัล ถูกการทุจริตกลายเป็นเฮเรติกก่อนจะได้รับการกู้คืน
   - **Grave (เกรฟ):** ผู้แบกโลงแก้วเดินทางข้ามทวีปเพื่อคืนชีพซินเดอเรลล่า
   - **Little Mermaid (ลิตเติล เมอร์เมด):** นางเงือกแห่งท้องทะเลลึก
   - **Red Shoes (เรด ชูส์):** ผู้พัฒนาวิทยาการต้องห้าม
 - **Inherit (หน่วยสืบทอดแห่งสวรรค์ Eden):** Dorothy, Harran (ฮารัน - แม่มดนกกา), Isabel (อิซาเบล - นิกเกะคลั่งรักผู้การ), Noah (โนอาห์ - เจ้าของโล่บาเรียสุดกวน)
-- **White Knights (อาณาจักรคราวน์):** Crown (คราวน์ - ราชินีผู้พิทักษ์ปราสาท), Chime (ไชม์ - เสนาธิการตัวเล็ก), Marian / Modernia (เนเค็ดคิง), Kilo & T.A.L.O.S.
+- **White Knights & Queen:**
+  - **Crown (คราวน์ - ราชินีผู้พิทักษ์ปราสาท):** ราชาแห่ง White Knights เสาหลักเมต้า
+  - **Chime (ไชม์ - เสนาธิการตัวเล็ก):** เสนาธิการผู้ซื่อสัตย์
+  - **Marian / Modernia (เนเค็ดคิง):** อดีตเฮเรติกผู้ก้าวสู่บทบาทผู้นำ
+  - **Marian: Queen (มาเรียน: ควีน):** ร่างราชินีนิกเกะพิลกริม ปืนกล Perfect World แข่งขันกับ Space Queen โจมตีหมู่และเร่งดาเมจมหาศาล (4th Anniv Phase 1)
+  - **Kilo & T.A.L.O.S.:** นิกเกะผู้ขับหุ่นรบ
 - **Heretics (เฮเรติก — นิกเกะที่ถูกราชินีแรปเจอร์ครอบงำ):** Modernia (อดีต), Nihilister (มังกรเพลิง), Indivilia (แมงป่องเหล็ก), Liberalio (ราชินีแมงกะพรุนขี้เซา), Behemoth (อสูรกลืนกิน), Leviathan (สัตว์ประหลาดแห่งท้องทะเล)
 
 ---
@@ -133,7 +143,7 @@ flowchart TD
 4. **Ark Terror & Eden Alliance (Chapters 15 - 24):** Crow นำลัทธิ Heavenly Ascension ก่อวินาศกรรมถล่มอาร์ก นำพาเฮเรติก Nihilister เข้าโจมตี ผู้การได้รับบาดเจ็บสาหัสและได้รับการช่วยเหลือจนค้นพบสวรรค์เทคโนโลยีลอยฟ้า "Eden" ของโยฮันและเซซิล
 5. **Red Hood Awakening (Chapters 25 - 28):** แกนพลังงานของ Red Hood ภายในตัว Rapi ตื่นขึ้น ช่วยทีมกำราบ Indivilia และ Chatterbox พร้อมสำรวจ Crystal Region และได้พบกับ Grave
 6. **Crown's Kingdom & Cinderella (Chapters 29 - 34):** Crown และ Chime ปกป้องปราสาทและแกนพลังงานบริสุทธิ์จาก Indivilia และ Chatterbox ขณะที่ Grave ลำเลียงโลงแก้วของ Cinderella จนปลุกเธอให้ตื่นขึ้นมาต่อสู้กับ Behemoth
-7. **3rd Surface Recapture War (Chapters 35 - 50):** รัฐบาลกลางอาร์กร่วมมือกับพิลกริมเปิดศึกชิงพื้นผิวโลกครั้งใหญ่ เผชิญหน้าร่างสมบูรณ์ของ Liberalio และก้าวเข้าสู่ศึกตัดสินระหว่าง Marian: Queen และ Space Queen เพื่อกำหนดชะตากรรมของมนุษย์และนิกเกะ
+7. **3rd Surface Recapture War & Underground Ark Climax (Chapters 35 - 50):** รัฐบาลกลางอาร์กร่วมมือกับหน่วย Counters และพิลกริมเปิดศึกชิงพื้นผิวโลกครั้งใหญ่ ปลดล็อกเนื้อเรื่องหลักบทที่ 49-50 ในแพตช์ 4.0 เข้าสู่ศึกตัดสินปะทะราชินีแรปเจอร์ (Rapture Queen) ในร่างรูปปั้นเทพีแห่งชัยชนะขนาดยักษ์ (Goddess of Victory statue form) โดยมี Marian: Queen, Scarlet: Goddeath และ Rapunzel: Sanctuary เข้าร่วมสมรภูมิเพื่อปิดฉากเนื้อเรื่องอาร์กใต้ดินและกอบกู้พื้นผิวโลก
 
 ---
 
@@ -145,6 +155,7 @@ flowchart TD
 *   **Overload Gear (อุปกรณ์โอเวอร์โหลด / เกียร์ OL):** อุปกรณ์ระดับ Tier 9 Manufacturer (T9M) ที่อัปเกรดถึงเลเวล 5 แล้วใช้หิน Custom Module เปลี่ยนเป็นเกียร์ Tier 10 ปลดล็อกออปชันพิเศษ (Max Ammo Capacity, ATK, Elemental Damage, Crit Rate/DMG)
 *   **Favorite Item / Collection Item (ไอเทมของสะสม / เฟเวอริต):** ระบบติดตั้งตุ๊กตา (Doll) อัปเกรดขีดจำกัดเพื่อพัฒนาสกิลของตัวละครดั้งเดิม (เช่น Laplace, Diesel, Frima, Viper, Exia, Centi) ให้กลับมาติดเมต้าระดับสูง
 *   **Anomaly Interception:** ระบบท้าทายบอสระดับสูงยุคใหม่สำหรับฟาร์มหินคัสตอมโมดูลและเกียร์ T9M โดยเฉพาะ
+*   **Solo Raid Season 43:** อีเวนต์เรดเดี่ยวประจำแพตช์ฉลอง 4 ปี ปะทะบอสรูปปั้นเทพีแห่งชัยชนะ (Goddess of Victory statue form) จุดอ่อนโค้ดธาตุไฟ (Fire Code) ชิงกรอบฉายาพิเศษและวัตถุดิบพัฒนาคิวบ์
 *   **Synchro Device & 160 Wall (กำแพงเลเวล 160):** ระบบแชร์เลเวลให้ตัวละครทั้งไอดี โดยผู้เล่นต้องมีตัวละคร SSR ปลดดาวสูงสุด 3 ดาว (MLB - 4 ตัวซ้ำ) จำนวน 5 ตัว เพื่อดันเลเวลทะลุกำแพง 160 ก้าวสู่เลเวล 200+
 
 ---
@@ -155,6 +166,10 @@ flowchart TD
 *   **หมวกแดง:** Red Hood (พิลกริมสุดโกง กดเบิสต์ได้ทุกขั้น B1/B2/B3)
 *   **ยัยบัวขาว / เจ๊โดโรธี:** Dorothy (พิลกริมสาวผู้สง่างามแต่จิตใจเคียดแค้นอาร์ก)
 *   **หลวงเจ๊ / แม่ชีหื่น:** Rapunzel (ราพันเซลผู้ชอบเก็บหนังสือโป๊และคิดลึกตลอดเวลา)
+*   **หลวงเจ๊แซงก์ / ราพันเซลแซงก์:** Rapunzel: Sanctuary (ราพันเซลร่างแจกฟรี 4 ตัว ธาตุไฟเบิสต์ 2 อาวุธจรวด)
+*   **มาเรียนควีน / ควีนมาเรียน:** Marian: Queen (พิลกริม 4th Anniv ตู้ 1 สกิลยิงหมู่ปืนกล Perfect World พร้อมชุดแต่งงาน Last Affection)
+*   **ฮงรยอนก็อดเดธ / สการ์เล็ตก็อดเดธ:** Scarlet: Goddeath (ฮงรยอนดาบสสารมืดเจาะเกราะ ตู้ 2 ฉลอง 4 ปี)
+*   **บอสเทพี / รูปปั้นเทพี:** Goddess of Victory Statue Form (บอสใหญ่บท 49-50 และบอส Solo Raid Season 43 แพ้ทางธาตุไฟ)
 *   **น้องเบลบอส / ลิงกอริลลา:** Chatterbox (แรปเจอร์ระดับสูงที่ชอบโผล่มาต่อรองและโดนยิงหน้าหงาย)
 *   **ชูเอนหมาเอนิกค์:** Syuen (ซีอีโอ Missilis ที่ปากดีขี้เหวี่ยงแต่โดน Enikk ลงโทษดัดหลัง)
 *   **กำแพง 160:** จุดตันของผู้เล่นใหม่ที่ยังปลด SSR 3 ดาวไม่ครบ 5 ตัว
