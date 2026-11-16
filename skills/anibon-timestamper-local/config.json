@@ -11,7 +11,7 @@
   "entity_context_max_tokens": 300,
 
   "chunk_timeout_sec": 180,
-  "multimodal_timeout_sec": 120,
+  "multimodal_timeout_sec": 180,
   "prune_timeout_sec": 600,
   "summarizer_timeout_sec": 600,
 
@@ -32,7 +32,7 @@
   "byte_cap_limit": 3500,
 
   "multimodal_chunks": true,
-  "eval_batch_size": 8192,
+  "eval_batch_size": 4096,
   "tokens_per_image": 260,
   "scene_delta_threshold": 0.12,
   "max_chunk_frames": 6

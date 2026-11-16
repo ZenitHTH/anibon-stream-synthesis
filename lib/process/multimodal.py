@@ -22,6 +22,13 @@ from common.config import (
     SCENE_DELTA_THRESHOLD,
     MAX_CHUNK_FRAMES,
 )
+from process.multimodal_situations import (
+    INCOMPLETE_CONTEXT_CUES,
+    STRONG_VISUAL_CUES,
+    collect_situational_candidates,
+    compute_regional_rgb_delta,
+    select_spaced_seconds,
+)
 
 try:
     from PIL import Image
@@ -202,7 +209,7 @@ def _get_tile_downsampled_bytes(tile_path: Path) -> Optional[bytes]:
 
 
 def compute_tile_visual_delta(tile_a: Path, tile_b: Path) -> float:
-    """Compute normalized mean absolute difference [0.0..1.0] between two 320x180 tiles.
+    """Compute regional + global normalized difference [0.0..1.0] between two 320x180 tiles.
 
     Returns 1.0 if either tile cannot be read (treating unreadable/missing as distinct).
     """
@@ -210,17 +217,7 @@ def compute_tile_visual_delta(tile_a: Path, tile_b: Path) -> float:
     bytes_b = _get_tile_downsampled_bytes(tile_b)
     if not bytes_a or not bytes_b or len(bytes_a) != len(bytes_b):
         return 1.0
-
-    total_diff = sum(abs(b1 - b2) for b1, b2 in zip(bytes_a, bytes_b))
-    return total_diff / (len(bytes_a) * 255.0)
-
-
-INCOMPLETE_CONTEXT_CUES = (
-    "ดูอันนี้", "ดูนี่", "อันนี้", "ตัวนี้", "แบบนี้", "หน้านี้", "รูปนี้", "คลิปนี้",
-    "ภาพนี้", "หน้าตา", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "จุดนี้", "นี่ไง",
-    "ดูคลิป", "ตัวละครนี้", "สกินนี้", "การ์ดนี้", "เกมนี้", "ใครเนี่ย", "อะไรเนี่ย",
-    "โอ้โห", "เฮ้ย", "โห", "ดูดิ", "เนี่ย", "[?]"
-)
+    return compute_regional_rgb_delta(bytes_a, bytes_b)
 
 
 def select_target_seconds(
@@ -231,17 +228,7 @@ def select_target_seconds(
     items: Optional[List[dict]] = None,
     num_frames: Optional[int] = None,
 ) -> List[int]:
-    """Select keyframe timestamps based on transcript context completeness.
-
-    1. Incomplete Context: If items contain deictic pronouns, visual pointers, or
-       exclamatory reactions where text alone lacks grounding, sample frames directly
-       at those cue timestamps to visually fill in the missing context.
-    2. Dynamic Count: Sends at least min_frames (default 3), but expands up to max_frames (default 5)
-       if multiple distinct visual moments/cues need grounding in this chunk.
-    3. Full/Self-Contained Context: If text is complete, sample frames from the most
-       interesting moments (longest statements, topic shifts, emphasis) distributed
-       across the chunk.
-    """
+    """Select keyframe timestamps across deictic, boss, gear/UI, topic-shift, and silence-gap situations."""
     if num_frames is not None:
         min_frames = num_frames
         max_frames = num_frames
@@ -253,32 +240,9 @@ def select_target_seconds(
             return [start_sec + 25, end_sec - 25]
         return [start_sec + 25, (start_sec + end_sec) // 2, max(start_sec + 30, end_sec - 25)]
 
-    # 1. Search for incomplete context cues
-    cue_candidates: List[Tuple[float, int]] = []
-    for it in items:
-        txt = it.get("text", "")
-        sec = int(it.get("start", 0))
-        if sec < start_sec or sec > end_sec:
-            continue
+    cue_candidates = collect_situational_candidates(items, start_sec, end_sec, pinned_only=False)
+    selected_secs = select_spaced_seconds(cue_candidates, [], min_spacing=25, max_count=max_frames)
 
-        score = 0
-        for cue in INCOMPLETE_CONTEXT_CUES:
-            if cue in txt:
-                score += 2 if cue in ("ดูอันนี้", "ดูนี่", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "[?]") else 1
-
-        if score > 0:
-            cue_candidates.append((score, sec))
-
-    # Pick top cues with temporal spacing guard (>= 25s apart) up to max_frames
-    selected_secs: List[int] = []
-    cue_candidates.sort(key=lambda x: x[0], reverse=True)
-    for _, sec in cue_candidates:
-        if all(abs(sec - s) >= 25 for s in selected_secs):
-            selected_secs.append(sec)
-            if len(selected_secs) == max_frames:
-                break
-
-    # 2. If chunk has fewer than min_frames, supplement from interesting context
     if len(selected_secs) < min_frames:
         interesting_candidates: List[Tuple[float, int]] = []
         for it in items:
@@ -286,20 +250,15 @@ def select_target_seconds(
             sec = int(it.get("start", 0))
             if sec < start_sec or sec > end_sec:
                 continue
-
             int_score = len(txt) / 10.0
             if any(p in txt for p in ("!", "?", "555", "แต่ว่า", "เพราะว่า", "คือ")):
                 int_score += 2.0
             interesting_candidates.append((int_score, sec))
-
         interesting_candidates.sort(key=lambda x: x[0], reverse=True)
-        for _, sec in interesting_candidates:
-            if all(abs(sec - s) >= 25 for s in selected_secs):
-                selected_secs.append(sec)
-                if len(selected_secs) >= min_frames:
-                    break
+        selected_secs = select_spaced_seconds(
+            interesting_candidates, selected_secs, min_spacing=25, max_count=min_frames
+        )
 
-    # 3. Fill any remaining slots up to min_frames evenly across chunk bounds
     fallback_pool = [
         start_sec + 25,
         (start_sec + end_sec) // 2,
@@ -315,13 +274,6 @@ def select_target_seconds(
 
     selected_secs.sort()
     return selected_secs[:max_frames]
-
-
-STRONG_VISUAL_CUES = (
-    "ดูอันนี้", "ดูนี่", "เนี่ยดูดิ", "เปิดดู", "ในจอ", "ตรงนี้", "จุดนี้", "นี่ไง",
-    "ดูคลิป", "ตัวละครนี้", "สกินนี้", "การ์ดนี้", "เกมนี้", "หน้านี้", "รูปนี้",
-    "คลิปนี้", "ภาพนี้", "[?]"
-)
 
 
 def sample_chunk_keyframes(
@@ -403,12 +355,13 @@ def sample_chunk_keyframes(
         )
 
         anchor_sec = start_sec
-        pinned_secs = []
-        for it in (items or []):
-            sec = int(it.get("start", 0))
-            if start_sec <= sec <= end_sec and any(c in it.get("text", "") for c in STRONG_VISUAL_CUES):
-                if abs(sec - anchor_sec) >= 10 and all(abs(sec - p) >= 15 for p in pinned_secs):
-                    pinned_secs.append(sec)
+        pinned_candidates = collect_situational_candidates(items, start_sec, end_sec, pinned_only=True)
+        pinned_priority = {sec: score for score, sec in pinned_candidates}
+        pinned_secs: List[int] = []
+        for _, sec in pinned_candidates:
+            if abs(sec - anchor_sec) >= 10 and all(abs(sec - p) >= 15 for p in pinned_secs):
+                pinned_secs.append(sec)
+        pinned_secs.sort()
 
         step = max(5, int(round(sec_per_tile)))
         grid_secs = list(range(start_sec, end_sec + 1, step))
@@ -417,7 +370,7 @@ def sample_chunk_keyframes(
         kept: List[Tuple[int, Path, float, bool]] = []
         anchor_tile = _ensure_tile(anchor_sec)
         if anchor_tile:
-            kept.append((anchor_sec, anchor_tile, 1.0, True))
+            kept.append((anchor_sec, anchor_tile, 99.0, True))
             last_kept_tile = anchor_tile
             last_kept_sec = anchor_sec
         else:
@@ -443,7 +396,8 @@ def sample_chunk_keyframes(
 
             delta = compute_tile_visual_delta(last_kept_tile, cand_tile)
             if is_pinned or delta >= delta_threshold:
-                kept.append((sec, cand_tile, delta, is_pinned))
+                rank_score = pinned_priority.get(sec, delta) if is_pinned else delta
+                kept.append((sec, cand_tile, rank_score, is_pinned))
                 last_kept_tile = cand_tile
                 last_kept_sec = sec
 
@@ -451,6 +405,7 @@ def sample_chunk_keyframes(
             must_keep = [x for x in kept if x[3]]  # anchor and pinned
             others = [x for x in kept if not x[3]]
             if len(must_keep) > budget:
+                must_keep.sort(key=lambda x: x[2], reverse=True)
                 selected_items = must_keep[:budget]
             else:
                 others.sort(key=lambda x: x[2], reverse=True)
@@ -498,6 +453,15 @@ def build_multimodal_content(prompt_text: str, keyframes: List[Tuple[str, Path, 
     return content
 
 
+def _post_multimodal(url: str, payload: dict, headers: dict, timeout: int) -> str:
+    """Send multimodal JSON payload and return assistant message text."""
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    msg = data["choices"][0]["message"]
+    return msg.get("content") or msg.get("reasoning_content") or ""
+
+
 def call_multimodal(
     endpoint: str,
     model: str,
@@ -513,7 +477,7 @@ def call_multimodal(
         keep_imgs = set(id(img_items[int(i * len(img_items) / 8.0)]) for i in range(8))
         content_list = [c for c in content_list if c.get("type") != "image_url" or id(c) in keep_imgs]
 
-    payload = {
+    payload: Dict[str, object] = {
         "model": model,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -522,8 +486,9 @@ def call_multimodal(
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
-    data_bytes = json.dumps(payload).encode("utf-8")
-    api_key = (
+    if "tokenme" not in endpoint.lower():
+        payload["reasoning_effort"] = "none"
+    resolved_key = (
         api_key
         or os.environ.get("TOKENME_API_KEY")
         or os.environ.get("LM_API_KEY")
@@ -533,17 +498,17 @@ def call_multimodal(
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
     }
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
+    if resolved_key:
+        headers["Authorization"] = f"Bearer {resolved_key}"
 
     url = endpoint.rstrip("/")
     if not url.endswith("/chat/completions"):
         url = f"{url}/chat/completions" if url.endswith("/v1") else f"{url}/v1/chat/completions"
 
-    req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-
-    msg = data["choices"][0]["message"]
-    return msg.get("content") or msg.get("reasoning_content") or ""
+    try:
+        return _post_multimodal(url, payload, headers, timeout)
+    except urllib.error.HTTPError as e:
+        if e.code == 400 and "reasoning_effort" in payload:
+            payload.pop("reasoning_effort", None)
+            return _post_multimodal(url, payload, headers, timeout)
+        raise

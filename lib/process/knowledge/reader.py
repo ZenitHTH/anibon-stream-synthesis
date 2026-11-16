@@ -65,7 +65,11 @@ def parse_markdown_entities(text: str) -> Dict[str, Dict[str, Any]]:
 
         # Detect if c0 is version, chapter, canto, or index rather than a character name
         c0_is_version_or_meta = bool(
-            re.search(r"^\*?\*?(?:v?\d+(?:\.\d+)*|canto\s+[a-z0-9]+|บทที่\s*\d+|ตอนที่\s*\d+)\*?\*?$", c0.strip(), re.I)
+            re.search(
+                r"^\*?\*?(?:v?\d+(?:\.\d+)*|canto\s+[a-z0-9]+|บทที่\s*\d+|ตอนที่\s*\d+)(?:\s*\([^\)]*\))?\*?\*?$",
+                c0.strip(),
+                re.I,
+            )
         )
 
         if (c0_is_version_or_meta or not m_bold_0) and m_bold_1:

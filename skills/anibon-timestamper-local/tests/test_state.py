@@ -56,7 +56,14 @@ class TestState(unittest.TestCase):
 
         self.assertIn("User1: 55555", load_chunk_livechat(self.ws, "chunk_00"))
         self.assertEqual("Game on screen: FGO", load_chunk_activity(self.ws, "chunk_00"))
-        self.assertIn("HYPE", load_chunk_mood(self.ws, "chunk_00"))
+        mood_str = load_chunk_mood(self.ws, "chunk_00")
+        self.assertIn("HYPE", mood_str)
+        self.assertNotIn("()", mood_str)
+
+        (self.ws / "mood_555.json").write_text(json.dumps({
+            "chunk_01": {"verdict": "WARM"}
+        }), encoding="utf-8")
+        self.assertNotIn("()", load_chunk_mood(self.ws, "chunk_01"))
 
     def test_load_chunk_file_scrubs_speaker_name_and_phonetics(self):
         chunks_dir = self.ws / "chunks"

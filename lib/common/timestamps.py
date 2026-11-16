@@ -220,9 +220,9 @@ def deduplicate_consecutive_timestamps(
         if clean_prev and clean_curr and clean_prev == clean_curr:
             continue
 
-        # Exception: Don't drop Boss / Victory / Gacha / Donation / Highlight milestones unless < 2 mins apart
+        # Exception: Don't drop Boss / Victory / Gacha / Donation / Highlight / Ending milestones unless < 2 mins apart
         # Note: Death is excluded to prevent boss fight retry loops
-        is_milestone = bool(re.search(r"\[(Boss|Victory|Gacha|Donation|Highlight)\]", curr_stamp))
+        is_milestone = bool(re.search(r"\[(Boss|Victory|Gacha|Donation|Highlight|Ending)\]", curr_stamp))
 
         # Filter out superficial reactions/off-hand micro-stamps (< 2.5 min apart from previous talk)
         is_reaction = bool(re.search(r"\[Reaction\]", curr_stamp))

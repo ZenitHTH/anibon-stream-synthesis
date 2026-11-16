@@ -96,21 +96,48 @@ def _is_ascii_subset(garbled: str, target: str) -> bool:
     )
 
 
+def _extract_json3_text(raw: str) -> str:
+    try:
+        data = json.loads(raw)
+        if isinstance(data, dict) and "events" in data:
+            return "".join(
+                seg.get("utf8", "")
+                for ev in data.get("events", [])
+                for seg in ev.get("segs", [])
+            )
+    except Exception:
+        pass
+    return raw
+
+
+def _load_chunks_compact(workspace: Path) -> str:
+    chunks_dir = workspace / "chunks"
+    if not chunks_dir.is_dir():
+        return ""
+    parts = [p.read_text(encoding="utf-8", errors="ignore") for p in sorted(chunks_dir.glob("chunk_*.txt"))]
+    return re.sub(r"\s+", "", "".join(parts)).lower()
+
+
 def load_raw_transcript_compact(workspace: Path) -> str:
-    """Load space-stripped raw Google ASR text for anti-cascade ground-truth checks."""
+    """Load lowercase space-stripped raw Google ASR and chunk text for ground-truth checks."""
+    parts: List[str] = []
     for name in RAW_TRANSCRIPT_NAMES:
         path = workspace / name
         if path.is_file():
             content = _read_compact_file(path)
             if content:
-                return content
-    return ""
+                parts.append(content)
+                break
+    chunk_compact = _load_chunks_compact(workspace)
+    if chunk_compact:
+        parts.append(chunk_compact)
+    return "".join(parts)
 
 
 def _read_compact_file(path: Path) -> str:
     try:
         raw = path.read_text(encoding="utf-8")
-        return re.sub(r"\s+", "", raw)
+        return re.sub(r"\s+", "", _extract_json3_text(raw)).lower()
     except Exception:
         return ""
 

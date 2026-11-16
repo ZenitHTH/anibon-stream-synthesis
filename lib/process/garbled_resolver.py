@@ -15,6 +15,7 @@ from process.garbled_grounding import (
     GroundingContext,
     is_grounded_target,
     load_grounding_context,
+    select_batch_domain_hint,
 )
 from process.garbled_rules import (
     BATCH_SIZE,
@@ -75,7 +76,7 @@ def _extract_grounded_replacements(
         if not target or not is_safe_replacement(garbled, target):
             continue
         whisper = whisper_map.get(garbled, "")
-        if is_grounded_target(target, whisper, context):
+        if is_grounded_target(target, whisper, context, garbled=garbled):
             results[garbled] = target.strip()
     return results
 
@@ -96,7 +97,8 @@ def _invoke_llm(prompt: str, target: LlmTarget) -> str:
 def _resolve_single_batch(
     batch: List[dict], context: GroundingContext, target: LlmTarget
 ) -> Dict[str, str]:
-    prompt = _build_resolution_prompt(batch, context.domain_hint)
+    hint = select_batch_domain_hint(batch, context)
+    prompt = _build_resolution_prompt(batch, hint)
     try:
         reply = _invoke_llm(prompt, target)
         return _extract_grounded_replacements(batch, _parse_llm_json(reply), context)
@@ -119,7 +121,7 @@ def _is_eligible_pending(note: dict, seen: set[str], raw_compact: str) -> bool:
     garbled = note.get("garbled", "")
     if note.get("correct") or not is_valid_candidate_token(garbled) or garbled in seen:
         return False
-    if raw_compact and re.sub(r"\s+", "", garbled) not in raw_compact:
+    if raw_compact and re.sub(r"\s+", "", garbled).lower() not in raw_compact:
         return False
     return True
 

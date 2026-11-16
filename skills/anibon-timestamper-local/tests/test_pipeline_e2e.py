@@ -172,6 +172,20 @@ class TestPipelineE2E(unittest.TestCase):
             ["validate_mood", "garbled_collecting", "summary_timestamp", "limit_and_gates"],
         )
 
+    def test_audit_tokenizes_multiword_glossary_and_preserves_discord(self):
+        from process.audit import sanitize_and_audit_timestamps
+        from common.cleaner import clean_text
+
+        raw_md = "01:00:00 - [WatchParty] วิเคราะห์ศึก King Ghidorah และ Aza Zorth ผ่าน Discord ด้วย TCG"
+        glossary = {
+            "King Ghidorah": {"en": "King Ghidorah", "th": "คิงกิโดราห์"},
+            "Aza Zorth": {"en": "Aza Zorth", "th": "อซา ซอร์ธ"},
+        }
+        cleaned_md, stats = sanitize_and_audit_timestamps(raw_md, glossary=glossary, signals={}, garbled=[])
+        self.assertEqual(stats["suspected_hallucinations"], [])
+        self.assertEqual(cleaned_md, raw_md)
+        self.assertEqual(clean_text("ของเซนฟุ ในDiscord"), "ของเซโนลู (Xenolhu) ในDiscord")
+
 
 if __name__ == "__main__":
     unittest.main()

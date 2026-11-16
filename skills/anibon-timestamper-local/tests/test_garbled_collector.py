@@ -142,6 +142,47 @@ class TestGarbledCollector(unittest.TestCase):
             updated = json.loads(notes_path.read_text(encoding="utf-8"))
             self.assertTrue(all(n.get("correct") is None for n in updated["notes"]))
 
+    def test_split_json3_case_mismatch_and_trigram_hint_selection(self):
+        from process.garbled_collector import resolve_garbled_notes
+        from process.garbled_grounding import GroundingContext, select_batch_domain_hint
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            raw_tx = {
+                "events": [
+                    {"tStartMs": 1000, "segs": [{"utf8": "nept Glob"}, {"utf8": "บin vial กับ transฟusion"}]},
+                ]
+            }
+            (ws / "raw_transcript.json").write_text(json.dumps(raw_tx, ensure_ascii=False), encoding="utf-8")
+            (ws / "entity_glossary.json").write_text(
+                json.dumps({"Nephtoglobin Vial": {}, "10-Pull Ticket": {}}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            notes_path = ws / "garbled_notes.json"
+            notes_path.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "notes": [
+                            {"garbled": "Nept Globบin Vial", "google_sentence": "Nept Globบin Vial", "whisper_segment": "เนปโตโกลบินวายออล", "correct": None},
+                            {"garbled": "transฟusion", "google_sentence": "transฟusion", "whisper_segment": "ทรัมพิวชั่น", "correct": None},
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            hint = select_batch_domain_hint(
+                [{"garbled": "Nept Globบin Vial", "whisper_segment": ""}],
+                GroundingContext(known_canonical_terms=frozenset({f"item-{i:03d}" for i in range(90)} | {"nephtoglobin vial"})),
+                limit=2,
+            )
+            self.assertIn("nephtoglobin vial", hint)
+            mock_llm = json.dumps({"Nept Globบin Vial": "Nephtoglobin Vial", "transฟusion": "transfusion"}, ensure_ascii=False)
+            with patch("process.garbled_collector.call_local", return_value=mock_llm):
+                count = resolve_garbled_notes(ws, notes_path, endpoint="http://127.0.0.1:1234", model="test")
+            self.assertEqual(count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

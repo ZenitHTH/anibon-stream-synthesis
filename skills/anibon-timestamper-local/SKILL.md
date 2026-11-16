@@ -122,6 +122,7 @@ Before any signal detection or LLM analysis, `clean_transcript_noise()` automati
 Before processing chunks, `run_knowledge_discovery()` inspects `signals.json`, self-reads matched markdown references in `anibon-world-identity/references/*.md`, queries local databases (`atlas_fgo.db`, `pokemon.db`), and emits `<workspace>/entity_glossary.json`. Chunk prompts automatically filter relevant entities (capped to ~300 tokens) into the prompt context.
 - To bypass entity glossary discovery: pass `--no-knowledge-reader`.
 - **Pre-Stream Topic Research (Unindexed Cinema / Mythology / Pop-Culture)**: When a stream centers on an unindexed non-gaming or cultural domain (e.g. Indian cinema, *Ramayana*, historical epics), research and scaffold `anibon-world-identity/references/<Topic>.md`, `INDEX.md`, `thai_phonetic_bridge.json`, and `resources/knowledge.json` **before** running `prepare_video.py` so Stage 0.5 populates `entity_glossary.json` from `chunk_00`.
+- **Single-Game Broadcast `signals.json` Audit**: When the YouTube title or user confirms the entire stream covers a single game, inspect `<workspace>/signals.json` right after `prepare_video.py` / signal detection. If offhand analogies triggered competing games (e.g. *Minecraft*, *Wuthering Waves*), lock non-intro chunks' `allowed_sources` to the canonical `../anibon-world-identity/references/<Game>.md` before running Pass 1.
 
 
 #### 1. Download & Chunk (Skip if chunks/chunk_00.txt exists)
@@ -195,8 +196,10 @@ python3 -X utf8 scripts/align_live_chat.py \
 #### 1.9 Verify Model is Resident in VRAM (MANDATORY)
 `/v1/models` lists all models on disk, not those currently loaded in VRAM. If inference starts without an active model, calls will timeout after 60s or return `"Model is unloaded."`. Always check:
 ```bash
-curl -s http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
+curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
 ```
+> [!WARNING]
+> **LM Studio Unreachable vs. Ollama `*:cloud` Trap**: If `100.115.25.30:1234` refuses/times out, check `tailscale status`. An empty reply on the first 5–8s probe may be Tailscale UDP wake-up — retry once if the host shows `active`. If the desktop host is online/idle, ask the user to start LM Studio before falling back elsewhere. Do **not** point `process_chunks_local.py` at local Ollama `*:cloud` tags (e.g. `gemma4:cloud`): `HTTP 402: Payment Required` causes `lmstudio.py` to enter blackout-recovery retries.
 If empty, explicitly load the recommended profile before starting the run:
 ```bash
 curl -s -X POST http://100.115.25.30:1234/api/v1/models/load \
@@ -209,7 +212,31 @@ curl -s -X POST http://100.115.25.30:1234/api/v1/models/load \
     "offload_kv_cache_to_gpu": true
   }'
 ```
+
+> [!IMPORTANT]
+> **Shared-Host Memory Sizing (`parallel: 1` & Right-Sized Context)**:
+> Do **not** blindly load `"context_length": 262144` when the LM Studio host shares `<= 32 GB` system RAM with heavy workloads (e.g. a 12 GB game server) or uses default `parallel: 4`. For sequential Pass 1 (`~5.3k–15k` tokens with frames + `4096` output) and Pass 2 summary (`< 16k` tokens), load with `"parallel": 1` and `"context_length": 16384` (or `24576` for 16-frame multimodal) to cut KV memory 4×.
+> Verified 16GB Tesla P100 16-frame profile (`gemma-4-12b-it-qat@q4_k_xl`, `parallel: 1`, `context_checkpoints: 0`, `eval_batch_size: 1024`, `physical_batch_size: 1120`, `offload_kv_cache_to_gpu: true`): `93/93` chunks at `--eval-batch-size 12288 --max-chunk-frames 16` (`avg 14.73` frames/chunk) completed with 0 OOMs.
+
 Smoke-test with `--max-chunks 1` before launching a full 50+ chunk run.
+
+#### 1.9.1 Model Selection Benchmark: `gemma-4-12b-it-qat@q4_k_xl` vs. `gemma-4-26b-a4b-it@q2_k_xl` (Tesla P100 16GB)
+
+Controlled A/B benchmark across 5 multimodal chunks (`22.5 min`, 25 Storyboard keyframes, LiveChat + `entity_glossary.json`, `--eval-batch-size 8192 --max-chunk-frames 6`):
+
+| Metric / Dimension | `gemma-4-12b-it-qat@q4_k_xl` (Winner / Default) | `gemma-4-26b-a4b-it@q2_k_xl` |
+|---|---|---|
+| **Architecture & Quant** | 12B Dense, Q4_K_XL (QAT, 4 bpw) | 26B Total / 4B Active MoE, Q2_K_XL (2 bpw) |
+| **GGUF File Size** | `6.93 GB` (`6,925,879,040` B) | `12.84 GB` (`12,838,138,581` B) |
+| **P100 VRAM Headroom** | Safe at `context_length: 24576` (`90.50s` cold load) | Drops connection/OOM at `24576` (`12.84 GB` + `mmproj` + KV > `14.5 GB` ceiling); requires `<= 16384` (`209.11s` cold load) |
+| **5-Chunk + Pass 2 Wall Time** | `293.24s` (`~48.9s` / call) | `172.89s` (`~28.8s` / call, **1.70× faster** due to 4B active MoE) |
+| **Pass 1 Topic Recall** | **10 stamps** — detects `is_continuation: false` shifts accurately (`4/5` chunks) | **7 stamps** — locks `is_continuation: true` across chunks `01`–`04`, dropping 3 sub-topics |
+| **Proper Noun Retention** | Retains specific Thai entities (`มาซึากะดันโจ` at `00:15:12`, `มาโฮโย` IMAX at `00:19:44`) | Collapses `มาโฮโย` into generic `"การรอชมอนิเมะในโรง IMAX"`; resolves ASR `"Cero Nightman"` → `"Chaos Zero Nightmare"` in summaries |
+| **Pass 2 Summarizer & Gates** | JSON schema occasionally falls back to heuristic part assembly (`⚠️ Header appears truncated`); **0** verb diversity warnings | Clean Pass 2 JSON headers, but over-splits 6 stamps into 3 micro-parts (`3L, 2L, 1L`) and repeats `"เม้าท์มอย"` (`>20%` warning) |
+
+**Operational Decision Rules**:
+1. **Default to `gemma-4-12b-it-qat@q4_k_xl` (or `google/gemma-4-12b-qat`) for Pass 1**: 4-bit QAT preserves state-machine shift sensitivity (`is_continuation`), Thai proper-noun recall, and 16-frame multimodal VRAM stability on 16GB P100.
+2. **When `gemma-4-26b-a4b-it@q2_k_xl` is used**: Always cap `"context_length": 16384` (never `>= 24576` with vision enabled on 16GB VRAM) and audit for swallowed sub-topics caused by sticky `is_continuation: true` state transitions under Q2 quantization.
 
 #### 2. Run Timestamper Directly (Foreground)
 **macOS / Linux:**
@@ -242,20 +269,21 @@ python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtub
 
 # To tune visual sensitivity or evaluation batch size:
 python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
-  --eval-batch-size 8192 \
+  --eval-batch-size 4096 \
   --max-chunk-frames 16 \
   --scene-delta-threshold 0.06
 
-# To disable adaptive scene deduplication (fallback to legacy fixed 3-5 frames):
-python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-scene-dedup
+# To disable adaptive scene deduplication and force fixed spacing (default 5 frames, or override with --max-chunk-frames N):
+python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-scene-dedup --max-chunk-frames 12
 
 # To disable all multimodal analysis and run in text-only mode:
 python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --no-multimodal
 ```
 
 **Adaptive Scene-Change Keyframe Selector (`scene_dedup=True`):**
+- **Token Budget vs. LM Studio Physical Batch (CRITICAL)**: LM Studio load payload `"eval_batch_size": 1024` is llama.cpp's physical prefill batch size, whereas `process_chunks_local.py --eval-batch-size` is the **combined text + image token budget** in `compute_frame_budget()` (`avail = eval_batch_size - text_tokens`, `260` tokens/frame). With `--live-chat` + World Identity active, `text_tokens` runs `~5,100–6,500`, so `--eval-batch-size 1024` or config default `4096` starves `avail` to `0` and silently clamps every chunk to **1 frame**. Pass `--eval-batch-size 8192 --max-chunk-frames 6` (or `12288` / `16` on `context_length >= 24576`) when multi-frame adaptive keyframes are desired.
 - **Static Screens**: Drops static talking-head / waiting screens down to 1–2 frames (saving physical batch compute and prompt tokens).
-- **Dynamic Action**: Automatically expands up to 16 frames per 5-min chunk whenever visual scene transitions occur, bounded by `--eval-batch-size` (default `8192`).
+- **Dynamic Action**: Automatically expands up to 16 frames per 5-min chunk whenever visual scene transitions occur, bounded by `--eval-batch-size` (default `4096`).
 - **Thai Deictic Cue Pinning**: Pins exact visual frames whenever Pu Boat uses deictic pointers (`"ดูอันนี้"`, `"ในจอ"`, `"ตรงนี้"`, `"[?]"`).
 - **RGB Sidecar Caching**: Automatically persists 16×9 432-byte downsampled buffers (`tile_XXXXXX.rgb`) alongside `.jpg` tiles, eliminating repeated `ffmpeg` subprocess overhead across comparisons and reruns.
 - **Clean-Slate `--no-resume`**: Passing `--no-resume` automatically unlinks stale `recursive_outputs/chunk_*.json` files to guarantee clean execution without leftover chunk contamination.
@@ -341,6 +369,7 @@ After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py
 
 - **Garbled Collector Safety Rules**:
   - Rejects ASCII patterns `< 5` characters (`"ON"`, `"MDB"`) to avoid substring corruptions (e.g. `"Donghua"` → `"DNexonghua"`).
+  - Rejects unanchored Thai substrings `<= 4` characters (e.g. `"โซต"` inside `"เมอร์โซต์"`) to prevent cross-word corruptions like `"เมอร์Lost Soul Aside์"`.
   - Rejects patterns where `garbled.lower() in target.lower()` (e.g. `"on"` in `"Nexon"`).
   - Rejects ungrounded LLM targets not found in dictionary, glossary, stream title, or Whisper audio segments.
   - Re-cleans both `chunks/*.txt` and `anibon_timestamps.md` upon updating the dictionary.
@@ -357,6 +386,8 @@ After `anibon_timestamps.md` summary assembly finishes, `process_chunks_local.py
   ```
 - To run garbled collection manually at any time:
   ```bash
+  # Reuse the remote whisper.cpp server hosted alongside LM Studio (port 8082):
+  WHISPER_ENDPOINT="http://100.115.25.30:8082/inference" \
   python3 scripts/whisper_dispatcher.py ~/youtube_<VIDEO_ID>_workspace \
       --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>" --verbose
   python3 ../cleaning-auto-transcripts/scripts/update_garbled_dictionary.py \
@@ -376,6 +407,8 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
    - **Domain Context Bleeding**: Check non-gaming talk segments adjacent to gaming segments. Local 12B models often distort general words (e.g. `"บริษัทนั้น"` in a food/political news story) into `"บริษัทเกม"`. Verify the actual subject in `raw_transcript.json`.
    - **Comparative Analogy Promotion**: When a secondary title (e.g. *Heaven Burns Red*, *Yu-Gi-Oh! GX*, *Bleach*) appears in a section dedicated to another main topic (e.g. *Wuthering Waves*), verify whether it was only used as a comparative example (e.g. ensemble cast or companion writing) and frame the timestamp around the primary topic.
    - **Gameplay vs. Gacha Pulling Transitions**: During gameplay segments of gacha games (*Nikke*, *Arknights: Endfield*, *WuWa*), check the transcript for gacha pull keywords (`หลุดเรท`, `ตู้ถาวร`, `เพชรหมด`, `Token Exchange`) so gacha sessions are not mislabeled as continuing gameplay mechanics (e.g. factory/belt building).
+   - **Critique-Clause Inversion & Verdict Polarity**: Never invert a mixed praise-with-caveat remark into negative bashing from one isolated clause (e.g. `"อยากให้ X ได้... มันก็ดี แต่เล่นไม่กี่รอบก็เบื่อ"` defends/regrets *X* losing, not calling *X* boring overall). Verify speaker stance against adjacent LiveChat reactions (`Pokopia น่าจะได้สักรางวัล`).
+   - **Award WatchParty Nominee & Acronym Cross-Check**: During live award broadcasts (Golden Joystick, TGA), cross-check short phonetic acronyms (`"f z"` / `"PBZ"` → *Phantom Blade Zero*, not *F-Zero*; `"C of RAM"` → *Cult of the Lamb*) against the category's verified nominee list in `anibon-world-identity/references/*.md`.
    - **Dual-Track Desync (Gameplay State vs. Talk Topic)**: Pu Boat often sets up an in-game action (summoning mobs to fight each other, AFK farms, long crafts, waiting for a boss) and then talks about something unrelated for 5–40 minutes while it runs. Track both every time:
      1. **Gameplay Track**: Find the *plan statement* that explains the current scene. Search the transcript backward (up to ~20 min) for intent verbs (`เดี๋ยวให้มันสู้กัน`, `รอ`, `ปล่อยไว้`, `เสก`, `ล่อ`). Confirm it with storyboard frames: quest tracker text, boss bar name, and the mobs actually present. A creature on screen does NOT mean Boat is fighting it.
      2. **Talk Track**: Find the topic Boat is actually speaking about (donations, news, Q&A).
@@ -384,6 +417,15 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
    - Correct phonetic drifts, streamer self-corrections (e.g. `"Godzilla Minus One เอ้ย Zero"` → `Godzilla Minus Zero`), mis-anchored lead-ins, or LLM hallucinations in **both** `anibon_timestamps.md` (`anibon_timestamps_essential.md`) **and** `all_timestamps.txt` (`anibon_timestamps_full.md`).
    - **Discord Guest / Co-Host Join & Leave**: When a viewer or guest joins voice chat for an extended segment, ensure both the mic-join timestamp and sign-off timestamp are preserved (never swallowed by `SAME_TOPIC` continuation).
    - **Check `"วิพากษ์"` Verb Saturation**: Local 12B models frequently start 40%+ of lines with `"วิพากษ์"`. Verify all opening verbs (not only `"วิเคราะห์"`) stay $\le 20\%$ of total lines and never repeat $>2$ consecutive lines.
+   - **Premature `[Victory]` & Floor/Boss Progression Lookahead**: Streamers often exclaim `"ผ่านแล้ว"` before noticing a surviving phase/wave 20–40s later (`"อ้าว ไม่ผ่าน"`). In Stage 5 audit, read `30–60s` forward around every `[Victory]` stamp in `chunks/*.txt` and verify destination cues (`"ไปชั้น 13 ได้"` means Floor **12** was just cleared, not Floor 13).
+   - **EOF-Stranded `[Ending]` Guard**: If `[Ending]` is stamped in the final ~30s before stream EOF (e.g. `06:56:51` on a `06:57:19` VOD), scan the preceding 3–5 minutes in `chunks/` to anchor the actual closing wrap-up (`[Talk]` / `[Ending]`) and separate any `[Donation]` donor-list reading before the final sign-off.
+   - **LiveChat Cross-Bleed & Visual Frame Grounding**: When a suspect unit/boss appears invented (e.g. `Ziongo`, `Nobunaga Audi Eternity`) or missing from `atlas_fgo.db` (NPC-only Servants like `Matsunaga Hisahide`), inspect `chunks/*.txt` dialogue and the exact timestamped `frames/chunk_tiles/tile_*.jpg` before trusting chat chatter (`Enkidu` in chat can bleed onto an active `Sakata Kintoki` segment).
+   - **Post-Edit Gate Re-run (Plugin Root Paths)**: `audit_gaps.py` and `check_sections.py` live at **plugin root `scripts/`** (not `skills/anibon-timestamper-local/scripts/`). Re-run after any manual Stage 5 edit:
+     ```bash
+     python3 scripts/audit_gaps.py ~/youtube_<VIDEO_ID>_workspace/anibon_timestamps.md --chunks-dir ~/youtube_<VIDEO_ID>_workspace/chunks
+     python3 scripts/audit_gaps.py ~/youtube_<VIDEO_ID>_workspace/all_timestamps.txt --chunks-dir ~/youtube_<VIDEO_ID>_workspace/chunks
+     python3 scripts/check_sections.py ~/youtube_<VIDEO_ID>_workspace/anibon_timestamps.md
+     ```
 4. **Persist Knowledge (Post-Stream Harvesting Protocol)**:
    - **Audit Suspect Entities**: Review `audit_timestamps_against_glossary` warnings from the assembly pass.
    - **Phonetic Drifts**: Add confirmed speaker misspellings/drifts (e.g. `เคราสเซียร์นี้แม่` → `Chaos Zero Nightmare`, `อัชเฉร้อน` → `อาชิยะ โดมัน`) to `garbled_replacements.json` via `update_garbled_dictionary.py`.
@@ -593,4 +635,9 @@ Proper nouns, mod names, and franchise titles in the stream's own YouTube metada
     - *Symptom*: Model translates "เผด็จการยูริ" into *Command & Conquer: Red Alert 2 - Yuri's Revenge*.
     - *Cause*: ASR misses brief game trailer; LLM anchors on "ยูริ" (Yuri) and defaults to legacy RTS franchise.
     - *Fix*: In anime/gaming streams, "เผด็จการยูริ" refers exclusively to ***The Great Villainess: Strategy of Lily*** (เกมวางแผนสงครามนางร้ายสายยูริ) on Steam/Switch. Never emit Red Alert without explicit RTS, Westwood, or Command & Conquer context.
+
+16. **Storyboard Progressive Time Drift on 6–10h+ Streams (`88.94s` vs Actual `X.yt-dlp.Duration`)**:
+    - *Symptom*: Visual `chunk_tiles/tile_XXXXXX.jpg` frames at hours 8–10 depict events 5–7 minutes *ahead* of `raw_transcript.json` and `livechat` at the same `HH:MM:SS` (e.g. `tile_035400.jpg` shows `09:56` livechat).
+    - *Cause*: `multimodal.py` defaults to `sec_per_slide=88.94` while YouTube MHTML sheets may report `X.yt-dlp.Duration: 89.959916` (`+1.15%` cumulative offset; `raw_transcript.json` and `livechat` remain at `0s` drift).
+    - *Fix*: When visually verifying timestamps past hour 4, cross-check the burned-in LiveChat clock or `livechat/*.txt` inside the tile rather than trusting `tile_XXXXXX` seconds blindly.
 

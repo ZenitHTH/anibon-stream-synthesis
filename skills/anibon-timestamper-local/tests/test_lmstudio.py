@@ -77,6 +77,36 @@ class TestLMStudio(unittest.TestCase):
         self.assertEqual(len(payload["messages"]), 2)
         self.assertEqual(payload["messages"][0]["role"], "system")
         self.assertEqual(payload["messages"][1]["content"], "Test prompt")
+        self.assertNotIn("reasoning_effort", payload)
+
+    def test_build_chat_payload_disable_reasoning(self):
+        payload = build_chat_payload("test-model", "Test prompt", 256, 0.2, disable_reasoning=True)
+        self.assertEqual(payload["reasoning_effort"], "none")
+
+    def test_prepare_request_sets_reasoning_effort_for_local_only(self):
+        import json
+        from common.lmstudio import _prepare_request
+
+        local_req = _prepare_request(
+            "http://100.115.25.30:1234/v1/chat/completions", "test-model", "Hi", 64, 0.1, "sys"
+        )
+        remote_req = _prepare_request(
+            "https://tokenme.example/v1/chat/completions", "test-model", "Hi", 64, 0.1, "sys"
+        )
+        self.assertEqual(json.loads(local_req.data.decode("utf-8")).get("reasoning_effort"), "none")
+        self.assertNotIn("reasoning_effort", json.loads(remote_req.data.decode("utf-8")))
+
+    @patch("common.lmstudio._try_fallback_native_chat", return_value=None)
+    @patch("common.lmstudio._execute_http_call")
+    def test_call_local_retries_without_reasoning_on_http_400(self, mock_exec, _mock_native):
+        import urllib.error
+        from common.lmstudio import call_local
+
+        err_400 = urllib.error.HTTPError("http://127.0.0.1:1234/v1/chat/completions", 400, "Bad Request", {}, None)
+        mock_exec.side_effect = [err_400, "Recovered"]
+        res = call_local("http://127.0.0.1:1234/v1/chat/completions", "test-model", "Hi", 64, 0.1, retries=0)
+        self.assertEqual(res, "Recovered")
+        self.assertEqual(mock_exec.call_count, 2)
 
     def test_build_vision_payload(self):
         payload = build_vision_payload(

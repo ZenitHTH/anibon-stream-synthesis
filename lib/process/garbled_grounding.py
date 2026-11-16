@@ -5,7 +5,9 @@ anibon.garbled_grounding — Grounding validation against canonical references.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
+from difflib import SequenceMatcher
 from pathlib import Path
 from typing import List, Set
 
@@ -84,7 +86,44 @@ def load_grounding_context(workspace: Path) -> GroundingContext:
     )
 
 
-def is_grounded_target(target: str, whisper_segment: str, context: GroundingContext) -> bool:
+def _trigrams(text: str) -> Set[str]:
+    clean = re.sub(r"\s+", "", text.lower())
+    if len(clean) < 3:
+        return {clean} if clean else set()
+    return {clean[i : i + 3] for i in range(len(clean) - 2)}
+
+
+def select_batch_domain_hint(batch: List[dict], context: GroundingContext, limit: int = 80) -> str:
+    """Prioritize known entities sharing trigrams with the current garbled/whisper batch."""
+    query_grams: Set[str] = set()
+    for item in batch:
+        query_grams.update(_trigrams(item.get("garbled", "")))
+        query_grams.update(_trigrams(item.get("whisper_segment", "")))
+    if not query_grams or not context.known_canonical_terms:
+        return context.domain_hint
+    scored = sorted(
+        context.known_canonical_terms,
+        key=lambda t: (-len(query_grams & _trigrams(t)), t),
+    )
+    return _build_domain_hint(context.stream_title, scored[:limit])
+
+
+def _is_close_latin_corrupt(garbled: str, target_clean: str) -> bool:
+    if not garbled or garbled.isascii():
+        return False
+    g_ascii = re.sub(r"[^a-z0-9]", "", garbled.lower())
+    t_ascii = re.sub(r"[^a-z0-9]", "", target_clean)
+    if len(g_ascii) < 6 or len(t_ascii) < 6:
+        return False
+    return SequenceMatcher(None, g_ascii, t_ascii).ratio() >= 0.80
+
+
+def is_grounded_target(
+    target: str,
+    whisper_segment: str,
+    context: GroundingContext,
+    garbled: str = "",
+) -> bool:
     """Verify target exists in canonical dictionary, entity glossary, stream title, or Whisper segment."""
     target_clean = target.strip().lower()
     if not target_clean:
@@ -95,4 +134,4 @@ def is_grounded_target(target: str, whisper_segment: str, context: GroundingCont
         return True
     if whisper_segment and target_clean in whisper_segment.lower():
         return True
-    return False
+    return _is_close_latin_corrupt(garbled, target_clean)

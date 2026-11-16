@@ -177,7 +177,7 @@ PROBE_TIMEOUT_SEC: float = 1.0
 
 CHUNK_MAX_TOKENS: int = 4096
 CHUNK_TIMEOUT_SEC: int = 180
-MULTIMODAL_TIMEOUT_SEC: int = 120
+MULTIMODAL_TIMEOUT_SEC: int = 180
 
 PRUNE_MAX_TOKENS: int = 8192
 PRUNE_TIMEOUT_SEC: int = 600
@@ -206,7 +206,7 @@ LINE_CAP_LIMIT: int = 25
 LINE_WARN_LIMIT: int = 20
 
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
-EVAL_BATCH_SIZE: int = 8192
+EVAL_BATCH_SIZE: int = 4096
 TOKENS_PER_IMAGE: int = 260
 SCENE_DELTA_THRESHOLD: float = 0.12
 MAX_CHUNK_FRAMES: int = 6
@@ -231,7 +231,7 @@ def reload_config() -> None:
 
     CHUNK_MAX_TOKENS = cfg_int("chunk_max_tokens", 4096)
     CHUNK_TIMEOUT_SEC = cfg_int("chunk_timeout_sec", 180)
-    MULTIMODAL_TIMEOUT_SEC = cfg_int("multimodal_timeout_sec", 120)
+    MULTIMODAL_TIMEOUT_SEC = cfg_int("multimodal_timeout_sec", 180)
 
     PRUNE_MAX_TOKENS = cfg_int("prune_max_tokens", 8192)
     PRUNE_TIMEOUT_SEC = cfg_int("prune_timeout_sec", 600)
@@ -260,7 +260,7 @@ def reload_config() -> None:
     LINE_WARN_LIMIT = cfg_int("line_warn_limit", 20)
 
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
-    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 8192)
+    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 4096)
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
     SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
     MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 6)

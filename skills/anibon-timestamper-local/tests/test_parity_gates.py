@@ -47,6 +47,24 @@ class TestParityGates(unittest.TestCase):
         self.assertTrue((_PLUGIN_SCRIPTS / "audit_gaps.py").is_file(), "audit_gaps.py missing in _PLUGIN_SCRIPTS")
         self.assertTrue((_PLUGIN_SCRIPTS / "check_sections.py").is_file(), "check_sections.py missing in _PLUGIN_SCRIPTS")
 
+    def test_audit_gaps_skips_explicit_afk_breaks_and_flags_real_gaps(self):
+        import sys
+        from process.parity_gates import _PLUGIN_SCRIPTS
+        scripts_dir = str(_PLUGIN_SCRIPTS)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import audit_gaps
+
+        ts = [
+            (0, "00:00:00 - [Intro] เปิดสตรีม"),
+            (3600, "01:00:00 - [Talk] พักเบรกเข้าห้องน้ำสักครู่"),
+            (4680, "01:18:00 - [Talk] กลับมาคุยต่อ"),
+            (4980, "01:23:00 - [Gameplay] ลุยด่าน"),
+        ]
+        gaps = audit_gaps.find_gaps(ts, max_gap_sec=600)
+        self.assertEqual(len(gaps), 1)
+        self.assertEqual(gaps[0][0], 3600)
+
 
 if __name__ == "__main__":
     unittest.main()

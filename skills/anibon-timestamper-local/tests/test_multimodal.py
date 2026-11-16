@@ -308,6 +308,65 @@ class TestMultimodal(unittest.TestCase):
                 self.assertEqual(result, clean_dir)
                 self.assertTrue((clean_dir / "slide_0001.jpg").is_file())
 
+    def test_call_multimodal_sets_reasoning_none_and_retries_400(self):
+        import urllib.error
+        from process.multimodal import call_multimodal
+
+        captured = []
+
+        def fake_post(url, payload, headers, timeout):
+            captured.append(dict(payload))
+            if len(captured) == 1:
+                raise urllib.error.HTTPError(url, 400, "Bad Request", {}, None)
+            return "OK"
+
+        with patch("process.multimodal._post_multimodal", side_effect=fake_post):
+            out = call_multimodal("http://100.115.25.30:1234", "gemma", [{"type": "text", "text": "hi"}])
+
+        self.assertEqual(out, "OK")
+        self.assertEqual(captured[0].get("reasoning_effort"), "none")
+        self.assertNotIn("reasoning_effort", captured[1])
+
+    def test_situational_cues_and_silence_gaps_and_hud_band_delta(self):
+        import tempfile
+        from process.multimodal import compute_tile_visual_delta, sample_chunk_keyframes, select_target_seconds, Image
+        from process.multimodal_situations import detect_silence_gap_seconds
+
+        # 1. Boss, gear/gacha, and topic-shift cues are selected and pinned
+        items = [
+            {"start": 10, "text": "เดินสำรวจฉากปกติ"},
+            {"start": 45, "text": "เจอบอสตัวใหม่ ปะทะกันเลย"},
+            {"start": 95, "text": "อัปเกรดอาวุธใหม่และเปิดตู้กาชา"},
+            {"start": 150, "text": "ชนะแล้ว ปราบได้สักที"},
+            {"start": 210, "text": "ข่าวต่อไป มาดูตัวอย่างเทรลเลอร์"},
+        ]
+        secs = select_target_seconds(0, 270, min_frames=3, max_frames=4, items=items)
+        self.assertEqual(len(secs), 4)
+        self.assertIn(45, secs)
+        self.assertIn(95, secs)
+        self.assertIn(150, secs)
+
+        # 2. Silence gap detection in dense chunks (e.g. 30s cutscene gap at 100..130)
+        dense_items = [{"start": i * 10, "text": "พูดคุย"} for i in range(10)] + [
+            {"start": 130, "text": "คัตซีนจบแล้ว"},
+        ]
+        gaps = detect_silence_gap_seconds(dense_items, 0, 150, min_gap_sec=20)
+        self.assertEqual(len(gaps), 1)
+        self.assertEqual(gaps[0][1], 110)
+
+        # 3. Regional HUD band delta detects top-band boss HP bar on dark screen
+        if Image is not None:
+            with tempfile.TemporaryDirectory() as tmp:
+                base_tile = Path(tmp) / "dark_base.jpg"
+                hud_tile = Path(tmp) / "dark_hud.jpg"
+                im_base = Image.new("RGB", (320, 180), (15, 15, 15))
+                im_hud = Image.new("RGB", (320, 180), (15, 15, 15))
+                hud_bar = Image.new("RGB", (320, 40), (200, 40, 40))
+                im_hud.paste(hud_bar, (0, 0))
+                im_base.save(base_tile)
+                im_hud.save(hud_tile)
+                self.assertGreaterEqual(compute_tile_visual_delta(base_tile, hud_tile), 0.06)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -185,6 +185,20 @@ class TestSummarizer(unittest.TestCase):
         self.assertEqual(out, sorted(out, key=lambda l: parse_ts(l[:8])))
 
     @patch("process.summarizer.call_local")
+    def test_prune_retains_boss_and_victory_milestones(self, mock_call):
+        from process.summarizer import prune_essential
+        stamps = [f"{i//60:02d}:{i%60:02d}:00 - [Talk] หัวข้อ {i}" for i in range(98)] + [
+            "01:38:00 - [Boss] ปะทะบอส Slaughtermill",
+            "01:42:00 - [Victory] ปราบ Slaughtermill สำเร็จ",
+            "01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม",
+        ]
+        mock_call.return_value = "\n".join(stamps[10:40])
+        out = prune_essential("http://127.0.0.1:1234", "test-model", stamps)
+        self.assertIn("01:38:00 - [Boss] ปะทะบอส Slaughtermill", out)
+        self.assertIn("01:42:00 - [Victory] ปราบ Slaughtermill สำเร็จ", out)
+        self.assertIn("01:45:00 - [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม", out)
+
+    @patch("process.summarizer.call_local")
     def test_prune_skips_short_input(self, mock_call):
         from process.summarizer import prune_essential
         stamps = [f"00:{i:02d}:00 - [Talk] หัวข้อ {i}" for i in range(30)]
@@ -245,8 +259,109 @@ class TestSummarizer(unittest.TestCase):
         header = "ปู่โบ๊ตวิเคราะห์อัปเดต Wuthering Waves และ Blue Archive"
         self.assertEqual(clean_caveman_text(header), "วิเคราะห์อัปเดต Wuthering Waves และ Blue Archive")
 
+    def test_clean_caveman_text_strips_dual_track_prefix(self):
+        from process.summarizer import clean_caveman_text
+        stamp = "02:35:08 - [Talk] เฝ้าสำรวจ Phantom Blade Zero พร้อมวิจารณ์ระบบ AI ศัตรู"
+        self.assertEqual(
+            clean_caveman_text(stamp),
+            "02:35:08 - [Talk] วิจารณ์ระบบ AI ศัตรู",
+        )
+
+    def test_build_summarizer_prompt_uses_numbered_index_and_range_slot(self):
+        from process.summarizer_prompt import build_summarizer_prompt
+        stamps = [f"{i * 4 // 60:02d}:{i * 4 % 60:02d}:00 - [Talk] ประเด็นที่ {i}" for i in range(120)]
+        prompt = build_summarizer_prompt(stamps)
+        self.assertIn("[001] 00:00:00", prompt)
+        self.assertIn("[120]", prompt)
+        self.assertIn("Range: [001]-", prompt)
+        self.assertIn("<= 20 lines per part", prompt)
+
+    def test_parse_summarizer_matches_handles_optional_range_line(self):
+        from process.summarizer_prompt import parse_summarizer_matches
+        raw = (
+            "Part 1: 00:00:00\n"
+            "Range: [001]-[010]\n"
+            "Summary: ทักทายผู้ชม + อัปเดต Master Duel + วิเคราะห์ดราม่าข้อมูลหลุด FGO\n\n"
+            "Part 2: 00:30:40\n"
+            "Range: [011]-[025]\n"
+            "Summary: แนะนำตัวละคร FGO และเจาะลึก Roadmap\n"
+        )
+        matches = parse_summarizer_matches(raw)
+        self.assertEqual(len(matches), 2)
+        self.assertEqual(matches[0][0], "1")
+        self.assertEqual(matches[0][1], "00:00:00")
+        self.assertNotIn(" + ", matches[0][2])
+        self.assertIn("Master Duel", matches[0][2])
+
+    def test_generate_part_summary_caps_clause_length(self):
+        stamps = [
+            "05:50:00 - [Gameplay] ส่องประสิทธิภาพดาบแดงและเทคนิคการปัดป้องใน Phantom Blade Zero",
+            "06:30:38 - [Story] รับชมคัทซีนเนื้อเรื่องการย้ายวิญญาณและแผนการร้ายใน Phantom Blade Zero",
+            "09:20:00 - [Death] พ่ายแพ้บอสใหญ่ Phantom Blade Zero พร้อมระบายความหงุดหงิดเรื่อง Memory Leak ของเกม",
+        ]
+        summary = generate_part_summary(stamps)
+        self.assertLessEqual(len(summary), 110)
+
+    def test_clean_caveman_text_preserves_kard_and_strips_self_eval(self):
+        from process.summarizer import clean_caveman_text
+        stamp = "02:40:14 - [Talk] พูดถึงการ์ด TCG และการขายของที่เกี่ยวข้องกับอุลตร้าแมน"
+        self.assertEqual(
+            clean_caveman_text(stamp),
+            "02:40:14 - [Talk] พูดถึงการ์ด TCG และการขายของที่เกี่ยวข้องกับอุลตร้าแมน",
+        )
+        header = "วิเคราะห์เนื้อเรื่องโอเมก้าฮอร์นและประเด็นราชันอสูรผงาด (Analyze Omega Horn story and Rajan issues) - Good."
+        self.assertEqual(
+            clean_caveman_text(header),
+            "วิเคราะห์เนื้อเรื่องโอเมก้าฮอร์นและประเด็นราชันอสูรผงาด",
+        )
+        stutter = "00:08:50 - [Talk] รีวิวถังป๊อปคอร์นและโปรโมโมชั่นของ SF"
+        self.assertIn("โปรโมชั่น", clean_caveman_text(stutter))
+        self.assertNotIn("โปรโมโมชั่น", clean_caveman_text(stutter))
+
+    def test_parse_summarizer_matches_does_not_bridge_across_parts(self):
+        from process.summarizer_prompt import parse_summarizer_matches
+        raw = (
+            "Part 1: 00:01:32\n"
+            "Range: [001]-[010]\n\n"
+            "Part 2: 01:03:31\n"
+            "Range: [011]-[020]\n"
+            "Summary: วิเคราะห์เนื้อเรื่องโอเมก้าฮอร์น (Analyze Omega Horn story) - Good.\n"
+        )
+        matches = parse_summarizer_matches(raw)
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0][0], "2")
+        self.assertEqual(matches[0][1], "01:03:31")
+        self.assertEqual(matches[0][2], "วิเคราะห์เนื้อเรื่องโอเมก้าฮอร์น")
+
+    def test_parse_summarizer_matches_recovers_corrupted_hour_from_range(self):
+        from process.summarizer_prompt import parse_summarizer_matches
+        stamps = [
+            "00:01:32 - [Intro] เปิดไลฟ์เตรียมความพร้อม",
+            "01:12:01 - [Talk] วิพากษ์วงการโทกุซัตสึ",
+            "02:25:16 - [WatchParty] เตรียมรับชมอุลตร้าแมนเทโอ",
+        ]
+        raw = (
+            "Part 1: 00:01:32\nRange: [001]-[001]\nSummary: เปิดไลฟ์เตรียมความพร้อม\n\n"
+            "Part 2: 00:12:01\nRange: [002]-[002]\nSummary: วิเคราะห์วงการโทกุซัตสึ\n\n"
+            "Part 3: 00:25:16\nRange: [003]-[003]\nSummary: รับชมอุลตร้าแมนเทโอ\n"
+        )
+        matches = parse_summarizer_matches(raw, stamps=stamps)
+        self.assertEqual([m[1] for m in matches], ["00:01:32", "01:12:01", "02:25:16"])
+
+    def test_generate_part_summary_avoids_thai_mid_word_chopping(self):
+        stamps = [
+            "01:43:46 - [WatchParty] วิพากษ์ฉากต่อสู้และเทคนิคการถ่ายทำในหนังสั้น",
+            "02:46:30 - [WatchParty] วิพากษ์การปรากฏตัวของไคจูและทฤษฎีการจำศีลใต้ดิน",
+            "04:34:32 - [WatchParty] รับชมฉากการต่อสู้และวิพากษ์วิจารณ์การใช้พลัง",
+        ]
+        summary = generate_part_summary(stamps)
+        self.assertLessEqual(len(summary), 110)
+        for broken in ("เทคนิคการถ่", "ไคจูและทฤ", "วิพากษ์วิจ", "และเทคนิค", "และทฤษ"):
+            self.assertNotIn(broken, summary)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

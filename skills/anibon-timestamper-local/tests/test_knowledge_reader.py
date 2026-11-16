@@ -94,6 +94,7 @@ class TestKnowledgeReader(unittest.TestCase):
                 "| เวอร์ชัน | ตัวละคร | พาธ (Path) | ธาตุ |\n"
                 "| :---: | :--- | :---: | :---: |\n"
                 "| **4.3** | **Phainon (ไฟนอน)** | ล่าสังหาร (The Hunt) | ไฟ |\n"
+                "| **4.7 (11 พ.ย. 2026 - LIVE วันนี้)** | **Aeon Aha (อาฮา)** | ปิติสุข (Elation) | ควอนตัม |\n"
                 "| **Canto X** | **Meursault** | Vanguard | Ice |\n",
                 encoding="utf-8"
             )
@@ -105,8 +106,10 @@ class TestKnowledgeReader(unittest.TestCase):
             }
             glossary = extract_entity_glossary(signals_map, ref_dir)
             self.assertNotIn("4.3", glossary)
+            self.assertNotIn("4.7", glossary)
             self.assertNotIn("Canto X", glossary)
             self.assertIn("Phainon", glossary)
+            self.assertIn("Aeon Aha", glossary)
             self.assertEqual(glossary["Phainon"]["th"], "ไฟนอน")
             self.assertEqual(glossary["Phainon"]["role"], "ล่าสังหาร (The Hunt)")
             self.assertIn("Meursault", glossary)
@@ -216,7 +219,23 @@ class TestKnowledgeReader(unittest.TestCase):
             self.assertIn("Mika", ctx)
             self.assertIn("CZN", ctx)
 
-
+    def test_channel_and_news_knowledge_parsed_without_stage1_rule_exclusion(self):
+        from common.resources import plugin_root
+        stream_dir = plugin_root() / "references" / "stream"
+        ref_dir = plugin_root() / "skills" / "anibon-world-identity" / "references"
+        signals_map = {
+            "chunk_89": {
+                "best_file": "Tokusatsu_Project_RED.md",
+                "weighted_files": [
+                    {"file": "references/stream/channel-and-news-knowledge.md", "score": 9.0},
+                    {"file": "Tokusatsu_Project_RED.md", "score": 12.0},
+                ],
+            }
+        }
+        g = extract_entity_glossary(signals_map, ref_dir=ref_dir, extra_ref_dirs=[stream_dir])
+        self.assertIn("Ninu", g)
+        self.assertIn("James Gunn", g)
+        self.assertIn("Kamen Rider My-Th", g)
 
 
 if __name__ == "__main__":

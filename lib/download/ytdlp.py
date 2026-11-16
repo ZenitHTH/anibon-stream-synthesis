@@ -104,7 +104,7 @@ def download_storyboard(url: str, workspace: Path) -> Path | None:
     try:
         subprocess.run(
             [*ytdlp_cmd(), "-P", str(frames_dir), "-f", "sb0/sb1/sb2/sb3", "--ignore-no-formats-error", "-o", "storyboard.%(ext)s", url],
-            capture_output=True, check=False, timeout=120,
+            capture_output=True, check=False, timeout=360,
         )
         for m in [frames_dir / "storyboard.mhtml", frames_dir / "sb0.mhtml", frames_dir / "sb1.mhtml"]:
             if m.is_file():

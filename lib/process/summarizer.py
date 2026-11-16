@@ -13,6 +13,7 @@ from typing import List, Optional
 from common.config import (
     DEFAULT_BLOCK_SIZE,
     DEFAULT_TEMPERATURE,
+    PRUNE_MIN_INPUT,
     SUMMARIZER_MAX_TOKENS,
     SUMMARIZER_TIMEOUT_SEC,
 )
@@ -26,8 +27,19 @@ from process.byte_cap import (
     generate_part_summary,
 )
 from process.caveman import clean_caveman_text
-from process.prune import fill_pruned_gaps, prune_essential
+from process.prune import fill_pruned_gaps, prune_essential as _prune_essential
 from process.summarizer_prompt import build_summarizer_prompt, parse_summarizer_matches
+
+
+def prune_essential(
+    endpoint: str,
+    model: str,
+    stamps: List[str],
+    temperature: float = DEFAULT_TEMPERATURE,
+    min_input: int = PRUNE_MIN_INPUT,
+) -> List[str]:
+    """Filter timestamps to essential ones via local LLM, respecting summarizer.call_local."""
+    return _prune_essential(endpoint, model, stamps, temperature=temperature, min_input=min_input, call_fn=call_local)
 
 
 def _compute_target_parts(n: int) -> int:
@@ -135,7 +147,7 @@ def run_local_summarizer_pass(
     print("[summarizer] Calling local model for part division & Caveman summaries...")
     try:
         content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=SUMMARIZER_TIMEOUT_SEC)
-        matches = parse_summarizer_matches(content)
+        matches = parse_summarizer_matches(content, stamps=stamps)
         return _render_summarized_parts(matches, stamps)
     except Exception as e:
         print(f"[summarizer] Warning: local summarizer call failed ({e}). Falling back to heuristic assembly.")

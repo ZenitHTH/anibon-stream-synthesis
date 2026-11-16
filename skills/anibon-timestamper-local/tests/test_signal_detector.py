@@ -143,6 +143,66 @@ class TestSignalDetector(unittest.TestCase):
                 self.assertNotIn("phuboat-anime-talking-style", cand["file"].lower())
                 self.assertNotIn("references/stream/", cand["file"].lower())
 
+    def test_short_ascii_and_ego_do_not_misclassify_tokusatsu(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text(
+                "Mission impossible Side Vision Ego อีโก้สูงมาก พูดถึงการ์ดเกมทั่วไป",
+                encoding="utf-8",
+            )
+            (chunks / "chunk_01.txt").write_text(
+                "เริ่มดูโอเมก้าฮอร์นตอนที่ 13 เอ็นคาคุ อิบารุ อีโมเกียร์ กาวาเรียน อุลตร้าแมนเทโอ",
+                encoding="utf-8",
+            )
+            signals = detect_signals_for_chunks(ws)
+            c0_files = [w["file"].lower() for w in signals["chunk_00"]["candidates"]]
+            self.assertFalse(any("arknights_endfield" in f for f in c0_files))
+            self.assertFalse(any("limbus_company" in f for f in c0_files))
+            self.assertIn("tokusatsu_project_red", (signals["chunk_01"]["best_file"] or "").lower())
+
+    def test_lily_blacklisted_in_stage1_and_new_toku_and_channel_signals(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text(
+                "ลิลี่ ตัวใหม่ แต่พูดถึง Suoming Unspoken Rue และ New Federation ใน WuWa",
+                encoding="utf-8",
+            )
+            (chunks / "chunk_01.txt").write_text(
+                "มาดู Kamen Rider My-Th ต่อด้วย Xenolhu กับคุณนินุ คุยข่าว James Gunn และ Skydance",
+                encoding="utf-8",
+            )
+            discovered = discover_reference_games()
+            for blocked in ("lily", "ลิลี่", "anna", "แอนนา", "rebecca", "รีเบคก้า"):
+                self.assertNotIn(blocked, discovered)
+
+            signals = detect_signals_for_chunks(ws)
+            self.assertIn("wuthering_waves", (signals["chunk_00"]["best_file"] or "").lower())
+            self.assertNotIn("ลิลี่", signals["chunk_00"]["matched_keywords"])
+            c1_weighted = [w["file"].lower() for w in signals["chunk_01"]["weighted_files"]]
+            self.assertTrue(any("channel-and-news-knowledge.md" in f for f in c1_weighted))
+            self.assertNotIn("channel-and-news-knowledge", (signals["chunk_01"]["best_file"] or "").lower())
+            self.assertTrue(any("tokusatsu_project_red" in f or "godzilla_minus_zero" in f for f in c1_weighted))
+
+    def test_noisy_generic_thai_and_asr_tokens_blocked_in_stage1(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            chunks = ws / "chunks"
+            chunks.mkdir()
+            (chunks / "chunk_00.txt").write_text(
+                "โซล soul ชาวบ้าน villager รานะ ซิน ไม่รานะ ตีชาวบ้านเก็บโซลในฉาก",
+                encoding="utf-8",
+            )
+            discovered = discover_reference_games()
+            for noisy in ("soul", "โซล", "villager", "ชาวบ้าน", "rana", "รานะ", "hsin", "ซิน"):
+                self.assertNotIn(noisy, discovered)
+            signals = detect_signals_for_chunks(ws)
+            self.assertIsNone(signals["chunk_00"]["best_file"])
+            self.assertEqual(signals["chunk_00"]["candidates"], [])
+
 
 
 

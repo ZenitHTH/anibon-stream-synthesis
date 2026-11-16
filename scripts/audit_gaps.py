@@ -32,12 +32,21 @@ def parse_timestamps(text: str):
     return out
 
 
+_AFK_BREAK_CUES = ("พักเบรก", "เข้าห้องน้ำ", "afk", "ขอพัก", "เบรกชั่วคราว")
+
+
+def is_afk_break_line(line):
+    """Return True if timestamp line marks an intentional AFK/bathroom break."""
+    low = line.lower()
+    return any(cue in low for cue in _AFK_BREAK_CUES)
+
+
 def find_gaps(ts, max_gap_sec=600):
-    """Return [(gap_sec, prev_line, next_line)] for gaps over threshold."""
+    """Return [(gap_sec, prev_line, next_line)] for gaps over threshold, skipping AFK breaks."""
     gaps = []
     for i in range(1, len(ts)):
         g = ts[i][0] - ts[i - 1][0]
-        if g > max_gap_sec:
+        if g > max_gap_sec and not is_afk_break_line(ts[i - 1][1]):
             gaps.append((g, ts[i - 1][1], ts[i][1]))
     return gaps
 

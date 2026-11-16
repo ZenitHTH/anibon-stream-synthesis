@@ -168,6 +168,10 @@ Trigger: any `[Song]`/`[Reaction]` stamp, chat asking "เพลงอะไร"
 
 Full cheatsheet & workflows: `references/media-verification.md`
 
+> [!TIP]
+> **Long VOD Audio Verification (6–12h Streams)**:
+> `yt-dlp --download-sections` can time out at 60s on remote 10h+ HLS manifests. Prefer resolving the stream URL once (`yt-dlp -g -f 140 "<URL>"`) and seeking directly with input-side `ffmpeg -ss <sec> -i "$AURL" -t 60 -ar 16000 -ac 1 clip.wav`, then transcribe via the remote `whisper.cpp` server (`http://100.115.25.30:8082/inference` or `WHISPER_ENDPOINT`).
+
 ---
 
 ## VLM Prompt Engineering & Anti-Hallucination Discipline

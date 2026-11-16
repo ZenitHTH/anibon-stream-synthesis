@@ -80,16 +80,23 @@ def load_chunk_activity(workspace: Path, chunk_idx: str) -> str:
 
 
 def load_chunk_mood(workspace: Path, chunk_idx: str) -> str:
-    """Return 555 laugh/meme pulse verdict if available."""
+    """Return dual-side (speaker + chat) mood verdict and cues if available."""
     mood_file = workspace / "mood_555.json"
     if mood_file.exists():
         try:
             with open(mood_file, encoding="utf-8") as f:
                 data = json.load(f)
                 info = data.get(chunk_idx)
-                if info and info.get("verdict") and info.get("verdict") != "QUIET":
-                    tone_desc = info.get("tone", {}).get("tone", "")
-                    return f"Chat Mood: {info.get('verdict')} ({tone_desc})"
+                verdict = info.get("verdict") if isinstance(info, dict) else ""
+                if verdict and verdict != "QUIET":
+                    tone_obj = info.get("tone") if isinstance(info.get("tone"), dict) else {}
+                    tone_desc = tone_obj.get("tone", "").strip()
+                    verbs = tone_obj.get("verbs", [])
+                    cues = info.get("speaker_cues", [])
+                    suffix = f" ({tone_desc})" if tone_desc else ""
+                    verb_str = f" | กริยาแนะนำ: {'/'.join(verbs[:5])}" if verbs else ""
+                    cue_str = f" | คำผู้พูด: {', '.join(cues[:5])}" if cues else ""
+                    return f"Chat Mood: {verdict}{suffix}{verb_str}{cue_str} — ยึดอารมณ์ผู้พูดในซับไตเติลเป็นหลัก"
         except Exception:
             pass
     return ""

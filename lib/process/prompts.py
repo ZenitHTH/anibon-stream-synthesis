@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
 
-from common.time import fmt_ts
+from common.time import fmt_ts, parse_ts
 from common.timestamps import TAGS
 from common.config import ENTITY_CONTEXT_MAX_TOKENS
 from common.resources import plugin_root
@@ -234,7 +234,7 @@ def build_chunk_entity_context(
 
 
 _KNOWN_OPENING_PREFIXES = (
-    "วิเคราะห์", "อึ้ง!", "อึ้ง", "พูดถึง", "ส่อง", "ชำแหละ", "เม้าท์มอย",
+    "วิเคราะห์", "วิพากษ์", "อึ้ง!", "อึ้ง", "พูดถึง", "ส่อง", "ชำแหละ", "เม้าท์มอย",
     "เจาะลึก", "กางทฤษฎี", "ถกประเด็น", "เทียบ", "แซว", "เหวอ!", "เหวอ",
     "ฮาลั่น!", "จวกยับ", "สับเละ", "สรุป", "รีวิว", "เปิดประเด็น",
 )
@@ -255,7 +255,35 @@ def _extract_recent_opening_verbs(recent_timestamps: List[str]) -> List[str]:
     return used
 
 
-def _format_recent_timestamps(recent_timestamps: Optional[List[str]]) -> str:
+def _compute_gap_predicate(
+    recent_timestamps: Optional[List[str]],
+    chunk_start_ts: str = "00:00:00",
+    threshold_min: int = 8,
+) -> str:
+    """Compute observable gap predicate when elapsed time since last timestamp >= threshold_min."""
+    if not recent_timestamps or not chunk_start_ts:
+        return ""
+    last_line = next((ts.strip() for ts in reversed(recent_timestamps) if ts and ts.strip()), "")
+    if len(last_line) < 8:
+        return ""
+    last_ts = last_line[:8]
+    last_sec = parse_ts(last_ts)
+    start_sec = parse_ts(chunk_start_ts)
+    if last_sec is None or start_sec is None or start_sec <= last_sec:
+        return ""
+    elapsed_min = (start_sec - last_sec) // 60
+    if elapsed_min < threshold_min:
+        return ""
+    return (
+        f"\nGAP PREDICATE: {elapsed_min} minutes elapsed since last timestamp ({last_ts}) >= {threshold_min} min threshold "
+        "-> REQUIRED: Emit 1 timestamp in this chunk marking the current tactical adjustment, boss phase, exploration progress, or sub-topic so the timeline never has a >10 min gap."
+    )
+
+
+def _format_recent_timestamps(
+    recent_timestamps: Optional[List[str]],
+    chunk_start_ts: str = "00:00:00",
+) -> str:
     """Format recent emitted timestamps block to avoid duplicate stamps and repeated verbs."""
     if not recent_timestamps:
         return ""
@@ -267,7 +295,8 @@ def _format_recent_timestamps(recent_timestamps: Optional[List[str]]) -> str:
         f"\nBANNED OPENING WORDS FOR THIS CHUNK (already used recently): {', '.join(used_verbs)} — You MUST start with a different verb or lead directly with the noun/topic!"
         if used_verbs else ""
     )
-    return f"Recent Emitted Timestamps (DO NOT re-stamp the same ongoing topic):\n{stamps}{ban_note}\n"
+    gap_note = _compute_gap_predicate(recent_timestamps, chunk_start_ts)
+    return f"Recent Emitted Timestamps (DO NOT re-stamp the same ongoing topic):\n{stamps}{ban_note}{gap_note}\n"
 
 
 def _format_previous_topic_section(
@@ -275,20 +304,27 @@ def _format_previous_topic_section(
     current_topic: str,
     rolling_summary: str,
     recent_timestamps: Optional[List[str]] = None,
+    chunk_start_ts: str = "00:00:00",
 ) -> str:
     """Format previous topic state, rolling summary chain, and recent timestamps."""
     if not current_topic:
-        return "## PREVIOUS TOPIC STATE\n(No previous topic — livestream is starting)\n"
+        preroll = (
+            "PRE-ROLL STANDBY / OPENING RULE (CHUNK 00 - CRITICAL):\n"
+            "- If the opening minutes before Pu Boat's first coherent Thai greeting contain only waiting-screen BGM, lyrics, or isolated noise tokens (e.g. 'เฮ', 'ป', 'อา'), emit `00:00:00 - [Intro] เปิดไลฟ์เตรียมความพร้อมและสแตนด์บายก่อนเข้าสู่ช่วงเนื้อหาหลัก`.\n"
+            "- NEVER hallucinate 'เปิดคลิปอนิเมะสั้น' or spoken topics from pre-roll waiting music; stamp the first `[Talk]`/`[Greeting]` at the exact timestamp where coherent spoken Thai begins.\n"
+        )
+        return f"## PREVIOUS TOPIC STATE\n(No previous topic — livestream is starting)\n{preroll}"
     prev_idx = max(0, chunk_idx - 1)
     lines = [
         f"## PREVIOUS TOPIC STATE (Chunk {prev_idx:02d})",
         f"Active Topic: {current_topic}",
         f"Rolling Context Chain (last 15m): {rolling_summary}",
     ]
-    ts_block = _format_recent_timestamps(recent_timestamps)
+    ts_block = _format_recent_timestamps(recent_timestamps, chunk_start_ts=chunk_start_ts)
     if ts_block:
         lines.append(ts_block.strip())
     return "\n".join(lines) + "\n"
+
 
 
 def _build_chunk_media_block(chunk: dict, livechat: str = "") -> str:
@@ -368,15 +404,13 @@ def build_recursive_prompt(
     if keyframes:
         kf_lines = [f"- Frame {i+1} at timestamp [{ts_str}]" for i, (ts_str, _, _) in enumerate(keyframes)]
         context_extras.append(
-            "ON-SCREEN MULTIMODAL KEYFRAMES (ATTACHED IMAGES WITH TIMESTAMPS):\n"
+            "KEYFRAMES (each image is labeled with its timestamp):\n"
             + "\n".join(kf_lines)
-            + "\nCRITICAL GROUND-TRUTH RULES FOR IMAGES:\n"
-            + "1. Each attached frame image has its exact timestamp labeled directly above it in the message.\n"
-            + "2. INCOMPLETE CONTEXT: If spoken dialogue has incomplete context (e.g. deictic pointers like 'อันนี้', 'ตัวนี้', 'ดูนี่', 'เกมนี้', 'ในจอ'), inspect the corresponding frame to identify the actual on-screen subject/entity, and SAVE/EMIT that frame's exact timestamp.\n"
-            + "3. FULL CONTEXT: If spoken dialogue is self-contained and complete, frames capture interesting visual highlights/shifts — use them to visually verify game, UI, or topic transitions.\n"
-            + "4. When creating a timestamp line for an event visible on screen, preserve and use the frame's exact timestamp [{ts_str}].\n"
-            + "5. If watching an official game showcase/livestream, chapter/season/event subtitles belong to the game being showcased, NOT new standalone games.\n"
-            + "6. Check YouTube player title and channel badge to confirm game identity."
+            + "\nIMAGE RULES:\n"
+            + "- Deictic speech ('อันนี้', 'ตัวนี้', 'ดูนี่', 'ในจอ'): name the on-screen subject from the matching frame; use that frame's timestamp.\n"
+            + "- Pure visual event -> frame timestamp. Spoken topic shift -> first spoken sentence.\n"
+            + "- Showcase/livestream chapter or season titles belong to the showcased game. Confirm game via player title/channel badge.\n"
+            + "- STRICT VISUAL HUD & BOSS NAME GROUNDING: copy legible on-screen text exactly (weapon cards, banners, boss HP bars, e.g. Rapier, Lothaire, Slaughtermill). Never invent names."
         )
     if mood:
         context_extras.append(f"Viewer Reaction: {mood}")
@@ -399,6 +433,7 @@ def build_recursive_prompt(
         current_topic,
         rolling_summary,
         recent_timestamps,
+        chunk_start_ts=start_ts,
     )
 
     prompt = f"""\
@@ -406,50 +441,39 @@ You are an expert livestream editor analyzing Chunk {chunk.get('_idx', 0):02d} (
 
 {topic_section}{context_block}{domain_section}{candidate_weights_section}{world_identity_section}{entity_section}
 ## YOUR TASK
-Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) with respect to the Previous Topic State above.
+Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) against the Previous Topic State.
 
-Rules:
-1. is_continuation:
-   - true: Speaker is still on the same broader subject, gameplay session, or ongoing thread.
-   - false: Speaker completely shifted to a brand new subject, different game, or major activity pivot (even if the shift happens mid-chunk).
-   - Exception: Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic shifts.
+1. is_continuation: true = same subject/game/activity thread. false = new subject, game, or major pivot (even mid-chunk). Explicit Q&A frames ("เดี๋ยวตอบคำถามนี้", "คำถามสุดท้าย") = shift.
 
 2. timestamps:
-   - OUTPUT BUDGET: Provide 1 timestamp by default, 2 MAX per chunk ({start_ts} - {end_ts}).
-     Do NOT micro-stamp conversational pauses or minor dialogue turns within the same game or talk topic.
-   - Output an EMPTY list [] if this chunk is a continuation (same game, same activity, ongoing boss encounter/retries without final resolution).
-   - LONG-FORM TALK/NEWS EXCEPTION (CRITICAL FOR MONOLOGUES & SOCIAL CRITIQUE):
-     If the speaker continues discussing the same broad news, political, or societal subject across multiple chunks (>8-10 minutes without any timestamp), you MUST NOT leave it blank as an empty continuation.
-     Identify any distinct sub-angle, specific policy/news critique, concrete case study, or notable shift in focus (e.g. specific data, secondary news item, viewer debate, geographic analysis) and emit 1 timestamp marking that sub-topic (using [Talk] or [News]) so long monologues are properly indexable.
-   - NO REPETITIVE DEATH / RETRY STAMPS (STRICT): During an ongoing boss fight or challenge, DO NOT emit a timestamp for repeated deaths or retries ('พ่ายแพ้บอสอีกครั้ง'). Mark only the initial boss encounter ([Boss] ปะทะบอส <BossName>), major weapon/build shifts ([Gameplay] ปรับกลยุทธ์ใช้ <Weapon>), and final outcome ([Victory] หรือ [Gameplay]). Intermediate retries are continuations: output []. NEVER emit repeated '[Death] พ่ายแพ้บอสอีกครั้ง'.
-   - STRICT PASSING MENTIONS & OFF-HAND REMARKS FILTER (CRITICAL):
-     DO NOT emit timestamps for brief passing remarks, 1-3 sentence off-hand mentions, or momentary tangents where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. merely reading a chat comment, saying "เห็นข่าวเกม X แวบๆ", praising a game's Thai name translation in passing, casual hello to a chatter, fleeting side comments, mentioning a console/game name in passing).
-     WRAP SAME-TOPIC CLUSTERS: If multiple actions or discussion points belong to the same overarching subject/thread, WRAP them into a SINGLE timestamp. Do NOT micro-stamp every 1-2 minutes.
-     A timestamp is WARRANTED ONLY IF:
-     1) Pu Boat actively dwells and spends SUBSTANTIAL focused discussion (several paragraphs, >1-2 minutes) analyzing, explaining, critiquing, or reacting deeply to that specific subject.
-     2) OR an unambiguous gameplay milestone occurs (Boss encounter start, Victory/Defeat climax, Gacha session, Donation).
-     If Pu Boat only mentions something briefly in passing without deep-dive discussion, you MUST IGNORE IT or output [].
-   - Tags: {tags_list} (Strictly use allowed tags).
-   - Opening Style (ROTATE & VARY): Rotate across diverse openings (ส่อง, ชำแหละ, เจาะลึก, เม้าท์มอย, กางทฤษฎี, ถกประเด็น, เทียบ, แซว, ขนลุก!, ไฮป์หนักมาก!, ตีแผ่, ย้อนรำลึก) or lead directly with the subject noun. NEVER default to 'วิเคราะห์' or 'อึ้ง!' on consecutive chunks.
-   - PROPER NOUN IN EVERY STAMP (NO REPETITIVE SUFFIX): Every timestamp must name its specific proper noun (e.g. actual game title, anime title, or character name from context). Never use vague pronouns ("เกมนี้", "น้องคนนั้น", "ค่ายนี้"). BAN REPETITIVE GAME SUFFIXES: NEVER mechanically append 'ใน Where Winds Meet', 'ใน PBZ', or similar game suffixes to every consecutive timestamp line when the entire section is already about that game. Focus description on the specific boss, weapon, or event instead. The summarizer must NEVER drop proper nouns to fit limits; trim adjectives or emotional filler instead.
-   - FULL LIST REVEAL RULE: If streamer reveals a multi-item list or update across chunks, do not prematurely truncate count; describe the accurate ongoing reveal.
-   - ACTIVE GAME GROUND TRUTH (CRITICAL): The primary game of this livestream is defined by the CANDIDATE DOMAIN WEIGHTS and WORLD IDENTITY REFERENCE above. If the streamer mentions another game merely in passing or makes a comparative remark (e.g. comparing combat/AI/farm to 'Where Winds Meet', 'Black Myth: Wukong', or 'Sekiro'), DO NOT hallucinate that the streamer switched games! The streamer remains in the active game. Specifically, for Phantom Blade Zero streams, NEVER label ongoing gameplay or boss encounters as 'Where Winds Meet'.
-   - ANTI-HALLUCINATION & WORLD IDENTITY GROUNDING: Every game/character name, story Canto/Chapter number, and entity MUST appear in or be verified against transcript text or the WORLD IDENTITY REFERENCE above. If the stream covers a story chapter (e.g. Limbus Company Canto X vs Canto VI/VII), NEVER hallucinate or regress chapter numbers based on older training data; strictly adhere to the WORLD IDENTITY REFERENCE timeline and transcript evidence. Beware of ASR phoneme ghosts or mishearing (e.g. "บัวใคร" = Blue Archive). If game title is unclear or single-mention noise, use [Talk] with event description only. Never guess names or chapter numbers.
-   - STREAMER IDENTITY: สตรีมเมอร์คือ 'ปู่โบ๊ต' (Boat) เท่านั้น ห้ามสะกดว่า 'ปู่บอท', 'บอท', หรือ 'โบต' ห้ามขึ้นต้นบรรทัด Timestamp หรือหัวข้อด้วยคำว่า 'ปู่โบ๊ต' (ผู้ชมรู้อยู่แล้วว่าเป็นไลฟ์ปู่โบ๊ต) และห้ามขึ้นต้นด้วยคำกริยาเดิมซ้ำๆ ติดกัน (เช่น 'พูดถึง...', 'วิเคราะห์...' ซ้ำทุกบรรทัด) ให้เขียนแบบ Caveman กระชับ ตรงประเด็น ขึ้นต้นด้วยกริยาหลากหลายหรือชื่อเรื่อง/ประเด็นทันที
-   - BREVITY & HEADLINE DISCIPLINE (STRICT NOVEL-STYLE BAN): Keep descriptions punchy, concise, and scan-friendly (5-12 words / 25-55 Thai characters). DO NOT write long narrative sentences or multi-clause paragraphs. NEVER repeat background activity prefixes like 'เฝ้าด่าน <Game> พร้อม...' on every line (state background activity in section title/initial stamp, then focus subsequent stamps directly on the spoken topic). NEVER embed internal timestamp brackets like '[01:23:45]' or 'จากภาพในจอ' in description text. Write in direct Caveman style: [Action/Verb] <Entity/Topic> + <Key Verdict/Takeaway>.
-   - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
-   - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
-   - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally. "เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration. Irony/trash-unit hype ("Eric คือ META") = community banter.
-   - DUAL-TRACK INVARIANT (GAMEPLAY STATE VS. TALK TOPIC): Pu Boat often initiates an in-game mechanism/plan (e.g. summoning boss-vs-boss, setting up AFK farm, long crafting, waiting for respawn) and proceeds to discuss an unrelated talk/news/donation topic for 5-30+ minutes while the game runs in the background. Track BOTH tracks in rolling_summary: (a) the active in-game goal/quest state, and (b) the spoken discussion topic. Do NOT confuse an on-screen entity for an active fight unless dialogue or HUD confirms it. When both a substantive discussion and a background game plan are active, describe BOTH in the timestamp (e.g. '[Talk] เฝ้า <Plan/Action> พร้อมถกประเด็น <DiscussionTopic>').
-   - PASSIVE GAMEPLAY & MEME DECODING GUARD: When casual crafting/inventory management runs in a sandbox game (e.g. Minecraft), SPOKEN DISCOURSE STRICTLY TRUMPS CASUAL GAMEPLAY. Never displace substantive talk, humor, chat roasts, or songs with minor recipe crafting or inventory actions. When referencing slang/memes (e.g. 'อิมาเดโมะ'), always append the canonical entity in parentheses: e.g. 'เพลงอิมาเดโมะ (Ao no Sumika - JJK)'.
+   - TOPIC START ANCHOR (LEAD-IN RULE - CRITICAL): HH:MM:SS = the first sentence where Pu Boat starts the new topic ("เดี๋ยวพูดเรื่อง...", "มาดู...", "อีกเรื่องนึง..."). Scan backward from the keyword; never stamp mid-discussion.
+   - BUDGET: 1 per chunk by default, 2 max.
+   - GAP RULE: if GAP PREDICATE is shown above -> emit exactly 1 stamp (tactical shift, boss phase, progress, or new sub-angle). Otherwise, if this is an ongoing continuation -> [].
+   - WORTH A STAMP only if: (a) Pu Boat dwells on it > 1-2 min, or (b) a milestone happens (boss start, victory/defeat, gacha, donation). Passing remarks (< 30s, chat reads, 1-3 sentence mentions) -> skip. Same-thread points -> wrap into one stamp.
+   - BOSS FIGHTS / VICTORY GUARD (STRICT): stamp boss start ([Boss] ปะทะบอส <Name>), major weapon/phase change, and final outcome only. No stamps for repeated deaths/retries. '[Victory]', 'จนจบการต่อสู้', 'เอาชนะสำเร็จ' require explicit proof (victory banner, reward drop, leaving arena); until then use [Boss]/[Gameplay].
+   - Tags: {tags_list} (allowed tags only).
+   - HEADLINE RECIPE (3 REQUIRED SLOTS IN ORDER — 8-16 words (50-95 Thai characters)):
+     `HH:MM:SS - [Tag] <Verb> <Specific entity> <Concrete takeaway>`
+     * Verb: rotate. STRICT VERB DIVERSITY: never repeat the previous stamp's opening verb.
+       - Neutral/playful: ส่อง, ชำแหละ, เจาะลึก, เม้าท์มอย, ถกประเด็น, เทียบ, แซว, ทดสอบ, ปะทะ, สำรวจ, วิพากษ์
+       - EMOTIONAL TONE MATCHING (CRITICAL): if Pu Boat is genuinely angry, swearing, tilted, or rage-quitting, use หัวร้อน, เดือดจัด, สับแหลก, โวย, บ่นยับ, จวก, หัวเสีย, อารมณ์เสีย, ฟิวส์ขาด, เทเกม — never แซว/เม้าท์มอย/ถกประเด็น/เจาะลึก.
+     * Entity: the exact weapon/item/boss/location/character/topic (e.g. พัดขนนกยูง, หุ่น 21). Character + power together; both titles when comparing two works. No pronouns ("เกมนี้", "ค่ายนี้").
+     * Takeaway: the outcome or critique (e.g. 'ปะทะบอส Red Archer พร้อมจับจังหวะแพร์รี่และหลบธนูไฟ').
+     * Plain line: no 'ใน <ActiveGame>' suffix, NEVER prepend 'เฝ้า <Game/Action> พร้อม...', no filler ('เรื่องการ...', 'พร้อมกับ...'), no inner brackets.
+   - FULL LIST REVEAL: describe multi-item reveals accurately across chunks; don't truncate counts.
+   - ACTIVE GAME & WATCHPARTY GROUND TRUTH (CRITICAL): the active game/show comes from Active Topic, CANDIDATE DOMAIN WEIGHTS, and WORLD IDENTITY REFERENCE. A passing comparison or joke about another title (Sekiro, Where Winds Meet, Ultraman) is NOT a switch — keep the active title as subject.
+   - BROADCAST HIATUS VS. STREAMER SCHEDULE GUARD: 'งดฉาย'/'งดออกอากาศ' = show broadcast break -> 'แจ้งข่าวการงดฉาย...'. Only 'งดไลฟ์'/'งดสตรีม' = Pu Boat's schedule.
+   - GROUNDING: every name, chapter/Canto number, and entity must appear in the transcript or WORLD IDENTITY REFERENCE (watch ASR ghosts, e.g. "บัวใคร" = Blue Archive). Attribute quotes to the named speaker. Unsure -> [Talk] + plain description.
+   - STREAMER IDENTITY: 'ปู่โบ๊ต' only — ห้ามสะกดว่า 'ปู่บอท', 'บอท', 'โบต'. Don't start a line with 'ปู่โบ๊ต'.
+   - NO HALLUCINATED SUBTITLES CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการ, ห้าม auto-correct (เช่น 'Trickcal' -> 'Critical'), ห้ามเติมสร้อยชื่อ (เช่น ': Rise of a Legend'), ห้ามแทรกคำประเภทในชื่อทางการ, ห้ามตัดคำแหว่ง. ไม่อยู่ใน VERIFIED DOMAIN ENTITIES -> เขียนทับศัพท์ไทย.
+   - Pokémon: 'ชื่อไทย (English Name)'.
+   - LIVECHAT: not literal ("เบื่อว่ะ" after a gacha win = envy/celebration; trash-unit hype = banter).
+   - DUAL TRACK: track gameplay state AND spoken topic in updated_summary; stamps name only the primary spoken topic or gameplay milestone. Spoken discourse beats casual crafting/inventory. Memes get canonical source: 'เพลงอิมาเดโมะ (Ao no Sumika - JJK)'.
 
-3. garbled_notes:
-   - Array of phonetic hybrids / garbled words spotted in transcript that survived cleaning (e.g. Thai-Latin hybrids like "ดองซam", "โinaa" or phonetically mutilated proper nouns) with timestamp: ["word @ HH:MM:SS", ...].
-   - Spot ONLY real phonetic garbles, NOT standard loanwords (FGO, NP, YouTube, AI). Do NOT guess replacement; audio ground truth will be resolved automatically. Return [] if none.
-
-4. chunk_summary: 1 short sentence summarizing what happens in this chunk in Thai.
-5. updated_summary: 1-2 concise sentences (under 50 words) updating the rolling summary context.
-6. new_topic_title: Specific Thai title (5-8 words) if this chunk starts a new topic, or null if continuing.
+3. garbled_notes: real phonetic garbles only (e.g. "ดองซam") as ["word @ HH:MM:SS"]; not normal loanwords (FGO, YouTube). No guessed fixes. [] if none.
+4. chunk_summary: 1 short Thai sentence.
+5. updated_summary: 1-2 sentences, < 50 words.
+6. new_topic_title: 5-8 word Thai title if a new topic starts, else null.
 
 OUTPUT STRICTLY AS JSON:
 {{
@@ -592,7 +616,15 @@ HH:MM:SS - [Tag] Description
 
 Rules:
 - HH:MM:SS MUST literally appear in the transcript within ({group_start} - {group_end}).
-- Description in {lang_note}. Max 12 words. Active voice.
+- TOPIC START ANCHOR (LEAD-IN RULE - CRITICAL):
+  * Always anchor `HH:MM:SS` to the EXACT FIRST opening sentence or transition cue where Pu Boat begins introducing or pivoting to the new topic/activity (e.g. "เดี๋ยวพูดเรื่อง...", "มาดู...", "อีกเรื่องนึง...").
+  * NEVER stamp mid-discussion or 20-60s later when the main keyword appears mid-sentence. Scan backward from the keyword to mark the true start of the topic.
+- INFORMATIVE HEADLINE DISCIPLINE: Description in {lang_note}. Substantive and descriptive Caveman headline: **8-16 words (50-95 Thai characters)**. Active voice, capturing the specific angle/takeaway with proper nouns. Zero filler clauses ('เรื่องการ...', 'พร้อมกับ...', 'ที่ทำให้...'), and NEVER prepend 'เฝ้าสำรวจ/เฝ้าด่าน <Game> พร้อม...' or append repetitive 'ใน <Game>' suffixes.
+- HEADLINE RECIPE (3 REQUIRED SLOTS IN ORDER):
+  `HH:MM:SS - [Tag] <Action Verb> + <Specific In-Game Entity/Weapon/Boss/Mechanic OR Spoken Subject> + <Concrete Takeaway/Effect>`
+  * Slot 2 MUST name the specific weapon, item, skill, boss, stage, or topic (e.g. 'พัดขนนกยูง', 'เควสคุณยายสมองเสื่อม', 'บอสร่างสอง', 'โหมดเนื้อเรื่อง'). Naming the specific entity satisfies the proper-noun rule without repeating the stream's main game title at the end of the line.
+  * Good: `02:02:27 - [Gameplay] ทดสอบอาวุธลับพัดขนนกยูงยิงตอดระยะไกลแต่ดาเมจเบาจึงสลับกลับไปใช้ขวานไฟ`
+  * Bad: `02:02:27 - [Gameplay] ทดสอบอาวุธลับยิงไกลแต่ดาเมจเบาใน Phantom Blade Zero` (omits specific item 'พัดขนนกยูง' and pads with 'ใน <Game>').
 - Tags: {tags_list} (Strictly use allowed tags; do NOT invent new tags).
 - CONTINUITY & DEDUPLICATION RULE:
   * If consecutive chunks discuss the same topic or review the same game/subject, emit ONLY ONE timestamp when the topic starts.
@@ -609,7 +641,7 @@ Rules:
 - ANTI-GUESSING CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการเด็ดขาด หากไม่มีใน VERIFIED DOMAIN ENTITIES ให้เขียนทับศัพท์ภาษาไทยหรือบรรยายการกระทำเป็นภาษาไทย ห้ามแต่งชื่อภาษาอังกฤษใหม่
 - POKÉMON NAMING RULE: หากมีการพูดถึงโปเกมอน ให้เขียนในรูปแบบ 'ชื่อไทย (English Name)' หรือชื่อทางการไทยเสมอ
 - THAI LIVECHAT PSYCHOLOGY: Do not interpret viewer chat literally ("เบื่อว่ะ/กด dislike ละ" upon winning gacha = playful envy/celebration; 1-star hype = meme banter).
-- First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับเละ, วิเคราะห์, อึ้ง!, เหวอ.
+- First-verb guidance: แซว, ฮาลั่น!, เม้าท์มอย, ชำแหละ, จวกยับ, สับแหลก, วิเคราะห์, อึ้ง!, เหวอ, โวย, เดือดจัด, หัวร้อน, ฟิวส์ขาด (match true speaker emotion — never use 'แซว'/'ถกประเด็น'/'เจาะลึก' when speaker is genuinely angry or tilted).
 - Output ONLY 2 to 4 timestamp lines in chronological order. Immediately STOP after the last timestamp. Do NOT repeat or output a second list. No preamble, no explanation.
 
 ## GROUP TRANSCRIPT ({group_start} - {group_end})

@@ -252,9 +252,10 @@ def build_chat_payload(
     max_tokens: int,
     temperature: float,
     system_prompt: str = SYSTEM_PROMPT,
+    disable_reasoning: bool = False,
 ) -> Dict[str, Any]:
     """Construct standard OpenAI-compatible text chat payload."""
-    return {
+    payload: Dict[str, Any] = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -263,6 +264,9 @@ def build_chat_payload(
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
+    if disable_reasoning:
+        payload["reasoning_effort"] = "none"
+    return payload
 
 
 def build_vision_payload(
@@ -358,12 +362,17 @@ def _prepare_request(
     temperature: float,
     system_prompt: str,
     api_key: Optional[str] = None,
+    disable_reasoning: Optional[bool] = None,
 ) -> urllib.request.Request:
     """Prepare urllib POST request for either native or OpenAI endpoint."""
     if endpoint.rstrip("/").endswith("/api/v1/chat"):
         payload = build_native_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
     else:
-        payload = build_chat_payload(model, prompt, max_tokens, temperature, system_prompt)
+        use_disable = ("tokenme" not in endpoint.lower()) if disable_reasoning is None else disable_reasoning
+        payload = build_chat_payload(
+            model, prompt, max_tokens, temperature, system_prompt,
+            disable_reasoning=use_disable,
+        )
 
     data_bytes = json.dumps(payload).encode("utf-8")
     headers = {
@@ -403,6 +412,31 @@ def _try_fallback_native_chat(
         return None
 
 
+def _try_retry_without_reasoning(
+    err: Exception,
+    endpoint: str,
+    model: str,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    system_prompt: str,
+    timeout: int,
+    api_key: Optional[str],
+) -> Optional[str]:
+    """Retry OpenAI-compat call without reasoning_effort if server rejects with HTTP 400."""
+    if not (isinstance(err, urllib.error.HTTPError) and err.code == 400):
+        return None
+    if "/api/v1/chat" in endpoint or "tokenme" in endpoint.lower():
+        return None
+    req = _prepare_request(
+        endpoint, model, prompt, max_tokens, temperature, system_prompt, api_key, disable_reasoning=False
+    )
+    try:
+        return _execute_http_call(req, timeout=timeout)
+    except Exception:
+        return None
+
+
 def call_local(
     endpoint: str,
     model: str,
@@ -431,6 +465,11 @@ def call_local(
             fallback_res = _try_fallback_native_chat(endpoint, model, prompt, max_tokens, temperature, system_prompt, timeout, key)
             if fallback_res is not None:
                 return fallback_res
+            no_reason_res = _try_retry_without_reasoning(
+                e, endpoint, model, prompt, max_tokens, temperature, system_prompt, timeout, key
+            )
+            if no_reason_res is not None:
+                return no_reason_res
             if attempt < retries:
                 time.sleep(2)
 

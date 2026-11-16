@@ -172,7 +172,7 @@ class TestConfig(unittest.TestCase):
     def test_multimodal_batch_and_scene_config_defaults(self):
         import common.config as cfg
         cfg.load_config(override=True)
-        self.assertEqual(cfg.EVAL_BATCH_SIZE, 8192)
+        self.assertEqual(cfg.EVAL_BATCH_SIZE, 4096)
         self.assertEqual(cfg.TOKENS_PER_IMAGE, 260)
         self.assertAlmostEqual(cfg.SCENE_DELTA_THRESHOLD, 0.12)
         self.assertEqual(cfg.MAX_CHUNK_FRAMES, 6)

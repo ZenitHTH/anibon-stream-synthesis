@@ -121,7 +121,7 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "closure", "โคลเชอร์", "esperanta", "เอสเปรันต้า",
     ],
     "Arknights_Endfield.md": [
-        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii", "si", "typhoeus", "ไทฟอน",
+        "endfield", "arknights endfield", "เอนด์ฟิลด์", "talos-ii", "typhoeus", "ไทฟอน",
     ],
     "Honkai_Impact_3_Part2.md": [
         "honkai impact 3rd", "honkai impact", "hi3", "สามเค", "ฮงไก", "herrscher of time", "senadina", "เซนาดิน่า",
@@ -145,10 +145,18 @@ GAME_SPECIAL_WORDS: dict[str, list[str]] = {
         "project red", "project r.e.d.", "โปรเจกต์เรด", "supersentai", "ซุปเปอร์เซนไต",
         "kamen rider", "มาสค์ไรเดอร์", "คาเมนไรเดอร์", "ultraman", "อุลตร้าแมน",
         "gavv", "กาฟ", "geats", "กีทส์", "gotchard", "ก็อตชาร์ด", "boonboomger", "บูนบูมเจอร์",
+        "omegahorn", "โอเมก้าฮอร์น", "โอเมก้าหอน", "เอ็นคาคุ", "enkaku", "อิบารุ", "ibaru",
+        "อีโมเกียร์", "อีโมเกีย", "emorgear", "กาวาเรียน", "gavarion", "gavan infinity", "เกียบัน",
+        "จีรอสโซ่", "จิรโซ่", "อุลตร้าแมนเทโอ", "มาสค์ไรเดอร์ ไมซ์", "ไรเดอร์ไมซ์",
+        "ราชันอสูร", "อซา ซอร์ธ", "คาคุจู", "makuu space", "บรรยากาศมาคุ",
+        "cardfight vanguard", "shadow moon", "gozyuger", "shirakura",
+        "kakuzyu", "kyoukaku", "เคียวคาคุ", "setsuaku", "เซ็ตสึอาคุ",
+        "pitterus", "therizirus", "degora", "เดโกร่า", "ultraseven", "อุลตร้าเซเว่น",
+        "ultrametal", "animonium", "gt trinity", "kamen rider my-th",
     ],
     "Limbus_Company.md": [
         "limbus company", "limbus", "dante", "golden bough", "mephistopheles", "sinners", "canto",
-        "ลิมบัส", "แดนเต้", "vergilius", "เวอร์จิล", "เมฟิสโตเฟเลส", "อีโก้", "ego", "corrosion",
+        "ลิมบัส", "แดนเต้", "vergilius", "เวอร์จิล", "เมฟิสโตเฟเลส", "e.g.o", "corrosion",
     ],
     "Thailand_Game_Show_2026.md": [
         "thailand game show", "tgs", "gamescom", "gamescom asia", "งานหนังสือ", "book expo",
@@ -179,13 +187,15 @@ COMMON_CHARACTER_NAMES_BLACKLIST: set[str] = {
     "tsubasa", "ซึบาสะ", "kaito", "ไคโตะ", "shiki", "ชิกิ", "shirou", "ชิโร่",
     "shin", "ชิน", "kai", "ไค", "jin", "จิน", "rei", "เรย์", "maya", "มายะ",
     "sara", "ซาร่า", "elena", "เอเลน่า", "maria", "มาเรีย", "clara", "คลาร่า",
-    "diana", "ไดอาน่า",
+    "diana", "ไดอาน่า", "lily", "ลิลี่", "anna", "แอนนา", "rebecca", "รีเบคก้า",
+    "rana", "รานะ", "hsin", "ซิน",
 }
 
 AMBIGUOUS_SINGLE_TOKENS: set[str] = {
     "blue", "thai", "japan", "dark", "super", "grand", "star", "night", "zero",
     "shadow", "shadows", "impact", "zone", "order", "return", "hunter", "wilds",
     "fair", "convention", "book", "stream", "online", "project", "chronicle",
+    "soul", "โซล", "villager", "ชาวบ้าน",
 }
 
 GENERIC_GAMING_STANDING_WORDS: set[str] = {
@@ -234,6 +244,7 @@ SPECIFIC_TOKU_KEYWORDS: set[str] = {
     "คาเมนไรเดอร์", "มาสค์ไรเดอร์", "คาเมน ไรเดอร์", "เซนไต", "ซุปเปอร์เซนไต",
     "อุลตร้าแมน", "gavv", "geats", "gotchard", "boonboomger", "king-ohger",
     "เฮนชิน", "เข็มขัดแปลงร่าง", "เข็มขัดไรเดอร์", "แปลงร่าง", "โทคุซัตสึ", "โทคุสะสึ", "ไคจู",
+    "โอเมก้าฮอร์น", "โอเมก้าหอน", "เกียบัน", "เอ็นคาคุ", "อีโมเกียร์", "จีรอสโซ่", "จิรโซ่",
 }
 
 GAMING_MATCH_MARKERS: set[str] = {

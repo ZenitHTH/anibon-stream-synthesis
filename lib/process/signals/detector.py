@@ -266,7 +266,12 @@ def discover_reference_games(refs_dir: Optional[Path] = None) -> dict[str, str]:
                 discovered[special.lower()] = target_key
 
     # Strip blocked single tokens, common character names, and generic words from Stage 1
-    blocked_stage1 = AMBIGUOUS_SINGLE_TOKENS | COMMON_CHARACTER_NAMES_BLACKLIST | GENERIC_GAMING_STANDING_WORDS
+    blocked_stage1 = (
+        AMBIGUOUS_SINGLE_TOKENS
+        | COMMON_CHARACTER_NAMES_BLACKLIST
+        | GENERIC_GAMING_STANDING_WORDS
+        | STAGE1_BLOCKED_EXTRA
+    )
     for blocked in list(discovered.keys()):
         if blocked in blocked_stage1 or any(blocked == b.lower() for b in blocked_stage1):
             discovered.pop(blocked, None)
@@ -371,13 +376,29 @@ def discover_workspace_chunks(chunks_dir: Path) -> list[dict]:
     return loaded
 
 
+_ASCII_KW_RE_CACHE: dict[str, re.Pattern[str]] = {}
+
+
+def _count_keyword_hits(text: str, kw_l: str) -> int:
+    """Count keyword matches using ASCII-boundary guards for short pure-ASCII keywords."""
+    if not kw_l or not text:
+        return 0
+    if len(kw_l) <= 4 and kw_l.isascii() and kw_l.isalnum():
+        pat = _ASCII_KW_RE_CACHE.get(kw_l)
+        if pat is None:
+            pat = re.compile(rf"(?<![a-z0-9]){re.escape(kw_l)}(?![a-z0-9])")
+            _ASCII_KW_RE_CACHE[kw_l] = pat
+        return len(pat.findall(text))
+    return text.count(kw_l)
+
+
 def compute_chunk_idf_weights(loaded_chunks: list[dict], entries: dict) -> tuple[dict[str, int], dict[str, float]]:
     """Compute corpus-level Document Frequency (df) and smoothed IDF weights for chunk texts."""
     n_chunks = len(loaded_chunks)
     df_counts = {}
     for kw in entries:
         kw_l = kw.lower()
-        count = sum(1 for c in loaded_chunks if kw_l in c["filtered_text"])
+        count = sum(1 for c in loaded_chunks if _count_keyword_hits(c["filtered_text"], kw_l) > 0)
         if count > 0:
             df_counts[kw_l] = count
 
@@ -415,8 +436,10 @@ def _score_chunk_keywords(
 
     for kw, meta in entries.items():
         kw_l = kw.lower()
-        if kw_l in df_counts and kw_l in text:
-            occurrences = text.count(kw_l)
+        if kw_l not in df_counts:
+            continue
+        occurrences = _count_keyword_hits(text, kw_l)
+        if occurrences > 0:
             weight = idf_weights.get(kw_l, 1.0)
             score = occurrences * weight
             kind = meta.get("kind", "topic")
@@ -611,7 +634,7 @@ def match_chunk(chunk_text: str, entries: dict, threshold: int = 1):
 
     for keyword, info in entries.items():
         kw_lower = keyword.lower()
-        count = text_lower.count(kw_lower)
+        count = _count_keyword_hits(text_lower, kw_lower)
         if count >= threshold:
             kind = info.get("kind", "topic")
             target_file = info.get("file")
@@ -636,7 +659,7 @@ def compute_idf_stats(chunks_texts: list, entries: dict) -> dict:
     for text in chunks_texts:
         tl = text.lower()
         for kw in entries:
-            if kw.lower() in tl:
+            if _count_keyword_hits(tl, kw.lower()) > 0:
                 df_counts[kw] += 1
     stats = {}
     for kw, df in df_counts.items():

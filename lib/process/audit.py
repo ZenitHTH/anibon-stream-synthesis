@@ -67,19 +67,33 @@ def _apply_glossary_aliases(text: str, glossary: dict) -> Tuple[str, int]:
     return cleaned, applied
 
 
+_COMMON_STREAM_LATIN: set[str] = {
+    "talk", "gameplay", "gacha", "boss", "death", "victory", "watchparty",
+    "reaction", "story", "lore", "review", "news", "chat", "donation", "greeting",
+    "part", "switch", "dota", "lol", "fgo", "czn", "steam", "moba", "ps5", "pc",
+    "skill", "parry", "spirit", "mario", "kart", "zelda", "boat", "anibon", "extra", "class",
+    "arcane", "viktor", "abrams", "vindicta", "bebop", "shiv", "seven", "dynamo", "haze",
+    "ai", "ar", "cg", "tcg", "dx", "gp", "hd", "sd", "csm", "vfx", "sfx", "ost", "bgm",
+    "imax", "dc", "marvel", "discord", "youtube", "twitch", "toho", "toei", "tsuburaya", "bandai",
+    "uttf", "gt", "so-do", "tdg", "intro", "ending",
+}
+
+
+def _glossary_latin_tokens(text: str) -> set[str]:
+    """Extract lowercase word tokens from multi-word glossary titles."""
+    return {tok.lower() for tok in re.findall(r"[A-Za-z0-9'\-]+", text) if len(tok) >= 2}
+
+
 def _build_whitelisted_latin(glossary: dict) -> set[str]:
-    """Compile set of allowed Latin words from stream tags and glossary keys."""
-    whitelisted = {
-        "talk", "gameplay", "gacha", "boss", "death", "victory", "watchparty",
-        "reaction", "story", "lore", "review", "news", "chat", "donation", "greeting",
-        "part", "switch", "dota", "lol", "fgo", "czn", "steam", "moba", "ps5", "pc",
-        "skill", "parry", "spirit", "mario", "kart", "zelda", "boat", "anibon", "extra", "class",
-        "arcane", "viktor", "abrams", "vindicta", "bebop", "shiv", "seven", "dynamo", "haze",
-    }
+    """Compile set of allowed Latin words and multi-word tokens from stream tags and glossary keys."""
+    whitelisted = set(_COMMON_STREAM_LATIN)
     for k, meta in glossary.items():
         whitelisted.add(k.lower())
+        whitelisted.update(_glossary_latin_tokens(k))
         if isinstance(meta, dict) and meta.get("en"):
-            whitelisted.add(str(meta.get("en")).lower())
+            en_val = str(meta.get("en"))
+            whitelisted.add(en_val.lower())
+            whitelisted.update(_glossary_latin_tokens(en_val))
     return whitelisted
 
 

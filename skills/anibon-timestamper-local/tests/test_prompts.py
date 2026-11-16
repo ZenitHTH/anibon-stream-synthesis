@@ -196,7 +196,114 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("00:16:30 - [Talk] วิเคราะห์ระบบกาชา", prompt)
         self.assertIn("mid-chunk", prompt.lower())
 
+    def test_prompts_enforce_topic_start_anchor_and_short_headline(self):
+        chunks = [
+            {"_idx": 0, "items": [{"start": 0, "timestamp": "00:00:00", "text": "เดี๋ยวพูดเรื่องเกมใหม่"}]}
+        ]
+        rec_prompt = build_recursive_prompt(
+            chunk=chunks[0],
+            current_topic="เริ่มสตรีม",
+            rolling_summary="",
+            lang="th",
+        )
+        self.assertIn("TOPIC START ANCHOR (LEAD-IN RULE - CRITICAL)", rec_prompt)
+        self.assertIn("8-16 words (50-95 Thai characters)", rec_prompt)
+        self.assertIn("NEVER prepend 'เฝ้า <Game/Action> พร้อม...'", rec_prompt)
+
+        grp_prompt = build_group_prompt(
+            chunks=chunks,
+            group_idx=0,
+            prev_tail="",
+            lang="th",
+            signals_map={},
+            workspace=Path(self.tmp_dir.name),
+        )
+        self.assertIn("TOPIC START ANCHOR (LEAD-IN RULE - CRITICAL)", grp_prompt)
+        self.assertIn("8-16 words (50-95 Thai characters)", grp_prompt)
+
+    def test_build_recursive_prompt_injects_gap_predicate_when_elapsed_over_threshold(self):
+        chunk = {
+            "_idx": 45,
+            "items": [{"timestamp": "03:22:40", "start": 12160.0, "text": "ผมไม่รีบรัดดาเมจแล้วกันเพราะไม่รู้เฟสสองทำอะไรได้"}]
+        }
+        recent = ["03:12:35 - [Gameplay] ปรับกลยุทธ์เน้นทำดาเมจใส่บอสแทนการตั้งรับ"]
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="ปะทะบอสด่านน้ำแข็ง",
+            rolling_summary="สู้บอสต่อเนื่อง",
+            lang="th",
+            recent_timestamps=recent,
+        )
+        self.assertIn("GAP PREDICATE:", prompt)
+        self.assertIn("10 minutes elapsed since last timestamp (03:12:35)", prompt)
+
+    def test_build_recursive_prompt_omits_gap_predicate_when_recent(self):
+        chunk = {
+            "_idx": 45,
+            "items": [{"timestamp": "03:22:40", "start": 12160.0, "text": "ตีบอสต่อ"}]
+        }
+        recent = ["03:18:00 - [Gameplay] ปรับกลยุทธ์เน้นทำดาเมจใส่บอสแทนการตั้งรับ"]
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="ปะทะบอสด่านน้ำแข็ง",
+            rolling_summary="สู้บอสต่อเนื่อง",
+            lang="th",
+            recent_timestamps=recent,
+        )
+        self.assertNotIn("GAP PREDICATE:", prompt)
+
+    def test_prompts_use_positive_three_slot_headline_recipe(self):
+        chunks = [
+            {"_idx": 0, "items": [{"start": 0, "timestamp": "00:00:00", "text": "ทดสอบพัดขนนกยูง"}]}
+        ]
+        rec_prompt = build_recursive_prompt(
+            chunk=chunks[0],
+            current_topic="เริ่มสตรีม",
+            rolling_summary="",
+            lang="th",
+        )
+        self.assertIn("HEADLINE RECIPE (3 REQUIRED SLOTS", rec_prompt)
+        self.assertIn("STRICT VERB DIVERSITY", rec_prompt)
+        self.assertIn("NO HALLUCINATED SUBTITLES CONSTRAINT", rec_prompt)
+        self.assertIn("Rise of a Legend", rec_prompt)
+
+    def test_build_recursive_prompt_injects_preroll_and_watchparty_guards(self):
+        chunk = {
+            "_idx": 0,
+            "items": [{"timestamp": "00:00:00", "start": 0.0, "text": "เฮ ป อา"}],
+        }
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="",
+            rolling_summary="",
+            lang="th",
+        )
+        self.assertIn("PRE-ROLL STANDBY / OPENING RULE", prompt)
+        self.assertIn("00:00:00 - [Intro]", prompt)
+        self.assertIn("ACTIVE GAME & WATCHPARTY GROUND TRUTH", prompt)
+        self.assertIn("BROADCAST HIATUS VS. STREAMER SCHEDULE GUARD", prompt)
+
+    def test_build_recursive_prompt_guards_visual_hud_and_premature_victory(self):
+        chunk = {
+            "_idx": 1,
+            "items": [{"timestamp": "01:00:00", "start": 3600.0, "text": "ตีบอสต่อ"}],
+        }
+        kf = [("01:01:00", "dummy_b64", "frame")]
+        prompt = build_recursive_prompt(
+            chunk=chunk,
+            current_topic="สู้บอส",
+            rolling_summary="",
+            lang="th",
+            keyframes=kf,
+        )
+        self.assertIn("STRICT VISUAL HUD & BOSS NAME GROUNDING", prompt)
+        self.assertIn("VICTORY GUARD (STRICT)", prompt)
+        self.assertIn("จนจบการต่อสู้", prompt)
+        self.assertIn("EMOTIONAL TONE MATCHING (CRITICAL)", prompt)
+        self.assertIn("ฟิวส์ขาด", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

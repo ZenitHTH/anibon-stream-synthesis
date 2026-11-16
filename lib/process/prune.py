@@ -49,10 +49,10 @@ def fill_pruned_gaps(
 
 def _build_prune_prompt(stamps: List[str], target: int) -> str:
     """Build pruning instruction prompt for local LLM."""
-    return f"""Below are {len(stamps)} livestream timestamps. Select ONLY the ~{target} most essential ones:
-topic starts/pivots, official news/releases, key gameplay milestones, core conclusions, the stream ending.
-Drop repeats of the same talking point, casual banter, and micro-talk (e.g. offhand remarks on translation or minor side-comments lasting only a few sentences).
-Wrap/favor timestamps that represent the consolidated topic rather than fragmented micro-steps.
+    return f"""Below are {len(stamps)} livestream timestamps. Select ONLY AT MOST {target} most essential ones:
+topic starts/pivots, official news/releases, EVERY [Boss] encounter and [Victory] clear, major conclusions, the stream ending.
+Drop repeats of the same talking point, casual banter, minor retries, and micro-talk (e.g. offhand remarks lasting a few sentences).
+Wrap/favor consolidated topic pivots rather than fragmented steps; target <= {target} lines strictly.
 Copy selected lines EXACTLY, one per line, chronological, nothing else.
 
 {"\n".join(stamps)}"""
@@ -70,17 +70,18 @@ def _extract_kept_stamps(content: str, source_set: set) -> List[str]:
     return kept_lines
 
 
+_MILESTONE_TAGS = ("[Ending]", "[Boss]", "[Victory]")
+
+
 def _ensure_bookend_stamps(kept_lines: List[str], stamps: List[str]) -> List[str]:
-    """Ensure first, last, and [Ending] timestamps are preserved in kept list."""
+    """Ensure first, last, [Ending], [Boss], and [Victory] milestones are preserved."""
     seen = set(kept_lines)
-    if stamps[0] not in seen:
-        seen.add(stamps[0])
-        kept_lines.append(stamps[0])
-    if stamps[-1] not in seen:
-        seen.add(stamps[-1])
-        kept_lines.append(stamps[-1])
+    for edge in (stamps[0], stamps[-1]):
+        if edge not in seen:
+            seen.add(edge)
+            kept_lines.append(edge)
     for s in stamps:
-        if "[Ending]" in s and s not in seen:
+        if s not in seen and any(tag in s for tag in _MILESTONE_TAGS):
             seen.add(s)
             kept_lines.append(s)
     return kept_lines
@@ -92,15 +93,17 @@ def prune_essential(
     stamps: List[str],
     temperature: float = DEFAULT_TEMPERATURE,
     min_input: int = PRUNE_MIN_INPUT,
+    call_fn=None,
 ) -> List[str]:
     """Filter timestamps to ~40-60 essential ones via local LLM before part grouping."""
     if not stamps or len(stamps) <= min_input:
         return stamps
     target = max(PRUNE_TARGET_MIN, min(PRUNE_TARGET_MAX, len(stamps) // 4))
     prompt = _build_prune_prompt(stamps, target)
+    caller = call_fn or call_local
     print(f"[prune] Calling local model to prune {len(stamps)} timestamps to ~{target} essential ones...")
     try:
-        content = call_local(endpoint, model, prompt, PRUNE_MAX_TOKENS, temperature, timeout=PRUNE_TIMEOUT_SEC)
+        content = caller(endpoint, model, prompt, PRUNE_MAX_TOKENS, temperature, timeout=PRUNE_TIMEOUT_SEC)
         kept_lines = _extract_kept_stamps(content, set(stamps))
         if len(kept_lines) < target // 2:
             print(f"[prune] Warning: model returned only {len(kept_lines)} valid stamps (target {target}). Falling back to full list.")

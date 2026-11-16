@@ -29,6 +29,16 @@ class TestPhoneticBridge(unittest.TestCase):
         self.assertIn("Limbus Company", en_names)
         self.assertIn("Canto X", en_names)
 
+    def test_match_phonemes_nov2026_updates(self):
+        bridge = load_phonetic_bridge()
+        text = "อาเจนต์โฟลว์ ทารูล่า เนิร์ส แฮร์โรว์ มาเรียน ควีน มิตยา นิฮิรัก เซโนลู เบลซเบลล์ คุณนินุ ฮิฟุมิ เรซซิ่ง"
+        en_names = {h["en"] for h in match_phonemes(text, bridge)}
+        for expected in (
+            "Argent Flow", "Talulah", "Nurse Harrow", "Marian: Queen",
+            "Mitya", "Nihilux", "Xenolhu", "Blazebell", "Ninu", "Racing Hifumi",
+        ):
+            self.assertIn(expected, en_names)
+
 
 if __name__ == "__main__":
     unittest.main()

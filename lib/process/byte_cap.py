@@ -17,6 +17,51 @@ TRANSITION_PATTERNS = [
 ]
 
 _PART_NUM_RE = re.compile(r"ส่วนที่ \d+:")
+_SECONDARY_CLAUSE_RE = re.compile(
+    r"\s+(?:พร้อม(?:กับ|ทั้ง)?|เพื่อ|โดย|แต่|จน|หลังจาก|ระหว่าง|เมื่อเทียบกับ|ใน\s+[A-Za-z0-9]).*$"
+)
+
+
+_THAI_CLAUSE_RE = re.compile(r"(?:และ|กับ|เกี่ยวกับ|พร้อม)")
+_THAI_SAFE_BREAK_RE = re.compile(r"(?:เพื่อ|สร้าง|จาก|ก่อน|หลัง|(?<![าิะ])การ|[\u0E40-\u0E44])")
+_THAI_NON_START = set("\u0E30\u0E31\u0E32\u0E33\u0E34\u0E35\u0E36\u0E37\u0E38\u0E39\u0E3A\u0E45\u0E47\u0E48\u0E49\u0E4A\u0E4B\u0E4C\u0E4D\u0E4E")
+_THAI_LEADING = set("\u0E40\u0E41\u0E42\u0E43\u0E44")
+
+
+def _is_safe_thai_split(text: str, idx: int) -> bool:
+    """Return True if slicing text[:idx] avoids broken grapheme clusters or ASCII tokens."""
+    if idx <= 0 or idx >= len(text):
+        return True
+    prev_c, next_c = text[idx - 1], text[idx]
+    if prev_c in _THAI_LEADING or next_c in _THAI_NON_START:
+        return False
+    return not (prev_c.isascii() and next_c.isascii() and prev_c.isalnum() and next_c.isalnum())
+
+
+def _find_thai_cut_index(trimmed: str, max_len: int) -> int:
+    """Find cleanest cut index <= max_len along spaces, Thai clauses, or syllable boundaries."""
+    min_idx = min(10, max_len)
+    space_idx = trimmed[:max_len + 1].rfind(" ")
+    conn_matches = [min_idx + m.start() for m in _THAI_CLAUSE_RE.finditer(trimmed[min_idx:max_len + 1])]
+    primary = max([space_idx] + conn_matches)
+    if primary >= min_idx:
+        return primary
+    safe_matches = [min_idx + m.start() for m in _THAI_SAFE_BREAK_RE.finditer(trimmed[min_idx:max_len + 1])]
+    if safe_matches and _is_safe_thai_split(trimmed, safe_matches[-1]):
+        return safe_matches[-1]
+    for k in range(min(len(trimmed), max_len), min_idx - 1, -1):
+        if _is_safe_thai_split(trimmed, k):
+            return k
+    return max_len
+
+
+def _compact_topic_clause(text: str, max_len: int = 30) -> str:
+    """Compact a single timestamp description into a concise header clause (<= max_len chars)."""
+    trimmed = _SECONDARY_CLAUSE_RE.sub("", text).strip(" ,.")
+    if len(trimmed) <= max_len:
+        return trimmed
+    cut_idx = _find_thai_cut_index(trimmed, max_len)
+    return trimmed[:cut_idx].strip(" ,.")
 
 
 def generate_part_summary(stamps: List[str]) -> str:
@@ -24,7 +69,7 @@ def generate_part_summary(stamps: List[str]) -> str:
     topics = []
     for s in stamps:
         desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", s).strip()
-        clean = clean_caveman_text(desc).strip(". ")
+        clean = _compact_topic_clause(clean_caveman_text(desc).strip(". "))
         if clean and clean not in topics:
             topics.append(clean)
     if not topics:
