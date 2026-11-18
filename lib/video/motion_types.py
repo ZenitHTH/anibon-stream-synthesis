@@ -74,6 +74,8 @@ class LayoutSegment:
     webcam_box: Optional[FaceBox]
     face_box: Optional[FaceBox]
     cut_secs: Tuple[float, ...] = ()
+    clean_start_sec: Optional[float] = None
+    clean_end_sec: Optional[float] = None
 
 
 @dataclass(frozen=True)

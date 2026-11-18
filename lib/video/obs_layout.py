@@ -6,12 +6,14 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from video.auto_tracker import box_iou, track_webcam_any_position
 from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import WEBCAM_BOX_PRESETS, FaceBox, LayoutSegment, WindowBounds
 
 _CORNER_KEYS: Tuple[str, ...] = (
     "top-right", "mid-right", "mid-left", "bottom-right", "bottom-left", "top-left",
 )
+_CENTER_PROBE = FaceBox(0.28, 0.08, 0.44, 0.65, "center")
 
 
 def resolve_webcam_and_face_boxes(layout: str) -> Tuple[Optional[FaceBox], Optional[FaceBox]]:
@@ -65,12 +67,9 @@ def split_around_cuts(
 
 def _crop_rgb_box(frame: bytes, size: int, box: FaceBox) -> bytes:
     """Slice normalized FaceBox pixels out of a square RGB24 buffer."""
-    x0 = max(0, min(size - 1, int(box.x * size)))
-    x1 = max(x0 + 1, min(size, int((box.x + box.w) * size)))
-    y0 = max(0, min(size - 1, int(box.y * size)))
-    y1 = max(y0 + 1, min(size, int((box.y + box.h) * size)))
-    rows = [frame[(y * size + x0) * 3 : (y * size + x1) * 3] for y in range(y0, y1)]
-    return b"".join(rows)
+    x0, x1 = max(0, min(size - 1, int(box.x * size))), max(1, min(size, int((box.x + box.w) * size)))
+    y0, y1 = max(0, min(size - 1, int(box.y * size))), max(1, min(size, int((box.y + box.h) * size)))
+    return b"".join(frame[(y * size + x0) * 3 : (y * size + max(x0 + 1, x1)) * 3] for y in range(y0, max(y0 + 1, y1)))
 
 
 def _region_mad(frames: List[bytes], size: int, box: FaceBox) -> float:
@@ -81,17 +80,39 @@ def _region_mad(frames: List[bytes], size: int, box: FaceBox) -> float:
     return sum(compute_frame_delta(crops[i - 1], crops[i])[0] for i in range(1, len(crops))) / (len(crops) - 1)
 
 
-def _pick_layout_label(scores: Dict[str, float], center_mad: float) -> str:
-    """Select OBS corner, fullscreen, or none from corner vs center motion."""
-    best_corner, best_mad = max(scores.items(), key=lambda kv: kv[1])
+def _has_trackable_face(frames: List[bytes], sample_size: int, box: Optional[FaceBox]) -> bool:
+    """Check whether a candidate box contains trackable temporal face/body motion."""
+    if box is None or len(frames) < 2:
+        return False
+    probe = _CENTER_PROBE if box.w >= 0.99 else box
+    return _region_mad(frames, sample_size, probe) >= 0.010
+
+
+def _match_fixed_corner(clean: List[bytes], sample_size: int) -> Optional[str]:
+    """Check fixed corner presets first and return dominant corner if trackable."""
+    scores: Dict[str, float] = {k: _region_mad(clean, sample_size, WEBCAM_BOX_PRESETS[k]) for k in _CORNER_KEYS}
+    best_k, best_mad = max(scores.items(), key=lambda kv: kv[1])
     med_mad = statistics.median(scores.values())
-    if max(best_mad, center_mad) < 0.005:
-        return "none"
-    if best_mad >= 0.015 and best_mad >= 1.45 * max(med_mad, 0.002):
-        return best_corner
-    if center_mad >= 0.015:
-        return "fullscreen"
-    return best_corner if best_mad >= 0.008 else "none"
+    if _has_trackable_face(clean, sample_size, WEBCAM_BOX_PRESETS[best_k]) and best_mad >= max(0.012, 1.45 * max(med_mad, 0.002)):
+        return best_k
+    return None
+
+
+def _resolve_from_clean(
+    clean: List[bytes], sample_size: int, preferred: str
+) -> Tuple[str, Optional[FaceBox]]:
+    """Check fixed position first; fall back to any-position tracker if untrackable."""
+    if preferred == "none":
+        return ("none", None)
+    if preferred != "auto" and preferred in WEBCAM_BOX_PRESETS:
+        wb = WEBCAM_BOX_PRESETS[preferred]
+        if _has_trackable_face(clean, sample_size, wb):
+            return (preferred, wb)
+        return track_webcam_any_position(clean, sample_size)
+    fixed = _match_fixed_corner(clean, sample_size)
+    if fixed is not None:
+        return (fixed, WEBCAM_BOX_PRESETS[fixed])
+    return track_webcam_any_position(clean, sample_size)
 
 
 def classify_layout_from_frames(
@@ -103,12 +124,9 @@ def classify_layout_from_frames(
     lo, hi = split_around_cuts(len(full_frames), cuts, fps=fps)
     clean = full_frames[lo:hi]
     if len(clean) < 2:
-        wb, fb = resolve_webcam_and_face_boxes("none")
-        return LayoutSegment("none", wb, fb, cut_secs)
-    scores = {k: _region_mad(clean, sample_size, WEBCAM_BOX_PRESETS[k]) for k in _CORNER_KEYS}
-    center_mad = _region_mad(clean, sample_size, FaceBox(0.28, 0.08, 0.44, 0.65, "center"))
-    layout = _pick_layout_label(scores, center_mad)
-    wb, fb = resolve_webcam_and_face_boxes(layout)
+        return LayoutSegment("none", None, None, cut_secs)
+    layout, wb = _resolve_from_clean(clean, sample_size, "auto")
+    fb = wb.derive_tight_face() if wb is not None else None
     return LayoutSegment(layout, wb, fb, cut_secs)
 
 
@@ -128,16 +146,38 @@ def _probe_full_frames(source: Path | str, bounds: WindowBounds) -> List[bytes]:
     return [res.stdout[i * fb : (i + 1) * fb] for i in range(len(res.stdout) // fb)]
 
 
+def _split_pip_relocation(
+    clean: List[bytes], key: str, span: Tuple[float, float]
+) -> Tuple[List[bytes], Tuple[float, float], Tuple[float, ...]]:
+    """Detect mid-window PIP webcam relocation and isolate post-switch half."""
+    if len(clean) < 4 or key == "none":
+        return (clean, span, ())
+    mid = len(clean) // 2
+    _, box_a = _resolve_from_clean(clean[:mid], 48, key)
+    _, box_b = _resolve_from_clean(clean[mid:], 48, key)
+    switched = (box_a is not None or box_b is not None) and box_iou(box_a, box_b) < 0.30
+    if not switched:
+        return (clean, span, ())
+    sw_sec = round(span[0] + mid, 3)
+    return (clean[mid:], (sw_sec, span[1]), (sw_sec,))
+
+
 def detect_obs_layout(
     source: Path | str, bounds: WindowBounds, preferred: str = "auto"
 ) -> LayoutSegment:
-    """Detect active OBS webcam layout for a window, or honor manual preset."""
+    """Probe frames, check fixed position first, and split mid-window PIP switches."""
     key = (preferred or "auto").strip().lower()
-    if key != "auto" and key in WEBCAM_BOX_PRESETS:
-        wb, fb = resolve_webcam_and_face_boxes(key)
-        return LayoutSegment(key, wb, fb, ())
     frames = _probe_full_frames(source, bounds)
     if len(frames) < 2:
-        wb, fb = resolve_webcam_and_face_boxes("top-right")
-        return LayoutSegment("top-right", wb, fb, ())
-    return classify_layout_from_frames(frames, sample_size=48, fps=1.0)
+        fb_key = key if key != "auto" and key in WEBCAM_BOX_PRESETS else "top-right"
+        wb, fb = resolve_webcam_and_face_boxes(fb_key)
+        return LayoutSegment(fb_key, wb, fb, ())
+    cuts = detect_layout_cuts(frames, fps=1.0)
+    lo, hi = split_around_cuts(len(frames), cuts, fps=1.0)
+    span = (round(bounds.start_sec + lo, 3), round(min(bounds.end_sec, bounds.start_sec + hi), 3))
+    clean, sub_span, pip_cuts = _split_pip_relocation(frames[lo:hi], key, span)
+    all_cuts = tuple(sorted({round(bounds.start_sec + c, 3) for c in cuts} | set(pip_cuts)))
+    layout, wb = _resolve_from_clean(clean, 48, key)
+    fb = wb.derive_tight_face() if wb is not None else None
+    narrowed = bool(cuts or pip_cuts)
+    return LayoutSegment(layout, wb, fb, all_cuts, sub_span[0] if narrowed else None, sub_span[1] if narrowed else None)

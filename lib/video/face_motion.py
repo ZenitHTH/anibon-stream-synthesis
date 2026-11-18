@@ -57,23 +57,33 @@ def extract_raw_rgb_frames(
     return ([res.stdout[i * fb : (i + 1) * fb] for i in range(n)], [bounds.start_sec + i / bounds.fps for i in range(n)])
 
 
+def _clamp_bounds(bounds: WindowBounds, layout: LayoutSegment) -> WindowBounds:
+    """Narrow extraction bounds to layout.clean_start_sec/clean_end_sec when valid."""
+    lo = max(bounds.start_sec, layout.clean_start_sec) if layout.clean_start_sec is not None else bounds.start_sec
+    hi = min(bounds.end_sec, layout.clean_end_sec) if layout.clean_end_sec is not None else bounds.end_sec
+    if (hi - lo) >= 1.0:
+        return WindowBounds(lo, hi, bounds.fps, bounds.sample_size)
+    return bounds
+
+
 def extract_dual_motion_series(
     source: Path | str, bounds: WindowBounds, layout: LayoutSegment
 ) -> Tuple[List[FaceMotionSample], List[FaceMotionSample], Tuple[float, ...]]:
     """Extract cut-split Dual-Box (F tight-face, W full-webcam) motion series."""
     if layout.webcam_box is None:
         return ([], [], ())
-    w_frames, _ = extract_raw_rgb_frames(source, layout.webcam_box, bounds)
+    eff = _clamp_bounds(bounds, layout)
+    w_frames, _ = extract_raw_rgb_frames(source, layout.webcam_box, eff)
     is_full = layout.webcam_box.to_ffmpeg_crop() is None
-    full_frames = w_frames if is_full else extract_raw_rgb_frames(source, None, bounds)[0]
-    cuts = detect_layout_cuts(full_frames, fps=bounds.fps)
-    cut_secs = tuple(round(bounds.start_sec + c / bounds.fps, 3) for c in cuts)
-    lo, hi = split_around_cuts(len(w_frames), cuts, fps=bounds.fps)
+    full_frames = w_frames if is_full else extract_raw_rgb_frames(source, None, eff)[0]
+    cuts = detect_layout_cuts(full_frames, fps=eff.fps)
+    cut_secs = tuple(sorted({round(eff.start_sec + c / eff.fps, 3) for c in cuts} | set(layout.cut_secs)))
+    lo, hi = split_around_cuts(len(w_frames), cuts, fps=eff.fps)
     f_box = layout.face_box or layout.webcam_box.derive_tight_face()
-    f_frames, _ = extract_raw_rgb_frames(source, f_box, bounds)
-    clean_offset = bounds.start_sec + lo / bounds.fps
-    f_samples, _ = score_motion_series(f_frames[lo:hi], fps=bounds.fps, abs_offset_sec=clean_offset)
-    w_samples, _ = score_motion_series(w_frames[lo:hi], fps=bounds.fps, abs_offset_sec=clean_offset)
+    f_frames, _ = extract_raw_rgb_frames(source, f_box, eff)
+    clean_offset = eff.start_sec + lo / eff.fps
+    f_samples, _ = score_motion_series(f_frames[lo:hi], fps=eff.fps, abs_offset_sec=clean_offset)
+    w_samples, _ = score_motion_series(w_frames[lo:hi], fps=eff.fps, abs_offset_sec=clean_offset)
     return (f_samples, w_samples, cut_secs)
 
 
