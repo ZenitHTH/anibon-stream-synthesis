@@ -67,6 +67,7 @@ from process.summarizer import (
     prune_essential,
     run_local_summarizer_pass,
 )
+from process.reaction_verify import apply_reaction_verify
 from process.vision_verify import apply_vision_verify
 from process.whisper_dispatcher import dispatch_verification
 from process.world_sanitizer import audit_and_sanitize_final_markdown
@@ -115,6 +116,7 @@ __all__ = [
     "generate_part_summary",
     "prune_essential",
     "run_local_summarizer_pass",
+    "apply_reaction_verify",
     "apply_vision_verify",
     "audit_and_sanitize_final_markdown",
     "align_livechat_feed",

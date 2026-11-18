@@ -21,6 +21,7 @@ from process.summarizer import (
     prune_essential,
     run_local_summarizer_pass,
 )
+from process.reaction_verify import ReactionRunConfig, apply_reaction_verify
 from process.vision_verify import apply_vision_verify
 
 
@@ -83,6 +84,8 @@ def _prune_and_verify_timestamps(
         deduped = apply_vision_verify(deduped, workspace, args, model)
     if not no_summarizer_pass:
         deduped = prune_essential(endpoint, model, deduped, temperature)
+    if args:
+        deduped = apply_reaction_verify(deduped, workspace, ReactionRunConfig(args, model))
     return deduped
 
 

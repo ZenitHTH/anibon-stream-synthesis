@@ -45,8 +45,11 @@ from interface import (
     DEFAULT_PORT,
     DEFAULT_TEMPERATURE,
     EVAL_BATCH_SIZE,
+    FACE_MOTION_THRESHOLD,
     PRIMARY_HOST,
+    REACTION_VERIFY,
     SCENE_DELTA_THRESHOLD,
+    WEBCAM_CORNER,
     WORLD_IDENTITY_DIR,
     audit_timestamps_against_glossary,
     call_local,
@@ -164,6 +167,14 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument("--whisper-model", default=None)
     ap.add_argument("--no-garbled-collector", action="store_true")
     ap.add_argument("--vision-verify", action="store_true")
+    ap.add_argument("--reaction-verify", action="store_true", default=REACTION_VERIFY)
+    ap.add_argument(
+        "--webcam-corner",
+        default=WEBCAM_CORNER,
+        choices=["auto", "top-right", "mid-right", "mid-left", "bottom-right", "bottom-left", "top-left", "fullscreen", "none"],
+    )
+    ap.add_argument("--face-threshold", type=float, default=FACE_MOTION_THRESHOLD)
+    ap.add_argument("--remote-snap", action="store_true")
     ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks", action="store_true", default=default_multimodal)
     ap.add_argument("--no-multimodal-chunks", "--no-multimodal", "--text-only", dest="multimodal_chunks", action="store_false")
     ap.add_argument("--eval-batch-size", type=int, default=EVAL_BATCH_SIZE)

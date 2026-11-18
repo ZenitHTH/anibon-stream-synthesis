@@ -1,11 +1,15 @@
-"""Unit tests for Task 4: telemetry-injected reaction prompt, co-triggers, and resolver."""
+"""Unit tests for Task 4 & Task 5: reaction prompt, co-triggers, orchestration, and sync."""
 from __future__ import annotations
 
+import argparse
 import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from video.audio_envelope import AudioBurstMetrics
-from video.motion_types import KeyframePick, MotionRegime
+from video.motion_types import FaceBox, FaceMotionSample, KeyframePick, LayoutSegment, MotionRegime
 
 
 def _sample_regime(regime: str = "stunned_freeze") -> MotionRegime:
@@ -191,6 +195,211 @@ class TestReactionVerifyTask4(unittest.TestCase):
         self.assertEqual(resolved[0], "00:01:00 - [Talk] คุยเปิดประเด็น")
         self.assertEqual(resolved[1], "00:02:00 - [Reaction] ตกใจมาก")
         self.assertEqual(resolved[2], "00:02:45 - [Reaction] ชะงักนิ่งจ้องหน้าจอ")
+
+
+class TestReactionVerifyTask5(unittest.TestCase):
+    def _write_fake_jpeg(self, out_dir: Path, name: str) -> Path:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        p = out_dir / name
+        p.write_bytes(b"fakejpg")
+        return p
+
+    def test_apply_reaction_verify_noop_and_missing_video(self):
+        from process.reaction_verify import apply_reaction_verify
+
+        stamps = ["00:01:00 - [Talk] คุยเปิดไลฟ์"]
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            self.assertEqual(
+                apply_reaction_verify(stamps, ws, argparse.Namespace(reaction_verify=False)),
+                stamps,
+            )
+            self.assertEqual(
+                apply_reaction_verify(stamps, ws, argparse.Namespace(reaction_verify=True)),
+                stamps,
+            )
+
+    def test_verify_drops_calm_news_without_co_trigger_and_bypasses_with_audio_or_meme(self):
+        from process.reaction_verify import VerifyOptions, verify_reaction_stamps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            vid = ws / "video.mp4"
+            vid.write_bytes(b"mp4")
+            (ws / "mood_555.json").write_text(
+                json.dumps({
+                    "chunk_00": {
+                        "verdict": "MEME_PULSE",
+                        "peak_windows": [{"start": "00:03:00", "end": "00:04:00", "count": 20}],
+                    }
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+            exported_boxes = []
+            quiet_layout = LayoutSegment("top-right", FaceBox(0.76, 0.0, 0.24, 0.30, "top-right"), FaceBox(0.83, 0.01, 0.09, 0.19))
+
+            def fake_motion(src, bounds, layout):
+                # Flat calm series -> classify_dual_regime returns calm_news (trigger_vlm=False)
+                s = [
+                    FaceMotionSample(i, i * 0.5, bounds.start_sec + i * 0.5, "00:01:00", 0.005, 0.005, 0.005, 0.005, 0.005, 0.0, 0.005)
+                    for i in range(12)
+                ]
+                return (s, s, ())
+
+            def fake_export(src, spec):
+                exported_boxes.append(spec.box)
+                jpg = self._write_fake_jpeg(spec.out_dir, f"{spec.prefix}_01.jpg")
+                return {"frames": [{"ts": "00:03:20", "path": str(jpg), "b64": "YWJj"}], "strip_path": None}
+
+            def fake_call(ep, mod, content):
+                calls.append(content)
+                snapped = "00:04:55" if "00:05:00" in content[0]["text"] else "00:03:18"
+                return json.dumps({
+                    "snapped_ts": snapped,
+                    "emotion_class": "playful_tease",
+                    "face_cue": "smirk",
+                    "tag": "Reaction",
+                    "description": "ยิ้มแซวสีชุดตัวละครตามแชท",
+                    "confidence": 0.9,
+                })
+
+            # 1. Quiet News without co-trigger -> 0 VLM calls
+            opts_quiet = VerifyOptions(
+                source=vid, endpoint="http://local", model="m",
+                call_fn=fake_call, layout_fn=lambda s, b, preferred="auto": quiet_layout,
+                motion_fn=fake_motion, export_fn=fake_export,
+                audio_fn=lambda s, b: AudioBurstMetrics(0.5, None, None, False),
+                context_fn=lambda sec: "วันนี้อากาศดีครับ รายงานข่าวต่อ",
+            )
+            out1 = verify_reaction_stamps(["00:01:00 - [News] อ่านข่าวประจำวัน"], ws, opts_quiet)
+            self.assertEqual(len(calls), 0)
+            self.assertEqual(out1, ["00:01:00 - [News] อ่านข่าวประจำวัน"])
+
+            # 2. MEME_PULSE in mood_555.json bypasses calm_news gate using W box
+            out2 = verify_reaction_stamps(["00:03:20 - [Talk] แซวสีตัวละคร"], ws, opts_quiet)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(exported_boxes[0], quiet_layout.webcam_box)
+            self.assertIn("00:03:18 - [Reaction] ยิ้มแซวสีชุดตัวละครตามแชท", out2[0])
+
+            # 3. Audio burst co-trigger also bypasses calm_news gate
+            opts_audio = VerifyOptions(
+                source=vid, endpoint="http://local", model="m",
+                call_fn=fake_call, layout_fn=lambda s, b, preferred="auto": quiet_layout,
+                motion_fn=fake_motion, export_fn=fake_export,
+                audio_fn=lambda s, b: AudioBurstMetrics(3.4, 5.0, None, True),
+                context_fn=lambda sec: "คุยธรรมดา",
+            )
+            out3 = verify_reaction_stamps(["00:05:00 - [Talk] บ่นบอสฮีลเลือดเต็ม"], ws, opts_audio)
+            self.assertEqual(len(calls), 2)
+            self.assertIn("[Reaction]", out3[0])
+
+    def test_verify_caches_in_reaction_verify_log_and_syncs_all_timestamps(self):
+        from process.reaction_verify import VerifyOptions, apply_reaction_verify, verify_reaction_stamps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            vid = ws / "video.mp4"
+            vid.write_bytes(b"mp4")
+            orig = "00:02:00 - [Reaction] อึ้งค้างไปเลย"
+            (ws / "all_timestamps.txt").write_text(orig + "\n", encoding="utf-8")
+
+            calls = []
+            layout = LayoutSegment("top-right", FaceBox(0.76, 0.0, 0.24, 0.30, "top-right"), FaceBox(0.83, 0.01, 0.09, 0.19))
+            regime = _sample_regime("stunned_freeze")
+
+            def fake_call(ep, mod, content):
+                calls.append(1)
+                return json.dumps({
+                    "snapped_ts": "00:01:45",
+                    "emotion_class": "stunned_freeze",
+                    "face_cue": "jaw drop freeze",
+                    "tag": "Reaction",
+                    "description": "ชะงักนิ่งอึ้งหลังเห็นเฉลย",
+                    "confidence": 0.92,
+                })
+
+            def fake_export(src, spec):
+                jpg = self._write_fake_jpeg(spec.out_dir, f"{spec.prefix}_01.jpg")
+                return {"frames": [{"ts": "00:01:45", "path": str(jpg), "b64": "YWJj"}], "strip_path": None}
+
+            opts = VerifyOptions(
+                source=vid, endpoint="http://local", model="m",
+                call_fn=fake_call, layout_fn=lambda s, b, preferred="auto": layout,
+                motion_fn=lambda s, b, l: ([], [], ()),
+                export_fn=fake_export,
+                audio_fn=lambda s, b: AudioBurstMetrics(3.0, 2.0, None, True),
+            )
+            with patch("process.reaction_verify.classify_dual_regime", return_value=regime):
+                out1 = verify_reaction_stamps([orig], ws, opts)
+                out2 = verify_reaction_stamps([orig], ws, opts)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(out1, out2)
+            self.assertTrue((ws / "reaction_verify_log.json").is_file())
+
+            args = argparse.Namespace(reaction_verify=True, video_file=str(vid), endpoint="http://local", vision_model="m")
+            with patch("process.reaction_verify.verify_reaction_stamps", return_value=out1):
+                synced = apply_reaction_verify([orig], ws, args)
+            self.assertEqual(synced, out1)
+            self.assertIn("00:01:45 - [Reaction]", (ws / "all_timestamps.txt").read_text(encoding="utf-8"))
+
+    def test_assembly_runs_reaction_verify_after_prune(self):
+        from process.assembly import _prune_and_verify_timestamps
+
+        order = []
+        args = argparse.Namespace(vision_verify=False, reaction_verify=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch("process.assembly.prune_essential", side_effect=lambda *a, **kw: (order.append("prune"), ["00:01:00 - [Reaction] x"])[1]):
+                with patch("process.assembly.apply_reaction_verify", side_effect=lambda s, w, r: (order.append("reaction"), s)[1]):
+                    _prune_and_verify_timestamps(["00:01:00 - [Reaction] x"], Path(tmp), "http://x", "m", 0.1, args, False)
+        self.assertEqual(order, ["prune", "reaction"])
+
+    def test_verify_calls_detect_obs_layout_fresh_per_stamp_without_caching(self):
+        from process.reaction_verify import VerifyOptions, verify_reaction_stamps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            vid = ws / "video.mp4"
+            vid.write_bytes(b"mp4")
+            b1 = FaceBox(0.76, 0.0, 0.24, 0.30, "top-right")
+            b2 = FaceBox(0.0, 0.38, 0.22, 0.24, "mid-left")
+            layouts = [
+                LayoutSegment("top-right", b1, b1.derive_tight_face()),
+                LayoutSegment("mid-left", b2, b2.derive_tight_face()),
+            ]
+            seen_windows = []
+            exported_boxes = []
+
+            def fake_layout(src, bounds, preferred="auto"):
+                seen_windows.append((bounds.start_sec, bounds.end_sec, preferred))
+                return layouts[len(seen_windows) - 1]
+
+            def fake_export(src, spec):
+                exported_boxes.append(spec.box)
+                jpg = self._write_fake_jpeg(spec.out_dir, f"{spec.prefix}_01.jpg")
+                return {"frames": [{"ts": "00:02:00", "path": str(jpg), "b64": "YWJj"}], "strip_path": None}
+
+            def fake_call(ep, mod, content):
+                ts = "00:01:55" if "00:02:00" in content[0]["text"] else "00:04:55"
+                return json.dumps({
+                    "snapped_ts": ts, "emotion_class": "shock", "face_cue": "gasp",
+                    "tag": "Reaction", "description": "ตกใจจังหวะสำคัญ", "confidence": 0.9,
+                })
+
+            opts = VerifyOptions(
+                source=vid, endpoint="http://local", model="m",
+                call_fn=fake_call, layout_fn=fake_layout,
+                motion_fn=lambda s, b, l: ([], [], ()),
+                export_fn=fake_export,
+                audio_fn=lambda s, b: AudioBurstMetrics(3.0, 2.0, None, True),
+            )
+            regime = _sample_regime("shock_burst")
+            with patch("process.reaction_verify.classify_dual_regime", return_value=regime):
+                verify_reaction_stamps(
+                    ["00:02:00 - [Reaction] อึ้ง", "00:05:00 - [Reaction] เหวอ"], ws, opts
+                )
+            self.assertEqual(len(seen_windows), 2)
+            self.assertEqual(exported_boxes, [b1, b2])
 
 
 if __name__ == "__main__":

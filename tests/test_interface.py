@@ -55,6 +55,7 @@ class TestLibInterface(unittest.TestCase):
         self.assertTrue(callable(interface.run_group_mode))
         self.assertTrue(callable(interface.finalize_and_assemble_timestamps))
         self.assertTrue(callable(interface.audit_timestamps_against_glossary))
+        self.assertTrue(callable(interface.apply_reaction_verify))
 
 
 if __name__ == "__main__":
