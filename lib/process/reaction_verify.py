@@ -11,7 +11,7 @@ from common.config import (
     ONSET_SNAP_PRE_SEC, STAMP_COLLISION_SEC, WEBCAM_CORNER,
 )
 from common.lmstudio import resolve_endpoint
-from common.log import format_duration, log_info, log_ok, log_stage, log_warn
+from common.log import format_duration, log_cont, log_info, log_ok, log_stage, log_warn
 from process.multimodal import build_multimodal_content, call_multimodal
 from process.reaction_io import (
     CoTriggerContext, ReactionRunConfig, collect_co_triggers, load_chunk_context,
@@ -79,6 +79,21 @@ def _log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> Non
     log_warn("reaction", f"{prefix} | rejected ({reason}, conf={res.confidence:.2f}) -> kept original")
 
 
+def _log_vlm_dispatch(ev: _StampEval, exported: Dict[str, object]) -> None:
+    """Log reaction telemetry and exact webcam frames dispatched to the VLM."""
+    frames = exported.get("frames") or []
+    aud_z = ev.triggers.audio.rms_z_max if ev.triggers.audio else 0.0
+    log_info(
+        "reaction",
+        f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | layout={ev.layout.layout} | {ev.regime.regime} "
+        f"(W_z={ev.regime.webcam_z_max:.1f}, aud_z={aud_z:.1f}) | {len(frames)} img -> VLM",
+    )
+    for f in frames:
+        log_cont(f"img[{f.get('ts', '')}] ({f.get('role') or 'frame'}): {f.get('path', '')}")
+    if exported.get("strip_path"):
+        log_cont(f"strip: {exported['strip_path']}")
+
+
 def _run_vlm_on_w_frames(ev: _StampEval, workspace: Path, opts: VerifyOptions) -> ReactionVerifyResult:
     """Export W frames across layout and query multimodal VLM for onset snap."""
     spec = FrameExportSpec(ev.regime.keyframes, ev.layout.webcam_box, workspace / "frames_reaction", f"rx_{ev.idx:03d}")
@@ -87,11 +102,7 @@ def _run_vlm_on_w_frames(ev: _StampEval, workspace: Path, opts: VerifyOptions) -
     if not kf_list:
         log_warn("reaction", f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | keyframe export empty -> kept original")
         return _unchanged(ev.stamp)
-    aud_z = ev.triggers.audio.rms_z_max if ev.triggers.audio else 0.0
-    log_info(
-        "reaction",
-        f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | layout={ev.layout.layout} | {ev.regime.regime} (W_z={ev.regime.webcam_z_max:.1f}, aud_z={aud_z:.1f}) -> VLM",
-    )
+    _log_vlm_dispatch(ev, exported)
     prompt = build_face_reaction_prompt(ev.stamp, ev.regime, PromptContext(ev.triggers, ev.transcript_ctx))
     raw = (opts.call_fn or call_multimodal)(opts.endpoint, opts.model, build_multimodal_content(prompt, kf_list))
     bounds = (int(ev.bounds.start_sec), int(ev.bounds.end_sec))
