@@ -29,6 +29,7 @@ from common.log import (
 )
 from process.prompts import build_recursive_prompt, load_world_identity_context
 from process.runners.common import (
+    _balance_dynamic_chunk_frames,
     _call_chunk_model,
     _get_runtime_hook,
     _init_multimodal_grounding,
@@ -47,6 +48,7 @@ from chunk.state import (
 )
 from common.time import fmt_ts as _fmt_ts, parse_ts as ts_to_sec
 from common.timestamps import sanitize_timestamp_line, validate_timestamps
+from video.webcam_storyboard import format_webcam_count
 
 
 def _reset_recursive_state(workspace: Path, output_dir: Path, no_resume: bool) -> Tuple[List[str], str, str]:
@@ -466,10 +468,10 @@ def _process_single_recursive_chunk(
     if not chunk:
         return current_topic_title, rolling_summary
 
-    sb_frames = _sample_chunk_multimodal_frames(
+    sb_raw = _sample_chunk_multimodal_frames(
         chunk, ch_num, slides_dir if is_multimodal else None, tiles_dir, rolling_summary, args
     )
-    wc_frames = _sample_chunk_webcam_grounding(workspace, chunk, webcam_source, args)
+    sb_frames, wc_frames, tier = _balance_dynamic_chunk_frames(workspace, chunk, sb_raw, webcam_source, args)
     keyframes = sb_frames + wc_frames
     prompt = build_recursive_prompt(
         chunk=chunk, current_topic=current_topic_title, rolling_summary=rolling_summary,
@@ -481,7 +483,11 @@ def _process_single_recursive_chunk(
     prompt_tokens = len(prompt) // 4
     prog = format_progress(ch_num + 1, total_chunks)
     chunk["_log_header"] = f"{prog} {chunk_idx}"
-    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | storyboard={len(sb_frames)} webcam={len(wc_frames)} -> running")
+    tier_prefix = f"{tier} | " if tier != "static" else ""
+    log_info(
+        "chunk",
+        f"{chunk['_log_header']} | ~{prompt_tokens} tok | {tier_prefix}storyboard={len(sb_frames)} webcam={format_webcam_count(wc_frames)} -> running",
+    )
 
     return _execute_and_persist_chunk(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes, max_tokens=max_tokens,

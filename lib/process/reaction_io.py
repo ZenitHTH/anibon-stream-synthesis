@@ -17,6 +17,7 @@ from process.reaction_prompt import CoTriggerSignals, ReactionVerifyResult
 from process.vision_verify import stamp_seconds
 from video.audio_envelope import AudioBurstMetrics, extract_audio_burst_metrics
 from video.motion_types import WindowBounds
+from video.webcam_storyboard import format_webcam_count
 
 
 @dataclass(frozen=True)
@@ -167,11 +168,10 @@ def sync_raw_timestamps(workspace: Path, mapping: Dict[str, str]) -> None:
     raw_ts.write_text("\n".join(updated) + "\n", encoding="utf-8")
 
 
-def log_reaction_dispatch(header: str, wb_exported: dict, sb_exported: dict) -> None:
+def log_reaction_dispatch(header: str, wb_items: list, sb_exported: dict) -> None:
     """Log separated webcam and storyboard image counts dispatched to the VLM."""
-    wb_count = len(wb_exported.get("frames") or ())
     sb_count = len(sb_exported.get("frames") or ())
-    log_info("reaction", f"{header} | webcam={wb_count} storyboard={sb_count} -> VLM")
+    log_info("reaction", f"{header} | webcam={format_webcam_count(wb_items)} storyboard={sb_count} -> VLM")
 
 
 def log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> None:

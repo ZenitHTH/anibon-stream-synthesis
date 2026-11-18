@@ -82,7 +82,7 @@ class TestChunkWebcamSampling(unittest.TestCase):
             with patch.object(rec, "_init_multimodal_grounding", return_value=(True, slides, ws / "tiles")), \
                  patch.object(rec, "_init_webcam_source", return_value=ws / "v.mp4"), \
                  patch.object(rec, "_sample_chunk_multimodal_frames", return_value=sb), \
-                 patch.object(rec, "_sample_chunk_webcam_grounding", return_value=wc), \
+                 patch.object(rec, "_balance_dynamic_chunk_frames", return_value=(sb, wc, "high(mad=0.140)")), \
                  patch.object(rec, "_call_chunk_model", return_value='{"is_continuation": true, "chunk_summary": "ok"}'), \
                  patch.object(rec, "finalize_and_assemble_timestamps", return_value=(ws / "out.md", [])), \
                  redirect_stdout(out):

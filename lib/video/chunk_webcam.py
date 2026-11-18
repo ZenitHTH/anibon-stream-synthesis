@@ -11,6 +11,7 @@ from common.time import fmt_ts
 from video.face_motion import _export_vf, _render_single_jpeg
 from video.motion_types import LayoutSegment, WindowBounds
 from video.obs_layout import detect_obs_layout
+from video.webcam_storyboard import assemble_webcam_storyboard
 
 
 @dataclass(frozen=True)
@@ -56,21 +57,34 @@ def _load_or_render_wc(req: ChunkWebcamRequest, sec: int, vf: str) -> Optional[T
     return (fmt_ts(sec), out_jpg, b64, "WEBCAM CLOSEUP")
 
 
+def _chunked_sheets(frames: list, ws: Path, ch_idx: int) -> List[Tuple[str, Path, str, str]]:
+    """Pack webcam frames into 1 or 2 tiled storyboard sheets (<= 9 frames per sheet)."""
+    if len(frames) < 2:
+        return frames
+    sheets: List[Tuple[str, Path, str, str]] = []
+    for part, start in enumerate(range(0, len(frames), 9)):
+        batch = frames[start : start + 9]
+        sheet_path = ws / "frames" / "webcam_chunk" / f"wc_sheet_{ch_idx:02d}_{part}.jpg"
+        sheet = assemble_webcam_storyboard(batch, sheet_path)
+        if sheet is None:
+            return frames
+        sheets.append(sheet)
+    return sheets
+
+
 def sample_chunk_webcam_frames(req: ChunkWebcamRequest) -> List[Tuple[str, Path, str, str]]:
-    """Sample cropped webcam closeup JPEGs for Pass 1 multimodal chunk inference."""
-    if not _is_valid_media(req.source):
+    """Sample cropped webcam closeup JPEGs and pack as storyboard sheet(s) for Pass 1."""
+    if not _is_valid_media(req.source) or req.max_frames <= 0:
         return []
     secs = sorted(req.target_secs[:req.max_frames]) if req.target_secs else _select_fallback_seconds(req.chunk.get("items", []), req.max_frames)
     if not secs:
         return []
-    probe_sec = float(secs[0])
-    bounds = WindowBounds(max(0.0, probe_sec - 3.0), probe_sec + 5.0)
-    layout = (req.layout_fn or detect_obs_layout)(req.source, bounds, preferred=req.preferred)
+    layout = (req.layout_fn or detect_obs_layout)(req.source, WindowBounds(max(0.0, secs[0] - 3.0), secs[0] + 5.0), preferred=req.preferred)
     if layout.webcam_box is None:
         return []
     vf = _export_vf(layout.webcam_box, 256)
-    frames = [_load_or_render_wc(req, sec, vf) for sec in secs]
-    return [f for f in frames if f is not None]
+    frames = [f for sec in secs if (f := _load_or_render_wc(req, sec, vf)) is not None]
+    return _chunked_sheets(frames, Path(req.workspace), int(req.chunk.get("_idx", 0) or 0))
 
 
 __all__ = ["ChunkWebcamRequest", "sample_chunk_webcam_frames"]

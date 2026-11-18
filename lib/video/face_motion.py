@@ -147,22 +147,20 @@ def _midpoint_pick(a: KeyframePick, b: KeyframePick) -> KeyframePick:
 
 
 def expand_reaction_keyframes(
-    keyframes: Tuple[KeyframePick, ...], max_frames: int = 6
+    keyframes: Tuple[KeyframePick, ...], max_frames: int = 9
 ) -> Tuple[KeyframePick, ...]:
     """Expand 4 core keyframes with intermediate transition picks up to max_frames."""
-    if len(keyframes) >= max_frames or len(keyframes) < 2:
-        return keyframes[:max_frames]
-    expanded, seen = [], set()
-    for i, kf in enumerate(keyframes):
-        if int(round(kf.abs_sec)) not in seen:
-            expanded.append(kf)
-            seen.add(int(round(kf.abs_sec)))
-        if i + 1 < len(keyframes) and len(expanded) < max_frames and (keyframes[i + 1].abs_sec - kf.abs_sec) >= 2.0:
-            mid = _midpoint_pick(kf, keyframes[i + 1])
-            if int(round(mid.abs_sec)) not in seen:
-                expanded.append(mid)
-                seen.add(int(round(mid.abs_sec)))
-    return tuple(sorted(expanded[:max_frames], key=lambda k: k.abs_sec))
+    ordered = sorted({int(round(k.abs_sec)): k for k in keyframes}.values(), key=lambda k: k.abs_sec)
+    while len(ordered) < max_frames and len(ordered) >= 2:
+        gaps = sorted(
+            ((ordered[i + 1].abs_sec - ordered[i].abs_sec, i) for i in range(len(ordered) - 1)),
+            reverse=True,
+        )
+        if gaps[0][0] < 1.2:
+            break
+        idx = gaps[0][1]
+        ordered.insert(idx + 1, _midpoint_pick(ordered[idx], ordered[idx + 1]))
+    return tuple(ordered[:max_frames])
 
 
 def pick_storyboard_keyframes(

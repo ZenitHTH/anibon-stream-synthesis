@@ -28,6 +28,7 @@ from video.face_motion import (
     FrameExportSpec, expand_reaction_keyframes, export_vlm_keyframes,
     extract_dual_motion_series, pick_storyboard_keyframes,
 )
+from video.webcam_storyboard import pack_exported_webcam_storyboard
 from video.face_motion_metrics import classify_dual_regime
 from video.motion_types import LayoutSegment, MotionRegime, RegimeThresholds, WindowBounds
 from video.obs_layout import detect_obs_layout
@@ -71,43 +72,42 @@ def _unchanged(stamp: str) -> ReactionVerifyResult:
     return ReactionVerifyResult(stamp, stamp, stamp_seconds(stamp), "unchanged", "", 0.0, 0.0, False)
 
 
-def _build_reaction_frames(
-    wb_exported: Dict[str, object], sb_exported: Dict[str, object]
-) -> List[tuple]:
-    """Combine labeled webcam W frames and full-screen storyboard frames for VLM."""
-    frames: List[tuple] = []
-    for f in wb_exported.get("frames") or ():
-        role = f.get("role") or "frame"
-        frames.append((f["ts"], Path(f["path"]), f["b64"], f"WEBCAM ONLY ({role})"))
-    for f in sb_exported.get("frames") or ():
-        role = f.get("role") or "screen"
-        frames.append((f["ts"], Path(f["path"]), f["b64"], f"STORYBOARD SCREEN ({role})"))
-    return frames
+def _build_reaction_frames(wb_items: List[tuple], sb_exported: Dict[str, object]) -> List[tuple]:
+    """Combine webcam storyboard/frames and full-screen storyboard frames for VLM."""
+    sb = [
+        (f["ts"], Path(f["path"]), f["b64"], f"STORYBOARD SCREEN ({f.get('role') or 'screen'})")
+        for f in (sb_exported.get("frames") or ())
+    ]
+    return wb_items + sb
 
 
-def _export_reaction_pair(ev: _StampEval, workspace: Path, opts: VerifyOptions) -> Tuple[dict, dict]:
-    """Export expanded webcam W frames and full-screen storyboard frames."""
+def _export_reaction_pair(ev: _StampEval, workspace: Path, opts: VerifyOptions) -> Tuple[List[tuple], dict]:
+    """Export dynamically balanced webcam storyboard vs full-screen storyboard frames."""
     export_fn = opts.export_fn or export_vlm_keyframes
     out_dir = workspace / "frames_reaction"
-    wb_kfs = expand_reaction_keyframes(ev.regime.keyframes, FACE_MAX_FRAMES)
+    high_wc = ev.regime.regime in ("posture_act", "shock_burst", "angry", "joy_flex") or ev.regime.webcam_z_max >= 5.0 or ev.regime.w_pose_shift >= 0.14
+    wb_cap = FACE_MAX_FRAMES if high_wc else min(4, FACE_MAX_FRAMES)
+    sb_cap = min(2, REACTION_STORYBOARD_FRAMES) if high_wc else REACTION_STORYBOARD_FRAMES
+    wb_kfs = expand_reaction_keyframes(ev.regime.keyframes, wb_cap)
     wb_exp = export_fn(opts.source, FrameExportSpec(wb_kfs, ev.layout.webcam_box, out_dir, f"rx_{ev.idx:03d}"))
+    wb_items = pack_exported_webcam_storyboard(wb_exp, out_dir / f"wb_sheet_{ev.idx:03d}.jpg")
     sb_exp: Dict[str, object] = {"frames": [], "strip_path": None}
     if ev.layout.layout != "fullscreen":
-        sb_kfs = pick_storyboard_keyframes(ev.regime.keyframes, REACTION_STORYBOARD_FRAMES)
+        sb_kfs = pick_storyboard_keyframes(ev.regime.keyframes, sb_cap)
         sb_exp = export_fn(opts.source, FrameExportSpec(sb_kfs, None, out_dir, f"sb_{ev.idx:03d}", out_size=320))
-    return wb_exp, sb_exp
+    return wb_items, sb_exp
 
 
 def _run_vlm_on_w_frames(ev: _StampEval, workspace: Path, opts: VerifyOptions) -> ReactionVerifyResult:
-    """Export expanded webcam W + storyboard context frames and query VLM."""
-    wb_exp, sb_exp = _export_reaction_pair(ev, workspace, opts)
-    kf_list = _build_reaction_frames(wb_exp, sb_exp)
+    """Export expanded webcam storyboard + screen context frames and query VLM."""
+    wb_items, sb_exp = _export_reaction_pair(ev, workspace, opts)
+    kf_list = _build_reaction_frames(wb_items, sb_exp)
     if not kf_list:
         log_warn("reaction", f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | keyframe export empty -> kept original")
         return _unchanged(ev.stamp)
     aud_z = ev.triggers.audio.rms_z_max if ev.triggers.audio else 0.0
     hdr = f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | layout={ev.layout.layout} | {ev.regime.regime} (W_z={ev.regime.webcam_z_max:.1f}, aud_z={aud_z:.1f})"
-    log_reaction_dispatch(hdr, wb_exp, sb_exp)
+    log_reaction_dispatch(hdr, wb_items, sb_exp)
     prompt = build_face_reaction_prompt(ev.stamp, ev.regime, PromptContext(ev.triggers, ev.transcript_ctx))
     raw = (opts.call_fn or call_multimodal)(opts.endpoint, opts.model, build_multimodal_content(prompt, kf_list))
     res = parse_snapped_response(raw, ev.stamp, ParseConstraints((int(ev.bounds.start_sec), int(ev.bounds.end_sec)), peak_motion=ev.regime.webcam_z_max))
