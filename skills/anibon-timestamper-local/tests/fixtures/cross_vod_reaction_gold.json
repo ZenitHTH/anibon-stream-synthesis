@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "vods": ["tR9jOZVYSj8", "McgRhdbJXlU", "XEOPUvpRw60"],
+  "rapid_reaction_stamps": [
+    "03:36:15 - [Reaction] อึ้งหลังซูมดูรายละเอียดตัวละครใหม่แบบใกล้ชิด",
+    "03:37:24 - [Reaction] ตบมือกุมหัวร้องลั่นหลังเปิดภาพร่างสุดท้ายจนโดเนทเด้ง",
+    "03:44:23 - [Reaction] หัวเราะลั่นท่าลอยตัวกลางอากาศของร่างหนึ่ง",
+    "03:45:34 - [Reaction] ตาโตเห็นตุ๊กตาจิ๋วกับเอฟเฟกต์น้ำแข็งไสสุดล้ำ"
+  ],
+  "duplicate_banter_stamps": [
+    "01:10:00 - [Reaction] ขำมุกแชทเรื่องกาชาเกลือมาก",
+    "01:11:40 - [Reaction] ขำมุกแชทเรื่องกาชาเกลือซ้ำ"
+  ],
+  "protected_milestone_stamps": [
+    "01:20:00 - [Gacha] เปิดกาชาหาตัวใหม่รอบแรก",
+    "02:15:00 - [Victory] ปราบบอสใหญ่ผ่านฉลุย",
+    "03:10:00 - [Boss] เข้าสู่เฟสสุดท้ายของบอส",
+    "00:33:15 - [News] อ่านข่าวรายงานผลคะแนนประจำวัน"
+  ],
+  "co_trigger_cases": {
+    "motionless_rant": {
+      "id": "boss_heal",
+      "stamp": "08:50:45 - [Talk] พูดถึงระบบฮีลของบอส",
+      "transcript": "เห้ย แม่งออกแบบบอสพังจัด ฟิวส์ขาดเลย",
+      "mood_555_peak_sec": 31800
+    },
+    "subtle_tease": {
+      "id": "tease_yellow",
+      "stamp": "00:31:20 - [Talk] อ่านคอมเมนต์แชทเรื่องปกคลิป",
+      "transcript": "ล้อเล่นแซวๆ นะครับทุกคน",
+      "mood_555_peak_sec": 1880
+    },
+    "quiet_news": {
+      "id": "calm_sso",
+      "stamp": "00:33:15 - [News] วิเคราะห์ตารางคะแนนเลือกตั้งตามปกติ",
+      "transcript": "วันนี้อากาศดีครับ รายงานข่าวต่อตามลำดับ",
+      "mood_555_peak_sec": 600
+    }
+  },
+  "real_clips": [
+    {
+      "id": "vod1_spook",
+      "rel_path": "vod1/clips/gacha_spook_013655.mp4",
+      "start_sec": 0.0,
+      "end_sec": 55.0,
+      "preferred_layout": "auto",
+      "expected_reaction": true,
+      "expect_audio_trigger": true
+    },
+    {
+      "id": "vod1_salt",
+      "rel_path": "vod1/clips/frust_salt_051930.mp4",
+      "start_sec": 0.0,
+      "end_sec": 55.0,
+      "preferred_layout": "auto",
+      "expected_reaction": true,
+      "expect_audio_trigger": true
+    },
+    {
+      "id": "vod1_calm",
+      "rel_path": "vod1/clips/neg_calm_talk_001000.mp4",
+      "start_sec": 0.0,
+      "end_sec": 35.0,
+      "preferred_layout": "auto",
+      "expected_reaction": false,
+      "expect_audio_trigger": false
+    },
+    {
+      "id": "vod2_angry",
+      "rel_path": "vod2/clips/angry_lanterns_034025_034210.mp4",
+      "start_sec": 0.0,
+      "end_sec": 60.0,
+      "preferred_layout": "top-right",
+      "expected_reaction": true,
+      "expect_audio_trigger": false
+    },
+    {
+      "id": "vod2_shock",
+      "rel_path": "vod2/clips/shock_iris_071220_071355.mp4",
+      "start_sec": 0.0,
+      "end_sec": 60.0,
+      "preferred_layout": "top-right",
+      "expected_reaction": true,
+      "expect_audio_trigger": false
+    },
+    {
+      "id": "vod3_crash10",
+      "rel_path": "vod3/clips/crash10_091955.mp4",
+      "start_sec": 0.0,
+      "end_sec": 55.0,
+      "preferred_layout": "fullscreen",
+      "expected_reaction": true,
+      "expect_audio_trigger": true
+    },
+    {
+      "id": "vod3_ponr",
+      "rel_path": "vod3/clips/ponr_stunned_083000.mp4",
+      "start_sec": 0.0,
+      "end_sec": 55.0,
+      "preferred_layout": "mid-left",
+      "expected_reaction": true,
+      "expect_audio_trigger": false
+    },
+    {
+      "id": "vod3_heal",
+      "rel_path": "vod3/clips/boss_heal_085035.mp4",
+      "start_sec": 0.0,
+      "end_sec": 55.0,
+      "preferred_layout": "mid-left",
+      "expected_reaction": true,
+      "expect_audio_trigger": true
+    }
+  ]
+}
