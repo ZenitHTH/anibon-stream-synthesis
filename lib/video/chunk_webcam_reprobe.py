@@ -13,7 +13,21 @@ from video.obs_layout import detect_obs_layout
 _FULL_CROP_BOX = FaceBox(0.0, 0.0, 1.0, 1.0, "full")
 _SPLIT_JUMP_FLOOR = 0.14
 _DEAD_MOTION_CEIL = 0.006
+_BLANK_FACE_TONE_CEIL = 0.012
 _MAX_RUN_REPROBES = 3
+
+
+def face_tone_fraction(rgb: bytes) -> float:
+    """Estimate fraction of pixels matching indoor neutral/warm human skin tones."""
+    n = len(rgb) // 3
+    if n < 16:
+        return 0.0
+    rs, gs, bs = rgb[0 : n * 3 : 3], rgb[1 : n * 3 : 3], rgb[2 : n * 3 : 3]
+    hits = sum(
+        1 for r, g, b in zip(rs, gs, bs)
+        if 95 <= r <= 245 and r >= b - 8 and g >= b - 10 and (r - b) <= 65 and (g - r) <= 18
+    )
+    return hits / n
 
 
 @dataclass(frozen=True)
@@ -114,10 +128,16 @@ def _rerender_segment(
             bak_path.replace(old_path)
 
 
-def _select_runs_to_check(runs: Sequence[Tuple[int, int]], deltas: Sequence[float]) -> List[Tuple[int, int]]:
-    """Pick runs needing layout verification when a jump or dead span occurred."""
+def _select_runs_to_check(
+    runs: Sequence[Tuple[int, int]],
+    deltas: Sequence[float],
+    bufs: Sequence[bytes],
+) -> List[Tuple[int, int]]:
+    """Pick runs needing layout verification when a jump, dead span, or blank face run occurred."""
     if len(runs) == 1:
-        return list(runs) if _is_dead_run(deltas, runs[0]) else []
+        lo, hi = runs[0]
+        mean_tone = sum(face_tone_fraction(b) for b in bufs[lo:hi]) / max(1, hi - lo)
+        return list(runs) if (_is_dead_run(deltas, runs[0]) or mean_tone < _BLANK_FACE_TONE_CEIL) else []
     ranked = sorted(runs, key=lambda r: (-(r[1] - r[0]), r[0]))
     return sorted(ranked[:_MAX_RUN_REPROBES], key=lambda r: r[0])
 
@@ -152,7 +172,7 @@ def reprobe_switched_frames(
     if not bufs:
         return frames
     deltas = _compute_consecutive_deltas(bufs)
-    to_check = _select_runs_to_check(_partition_runs(deltas, len(frames)), deltas)
+    to_check = _select_runs_to_check(_partition_runs(deltas, len(frames)), deltas, bufs)
     if not to_check:
         return frames
     return _apply_segment_reprobes(req, list(frames), to_check, plan)
