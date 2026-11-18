@@ -78,6 +78,17 @@ def _classify_component(comp: List[Tuple[int, int]]) -> Tuple[str, Optional[Face
     return ("auto-tracked", box)
 
 
+def box_iou(box_a: Optional[FaceBox], box_b: Optional[FaceBox]) -> float:
+    """Compute intersection-over-union between two normalized FaceBox regions."""
+    if box_a is None or box_b is None:
+        return 0.0
+    ix0, iy0 = max(box_a.x, box_b.x), max(box_a.y, box_b.y)
+    ix1, iy1 = min(box_a.x + box_a.w, box_b.x + box_b.w), min(box_a.y + box_a.h, box_b.y + box_b.h)
+    inter = max(0.0, ix1 - ix0) * max(0.0, iy1 - iy0)
+    union = box_a.w * box_a.h + box_b.w * box_b.h - inter
+    return inter / union if union > 0.0 else 0.0
+
+
 def track_webcam_any_position(
     frames: List[bytes], sample_size: int = 48
 ) -> Tuple[str, Optional[FaceBox]]:

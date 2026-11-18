@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from video.auto_tracker import track_webcam_any_position
+from video.auto_tracker import box_iou, track_webcam_any_position
 from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import WEBCAM_BOX_PRESETS, FaceBox, LayoutSegment, WindowBounds
 
@@ -146,19 +146,38 @@ def _probe_full_frames(source: Path | str, bounds: WindowBounds) -> List[bytes]:
     return [res.stdout[i * fb : (i + 1) * fb] for i in range(len(res.stdout) // fb)]
 
 
+def _split_pip_relocation(
+    clean: List[bytes], key: str, span: Tuple[float, float]
+) -> Tuple[List[bytes], Tuple[float, float], Tuple[float, ...]]:
+    """Detect mid-window PIP webcam relocation and isolate post-switch half."""
+    if len(clean) < 4 or key == "none":
+        return (clean, span, ())
+    mid = len(clean) // 2
+    _, box_a = _resolve_from_clean(clean[:mid], 48, key)
+    _, box_b = _resolve_from_clean(clean[mid:], 48, key)
+    switched = (box_a is not None or box_b is not None) and box_iou(box_a, box_b) < 0.30
+    if not switched:
+        return (clean, span, ())
+    sw_sec = round(span[0] + mid, 3)
+    return (clean[mid:], (sw_sec, span[1]), (sw_sec,))
+
+
 def detect_obs_layout(
     source: Path | str, bounds: WindowBounds, preferred: str = "auto"
 ) -> LayoutSegment:
-    """Probe frames, check fixed position first, and fall back to any-position tracker."""
+    """Probe frames, check fixed position first, and split mid-window PIP switches."""
     key = (preferred or "auto").strip().lower()
     frames = _probe_full_frames(source, bounds)
     if len(frames) < 2:
-        fallback = key if key != "auto" and key in WEBCAM_BOX_PRESETS else "top-right"
-        wb, fb = resolve_webcam_and_face_boxes(fallback)
-        return LayoutSegment(fallback, wb, fb, ())
+        fb_key = key if key != "auto" and key in WEBCAM_BOX_PRESETS else "top-right"
+        wb, fb = resolve_webcam_and_face_boxes(fb_key)
+        return LayoutSegment(fb_key, wb, fb, ())
     cuts = detect_layout_cuts(frames, fps=1.0)
-    cut_secs = tuple(round(c, 3) for c in cuts)
     lo, hi = split_around_cuts(len(frames), cuts, fps=1.0)
-    layout, wb = _resolve_from_clean(frames[lo:hi], 48, key)
+    span = (round(bounds.start_sec + lo, 3), round(min(bounds.end_sec, bounds.start_sec + hi), 3))
+    clean, sub_span, pip_cuts = _split_pip_relocation(frames[lo:hi], key, span)
+    all_cuts = tuple(sorted({round(bounds.start_sec + c, 3) for c in cuts} | set(pip_cuts)))
+    layout, wb = _resolve_from_clean(clean, 48, key)
     fb = wb.derive_tight_face() if wb is not None else None
-    return LayoutSegment(layout, wb, fb, cut_secs)
+    narrowed = bool(cuts or pip_cuts)
+    return LayoutSegment(layout, wb, fb, all_cuts, sub_span[0] if narrowed else None, sub_span[1] if narrowed else None)

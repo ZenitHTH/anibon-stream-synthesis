@@ -113,6 +113,17 @@ class TestFaceMotion(unittest.TestCase):
         self.assertEqual(len(out["frames"]), 2)
         self.assertIsNotNone(out["strip_path"])
 
+    def test_extract_dual_motion_series_clamps_to_layout_clean_bounds(self) -> None:
+        seg = LayoutSegment("mid-left", FaceBox(0, 0.38, 0.22, 0.24), FaceBox(0.06, 0.38, 0.08, 0.15), (16.0,), 16.0, 22.0)
+        bounds = WindowBounds(start_sec=10.0, end_sec=22.0, fps=2.0, sample_size=16)
+        frames = [_pattern_frame(16, 0, (15, 40)) for _ in range(12)]
+        with patch("video.face_motion.extract_raw_rgb_frames", return_value=(frames, [])) as mock_ext:
+            f_s, w_s, _ = extract_dual_motion_series(Path("dummy.mp4"), bounds, seg)
+        used_bounds = mock_ext.call_args_list[0].args[2]
+        self.assertEqual(used_bounds.start_sec, 16.0)
+        self.assertEqual(used_bounds.end_sec, 22.0)
+        self.assertGreaterEqual(w_s[0].abs_sec, 16.0)
+
 
 if __name__ == "__main__":
     unittest.main()

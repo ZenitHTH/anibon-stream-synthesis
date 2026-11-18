@@ -84,6 +84,33 @@ class TestObsLayout(unittest.TestCase):
         static = [_solid_frame(32, (20, 20, 20)) for _ in range(4)]
         self.assertEqual(track_webcam_any_position(static, sample_size=32), ("none", None))
 
+    def test_mid_window_pip_teleport_to_custom_box_splits_subsegment(self) -> None:
+        bounds = WindowBounds(start_sec=0.0, end_sec=12.0)
+        tr_box = WEBCAM_BOX_PRESETS["top-right"]
+        custom = FaceBox(0.35, 0.58, 0.22, 0.28)
+        h1 = [_paint_box(48, tr_box, ((i * 55) % 250, 70, 90)) for i in range(6)]
+        h2 = [_paint_box(48, custom, ((i * 55) % 250, 90, 70)) for i in range(6)]
+        with patch("video.obs_layout._probe_full_frames", return_value=h1 + h2):
+            seg = detect_obs_layout(Path("dummy.mp4"), bounds, preferred="auto")
+        self.assertEqual(seg.layout, "auto-tracked")
+        self.assertIsNotNone(seg.clean_start_sec)
+        self.assertGreaterEqual(seg.clean_start_sec, 5.0)
+        self.assertEqual(seg.clean_end_sec, 12.0)
+        self.assertTrue(len(seg.cut_secs) >= 1)
+        self.assertGreater(seg.webcam_box.y, 0.45)
+
+    def test_mid_window_pip_teleport_to_mid_left_under_fixed_preset(self) -> None:
+        bounds = WindowBounds(start_sec=10.0, end_sec=22.0)
+        tr_box, ml_box = WEBCAM_BOX_PRESETS["top-right"], WEBCAM_BOX_PRESETS["mid-left"]
+        h1 = [_paint_box(48, tr_box, ((i * 55) % 250, 70, 90)) for i in range(6)]
+        h2 = [_paint_box(48, ml_box, ((i * 55) % 250, 90, 70)) for i in range(6)]
+        with patch("video.obs_layout._probe_full_frames", return_value=h1 + h2):
+            seg = detect_obs_layout(Path("dummy.mp4"), bounds, preferred="top-right")
+        self.assertIn(seg.layout, ("mid-left", "auto-tracked"))
+        self.assertLess(seg.webcam_box.x, 0.05)
+        self.assertGreaterEqual(seg.clean_start_sec, 15.0)
+        self.assertEqual(seg.clean_end_sec, 22.0)
+
     def test_fixed_valid_skips_auto_tracker(self) -> None:
         bounds = WindowBounds(start_sec=0.0, end_sec=10.0)
         tr_box = WEBCAM_BOX_PRESETS["top-right"]
