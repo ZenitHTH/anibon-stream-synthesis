@@ -94,7 +94,9 @@ def _calibration_rules() -> str:
         "3) Deadpan/tilted rant with audio_rms_z spike or swearing = angry (vs playful_tease mugging).\n"
         "4) Inspect BOTH foreground chair AND bed/background behind chair: camera/desk gags (lean_into_cam, duck_under_desk, "
         "slump_on_desk, show_prop_to_cam, praying_bow) or getting up to lie_on_bed = physical_act (accepted; truthful Thai). "
-        "If chair AND bed are empty with no gag = empty_chair_afk (never fabricate [Reaction])."
+        "If chair AND bed are empty with no gag = empty_chair_afk (never fabricate [Reaction]).\n"
+        "5) Expressive gestures while explaining builds, lore, or farming = keep Draft tag (Talk/Gameplay/Review) and concrete entities; use [Reaction] only when an acute gasp/rage/shock is primary.\n"
+        "6) Webcam speaker is ALWAYS Pu Boat ('ปู่โบ๊ต') — never attribute emotions to game characters, never invent unrelated people/nouns from noisy ASR, and snap to earliest shock/audio onset rather than later explanation."
     )
 
 
@@ -110,12 +112,12 @@ def build_face_reaction_prompt(
         f"Draft timestamp: {stamp}{transcript}\n{telemetry}\n{rules}\n"
         "Inspect BOTH [WEBCAM STORYBOARD] / [WEBCAM ONLY] panels (left-to-right top-to-bottom; face/hands/bed for onset+emotion) "
         "AND [STORYBOARD SCREEN] frames (full game/web screen for what triggered the reaction). "
-        "Preserve accurate proper nouns from Draft timestamp. "
+        "Keep accurate topic and proper nouns from Draft timestamp without inventing ungrounded names or nouns. "
         "Image 1 is [pre_onset_baseline] within 15s of onset. Return JSON ONLY:\n"
         '{"snapped_ts":"HH:MM:SS","emotion_class":"shock|stunned_freeze|playful_tease|angry|'
         'joy_flex|physical_act|calm_talking|empty_chair_afk","pose_cue":"none|lean_into_cam|'
         'duck_under_desk|slump_on_desk|show_prop_to_cam|praying_bow|lie_on_bed",'
-        '"face_cue":"<cue>","tag":"Reaction|Talk","description":"<Thai Caveman headline>","confidence":0.0}'
+        '"face_cue":"<cue>","tag":"Reaction|Talk|Gameplay|Review","description":"<Thai Caveman headline>","confidence":0.0}'
     )
 
 
@@ -126,11 +128,11 @@ def _reject(original: str, meta: Tuple[str, float], peak: float) -> ReactionVeri
 
 
 def _resolve_tag(orig_tag: str, req_tag: str) -> str:
-    """Protect milestone tags from downgrading to Reaction or Talk."""
+    """Protect milestone tags while allowing valid non-milestone classification updates."""
     if orig_tag in PROTECTED_MILESTONE_TAGS:
         return orig_tag
     cleaned = req_tag.strip()
-    return cleaned if cleaned in ("Reaction", "Talk") else orig_tag
+    return cleaned if cleaned in ("Reaction", "Talk", "Gameplay", "Review") else orig_tag
 
 
 def _extract_json_payload(raw: str) -> Optional[Dict[str, object]]:

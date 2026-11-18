@@ -641,3 +641,9 @@ Proper nouns, mod names, and franchise titles in the stream's own YouTube metada
     - *Cause*: `multimodal.py` defaults to `sec_per_slide=88.94` while YouTube MHTML sheets may report `X.yt-dlp.Duration: 89.959916` (`+1.15%` cumulative offset; `raw_transcript.json` and `livechat` remain at `0s` drift).
     - *Fix*: When visually verifying timestamps past hour 4, cross-check the burned-in LiveChat clock or `livechat/*.txt` inside the tile rather than trusting `tile_XXXXXX` seconds blindly.
 
+17. **Post-Run Timestamp Quality, Reaction-Verify & Remote Webcam Audit**:
+    - *Audit Pass-2 Rewrites (`reaction_verify_log.json`)*: Compare accepted `updated` entries against original Pass-1 timestamps and `chunks/*.txt` + `livechat/`. Reject speculative proper nouns, invented third-person names, character misattribution, or `[Talk]`/`[Gameplay]` analytical explanations flipped into generic `[Reaction]` lines.
+    - *Verify ASR Homophones & Peak Exclamations*: Cross-check suspect combat/gauge terms (`MP` vs `NP`), truncated proper nouns, and phonetic loanwords (`ต่อเรด`, `Emulator`) against `chunks/` and `livechat/`, ensuring sharp audio/webcam shock peaks (e.g. sudden `"What?!"` gasps) were not absorbed into a follow-up explanation stamp 20–30s later.
+    - *Webcam Sheet & Selective Cache Hygiene*: Inspect `frames/webcam_chunk/wc_sheet_*` when map grass or 1-frame transitions exist; delete only affected `recursive_outputs/chunk_XX.json` + matching `wc_*` / `wc_sheet_*` caches instead of wiping healthy chunks.
+    - *macOS Tailscale Recovery Checks*: Query `/Applications/Tailscale.app/Contents/MacOS/Tailscale status` (not an unconfigured Homebrew `tailscale` CLI) before assuming the remote LM Studio host is down during `_wait_for_network_recovery`.
+

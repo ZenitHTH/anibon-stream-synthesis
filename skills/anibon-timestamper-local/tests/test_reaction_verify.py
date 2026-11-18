@@ -465,6 +465,27 @@ class TestReactionVerifyTask5(unittest.TestCase):
             self.assertIn("00:05:00 - [Reaction] เหวอ", saved)
             self.assertNotIn("00:01:00 - [Reaction] อึ้ง", saved)
 
+    def test_reaction_prompt_preserves_gameplay_review_and_forbids_ungrounded_names(self):
+        from process.reaction_prompt import ParseConstraints, PromptContext, build_face_reaction_prompt, parse_snapped_response
+
+        prompt = build_face_reaction_prompt(
+            "04:50:31 - [Gameplay] ปรับเปลี่ยน Formation",
+            _sample_regime("calm_news"),
+            PromptContext(transcript_ctx="มูมเสถียรขึ้น ไม่มีปัญหา Emulator"),
+        )
+        self.assertIn("Gameplay|Review", prompt)
+        self.assertIn("ปู่โบ๊ต", prompt)
+        raw = json.dumps({
+            "snapped_ts": "04:50:33",
+            "emotion_class": "playful_tease",
+            "tag": "Gameplay",
+            "description": "ทดสอบปรับ Formation บน Emulator",
+            "confidence": 0.9,
+        })
+        res = parse_snapped_response(raw, "04:50:31 - [Gameplay] ปรับเปลี่ยน Formation", ParseConstraints((17400, 17460)))
+        self.assertTrue(res.accepted)
+        self.assertIn("- [Gameplay] ", res.updated)
+
 
 if __name__ == "__main__":
     unittest.main()
