@@ -329,6 +329,23 @@ class TestPrompts(unittest.TestCase):
             self.assertIn(f"คำที่{i}", joined)
         self.assertTrue(lines[0].startswith("(00:00:00)"))
 
+    def test_recursive_prompt_adds_webcam_rules_only_when_webcam_present(self):
+        chunk = {"_idx": 1, "items": [{"timestamp": "03:37:10", "start": 13030.0, "text": "โอ้โห"}]}
+        sb_only = build_recursive_prompt(
+            chunk=chunk, current_topic="Gacha", rolling_summary="ok",
+            keyframes=[("03:37:05", Path("t.jpg"), "AA==")],
+        )
+        self.assertNotIn("WEBCAM STORYBOARD (panels read", sb_only)
+
+        with_wc = build_recursive_prompt(
+            chunk=chunk, current_topic="Gacha", rolling_summary="ok",
+            keyframes=[
+                ("03:37:05", Path("t.jpg"), "AA=="),
+                ("03:37:10-03:37:25", Path("wc.jpg"), "BB==", "WEBCAM STORYBOARD (3x2 grid, left-to-right top-to-bottom; 6 panels: [1]=03:37:10 WEBCAM CLOSEUP)"),
+            ],
+        )
+        self.assertIn("WEBCAM STORYBOARD (panels read left-to-right top-to-bottom)", with_wc)
+
 
 if __name__ == "__main__":
     unittest.main()

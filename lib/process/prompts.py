@@ -362,6 +362,31 @@ def coalesce_chunk_items(items: list, max_lines: int = COMPACT_CHUNK_MAX_LINES) 
     ]
 
 
+def _format_keyframe_section(keyframes: list) -> str:
+    """Format keyframe list and multimodal IMAGE RULES, adding webcam grid guidance when present."""
+    kf_lines = [
+        f"- {item[3] if len(item) > 3 and item[3] else 'STORYBOARD SCREEN'} Frame {i+1} at timestamp [{item[0]}]"
+        for i, item in enumerate(keyframes)
+    ]
+    has_wc = any("WEBCAM" in str(item[3]).upper() for item in keyframes if len(item) > 3)
+    wc_rule = (
+        "\n- WEBCAM STORYBOARD (panels read left-to-right top-to-bottom): inspect Pu Boat's facial expression, "
+        "hand gestures, camera play, or bed/desk posture alongside STORYBOARD SCREEN to name physical actions/emotions truthfully "
+        "and anchor [Reaction] to the exact panel timestamp where the reaction begins."
+        if has_wc else ""
+    )
+    return (
+        "KEYFRAMES (each image is labeled with its timestamp):\n"
+        + "\n".join(kf_lines)
+        + "\nIMAGE RULES:\n"
+        + "- Deictic speech ('อันนี้', 'ตัวนี้', 'ดูนี่', 'ในจอ'): name the on-screen subject from the matching frame; use that frame's timestamp.\n"
+        + "- Pure visual event -> frame timestamp. Spoken topic shift -> first spoken sentence.\n"
+        + "- Showcase/livestream chapter or season titles belong to the showcased game. Confirm game via player title/channel badge.\n"
+        + "- STRICT VISUAL HUD & BOSS NAME GROUNDING: copy legible on-screen text exactly (weapon cards, banners, boss HP bars, e.g. Rapier, Lothaire, Slaughtermill). Never invent names."
+        + wc_rule
+    )
+
+
 def build_recursive_prompt(
     chunk: dict,
     current_topic: str,
@@ -418,19 +443,7 @@ def build_recursive_prompt(
 
     context_extras = []
     if keyframes:
-        kf_lines = [
-            f"- {item[3] if len(item) > 3 and item[3] else 'STORYBOARD SCREEN'} Frame {i+1} at timestamp [{item[0]}]"
-            for i, item in enumerate(keyframes)
-        ]
-        context_extras.append(
-            "KEYFRAMES (each image is labeled with its timestamp):\n"
-            + "\n".join(kf_lines)
-            + "\nIMAGE RULES:\n"
-            + "- Deictic speech ('อันนี้', 'ตัวนี้', 'ดูนี่', 'ในจอ'): name the on-screen subject from the matching frame; use that frame's timestamp.\n"
-            + "- Pure visual event -> frame timestamp. Spoken topic shift -> first spoken sentence.\n"
-            + "- Showcase/livestream chapter or season titles belong to the showcased game. Confirm game via player title/channel badge.\n"
-            + "- STRICT VISUAL HUD & BOSS NAME GROUNDING: copy legible on-screen text exactly (weapon cards, banners, boss HP bars, e.g. Rapier, Lothaire, Slaughtermill). Never invent names."
-        )
+        context_extras.append(_format_keyframe_section(keyframes))
     if mood:
         context_extras.append(f"Viewer Reaction: {mood}")
     if activity:
