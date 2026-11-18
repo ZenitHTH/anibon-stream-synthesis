@@ -5,18 +5,11 @@ from collections import Counter
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Tuple
 
-from video.chunk_webcam_reprobe import face_tone_fraction, green_chat_fraction
+from video.pixel_tones import face_tone_fraction, green_chat_fraction
 from video.dynamic_balance import decode_tile_box
 from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import FaceBox, LayoutSegment, WindowBounds
-from video.obs_layout import (
-    _crop_rgb_box,
-    _probe_full_frames,
-    _region_mad,
-    detect_layout_cuts,
-    detect_obs_layout,
-    split_around_cuts,
-)
+from video.obs_layout import _crop_rgb_box, _probe_full_frames, _region_mad, detect_layout_cuts, detect_obs_layout, split_around_cuts
 
 RankFn = Callable[[List[bytes], Sequence[tuple]], List[Tuple[bool, float, FaceBox]]]
 _STRONG_ACTIVE_FLOOR = 0.16
@@ -121,6 +114,14 @@ def _maybe_center_fallback(
     return best
 
 
+def _is_live_in_clean(clean: Sequence[bytes], box: FaceBox) -> bool:
+    """Return True when the 6s probe shows skin without LiveChat green overlay bars."""
+    crops = [_crop_rgb_box(f, 48, box.derive_tight_face()) for f in clean]
+    tone = sum(face_tone_fraction(c) for c in crops) / len(crops)
+    green = sum(green_chat_fraction(c) for c in crops) / len(crops)
+    return tone >= 0.025 and green < 0.06
+
+
 def _probe_best_active(
     source: Path | str,
     center_sec: int,
@@ -135,7 +136,8 @@ def _probe_best_active(
     active = [(item[2], _score_persistent_box(sb_frames, item[2], item[1])) for item in rank_fn(clean, sb_frames) if item[0]]
     if not active:
         return None
-    best_box, best_score = _maybe_center_fallback(clean, max(active, key=lambda item: item[1]))
+    live = [pair for pair in active if _is_live_in_clean(clean, pair[0])]
+    best_box, best_score = _maybe_center_fallback(clean, max(live or active, key=lambda item: item[1]))
     return len(active), best_score, best_box
 
 
@@ -189,6 +191,9 @@ def make_segment_layout_fn(
         if res is not None:
             box = res[2]
             return LayoutSegment(box.name, box, box.derive_tight_face())
-        return detect_obs_layout(source, bounds, preferred=preferred)
+        obs = detect_obs_layout(source, bounds, preferred=preferred)
+        if obs.webcam_box and obs.webcam_box.name != "auto-tracked":
+            return obs
+        return LayoutSegment("none", None, None)
 
     return _resolve

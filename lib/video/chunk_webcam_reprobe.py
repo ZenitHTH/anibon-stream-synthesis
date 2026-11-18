@@ -9,36 +9,15 @@ from video.dynamic_balance import decode_tile_box
 from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import FaceBox, WindowBounds
 from video.obs_layout import detect_obs_layout
+from video.pixel_tones import face_tone_fraction, green_chat_fraction
 
 _FULL_CROP_BOX = FaceBox(0.0, 0.0, 1.0, 1.0, "full")
 _SPLIT_JUMP_FLOOR = 0.125
 _DEAD_MOTION_CEIL = 0.006
-_BLANK_FACE_TONE_CEIL = 0.012
+_BLANK_FACE_TONE_CEIL = 0.020
 _CHAT_GREEN_MEAN_FLOOR = 0.05
 _CHAT_GREEN_MAX_FLOOR = 0.06
-_MAX_RUN_REPROBES = 3
-
-
-def face_tone_fraction(rgb: bytes) -> float:
-    """Estimate fraction of pixels matching indoor neutral/warm human skin tones."""
-    n = len(rgb) // 3
-    if n < 16:
-        return 0.0
-    rs, gs, bs = rgb[0 : n * 3 : 3], rgb[1 : n * 3 : 3], rgb[2 : n * 3 : 3]
-    hits = sum(
-        1 for r, g, b in zip(rs, gs, bs)
-        if 95 <= r <= 245 and r >= b - 8 and g >= b - 10 and (r - b) <= 65 and (g - r) <= 18
-    )
-    return hits / n
-
-
-def green_chat_fraction(rgb: bytes) -> float:
-    """Estimate fraction of pixels matching green YouTube LiveChat overlay bars."""
-    n = len(rgb) // 3
-    if n < 16:
-        return 0.0
-    rs, gs, bs = rgb[0 : n * 3 : 3], rgb[1 : n * 3 : 3], rgb[2 : n * 3 : 3]
-    return sum(1 for r, g, b in zip(rs, gs, bs) if g > r + 10 and g > b + 10) / n
+_MAX_RUN_REPROBES = 4
 
 
 @dataclass(frozen=True)
@@ -147,18 +126,23 @@ def _is_chat_run(bufs: Sequence[bytes], bounds: Tuple[int, int]) -> bool:
     return bool(greens) and (sum(greens) / len(greens) >= _CHAT_GREEN_MEAN_FLOOR or max(greens) >= _CHAT_GREEN_MAX_FLOOR)
 
 
+def _run_needs_reprobe(bufs: Sequence[bytes], deltas: Sequence[float], bounds: Tuple[int, int]) -> bool:
+    """Return True when rendered frames look dead, blank-face, or LiveChat-covered."""
+    lo, hi = bounds
+    span = bufs[lo:hi]
+    if _is_dead_run(deltas, bounds) or _is_chat_run(bufs, bounds):
+        return True
+    return bool(span) and min(face_tone_fraction(b) for b in span) < _BLANK_FACE_TONE_CEIL
+
+
 def _select_runs_to_check(
     runs: Sequence[Tuple[int, int]],
     deltas: Sequence[float],
     bufs: Sequence[bytes],
 ) -> List[Tuple[int, int]]:
-    """Pick runs needing layout verification when a jump, dead span, blank face, or chat bar occurred."""
-    if len(runs) == 1:
-        lo, hi = runs[0]
-        mean_tone = sum(face_tone_fraction(b) for b in bufs[lo:hi]) / max(1, hi - lo)
-        needs_fix = _is_dead_run(deltas, runs[0]) or mean_tone < _BLANK_FACE_TONE_CEIL or _is_chat_run(bufs, (lo, hi))
-        return list(runs) if needs_fix else []
-    ranked = sorted(runs, key=lambda r: (-(r[1] - r[0]), r[0]))
+    """Pick only broken, dead, or chat-covered runs so valid webcam segments stay intact."""
+    bad = [r for r in runs if _run_needs_reprobe(bufs, deltas, r)]
+    ranked = sorted(bad, key=lambda r: (-(r[1] - r[0]), r[0]))
     return sorted(ranked[:_MAX_RUN_REPROBES], key=lambda r: r[0])
 
 
