@@ -302,6 +302,20 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("EMOTIONAL TONE MATCHING (CRITICAL)", prompt)
         self.assertIn("ฟิวส์ขาด", prompt)
 
+    def test_prompts_instruct_splitting_distinct_reaction_onsets(self):
+        chunk = {"_idx": 1, "items": [{"timestamp": "03:04:10", "start": 11050.0, "text": "test"}]}
+        rec = build_recursive_prompt(chunk=chunk, current_topic="Gaming", rolling_summary="ok")
+        grp = build_group_prompt(
+            chunks=[chunk],
+            group_idx=0,
+            prev_tail="",
+            lang="th",
+            signals_map={},
+            workspace=Path(self.tmp_dir.name),
+        )
+        self.assertIn("REACTION VISUAL ONSET", rec)
+        self.assertIn("REACTION VISUAL ONSET", grp)
+
 
 if __name__ == "__main__":
     unittest.main()

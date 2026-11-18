@@ -6,6 +6,8 @@ Supports:
 - World Identity markdown lore injection
 - Multi-modal context (LiveChat, 555 mood, visual activity) & Web search snippets
 """
+from __future__ import annotations
+
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Set
@@ -450,6 +452,7 @@ Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) against the Pre
    - BUDGET: 1 per chunk by default, 2 max.
    - GAP RULE: if GAP PREDICATE is shown above -> emit exactly 1 stamp (tactical shift, boss phase, progress, or new sub-angle). Otherwise, if this is an ongoing continuation -> [].
    - WORTH A STAMP only if: (a) Pu Boat dwells on it > 1-2 min, or (b) a milestone happens (boss start, victory/defeat, gacha, donation). Passing remarks (< 30s, chat reads, 1-3 sentence mentions) -> skip. Same-thread points -> wrap into one stamp.
+   - REACTION VISUAL ONSET: keep separate `[Reaction]` lines when distinct reveals, crashes, physical camera gags (leaning into camera, slumping on desk, showing items, or getting up to lie on the bed behind the chair), or emotional swings occur even 45–120s apart. Anchor `HH:MM:SS` to initial reaction/reveal onset; match genuine anger (`หัวร้อน`/`เดือดจัด`/`สับแหลก`) vs stunned silence (`ชะงักนิ่ง`) vs playful camera/bed acting (`แซว`/`ขำ`/`เล่นกล้อง`/`ลงไปนอนเตียง`).
    - BOSS FIGHTS / VICTORY GUARD (STRICT): stamp boss start ([Boss] ปะทะบอส <Name>), major weapon/phase change, and final outcome only. No stamps for repeated deaths/retries. '[Victory]', 'จนจบการต่อสู้', 'เอาชนะสำเร็จ' require explicit proof (victory banner, reward drop, leaving arena); until then use [Boss]/[Gameplay].
    - Tags: {tags_list} (allowed tags only).
    - HEADLINE RECIPE (3 REQUIRED SLOTS IN ORDER — 8-16 words (50-95 Thai characters)):
@@ -630,6 +633,7 @@ Rules:
   * If consecutive chunks discuss the same topic or review the same game/subject, emit ONLY ONE timestamp when the topic starts.
   * Do NOT emit micro-stamps for minor conversational pauses within the same topic.
   * Emit timestamps ONLY for true topic shifts, reactions, donations, or gameplay transitions.
+  * REACTION VISUAL ONSET: Keep separate `[Reaction]` lines when distinct reveals, crashes, physical camera gags (leaning into camera, slumping on desk, showing items, or getting up to lie on the bed behind the chair), or emotional swings occur even 45–120s apart. Anchor `HH:MM:SS` to initial reaction/reveal onset; match genuine anger (`หัวร้อน`/`เดือดจัด`/`สับแหลก`) vs stunned silence (`ชะงักนิ่ง`) vs playful camera/bed acting (`แซว`/`ขำ`/`เล่นกล้อง`/`ลงไปนอนเตียง`).
   * STRICT PASSING MENTIONS FILTER: Do NOT stamp brief passing remarks or 1-3 sentence off-hand mentions where Pu Boat merely touches upon a subject without deep dive or substantive analysis (e.g. reading a chat comment, casual mentions of other games/consoles, fleeting remarks). Timestamp ONLY when speaker actively dwells and analyzes the topic for >1-2 minutes or several paragraphs.
   * PASSIVE GAMEPLAY GUARD: When casual crafting/inventory occurs in a sandbox game (e.g. Minecraft), spoken discussion strictly trumps casual in-game actions. Never stamp minor recipe crafting or item checking over substantive discourse, roasts, or songs.
   * Explicit Q&A question frames ("เดี๋ยวตอบคำถามนี้", "ปู่ปู่ว่า...", "คำถามสุดท้าย") count as topic switches.

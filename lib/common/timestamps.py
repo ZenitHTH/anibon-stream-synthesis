@@ -3,6 +3,9 @@
 Handles timestamp line hygiene, tag normalization to allowed whitelists,
 chronological loop breaking, and collision guards.
 """
+from __future__ import annotations
+
+from dataclasses import dataclass
 import re
 from typing import List, Tuple
 
@@ -10,6 +13,7 @@ from common.time import fmt_ts, parse_ts
 from common.config import (
     DEDUP_MIN_GAP_SEC,
     DEDUP_MAX_GAP_SEC,
+    REACTION_MIN_GAP_SEC,
     STAMP_COLLISION_SEC,
 )
 
@@ -78,6 +82,11 @@ def sanitize_timestamp_line(line: str) -> str:
     return line.strip()
 
 
+def _collision_threshold(line: str) -> int:
+    """Return minimum chronological separation for parsed timestamp lines."""
+    return REACTION_MIN_GAP_SEC if "[Reaction]" in line else 60
+
+
 def parse_timestamps(raw: str, max_stamps: int = 4) -> List[str]:
     """Extract and sanitize valid HH:MM:SS - [Tag] lines from model output.
 
@@ -96,14 +105,16 @@ def parse_timestamps(raw: str, max_stamps: int = 4) -> List[str]:
             if prev_sec is not None and sec <= prev_sec:
                 break
 
-            # 2. Collision Guard (< 60s):
-            if prev_sec is not None and (sec - prev_sec) < 60:
+            cleaned = sanitize_timestamp_line(line)
+            if not cleaned:
                 continue
 
-            cleaned = sanitize_timestamp_line(line)
-            if cleaned:
-                lines.append(cleaned)
-                prev_sec = sec
+            # 2. Collision Guard (< 45s for [Reaction], else < 60s):
+            if prev_sec is not None and (sec - prev_sec) < _collision_threshold(cleaned):
+                continue
+
+            lines.append(cleaned)
+            prev_sec = sec
 
             if len(lines) >= max_stamps:
                 break
@@ -132,6 +143,44 @@ def is_continuation(raw: str) -> bool:
     """Check if model response indicates a continuation with no new timestamp."""
     upper = raw.upper().strip()
     return (upper == "SKIP" or upper == "CONTINUATION") and not re.search(r"\d{2}:\d{2}:\d{2}", raw)
+
+
+@dataclass(frozen=True)
+class ReactionOverlap:
+    """Comparison context for consecutive reaction timestamps."""
+
+    prev_desc: str
+    curr_desc: str
+    prev_kw: set[str]
+    common_kw: set[str]
+    gap_sec: int
+
+
+def _char_ngrams(text: str, size: int = 4) -> set[str]:
+    """Return sliding character n-grams for unspaced Thai overlap checks."""
+    compact = re.sub(r"\s+", "", text.lower())
+    if len(compact) < size:
+        return {compact} if compact else set()
+    return {compact[i : i + size] for i in range(len(compact) - size + 1)}
+
+
+def _has_high_reaction_overlap(overlap: ReactionOverlap) -> bool:
+    """Detect duplicate banter reactions via keyword or Thai n-gram overlap."""
+    n_prev = len(overlap.prev_kw)
+    n_common = len(overlap.common_kw)
+    if n_common >= 4 or (n_prev >= 2 and n_common / n_prev >= 0.65):
+        return True
+    prev_grams = _char_ngrams(overlap.prev_desc)
+    curr_grams = _char_ngrams(overlap.curr_desc)
+    denom = min(len(prev_grams), len(curr_grams))
+    return denom > 0 and (len(prev_grams & curr_grams) / denom) >= 0.55
+
+
+def _should_keep_distinct_reaction(curr_stamp: str, overlap: ReactionOverlap) -> bool:
+    """Keep distinct [Reaction] beats >= REACTION_MIN_GAP_SEC apart unless banter overlaps."""
+    if "[Reaction]" not in curr_stamp or overlap.gap_sec < REACTION_MIN_GAP_SEC:
+        return False
+    return not _has_high_reaction_overlap(overlap)
 
 
 def deduplicate_consecutive_timestamps(
@@ -225,8 +274,11 @@ def deduplicate_consecutive_timestamps(
         is_milestone = bool(re.search(r"\[(Boss|Victory|Gacha|Donation|Highlight|Ending)\]", curr_stamp))
 
         # Filter out superficial reactions/off-hand micro-stamps (< 2.5 min apart from previous talk)
+        # unless it is a distinct reaction beat >= REACTION_MIN_GAP_SEC with low overlap.
+        overlap = ReactionOverlap(prev_desc, curr_desc, prev_kw, common_kw, gap)
+        distinct_reaction = _should_keep_distinct_reaction(curr_stamp, overlap)
         is_reaction = bool(re.search(r"\[Reaction\]", curr_stamp))
-        if is_reaction and gap < 150:
+        if is_reaction and gap < 150 and not distinct_reaction:
             continue
 
         # Lookahead safety guard: NEVER drop if dropping would cause gap > max_allowed_gap_sec to next candidate
@@ -237,10 +289,10 @@ def deduplicate_consecutive_timestamps(
                 continue
 
         if gap < min_gap_sec:
-            # Micro-gap (< 2 min): drop duplicate/continuation unless critical milestone
-            if not is_milestone:
+            # Micro-gap (< 2 min): drop duplicate/continuation unless critical milestone or distinct reaction
+            if not is_milestone and not distinct_reaction:
                 continue
-        elif gap < topic_dedup_gap and is_same_topic and not is_milestone:
+        elif gap < topic_dedup_gap and is_same_topic and not is_milestone and not distinct_reaction:
             # Redundant continuation stamp for same topic within dedup window
             continue
 

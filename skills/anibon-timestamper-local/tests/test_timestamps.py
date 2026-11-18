@@ -67,6 +67,32 @@ class TestTimestamps(unittest.TestCase):
         self.assertIn("00:01:00", deduped[0])
         self.assertIn("00:15:00", deduped[1])
 
+    def test_rapid_distinct_reactions_preserved_above_collision_floor(self):
+        stamps = [
+            "03:36:15 - [Reaction] อึ้งหลังซูมดูรายละเอียดตัวละครใหม่แบบใกล้ชิด",
+            "03:37:24 - [Reaction] ตบมือกุมหัวร้องลั่นหลังเปิดภาพร่างสุดท้ายจนโดเนทเด้ง",
+            "03:44:23 - [Reaction] หัวเราะลั่นท่าลอยตัวกลางอากาศของร่างหนึ่ง",
+            "03:45:34 - [Reaction] ตาโตเห็นตุ๊กตาจิ๋วกับเอฟเฟกต์น้ำแข็งไสสุดล้ำ",
+        ]
+        deduped = deduplicate_consecutive_timestamps(stamps, min_gap_sec=120, max_dedup_gap_sec=600)
+        self.assertEqual(len(deduped), 4)
+
+    def test_duplicate_banter_reactions_within_150s_still_collapsed(self):
+        stamps = [
+            "01:10:00 - [Reaction] ขำมุกแชทเรื่องกาชาเกลือมาก",
+            "01:11:40 - [Reaction] ขำมุกแชทเรื่องกาชาเกลือซ้ำ",
+        ]
+        deduped = deduplicate_consecutive_timestamps(stamps, min_gap_sec=120, max_dedup_gap_sec=600)
+        self.assertEqual(len(deduped), 1)
+
+    def test_parse_timestamps_allows_45s_reaction_separation(self):
+        raw = (
+            "04:43:30 - [Gameplay] ฟาร์มเควสต์ฟรีเตรียมปลดล็อกตัวละคร\n"
+            "04:44:24 - [Reaction] เหลียวขำแชทขอสกินร่างสามหลังเห็นชุดใหม่\n"
+        )
+        parsed = parse_timestamps(raw, max_stamps=4)
+        self.assertEqual(len(parsed), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
