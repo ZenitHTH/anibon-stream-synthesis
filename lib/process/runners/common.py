@@ -13,7 +13,9 @@ from common.config import (
     EVAL_BATCH_SIZE,
     MAX_CHUNK_FRAMES,
     MULTIMODAL_TIMEOUT_SEC,
+    PASS1_WEBCAM_FRAMES,
     SCENE_DELTA_THRESHOLD,
+    WEBCAM_CORNER,
 )
 from common.lmstudio import call_local
 from common.log import log_info, log_warn
@@ -23,6 +25,9 @@ from process.multimodal import (
     prepare_storyboard_slides,
     sample_chunk_keyframes,
 )
+from process.multimodal_situations import collect_situational_candidates, select_spaced_seconds
+from process.reaction_io import resolve_reaction_source
+from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
 
 
 def _get_runtime_hook(hook_name: str, fallback: any) -> any:
@@ -124,3 +129,46 @@ def _init_multimodal_grounding(
             is_multimodal = False
 
     return is_multimodal, slides_dir, tiles_dir
+
+
+def _init_webcam_source(
+    workspace: Path,
+    args: Optional[argparse.Namespace],
+) -> Optional[Path | str]:
+    """Resolve optional video source once for Pass 1 webcam closeup grounding."""
+    if not args or not getattr(args, "reaction_verify", False):
+        return None
+    src = resolve_reaction_source(workspace, args)
+    if src:
+        log_info("webcam", "Pass 1 webcam closeups enabled alongside storyboard frames")
+    return src
+
+
+def _pick_chunk_webcam_secs(chunk: dict, max_frames: int) -> Tuple[int, ...]:
+    """Select spaced situational/emotion timestamps inside chunk for webcam sampling."""
+    items = chunk.get("items", [])
+    if not items or max_frames <= 0:
+        return ()
+    lo = int(float(items[0].get("start", 0) or 0))
+    hi = int(float(items[-1].get("start", lo) or lo)) + 5
+    cands = collect_situational_candidates(items, lo, hi, pinned_only=False)
+    return tuple(sorted(select_spaced_seconds(cands, [], min_spacing=15, max_count=max_frames)))
+
+
+def _sample_chunk_webcam_grounding(
+    workspace: Path,
+    chunk: dict,
+    source: Optional[Path | str],
+    args: Optional[argparse.Namespace],
+) -> list:
+    """Extract Pass 1 webcam closeups for chunk when video source is available."""
+    if not source:
+        return []
+    pref = getattr(args, "webcam_corner", WEBCAM_CORNER) if args else WEBCAM_CORNER
+    secs = _pick_chunk_webcam_secs(chunk, PASS1_WEBCAM_FRAMES)
+    req = ChunkWebcamRequest(workspace=workspace, source=source, chunk=chunk, target_secs=secs, preferred=pref, max_frames=PASS1_WEBCAM_FRAMES)
+    try:
+        return sample_chunk_webcam_frames(req)
+    except Exception as ex:
+        log_warn("webcam", f"Pass 1 webcam sample skipped ({ex})")
+        return []

@@ -32,11 +32,12 @@
   "byte_cap_limit": 3500,
 
   "multimodal_chunks": true,
-  "eval_batch_size": 12288,
+  "eval_batch_size": 16384,
   "tokens_per_image": 260,
   "scene_delta_threshold": 0.12,
-  "max_chunk_frames": 12,
-  "face_max_frames": 6,
-  "reaction_storyboard_frames": 3,
+  "max_chunk_frames": 16,
+  "pass1_webcam_frames": 4,
+  "face_max_frames": 8,
+  "reaction_storyboard_frames": 4,
   "compact_chunk_max_lines": 65
 }

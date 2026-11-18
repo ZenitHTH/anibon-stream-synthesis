@@ -209,10 +209,11 @@ LINE_CAP_LIMIT: int = 25
 LINE_WARN_LIMIT: int = 20
 
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
-EVAL_BATCH_SIZE: int = 12288
+EVAL_BATCH_SIZE: int = 16384
 TOKENS_PER_IMAGE: int = 260
 SCENE_DELTA_THRESHOLD: float = 0.12
-MAX_CHUNK_FRAMES: int = 12
+MAX_CHUNK_FRAMES: int = 16
+PASS1_WEBCAM_FRAMES: int = 4
 COMPACT_CHUNK_MAX_LINES: int = 65
 
 REACTION_MIN_GAP_SEC: int = 45
@@ -221,8 +222,8 @@ ONSET_SNAP_POST_SEC: int = 35
 FACE_MOTION_THRESHOLD: float = 0.060
 FACE_SPIKE_RATIO: float = 2.2
 FACE_POSE_THRESHOLD: float = 0.075
-FACE_MAX_FRAMES: int = 6
-REACTION_STORYBOARD_FRAMES: int = 3
+FACE_MAX_FRAMES: int = 8
+REACTION_STORYBOARD_FRAMES: int = 4
 WEBCAM_CORNER: str = "auto"
 AUDIO_RMS_Z_THRESHOLD: float = 2.5
 REACTION_VERIFY: bool = False
@@ -232,7 +233,7 @@ def _reload_reaction_config() -> None:
     """Reload reaction onset and webcam grounding configuration constants."""
     global REACTION_MIN_GAP_SEC, ONSET_SNAP_PRE_SEC, ONSET_SNAP_POST_SEC
     global FACE_MOTION_THRESHOLD, FACE_SPIKE_RATIO, FACE_POSE_THRESHOLD
-    global FACE_MAX_FRAMES, REACTION_STORYBOARD_FRAMES, WEBCAM_CORNER, AUDIO_RMS_Z_THRESHOLD, REACTION_VERIFY
+    global FACE_MAX_FRAMES, REACTION_STORYBOARD_FRAMES, PASS1_WEBCAM_FRAMES, WEBCAM_CORNER, AUDIO_RMS_Z_THRESHOLD, REACTION_VERIFY
 
     REACTION_MIN_GAP_SEC = cfg_int("reaction_min_gap_sec", 45)
     ONSET_SNAP_PRE_SEC = cfg_int("onset_snap_pre_sec", 20)
@@ -240,8 +241,9 @@ def _reload_reaction_config() -> None:
     FACE_MOTION_THRESHOLD = cfg_float("face_motion_threshold", 0.060)
     FACE_SPIKE_RATIO = cfg_float("face_spike_ratio", 2.2)
     FACE_POSE_THRESHOLD = cfg_float("face_pose_threshold", 0.075)
-    FACE_MAX_FRAMES = cfg_int("face_max_frames", 6)
-    REACTION_STORYBOARD_FRAMES = cfg_int("reaction_storyboard_frames", 3)
+    FACE_MAX_FRAMES = cfg_int("face_max_frames", 8)
+    REACTION_STORYBOARD_FRAMES = cfg_int("reaction_storyboard_frames", 4)
+    PASS1_WEBCAM_FRAMES = cfg_int("pass1_webcam_frames", 4)
     WEBCAM_CORNER = cfg_str("webcam_corner", "auto")
     AUDIO_RMS_Z_THRESHOLD = cfg_float("audio_rms_z_threshold", 2.5)
     REACTION_VERIFY = cfg_bool("reaction_verify", False)
@@ -295,10 +297,10 @@ def reload_config() -> None:
     LINE_WARN_LIMIT = cfg_int("line_warn_limit", 20)
 
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
-    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 12288)
+    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 16384)
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
     SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
-    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 12)
+    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 16)
     COMPACT_CHUNK_MAX_LINES = cfg_int("compact_chunk_max_lines", 65)
     _reload_reaction_config()
 

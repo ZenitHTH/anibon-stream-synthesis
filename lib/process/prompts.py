@@ -418,7 +418,10 @@ def build_recursive_prompt(
 
     context_extras = []
     if keyframes:
-        kf_lines = [f"- Frame {i+1} at timestamp [{ts_str}]" for i, (ts_str, _, _) in enumerate(keyframes)]
+        kf_lines = [
+            f"- {item[3] if len(item) > 3 and item[3] else 'STORYBOARD SCREEN'} Frame {i+1} at timestamp [{item[0]}]"
+            for i, item in enumerate(keyframes)
+        ]
         context_extras.append(
             "KEYFRAMES (each image is labeled with its timestamp):\n"
             + "\n".join(kf_lines)

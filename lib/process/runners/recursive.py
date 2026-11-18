@@ -32,7 +32,9 @@ from process.runners.common import (
     _call_chunk_model,
     _get_runtime_hook,
     _init_multimodal_grounding,
+    _init_webcam_source,
     _sample_chunk_multimodal_frames,
+    _sample_chunk_webcam_grounding,
 )
 from chunk.pause import clear_pause, wait_if_paused
 from chunk.state import (
@@ -452,6 +454,7 @@ def _process_single_recursive_chunk(
     current_topic_title: str,
     rolling_summary: str,
     total_chunks: int,
+    webcam_source: Optional[Path | str] = None,
 ) -> Tuple[str, str]:
     """Execute inference and topic state-machine update for a single chunk."""
     chunk_idx = f"chunk_{ch_num:02d}"
@@ -463,9 +466,11 @@ def _process_single_recursive_chunk(
     if not chunk:
         return current_topic_title, rolling_summary
 
-    keyframes = _sample_chunk_multimodal_frames(
+    sb_frames = _sample_chunk_multimodal_frames(
         chunk, ch_num, slides_dir if is_multimodal else None, tiles_dir, rolling_summary, args
     )
+    wc_frames = _sample_chunk_webcam_grounding(workspace, chunk, webcam_source, args)
+    keyframes = sb_frames + wc_frames
     prompt = build_recursive_prompt(
         chunk=chunk, current_topic=current_topic_title, rolling_summary=rolling_summary,
         lang=lang, signal=sig, livechat=lc, activity=act, mood=mood,
@@ -476,7 +481,7 @@ def _process_single_recursive_chunk(
     prompt_tokens = len(prompt) // 4
     prog = format_progress(ch_num + 1, total_chunks)
     chunk["_log_header"] = f"{prog} {chunk_idx}"
-    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | storyboard={len(keyframes)} webcam=0 -> running")
+    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | storyboard={len(sb_frames)} webcam={len(wc_frames)} -> running")
 
     return _execute_and_persist_chunk(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes, max_tokens=max_tokens,
@@ -551,6 +556,7 @@ def run_recursive_mode(
         log_info("resume", f"loaded {len(all_timestamps)} timestamps (topic: '{current_topic_title}')")
 
     is_multimodal, slides_dir, tiles_dir = _init_multimodal_grounding(workspace, args)
+    webcam_source = _init_webcam_source(workspace, args)
     processed_count = 0
 
     for i, chunk_path in enumerate(chunk_files):
@@ -573,7 +579,7 @@ def run_recursive_mode(
             signals_map=signals_map, mappings=mappings, slides_dir=slides_dir, tiles_dir=tiles_dir,
             is_multimodal=is_multimodal, world_identity_dir=world_identity_dir, glossary=glossary,
             args=args, all_timestamps=all_timestamps, current_topic_title=current_topic_title,
-            rolling_summary=rolling_summary, total_chunks=total,
+            rolling_summary=rolling_summary, total_chunks=total, webcam_source=webcam_source,
         )
 
         _save_recursive_loop_state(workspace, i + 1, total, all_timestamps, current_topic_title, rolling_summary)
