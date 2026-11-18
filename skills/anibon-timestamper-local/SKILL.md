@@ -413,6 +413,11 @@ Immediately after generating `all_timestamps.txt` and `anibon_timestamps.md`:
      1. **Gameplay Track**: Find the *plan statement* that explains the current scene. Search the transcript backward (up to ~20 min) for intent verbs (`เดี๋ยวให้มันสู้กัน`, `รอ`, `ปล่อยไว้`, `เสก`, `ล่อ`). Confirm it with storyboard frames: quest tracker text, boss bar name, and the mobs actually present. A creature on screen does NOT mean Boat is fighting it.
      2. **Talk Track**: Find the topic Boat is actually speaking about (donations, news, Q&A).
      3. **Label Rule**: If both tracks run at the same time, write one stamp that names both. Use the talk tag when speech dominates, and keep the game state as context (e.g. `[Talk] เฝ้า <Mob_A> สู้กับ <Mob_B> พร้อมถกประเด็น <Topic>`). Never drop either track. Close the gameplay arc with a payoff stamp when it resolves (e.g. loot collected, quest completed).
+2.5. **Verify Every `HH:MM:SS` Timing Accuracy Across All Chunks & Tails (No Suspect-Only Audit)**:
+   - Do **not** audit only chunks flagged for ASR/glossary warnings — skipping unread continuation chunks and chunk tails hides topic shifts and 1–3 minute timing drift.
+   - **Chunk-Cutoff Boundary Audit**: Check every timestamp within `±15s` of a chunk `start` or `cutoff=` boundary (e.g. `00:22:30`, `02:30:00`, `02:33:00`). Read the preceding chunk's tail (`90–180s`) and rewind the timestamp to the exact opening sentence where the topic actually began.
+   - **Lead-In Opening Check (Start vs. Punchline)**: Verify every line in `anibon_timestamps.md` and `all_timestamps.txt` anchors to the topic's introduction (`เดี๋ยวคุยเรื่อง...`, `มาฝั่ง...`), not a mid-segment reaction or closing remark spoken 1–3 minutes later.
+   - **WatchParty Player-Bar Spot Check**: Open the corresponding `frames/slides_clean/slide_*.jpg` for `[WatchParty]` starts and major showcase pivots to confirm the embedded video/tab opens on screen at the emitted `HH:MM:SS`.
 3. **Apply Entity & Chronology Corrections (Dual-File Sync)**:
    - Correct phonetic drifts, streamer self-corrections (e.g. `"Godzilla Minus One เอ้ย Zero"` → `Godzilla Minus Zero`), mis-anchored lead-ins, or LLM hallucinations in **both** `anibon_timestamps.md` (`anibon_timestamps_essential.md`) **and** `all_timestamps.txt` (`anibon_timestamps_full.md`).
    - **Discord Guest / Co-Host Join & Leave**: When a viewer or guest joins voice chat for an extended segment, ensure both the mic-join timestamp and sign-off timestamp are preserved (never swallowed by `SAME_TOPIC` continuation).
@@ -475,6 +480,7 @@ Livestreams flow organically. Use the Recursive Rolling Summary state-machine to
 - Hallucinating unmentioned lore/chapter titles (e.g., "Lostbelt") solely due to pre-training association with a franchise.
 - Labeling viewer donation alerts with custom avatars as literal product reviews or figure showcases (`[Talk] โชว์ฟิกเกอร์`).
 - Labeling a stamp `[Gameplay] สู้กับ X` only because X appears in a frame, without verifying the boss bar, quest HUD, or the streamer's stated plan. Equally wrong: replacing it with a pure `[Talk]` stamp that erases the running game state.
+- Claiming timestamps are complete based solely on entity fixes, `audit_gaps.py`, and `check_sections.py` without verifying every `HH:MM:SS` lead-in and checking timestamps pinned near chunk `cutoff=` boundaries across all chunks/tails.
 
 ### Pre-Roll Standby / Waiting Screen Invariant
 If the opening transcript (chunk 00) contains predominantly `[เพลง]`, sound effect markers, or isolated foreign ASR phonetic tokens (Japanese, Korean, English lyrics) before the streamer speaks the first coherent Thai sentence:
