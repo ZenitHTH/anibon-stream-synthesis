@@ -425,6 +425,46 @@ class TestReactionVerifyTask5(unittest.TestCase):
             self.assertIn("1080", seen_fmts[0])
             self.assertIn("bestaudio", seen_fmts[1])
 
+    def test_transient_ffmpeg_error_retried_without_crashing_and_cache_persisted(self):
+        from process.reaction_verify import VerifyOptions, verify_reaction_stamps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            vid = ws / "video.mp4"
+            vid.write_bytes(b"mp4")
+            b1 = FaceBox(0.76, 0.0, 0.24, 0.30, "top-right")
+            seg = LayoutSegment("top-right", b1, b1.derive_tight_face())
+
+            def fake_motion(src, bounds, layout):
+                if bounds.start_sec < 100:
+                    raise RuntimeError("Failed to resolve hostname manifest.googlevideo.com")
+                return [], [], ()
+
+            def fake_export(src, spec):
+                jpg = self._write_fake_jpeg(spec.out_dir, f"{spec.prefix}_01.jpg")
+                return {"frames": [{"ts": "00:05:00", "path": str(jpg), "b64": "YWJj"}], "strip_path": None}
+
+            def fake_call(ep, mod, content):
+                return json.dumps({
+                    "snapped_ts": "00:04:55", "emotion_class": "shock", "face_cue": "gasp",
+                    "tag": "Reaction", "description": "ตกใจจังหวะสำคัญ", "confidence": 0.9,
+                })
+
+            opts = VerifyOptions(
+                source=vid, endpoint="http://local", model="m", call_fn=fake_call,
+                layout_fn=lambda s, b, preferred="auto": seg,
+                motion_fn=fake_motion, export_fn=fake_export,
+                audio_fn=lambda s, b: AudioBurstMetrics(3.0, 2.0, None, True),
+            )
+            regime = _sample_regime("shock_burst")
+            with patch("process.reaction_verify.classify_dual_regime", return_value=regime), patch("process.reaction_io.time.sleep"):
+                out = verify_reaction_stamps(["00:01:00 - [Reaction] อึ้ง", "00:05:00 - [Reaction] เหวอ"], ws, opts)
+            self.assertEqual(out[0], "00:01:00 - [Reaction] อึ้ง")
+            self.assertTrue(out[1].startswith("00:04:55"))
+            saved = json.loads((ws / "reaction_verify_log.json").read_text(encoding="utf-8"))
+            self.assertIn("00:05:00 - [Reaction] เหวอ", saved)
+            self.assertNotIn("00:01:00 - [Reaction] อึ้ง", saved)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -153,3 +154,18 @@ def log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> None
         return
     reason = res.emotion_class or "unchanged"
     log_warn("reaction", f"{prefix} | rejected ({reason}, conf={res.confidence:.2f}) -> kept original")
+
+
+def safe_eval_stamp(
+    eval_fn: Callable[[], ReactionVerifyResult], fallback: ReactionVerifyResult, prefix: str
+) -> Tuple[ReactionVerifyResult, bool]:
+    """Run stamp evaluation with one transient retry, returning (result, ok_to_cache)."""
+    for attempt in range(2):
+        try:
+            return eval_fn(), True
+        except Exception as ex:
+            if attempt == 0:
+                time.sleep(3.0)
+                continue
+            log_warn("reaction", f"{prefix} | error ({ex}) -> kept original")
+    return fallback, False

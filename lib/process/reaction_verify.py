@@ -16,7 +16,7 @@ from process.multimodal import build_multimodal_content, call_multimodal
 from process.reaction_io import (
     CoTriggerContext, ReactionRunConfig, collect_co_triggers, load_chunk_context, load_reaction_log,
     log_reaction_dispatch, log_reaction_result, resolve_reaction_audio_source, resolve_reaction_source,
-    result_from_cache, result_to_cache, save_reaction_log, sync_raw_timestamps,
+    result_from_cache, result_to_cache, safe_eval_stamp, save_reaction_log, sync_raw_timestamps,
 )
 from process.reaction_prompt import (
     PROTECTED_MILESTONE_TAGS, CoTriggerSignals, ParseConstraints, PromptContext, ReactionVerifyResult,
@@ -28,7 +28,6 @@ from video.webcam_storyboard import pack_exported_webcam_storyboard
 from video.face_motion_metrics import classify_dual_regime
 from video.motion_types import LayoutSegment, MotionRegime, RegimeThresholds, WindowBounds
 from video.obs_layout import detect_obs_layout
-
 
 @dataclass(frozen=True)
 class VerifyOptions:
@@ -130,8 +129,8 @@ def _eval_kinematics(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
 
 
 def _evaluate_stamp(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
-    """Evaluate one timestamp with cache lookup, co-triggers, and kinematics."""
-    workspace, opts, cache = ctx
+    """Evaluate one timestamp cleanly, persisting successful VLM/motion checks incrementally."""
+    workspace, opts, cache, log_path = ctx
     if stamp in cache:
         res = result_from_cache(stamp, cache[stamp])
         log_info("reaction", f"[{idx + 1:02d}] {stamp[:8]} | CACHED -> {res.updated[:8]} ({res.emotion_class or 'kept'})")
@@ -142,8 +141,10 @@ def _evaluate_stamp(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
     triggers = collect_co_triggers(workspace, sec, CoTriggerContext(transcript_ctx, aud_src, opts.audio_fn))
     if not needs_reaction_verify(stamp, transcript_ctx, triggers):
         return _unchanged(stamp)
-    res = _eval_kinematics(idx, stamp, (workspace, opts, triggers, transcript_ctx))
-    cache[stamp] = result_to_cache(res)
+    res, ok = safe_eval_stamp(lambda: _eval_kinematics(idx, stamp, (workspace, opts, triggers, transcript_ctx)), _unchanged(stamp), f"[{idx + 1:02d}] {stamp[:8]}")
+    if ok:
+        cache[stamp] = result_to_cache(res)
+        save_reaction_log(log_path, cache)
     return res
 
 
@@ -159,7 +160,7 @@ def verify_reaction_stamps(
     log_stage(f"PASS 2 :: WEBCAM REACTION VERIFY ({len(stamps)} stamps, corner={opts.preferred_corner})")
     log_path = ws / "reaction_verify_log.json"
     cache = load_reaction_log(log_path)
-    results = [_evaluate_stamp(i, s, (ws, opts, cache)) for i, s in enumerate(stamps)]
+    results = [_evaluate_stamp(i, s, (ws, opts, cache, log_path)) for i, s in enumerate(stamps)]
     save_reaction_log(log_path, cache)
     snapped = sum(1 for r in results if r.accepted)
     resolved = resolve_monotonic_snap(results, collision_sec=STAMP_COLLISION_SEC)
