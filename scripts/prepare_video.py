@@ -86,14 +86,14 @@ def main() -> None:
     ap.add_argument(
         "--block",
         type=int,
-        default=300,
-        help="Chunk block size in seconds (default: 300 = 5 min)",
+        default=150,
+        help="Chunk block size in seconds (default: 150 = 2.5 min)",
     )
     ap.add_argument(
         "--overlap",
         type=int,
-        default=30,
-        help="Chunk overlap in seconds (default: 30)",
+        default=15,
+        help="Chunk overlap in seconds (default: 15)",
     )
     ap.add_argument(
         "--vision",

@@ -130,12 +130,12 @@ Before processing chunks, `run_knowledge_discovery()` inspects `signals.json`, s
 ```bash
 python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
     --workspace "~/youtube_<VIDEO_ID>_workspace" \
-    --format txt --block 300 --overlap 30
+    --format txt --block 150 --overlap 15
 ```
 
 **Windows (PowerShell / Command Prompt):**
 ```powershell
-python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 300 --overlap 30
+python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 150 --overlap 15
 ```
 
 > [!TIP]
@@ -151,7 +151,7 @@ Gives the local model the watchers' chat for its own chunk, so situation + emoti
 ```bash
 python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
     --workspace "~/youtube_<VIDEO_ID>_workspace" \
-    --format txt --block 300 --overlap 30 --live-chat
+    --format txt --block 150 --overlap 15 --live-chat
 ```
 
 **Manual / Step-by-Step Execution:**

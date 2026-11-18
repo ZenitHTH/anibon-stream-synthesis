@@ -76,16 +76,18 @@ def collect_co_triggers(
 
 
 def load_chunk_context(workspace: Path, sec: int) -> str:
-    """Return full transcript window within +-25s of sec from workspace/chunks."""
+    """Return deduplicated transcript window within +-25s of sec from workspace/chunks."""
     chunks_dir = Path(workspace) / "chunks"
     if not chunks_dir.is_dir():
         return ""
-    matched: List[str] = []
+    matched, seen = [], set()
     for cf in sorted(chunks_dir.glob("chunk_*.txt")):
         for line in cf.read_text(encoding="utf-8", errors="replace").splitlines():
             m = re.match(r"[\[(](\d{2}):(\d{2}):(\d{2})[\])]", line)
-            if m and abs((int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))) - sec) <= 25:
-                matched.append(line.strip())
+            text = line.strip()
+            if m and text not in seen and abs((int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))) - sec) <= 25:
+                seen.add(text)
+                matched.append(text)
     return " | ".join(matched)[:600]
 
 

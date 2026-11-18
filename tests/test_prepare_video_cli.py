@@ -22,6 +22,8 @@ class TestPrepareVideoCLI(unittest.TestCase):
         self.assertIn("--no-storyboard", res.stdout)
         self.assertIn("--vision", res.stdout)
         self.assertIn("--format", res.stdout)
+        self.assertIn("default: 150", res.stdout)
+        self.assertIn("default: 15", res.stdout)
 
     def test_cli_help_includes_sub_langs(self):
         res = subprocess.run(

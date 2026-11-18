@@ -486,6 +486,19 @@ class TestReactionVerifyTask5(unittest.TestCase):
         self.assertTrue(res.accepted)
         self.assertIn("- [Gameplay] ", res.updated)
 
+    def test_load_chunk_context_deduplicates_overlap_lines(self):
+        from process.reaction_io import load_chunk_context
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ch = Path(tmp) / "chunks"
+            ch.mkdir()
+            (ch / "chunk_00.txt").write_text("(00:02:20) line A\n(00:02:25) overlap line\n", encoding="utf-8")
+            (ch / "chunk_01.txt").write_text("(00:02:25) overlap line\n(00:02:32) line B\n", encoding="utf-8")
+            ctx = load_chunk_context(Path(tmp), 146)
+            self.assertEqual(ctx.count("overlap line"), 1)
+            self.assertIn("line A", ctx)
+            self.assertIn("line B", ctx)
+
 
 if __name__ == "__main__":
     unittest.main()
