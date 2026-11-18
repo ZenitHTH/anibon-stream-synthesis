@@ -17,6 +17,16 @@ from urllib.parse import urlparse
 from process.assembly import finalize_and_assemble_timestamps
 from common.config import PRIMARY_HOST, STAMP_COLLISION_SEC
 from common.lmstudio import is_host_reachable
+from common.log import (
+    format_duration,
+    format_progress,
+    log_error,
+    log_info,
+    log_items,
+    log_ok,
+    log_stage,
+    log_warn,
+)
 from process.prompts import build_recursive_prompt, load_world_identity_context
 from process.runners.common import (
     _call_chunk_model,
@@ -79,7 +89,7 @@ def _should_skip_cached_chunk(
         return False, None, None
     c_topic, c_summary = _load_cached_chunk_output(out_path, all_timestamps)
     if c_topic or c_summary:
-        print(f"[skip] {chunk_idx} (already processed)", flush=True)
+        log_info("chunk", f"{chunk_idx} | SKIP (cached)")
         return True, c_topic, c_summary
     return False, None, None
 
@@ -177,7 +187,7 @@ def _load_chunk_context(
     try:
         chunk = load_chunk_file(chunk_path, mappings=mappings)
     except Exception as e:
-        print(f"[warn] failed to load {chunk_path.name}: {e}", file=sys.stderr)
+        log_warn("chunk", f"failed to load {chunk_path.name}: {e}")
         return None, None, None, None, None, None
 
     chunk["_idx"] = ch_num
@@ -193,12 +203,12 @@ def _parse_model_chunk_json(raw_text: str) -> Optional[dict]:
     """Extract and parse JSON object from model completion text."""
     jm = re.search(r'(\{[^{}]*"is_continuation"[^{}]*\})', raw_text, re.DOTALL) or re.search(r"(\{.*\})", raw_text, re.DOTALL)
     if not jm:
-        print(f"[warn] JSON parse failed, raw: {raw_text[:100]}")
+        log_warn("chunk", f"JSON parse failed: {raw_text[:100]}")
         return None
     try:
         return json.loads(jm.group(1))
     except Exception as e:
-        print(f"[warn] JSON decode error: {e}")
+        log_warn("chunk", f"JSON decode error: {e}")
         return None
 
 
@@ -234,6 +244,22 @@ def _chain_rolling_summary(rolling_summary: str, res: dict) -> str:
     return " -> ".join(parts[-3:])
 
 
+def _log_chunk_outcome(
+    header: str,
+    is_cont: bool,
+    v_ts_sorted: List[str],
+    topic_label: str,
+) -> None:
+    """Log aligned recursive chunk outcome and emitted timestamps."""
+    kind = "SUB-TOPIC" if is_cont else f"SHIFT ({topic_label})"
+    if v_ts_sorted:
+        log_items("chunk", f"{header} | +{len(v_ts_sorted)} {kind}", v_ts_sorted)
+    elif is_cont:
+        log_ok("chunk", f"{header} | CONTINUATION (0 stamps)")
+    else:
+        log_ok("chunk", f"{header} | SHIFT ({topic_label}, 0 stamps)")
+
+
 def _update_topic_flow(
     res: dict,
     chunk: dict,
@@ -248,15 +274,10 @@ def _update_topic_flow(
     new_title = _clean_topic_candidate(res.get("new_topic_title"))
 
     v_ts_sorted = _extract_and_sort_chunk_timestamps(raw_ts, chunk, new_title, ch_sum, is_cont)
+    all_timestamps.extend(v_ts_sorted)
 
-    for stamp in v_ts_sorted:
-        all_timestamps.append(stamp)
-        label = "📌 SUB-TOPIC:" if is_cont else "👉 MAJOR SHIFT:"
-        print(f"{label} {stamp}" + (f" ('{new_title or ch_sum}')" if not is_cont else ""), flush=True)
-
-    if not v_ts_sorted:
-        label = "🔄 CONTINUATION (no stamp)" if is_cont else f"👉 MAJOR SHIFT (topic: '{new_title or ch_sum}')"
-        print(label, flush=True)
+    chunk_label = chunk.get("_log_header") or f"chunk_{int(chunk.get('_idx', 0)):02d}"
+    _log_chunk_outcome(chunk_label, is_cont, v_ts_sorted, new_title or ch_sum)
 
     next_title = _resolve_next_topic_title(res, current_topic_title)
     next_summary = _chain_rolling_summary(rolling_summary, res)
@@ -311,12 +332,12 @@ def _wait_for_network_recovery(
     parsed = urlparse(endpoint)
     host = parsed.hostname or PRIMARY_HOST
     port = parsed.port or (443 if parsed.scheme == "https" else (80 if parsed.scheme == "http" else 1234))
-    print(f"\n[network] Endpoint {host}:{port} unreachable (blackout/cutout). Waiting...", flush=True)
+    log_warn("network", f"endpoint {host}:{port} unreachable; waiting for recovery")
     while not is_host_reachable(host, port, timeout=2.0):
         if workspace and wait_if_paused(workspace, active_phase="recursive_loop", label="network wait"):
             continue
         time.sleep(poll_interval)
-    print(f"\n[network] Connection to {host}:{port} restored! Resuming...", flush=True)
+    log_ok("network", f"connection to {host}:{port} restored; resuming")
     time.sleep(RECOVERY_STABILIZE_SEC)
 
 
@@ -331,9 +352,9 @@ def _handle_inference_error(
     """Handle error and decide whether network pause or normal retry delay is needed."""
     if _is_network_failure(e):
         _wait_for_network_recovery(endpoint, workspace=workspace)
-        print(f"[redo] {chunk_idx}: retrying after network recovery...", flush=True)
+        log_info("redo", f"{chunk_idx} retrying after network recovery")
         return False
-    print(f"\n[redo] {chunk_idx} error: {e}. Retrying ({attempt + 1}/{max_retries})...", flush=True)
+    log_warn("redo", f"{chunk_idx} error: {e} (attempt {attempt + 1}/{max_retries})")
     time.sleep(2.0)
     return True
 
@@ -359,7 +380,7 @@ def _call_chunk_model_with_retry(
             res = _parse_model_chunk_json(raw_text)
             if res:
                 return res
-            print(f"\n[redo] {chunk_idx}: unparseable JSON. Retrying ({attempt + 1}/{max_retries})...", flush=True)
+            log_warn("redo", f"{chunk_idx} unparseable JSON (attempt {attempt + 1}/{max_retries})")
             time.sleep(2.0)
             attempt += 1
         except Exception as e:
@@ -385,14 +406,19 @@ def _execute_and_persist_chunk(
     out_path: Path,
 ) -> Tuple[str, str]:
     """Run model inference with redo retries and persist valid topic updates."""
+    t0 = time.monotonic()
     res = _call_chunk_model_with_retry(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes,
         max_tokens=max_tokens, temperature=temperature, chunk_idx=chunk_idx, args=args, workspace=workspace,
     )
+    elapsed = format_duration(time.monotonic() - t0)
     if not res:
-        print(f"\n[error] {chunk_idx}: failed after all retry attempts", file=sys.stderr)
+        log_error("chunk", f"{chunk_idx} failed after all retries ({elapsed})")
         return current_topic_title, rolling_summary
 
+    chunk["_elapsed"] = elapsed
+    if chunk.get("_log_header"):
+        chunk["_log_header"] = f"{chunk['_log_header']} | {elapsed}"
     v_ts_sorted, is_cont, current_topic_title, rolling_summary = _update_topic_flow(
         res, chunk, all_timestamps, current_topic_title, rolling_summary
     )
@@ -448,8 +474,10 @@ def _process_single_recursive_chunk(
     )
 
     prompt_tokens = len(prompt) // 4
-    kf_info = f" + {len(keyframes)} frames" if keyframes else ""
-    print(f"[{chunk_idx}/{total_chunks-1}] ~{prompt_tokens} tokens{kf_info} → calling model ...", end=" ", flush=True)
+    prog = format_progress(ch_num + 1, total_chunks)
+    kf_info = f"{len(keyframes)} img" if keyframes else "0 img"
+    chunk["_log_header"] = f"{prog} {chunk_idx}"
+    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | {kf_info} -> running")
 
     return _execute_and_persist_chunk(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes, max_tokens=max_tokens,
@@ -519,9 +547,9 @@ def run_recursive_mode(
     )
 
     total = len(chunk_files)
-    print(f"[recursive] Starting recursive rolling topic state-machine across {total} chunks...")
+    log_stage(f"PASS 1 :: RECURSIVE SEGMENTATION ({total} chunks)")
     if not no_resume and all_timestamps:
-        print(f"[resume] Loaded {len(all_timestamps)} timestamps from state (Ongoing Topic: '{current_topic_title}')")
+        log_info("resume", f"loaded {len(all_timestamps)} timestamps (topic: '{current_topic_title}')")
 
     is_multimodal, slides_dir, tiles_dir = _init_multimodal_grounding(workspace, args)
     processed_count = 0
@@ -552,11 +580,11 @@ def run_recursive_mode(
         _save_recursive_loop_state(workspace, i + 1, total, all_timestamps, current_topic_title, rolling_summary)
         processed_count += 1
         if max_chunks and processed_count >= max_chunks:
-            print(f"[pause] Reached --max-chunks {max_chunks}.")
+            log_info("pause", f"reached --max-chunks {max_chunks}")
             break
 
     wait_if_paused(workspace, active_phase="assemble", label="before assembly")
-    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected from topic shifts.")
+    log_stage(f"PASS 2 :: ASSEMBLY & QUALITY GATES ({len(all_timestamps)} raw stamps)")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(
         workspace=workspace, all_timestamps=all_timestamps, endpoint=endpoint, model=model,
@@ -567,4 +595,4 @@ def run_recursive_mode(
     _save_recursive_completion_state(
         workspace, total, processed_count, deduped, current_topic_title, rolling_summary, max_chunks
     )
-    print(f"\n✅ Recursive run complete: {out_md}")
+    log_ok("done", f"recursive run complete -> {out_md}")

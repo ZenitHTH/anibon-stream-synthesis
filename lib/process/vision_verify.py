@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from common.lmstudio import call_vision
+from common.log import log_info, log_ok, log_warn
 
 
 DEICTIC = ("คุณนี้", "ตัวนี้", "อันนี้", "นี่น่ะ", "นี้น่ะ")
@@ -158,7 +159,7 @@ def extract_frame(video: Path, sec: int, out: Path) -> Optional[Path]:
         if res.returncode == 0 and out_path.exists() and out_path.stat().st_size > 0:
             return out_path
     except Exception as e:
-        print(f"[vision] ffmpeg error at {ts_str}: {e}", file=sys.stderr)
+        log_warn("vision", f"ffmpeg error at {ts_str}: {e}")
     return None
 
 
@@ -179,7 +180,7 @@ def verify_ambiguous_stamps(
     """
     workspace = Path(workspace)
     if not video or not Path(video).exists():
-        print(f"[vision] Video not found ({video}), skipping vision verify.", file=sys.stderr)
+        log_warn("vision", f"video not found ({video}); skipping vision verify")
         return list(stamps)
 
     frames_dir = workspace / "frames_verify"
@@ -212,7 +213,7 @@ def verify_ambiguous_stamps(
 
         extracted = frame_fn(Path(video), sec, frame_path)
         if not extracted or not Path(extracted).exists():
-            print(f"[vision] {stamp[:8]} ✗ could not extract frame, keeping original")
+            log_warn("vision", f"{stamp[:8]} | frame extraction failed; keeping original")
             cache[stamp] = {"result": stamp, "accepted": False}
             verified_stamps.append(stamp)
             try:
@@ -227,12 +228,12 @@ def verify_ambiguous_stamps(
             corrected = parse_verify_response(raw, stamp)
             accepted = (corrected != stamp)
             if accepted:
-                print(f"[vision] {stamp[:8]} ✓ corrected -> {corrected}")
+                log_ok("vision", f"{stamp[:8]} -> {corrected}")
             else:
-                print(f"[vision] {stamp[:8]} ✗ kept original")
+                log_info("vision", f"{stamp[:8]} | unchanged")
             result = corrected
         except Exception as e:
-            print(f"[vision] {stamp[:8]} ✗ error: {e}, keeping original", file=sys.stderr)
+            log_warn("vision", f"{stamp[:8]} | error: {e}; keeping original")
             result = stamp
             accepted = False
 

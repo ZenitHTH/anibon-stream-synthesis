@@ -10,6 +10,7 @@ from typing import List, Optional, Tuple
 
 from common.cleaner import _CACHE as _CLEANER_CACHE, clean_text, load_replacements
 from common.config import LINE_WARN_LIMIT
+from common.log import log_info, log_ok
 from common.time import parse_ts as ts_to_sec
 from download.transcript_source import is_youtube_auto_transcript
 from process.audit import audit_timestamps_against_glossary
@@ -29,7 +30,7 @@ def _write_raw_timestamps(workspace: Path, deduped: List[str]) -> Path:
     """Save raw deduplicated timestamp lines to all_timestamps.txt."""
     raw_ts = workspace / "all_timestamps.txt"
     raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    print(f"[done] Raw timestamps: {raw_ts}")
+    log_ok("assemble", f"wrote raw timestamps ({len(deduped)}) -> {raw_ts}")
     return raw_ts
 
 
@@ -104,7 +105,7 @@ def _assemble_parts_content(
     if not no_summarizer_pass:
         assembled = run_local_summarizer_pass(endpoint, model, deduped, workspace, temperature)
     if not assembled:
-        print("[assemble] Using heuristic double-border part assembly.")
+        log_info("assemble", "using heuristic double-border part assembly")
         assembled = assemble_parts(deduped, workspace, block_size)
     if not no_summarizer_pass and assembled:
         assembled = enforce_line_cap(assembled, limit=LINE_WARN_LIMIT)
@@ -146,6 +147,6 @@ def finalize_and_assemble_timestamps(
     if glossary:
         audit_timestamps_against_glossary(out_md, glossary)
 
-    print(f"[done] Final timestamps: {out_md}")
+    log_ok("done", f"wrote final timestamps -> {out_md}")
     run_parity_gates(workspace, out_md)
     return out_md, deduped

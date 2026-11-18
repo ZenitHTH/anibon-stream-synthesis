@@ -18,6 +18,7 @@ from common.config import (
     SUMMARIZER_TIMEOUT_SEC,
 )
 from common.lmstudio import call_local
+from common.log import log_info, log_warn
 from common.time import parse_ts
 from common.timestamps import deduplicate_consecutive_timestamps
 from process.byte_cap import (
@@ -144,13 +145,13 @@ def run_local_summarizer_pass(
         return None
 
     prompt = build_summarizer_prompt(stamps)
-    print("[summarizer] Calling local model for part division & Caveman summaries...")
+    log_info("summarize", f"grouping {len(stamps)} timestamps into thematic parts")
     try:
         content = call_local(endpoint, model, prompt, max_tokens, temperature, timeout=SUMMARIZER_TIMEOUT_SEC)
         matches = parse_summarizer_matches(content, stamps=stamps)
         return _render_summarized_parts(matches, stamps)
     except Exception as e:
-        print(f"[summarizer] Warning: local summarizer call failed ({e}). Falling back to heuristic assembly.")
+        log_warn("summarize", f"failed ({e}); falling back to heuristic assembly")
         return None
 
 

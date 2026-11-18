@@ -44,6 +44,20 @@ from common.lmstudio import (
     resolve_endpoint,
     resolve_model,
 )
+from common.log import (
+    format_duration,
+    format_progress,
+    log_banner,
+    log_block,
+    log_cont,
+    log_error,
+    log_info,
+    log_items,
+    log_kv,
+    log_ok,
+    log_stage,
+    log_warn,
+)
 from common.markdown import format_markdown, write_parts_json
 from common.resources import load_default_mappings, plugin_root, resource_path
 from common.time import fmt_hhmmss, fmt_ts, parse_ts
@@ -91,6 +105,19 @@ __all__ = [
     "resolve_endpoint",
     "resolve_model",
     "get_loaded_models",
+    # Log
+    "format_duration",
+    "format_progress",
+    "log_banner",
+    "log_block",
+    "log_cont",
+    "log_error",
+    "log_info",
+    "log_items",
+    "log_kv",
+    "log_ok",
+    "log_stage",
+    "log_warn",
     # Resources
     "resource_path",
     "plugin_root",

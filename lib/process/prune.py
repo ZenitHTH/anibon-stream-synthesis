@@ -12,6 +12,7 @@ from common.config import (
     PRUNE_TIMEOUT_SEC,
 )
 from common.lmstudio import call_local
+from common.log import log_info, log_ok, log_warn
 from common.time import parse_ts
 
 
@@ -101,17 +102,17 @@ def prune_essential(
     target = max(PRUNE_TARGET_MIN, min(PRUNE_TARGET_MAX, len(stamps) // 4))
     prompt = _build_prune_prompt(stamps, target)
     caller = call_fn or call_local
-    print(f"[prune] Calling local model to prune {len(stamps)} timestamps to ~{target} essential ones...")
+    log_info("prune", f"pruning {len(stamps)} timestamps -> ~{target} essential")
     try:
         content = caller(endpoint, model, prompt, PRUNE_MAX_TOKENS, temperature, timeout=PRUNE_TIMEOUT_SEC)
         kept_lines = _extract_kept_stamps(content, set(stamps))
         if len(kept_lines) < target // 2:
-            print(f"[prune] Warning: model returned only {len(kept_lines)} valid stamps (target {target}). Falling back to full list.")
+            log_warn("prune", f"returned {len(kept_lines)} valid (< target {target}); keeping full list")
             return stamps
         kept_lines = _ensure_bookend_stamps(kept_lines, stamps)
         result = sorted(fill_pruned_gaps(kept_lines, stamps, max_gap_sec=600), key=lambda l: parse_ts(l[:8]))
-        print(f"[prune] {len(stamps)} -> {len(result)}")
+        log_ok("prune", f"kept {len(result)}/{len(stamps)} timestamps")
         return result
     except Exception as e:
-        print(f"[prune] Warning: local model pruning failed ({e}). Falling back to full list.")
+        log_warn("prune", f"failed ({e}); keeping full list")
         return stamps

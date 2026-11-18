@@ -29,6 +29,7 @@ from common.config import (
     VISION_TEMPERATURE,
     MAX_RETRIES,
 )
+from common.log import log_info, log_ok, log_warn
 
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
@@ -76,10 +77,7 @@ def resolve_endpoint(endpoint: Optional[str] = None, timeout: float = PROBE_TIME
     if host == DEFAULT_PRIMARY_HOST:
         target_port = port or DEFAULT_PORT
         if not is_host_reachable(host, target_port, timeout=timeout):
-            print(
-                f"[endpoint] {host}:{target_port} unreachable, falling back to localhost {DEFAULT_FALLBACK_HOST}:{DEFAULT_PORT}",
-                file=sys.stderr,
-            )
+            log_warn("endpoint", f"{host}:{target_port} unreachable -> fallback to {DEFAULT_FALLBACK_HOST}:{DEFAULT_PORT}")
             host = DEFAULT_FALLBACK_HOST
             port = DEFAULT_PORT
 
@@ -112,7 +110,7 @@ def get_loaded_models(endpoint: Optional[str] = None, api_key: Optional[str] = N
             models_list = data.get("data", [])
             loading = [m.get("id") for m in models_list if m.get("state") == "loading"]
             if loading:
-                print(f"[init] Model(s) currently loading into VRAM: {', '.join(loading)}. Waiting for readiness...", file=sys.stderr)
+                log_info("model", f"loading into VRAM: {', '.join(loading)} (waiting for readiness)")
                 for _ in range(24):  # Wait up to 120s
                     time.sleep(5)
                     try:
@@ -120,7 +118,7 @@ def get_loaded_models(endpoint: Optional[str] = None, api_key: Optional[str] = N
                             d2 = json.loads(r2.read().decode("utf-8"))
                             ready = [m.get("id") for m in d2.get("data", []) if m.get("state") == "loaded"]
                             if ready:
-                                print(f"[init] Model loaded successfully: {', '.join(ready)}", file=sys.stderr)
+                                log_ok("model", f"loaded in VRAM: {', '.join(ready)}")
                                 return ready
                     except Exception:
                         pass
@@ -199,18 +197,18 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
     )
     loaded = get_loaded_models(endpoint)
     if loaded:
-        print(f"[init] LM Studio loaded model(s): {', '.join(loaded)}")
+        log_info("model", f"loaded in LM Studio: {', '.join(loaded)}")
         if not requested_model or requested_model.lower() == "auto":
             for preferred in preferred_models:
                 for lm in loaded:
                     if preferred in lm or lm in preferred:
-                        print(f"[init] Auto-selected loaded model: {lm}")
+                        log_info("model", f"auto-selected: {lm}")
                         return lm
             return loaded[0]
 
         for lm in loaded:
             if _matches_model_alias(requested_model, lm):
-                print(f"[init] Using requested loaded model: {lm}")
+                log_info("model", f"matched requested: {lm}")
                 return lm
 
         if force:
@@ -222,7 +220,7 @@ def resolve_model(requested_model: str, endpoint: str, force: bool = False) -> s
                 if preferred in lm or lm in preferred:
                     fallback = lm
                     break
-        print(f"[warn] '{requested_model}' not loaded; using '{fallback}' to prevent eviction.", file=sys.stderr)
+        log_warn("model", f"'{requested_model}' not loaded; using '{fallback}' to prevent eviction")
         return fallback
 
     if not requested_model or requested_model.lower() == "auto":

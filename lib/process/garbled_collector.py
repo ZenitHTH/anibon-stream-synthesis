@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 from common.lmstudio import call_local
+from common.log import log_info, log_ok, log_stage, log_warn
 from process.garbled_resolver import LlmTarget, resolve_garbled_notes
 from process.garbled_rules import (
     has_garbled_candidates,
@@ -49,7 +50,7 @@ def _sync_garbled_dictionary(workspace: Path, notes_json: Path) -> None:
             "--from-notes", str(notes_json),
             "--workspace", str(workspace),
         ], check=False)
-    print("✅ Garbled collection & dictionary sync complete.")
+    log_ok("garbled", "dictionary sync complete")
 
 
 def _coerce_collector_options(
@@ -72,7 +73,7 @@ def _run_whisper_dispatch(
 ) -> int:
     from process.whisper_dispatcher import dispatch_verification
 
-    print("[garbled] Running whisper_dispatcher.py with local whisper.cpp...")
+    log_info("garbled", "running whisper_dispatcher.py via local whisper.cpp")
     return dispatch_verification(
         workspace=str(workspace),
         raw_notes_dir=str(workspace / "garbled_notes_raw"),
@@ -89,7 +90,7 @@ def _resolve_and_sync(
 ) -> None:
     target = LlmTarget(endpoint=opts.endpoint, model=opts.llm_model)
     resolve_garbled_notes(workspace, notes_json, target)
-    print("[garbled] Synchronizing resolved entries to garbled_replacements.json...")
+    log_info("garbled", "syncing resolved entries to garbled_replacements.json")
     _sync_garbled_dictionary(workspace, notes_json)
 
 
@@ -100,9 +101,9 @@ def _execute_garbled_collection(workspace: Path, opts: GarbledCollectorOptions) 
         if ret == 0 and notes_json.is_file():
             _resolve_and_sync(workspace, notes_json, opts)
         else:
-            print(f"[garbled] whisper_dispatcher returned status code {ret}.")
+            log_warn("garbled", f"whisper_dispatcher exited with status {ret}")
     except Exception as e:
-        print(f"[garbled] Warning: Garbled collector encountered error ({e}).")
+        log_warn("garbled", f"collector error ({e})")
 
 
 def run_garbled_collector(
@@ -111,9 +112,9 @@ def run_garbled_collector(
     **kwargs: Any,
 ) -> None:
     """Run whisper_dispatcher.py to transcribe phonetic ground truth, resolve, and sync dictionary."""
-    print("\n[garbled] Checking for garbled notes to collect...")
+    log_stage("STAGE :: GARBLED AUDIO VERIFICATION")
     if not has_garbled_candidates(workspace):
-        print("[garbled] No garbled candidates found in workspace. Skipping whisper.cpp verification.")
+        log_info("garbled", "no garbled candidates found; skipping whisper verification")
         return
     opts = _coerce_collector_options(options, kwargs)
     _execute_garbled_collection(workspace, opts)

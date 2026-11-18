@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional, Tuple, List
 
 from common.cleaner import _SPEAKER_SCRUB_RE, clean_text, compile_mapping_entries, load_replacements
+from common.log import log_info, log_ok, log_warn
 from process.signals.detector import load_garbled_replacements
 from download.transcript_source import is_youtube_auto_transcript
 
@@ -31,7 +32,7 @@ def clean_workspace_chunks(workspace: Path) -> int:
             cf.write_text(cleaned, encoding="utf-8")
             changed_files += 1
     if changed_files:
-        print(f"[clean] Replaced noise words across {changed_files} chunk file(s).")
+        log_ok("clean", f"replaced noise words across {changed_files} chunk file(s)")
     return changed_files
 
 
@@ -160,7 +161,7 @@ def _run_stage5_world_sanitizer(content: str, workspace: Path) -> str:
         cleaned, _ = audit_and_sanitize_final_markdown(content, workspace)
         return cleaned
     except Exception as e:
-        print(f"[audit] World sanitizer notice: {e}")
+        log_info("audit", f"world sanitizer notice: {e}")
         return content
 
 
@@ -169,11 +170,11 @@ def _apply_audit_updates(timestamps_file: Path, content: str, cleaned: str, stat
     replacements_count = stats.get("corrections_applied", 0)
     if cleaned != content:
         timestamps_file.write_text(cleaned, encoding="utf-8")
-        print(f"[audit] Applied {replacements_count} glossary/phonetic corrections to {timestamps_file.name}")
+        log_ok("audit", f"applied {replacements_count} glossary/phonetic corrections -> {timestamps_file.name}")
 
     suspected = stats.get("suspected_hallucinations", [])
     if suspected:
-        print(f"[audit] Warning: Suspected unverified entities in {timestamps_file.name}: {', '.join(suspected)}")
+        log_warn("audit", f"unverified entities in {timestamps_file.name}: {', '.join(suspected)}")
 
 
 def audit_timestamps_against_glossary(

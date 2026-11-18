@@ -1,6 +1,7 @@
 """Dual-Box co-triggered webcam reaction verification orchestrator."""
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
@@ -10,6 +11,7 @@ from common.config import (
     ONSET_SNAP_PRE_SEC, STAMP_COLLISION_SEC, WEBCAM_CORNER,
 )
 from common.lmstudio import resolve_endpoint
+from common.log import format_duration, log_info, log_ok, log_stage, log_warn
 from process.multimodal import build_multimodal_content, call_multimodal
 from process.reaction_io import (
     CoTriggerContext, ReactionRunConfig, collect_co_triggers, load_chunk_context,
@@ -66,17 +68,36 @@ def _unchanged(stamp: str) -> ReactionVerifyResult:
     return ReactionVerifyResult(stamp, stamp, stamp_seconds(stamp), "unchanged", "", 0.0, 0.0, False)
 
 
+def _log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> None:
+    """Emit aligned reaction verification outcome for a single candidate stamp."""
+    prefix = f"[{idx + 1:02d}] {stamp[:8]}"
+    if res.accepted:
+        delta = res.snapped_sec - stamp_seconds(stamp)
+        log_ok("reaction", f"{prefix} -> {res.updated[:8]} ({delta:+d}s) | {res.emotion_class} (conf={res.confidence:.2f})")
+        return
+    reason = res.emotion_class or "unchanged"
+    log_warn("reaction", f"{prefix} | rejected ({reason}, conf={res.confidence:.2f}) -> kept original")
+
+
 def _run_vlm_on_w_frames(ev: _StampEval, workspace: Path, opts: VerifyOptions) -> ReactionVerifyResult:
     """Export W frames across layout and query multimodal VLM for onset snap."""
     spec = FrameExportSpec(ev.regime.keyframes, ev.layout.webcam_box, workspace / "frames_reaction", f"rx_{ev.idx:03d}")
     exported = (opts.export_fn or export_vlm_keyframes)(opts.source, spec)
     kf_list = [(f["ts"], Path(f["path"]), f["b64"]) for f in exported.get("frames", [])]
     if not kf_list:
+        log_warn("reaction", f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | keyframe export empty -> kept original")
         return _unchanged(ev.stamp)
+    aud_z = ev.triggers.audio.rms_z_max if ev.triggers.audio else 0.0
+    log_info(
+        "reaction",
+        f"[{ev.idx + 1:02d}] {ev.stamp[:8]} | layout={ev.layout.layout} | {ev.regime.regime} (W_z={ev.regime.webcam_z_max:.1f}, aud_z={aud_z:.1f}) -> VLM",
+    )
     prompt = build_face_reaction_prompt(ev.stamp, ev.regime, PromptContext(ev.triggers, ev.transcript_ctx))
     raw = (opts.call_fn or call_multimodal)(opts.endpoint, opts.model, build_multimodal_content(prompt, kf_list))
     bounds = (int(ev.bounds.start_sec), int(ev.bounds.end_sec))
-    return parse_snapped_response(raw, ev.stamp, ParseConstraints(bounds, peak_motion=ev.regime.webcam_z_max))
+    res = parse_snapped_response(raw, ev.stamp, ParseConstraints(bounds, peak_motion=ev.regime.webcam_z_max))
+    _log_reaction_result(ev.idx, ev.stamp, res)
+    return res
 
 
 def _eval_kinematics(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
@@ -86,10 +107,12 @@ def _eval_kinematics(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
     bounds = WindowBounds(max(0.0, sec - ONSET_SNAP_PRE_SEC), sec + ONSET_SNAP_POST_SEC)
     layout = (opts.layout_fn or detect_obs_layout)(opts.source, bounds, preferred=opts.preferred_corner)
     if layout.webcam_box is None:
+        log_warn("reaction", f"[{idx + 1:02d}] {stamp[:8]} | layout=none -> kept original")
         return _unchanged(stamp)
     f_s, w_s, _ = (opts.motion_fn or extract_dual_motion_series)(opts.source, bounds, layout)
     regime = classify_dual_regime(f_s, w_s, RegimeThresholds(motion_threshold=opts.face_threshold))
     if not regime.trigger_vlm and not triggers.has_any:
+        log_info("reaction", f"[{idx + 1:02d}] {stamp[:8]} | layout={layout.layout} | low-motion (W_z={regime.webcam_z_max:.1f}) -> kept original")
         return _unchanged(stamp)
     return _run_vlm_on_w_frames(_StampEval(idx, stamp, bounds, regime, layout, triggers, transcript_ctx), workspace, opts)
 
@@ -98,7 +121,9 @@ def _evaluate_stamp(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
     """Evaluate one timestamp with cache lookup, co-triggers, and kinematics."""
     workspace, opts, cache = ctx
     if stamp in cache:
-        return result_from_cache(stamp, cache[stamp])
+        res = result_from_cache(stamp, cache[stamp])
+        log_info("reaction", f"[{idx + 1:02d}] {stamp[:8]} | CACHED -> {res.updated[:8]} ({res.emotion_class or 'kept'})")
+        return res
     sec = stamp_seconds(stamp)
     transcript_ctx = (opts.context_fn or (lambda s: load_chunk_context(workspace, s)))(sec)
     triggers = collect_co_triggers(workspace, sec, CoTriggerContext(transcript_ctx, opts.source, opts.audio_fn))
@@ -117,11 +142,16 @@ def verify_reaction_stamps(
     ws = Path(workspace)
     if not stamps or not _is_valid_source(opts.source):
         return list(stamps)
+    t0 = time.monotonic()
+    log_stage(f"PASS 2 :: WEBCAM REACTION VERIFY ({len(stamps)} stamps, corner={opts.preferred_corner})")
     log_path = ws / "reaction_verify_log.json"
     cache = load_reaction_log(log_path)
     results = [_evaluate_stamp(i, s, (ws, opts, cache)) for i, s in enumerate(stamps)]
     save_reaction_log(log_path, cache)
-    return resolve_monotonic_snap(results, collision_sec=STAMP_COLLISION_SEC)
+    snapped = sum(1 for r in results if r.accepted)
+    resolved = resolve_monotonic_snap(results, collision_sec=STAMP_COLLISION_SEC)
+    log_ok("reaction", f"summary: checked={len(stamps)}, snapped={snapped}, elapsed={format_duration(time.monotonic() - t0)}")
+    return resolved
 
 
 def apply_reaction_verify(stamps: List[str], workspace: Path, runtime: Any) -> List[str]:

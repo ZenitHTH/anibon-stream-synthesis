@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import re
 from typing import List, Tuple
 
+from common.log import log_warn
 from common.time import fmt_ts, parse_ts
 from common.config import (
     DEDUP_MIN_GAP_SEC,
@@ -135,7 +136,7 @@ def validate_timestamps(stamps: List[str], start_sec: int, end_sec: int) -> List
         if lo <= sec <= hi:
             valid.append(stamp)
         else:
-            print(f"  [drop] out-of-range stamp {stamp[:8]} (window {fmt_ts(start_sec)}-{fmt_ts(end_sec)})")
+            log_warn("stamp", f"dropped out-of-range {stamp[:8]} (window {fmt_ts(start_sec)}-{fmt_ts(end_sec)})")
     return valid
 
 

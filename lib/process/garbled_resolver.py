@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from common.lmstudio import call_local, resolve_endpoint, resolve_model
+from common.log import log_ok, log_warn
 from process.garbled_grounding import (
     GroundingContext,
     is_grounded_target,
@@ -103,7 +104,7 @@ def _resolve_single_batch(
         reply = _invoke_llm(prompt, target)
         return _extract_grounded_replacements(batch, _parse_llm_json(reply), context)
     except Exception as e:
-        print(f"[garbled] Warning: LLM resolution batch failed ({e}).")
+        log_warn("garbled", f"LLM resolution batch failed ({e})")
         return {}
 
 
@@ -193,5 +194,5 @@ def resolve_garbled_notes(
     resolved = _align_pending_notes(workspace, pending, _coerce_llm_target(target, kwargs))
     count = _apply_resolved_notes(notes, resolved)
     _save_notes_json(notes_json, data)
-    print(f"[garbled] Resolved {count}/{len(notes)} garbled candidate(s) via acoustic alignment.")
+    log_ok("garbled", f"resolved {count}/{len(notes)} candidate(s) via acoustic alignment")
     return count

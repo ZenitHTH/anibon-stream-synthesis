@@ -22,6 +22,7 @@ from common.config import (
     SCENE_DELTA_THRESHOLD,
     MAX_CHUNK_FRAMES,
 )
+from common.log import log_warn
 from process.multimodal_situations import (
     INCOMPLETE_CONTEXT_CUES,
     STRONG_VISUAL_CUES,
@@ -343,7 +344,7 @@ def sample_chunk_keyframes(
                 )
             return out_tile
         except Exception as e:
-            print(f"[multimodal] tile crop error at {sec}s: {e}", file=sys.stderr)
+            log_warn("multimodal", f"tile crop error at {sec}s: {e}")
             return None
 
     if scene_dedup:

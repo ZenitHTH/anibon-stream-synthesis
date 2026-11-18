@@ -5,6 +5,11 @@ Consumers (before extraction):
 """
 
 
+from __future__ import annotations
+
+from common.log import log_info
+
+
 def format_markdown(parts: list, doc_title: str) -> str:
     """Format parts into separator-block markdown.
 
@@ -39,4 +44,4 @@ def write_parts_json(parts: list, path):
             "body": "\n".join(body_lines),
         })
     Path(path).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[*] Wrote parts.json with {len(out)} sections → {path}", file=__import__("sys").stderr)
+    log_info("assemble", f"wrote parts.json ({len(out)} sections) -> {path}")

@@ -7,12 +7,22 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import time
 import urllib.error
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from process.assembly import finalize_and_assemble_timestamps
 from common.lmstudio import call_local
+from common.log import (
+    format_duration,
+    format_progress,
+    log_error,
+    log_info,
+    log_ok,
+    log_stage,
+    log_warn,
+)
 from process.prompts import build_group_prompt
 from process.runners.common import _get_runtime_hook
 from chunk.pause import clear_pause, wait_if_paused
@@ -38,7 +48,7 @@ def _load_group_chunks(g_files: List[Path], mappings: Optional[list]) -> List[di
             ch["_idx"] = int(m.group(1)) if m else 0
             g_chunks.append(ch)
         except Exception as e:
-            print(f"[warn] failed to load {cf.name}: {e}", file=sys.stderr)
+            log_warn("group", f"failed to load {cf.name}: {e}")
     return g_chunks
 
 
@@ -155,19 +165,22 @@ def _process_single_group(
         glossary=glossary,
     )
     prompt_tokens = len(prompt) // 4
-    print(f"[{group_idx}/{num_groups-1}] chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d} ~{prompt_tokens} tokens → calling model ...", end=" ", flush=True)
+    prog = format_progress(g + 1, num_groups)
+    span = f"chunks {g_chunks[0]['_idx']:02d}..{g_chunks[-1]['_idx']:02d}"
+    log_info("group", f"{prog} {group_idx} ({span}) | ~{prompt_tokens} tok -> running")
 
+    t0 = time.monotonic()
     try:
         stamps, result_label = _execute_group_inference(
             endpoint, model, prompt, max_tokens, temperature, g_start_sec, g_end_sec
         )
-        print(result_label)
+        log_ok("group", f"{prog} {group_idx} | {format_duration(time.monotonic() - t0)} | {result_label}")
     except urllib.error.URLError as e:
-        print(f"\n[error] endpoint unreachable: {e}", file=sys.stderr)
+        log_error("network", f"endpoint unreachable: {e}")
         _save_group_loop_state(workspace, g, num_groups, all_timestamps, prev_tail)
         sys.exit(1)
     except Exception as e:
-        print(f"\n[error] {group_idx}: {e}", file=sys.stderr)
+        log_error("group", f"{group_idx} failed: {e}")
         return prev_tail, False
 
     prev_tail = _persist_group_output(
@@ -211,11 +224,12 @@ def run_group_mode(
 
     total_chunks = len(chunk_files)
     num_groups = (total_chunks + group_size - 1) // group_size
+    log_stage(f"PASS 1 :: GROUP SEGMENTATION ({num_groups} groups)")
 
     if args and getattr(args, "multimodal_chunks", False):
-        print("[group] Note: Multimodal storyboard chunk analysis is optimized for --mode recursive; running group mode with text context.")
+        log_info("group", "multimodal mode works best with --mode recursive; using text context")
     if not no_resume and all_timestamps:
-        print(f"[resume] {len(all_timestamps)} timestamps already recorded")
+        log_info("resume", f"loaded {len(all_timestamps)} timestamps from state")
 
     groups_processed = 0
     for g in range(num_groups):
@@ -226,7 +240,7 @@ def run_group_mode(
             tail = _extract_group_tail(out_path)
             if tail:
                 prev_tail = tail
-            print(f"[skip] {group_idx} (output exists)")
+            log_info("group", f"{group_idx} | SKIP (cached)")
             continue
 
         wait_if_paused(workspace, active_phase="group_loop", label=f"{group_idx} ({g + 1}/{num_groups})")
@@ -241,11 +255,11 @@ def run_group_mode(
         if ok:
             groups_processed += 1
             if max_groups and groups_processed >= max_groups:
-                print(f"[pause] Reached --max-groups {max_groups}.")
+                log_info("pause", f"reached --max-groups {max_groups}")
                 break
 
     wait_if_paused(workspace, active_phase="assemble", label="before assembly")
-    print(f"\n[assemble] {len(all_timestamps)} total timestamps collected.")
+    log_stage(f"PASS 2 :: ASSEMBLY & QUALITY GATES ({len(all_timestamps)} raw stamps)")
     finalize_fn = _get_runtime_hook("finalize_and_assemble_timestamps", finalize_and_assemble_timestamps)
     out_md, deduped = finalize_fn(
         workspace=workspace, all_timestamps=all_timestamps, endpoint=endpoint, model=model,
@@ -253,4 +267,4 @@ def run_group_mode(
         args=args, glossary=glossary,
     )
     save_state(workspace, {"current_group": num_groups, "total_groups": num_groups, "all_timestamps": deduped, "prev_tail": prev_tail, "phase": "complete"})
-    print(f"\n✅ Group run complete: {out_md}")
+    log_ok("done", f"group run complete -> {out_md}")

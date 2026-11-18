@@ -12,13 +12,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+from common.log import log_block, log_info, log_warn
+
 _PLUGIN_SCRIPTS = Path(__file__).resolve().parents[2] / "scripts"
 
 
 def _run(script: str, *args) -> int | None:
     path = _PLUGIN_SCRIPTS / script
     if not path.is_file():
-        print(f"[gate] skip {script}: not found in {_PLUGIN_SCRIPTS}")
+        log_info("gate", f"skip {script}: not found in {_PLUGIN_SCRIPTS}")
         return None
     r = subprocess.run(
         [sys.executable, "-X", "utf8", str(path), *map(str, args)],
@@ -26,7 +28,8 @@ def _run(script: str, *args) -> int | None:
     )
     out = (r.stdout + r.stderr).strip()
     if out:
-        print(f"[gate:{script}]\n{out}")
+        lvl = "OK" if r.returncode == 0 else "WARN"
+        log_block("gate", lvl, f"[{script}]\n{out}")
     return r.returncode
 
 

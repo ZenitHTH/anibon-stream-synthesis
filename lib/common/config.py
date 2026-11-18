@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from common.log import log_warn
 from common.resources import plugin_root
 
 # Locate skill-level default config.json (skills/anibon-timestamper-local/config.json)
@@ -105,7 +106,7 @@ def load_config(path: Optional[Path] = None, override: bool = False) -> Dict[str
         content = cfg_path.read_text(encoding="utf-8")
         parsed = json.loads(content)
         if not isinstance(parsed, dict):
-            print(f"[config] Warning: {cfg_path} root is not a JSON object", file=sys.stderr)
+            log_warn("config", f"{cfg_path} root is not a JSON object")
             return {}
 
         if override:
@@ -119,7 +120,7 @@ def load_config(path: Optional[Path] = None, override: bool = False) -> Dict[str
 
         return parsed
     except Exception as e:
-        print(f"[config] Warning: Failed to read {cfg_path}: {e}", file=sys.stderr)
+        log_warn("config", f"failed to read {cfg_path}: {e}")
         return {}
 
 
@@ -166,7 +167,7 @@ def load_dotenv(path: Optional[Path] = None, override: bool = False) -> Dict[str
             reload_config()
         return data
     except Exception as e:
-        print(f"[config] Warning: Failed to parse legacy .env {env_path}: {e}", file=sys.stderr)
+        log_warn("config", f"failed to parse legacy .env {env_path}: {e}")
         return {}
 
 

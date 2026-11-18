@@ -16,6 +16,7 @@ from common.config import (
     SCENE_DELTA_THRESHOLD,
 )
 from common.lmstudio import call_local
+from common.log import log_info, log_warn
 from process.multimodal import (
     build_multimodal_content,
     call_multimodal,
@@ -97,7 +98,7 @@ def _call_chunk_model(
                 timeout=MULTIMODAL_TIMEOUT_SEC, api_key=api_key,
             )
         except Exception as ex:
-            print(f"\n[multimodal] fallback to text-only for {chunk_idx}: {ex}", flush=True)
+            log_warn("multimodal", f"{chunk_idx} fallback to text-only ({ex})")
 
     return call_local_fn(endpoint, model, prompt, max_tokens, temperature, api_key=api_key)
 
@@ -117,9 +118,9 @@ def _init_multimodal_grounding(
         slides_dir = prep_slides_fn(workspace, video_url=video_url)
         if slides_dir:
             tiles_dir.mkdir(parents=True, exist_ok=True)
-            print(f"[multimodal] Enabled: Grounding chunks with Storyboard keyframes from {slides_dir.name}")
+            log_info("multimodal", f"grounding enabled from {slides_dir.name}")
         else:
-            print("[multimodal] Warning: No storyboard slides found in workspace/frames, falling back to text-only mode.")
+            log_warn("multimodal", "no storyboard slides found; falling back to text-only")
             is_multimodal = False
 
     return is_multimodal, slides_dir, tiles_dir

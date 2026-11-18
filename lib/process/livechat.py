@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from common.log import log_warn
+
 _ROOT_DIR = Path(__file__).resolve().parents[2]
 _SCRIPTS_DIR = _ROOT_DIR / "scripts"
 _LIVECHAT_SKILL_DIR = _ROOT_DIR / "skills" / "anibon-livechat-analysis"
@@ -41,7 +43,7 @@ def download_livechat(url: str, workspace: Path) -> Optional[Path]:
     try:
         subprocess.run(cmd, capture_output=True, check=False, timeout=180)
     except Exception as e:
-        print(f"[livechat] Download failed: {e}", file=sys.stderr)
+        log_warn("livechat", f"download failed: {e}")
         return None
     return find_livechat_file(workspace)
 

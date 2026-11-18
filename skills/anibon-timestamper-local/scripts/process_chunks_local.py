@@ -69,6 +69,12 @@ from interface import (
     load_config,
     load_garbled_replacements,
     load_mappings,
+    log_banner,
+    log_error,
+    log_info,
+    log_kv,
+    log_ok,
+    log_warn,
     prepare_livechat,
     prepare_storyboard_slides,
     reload_config,
@@ -131,7 +137,7 @@ def run_knowledge_discovery(
     glossary = extract_entity_glossary(signals_map, ref_dir)
     glossary = enrich_with_sqlite_databases(glossary, signals_map)
     out_file = save_entity_glossary(glossary, workspace)
-    print(f"[knowledge] Generated entity glossary with {len(glossary)} entries -> {out_file.name}")
+    log_info("knowledge", f"generated entity glossary -> {out_file.name} ({len(glossary)} entries)")
     return out_file
 
 
@@ -193,7 +199,7 @@ def _load_raw_timestamps_for_summary(workspace: Path) -> List[str]:
     """Load existing timestamps file or exit if missing."""
     raw_ts = workspace / "all_timestamps.txt"
     if not raw_ts.exists():
-        print(f"ERROR: {raw_ts} not found for --summarize-only", file=sys.stderr)
+        log_error("summarize", f"raw timestamps not found: {raw_ts}")
         sys.exit(1)
     return [l.strip() for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
 
@@ -216,7 +222,8 @@ def _discover_summary_glossary(workspace: Path, disabled: bool) -> Optional[dict
 def _run_summarize_only(workspace: Path, model: str, args: argparse.Namespace) -> None:
     """Execute Pass 2 summarizer pass on existing raw timestamps."""
     stamps = _load_raw_timestamps_for_summary(workspace)
-    print(f"[summarize-only] Loaded {len(stamps)} timestamps. Running assembly...")
+    log_banner(f"ANIBON TIMESTAMPER :: SUMMARIZE ONLY ({args.lang.upper()})")
+    log_info("summarize", f"loaded {len(stamps)} raw timestamps; running assembly")
 
     glossary = _discover_summary_glossary(workspace, args.no_knowledge_reader)
     out_md, _ = finalize_and_assemble_timestamps(
@@ -224,7 +231,7 @@ def _run_summarize_only(workspace: Path, model: str, args: argparse.Namespace) -
         temperature=args.temperature, block_size=args.block_size, no_summarizer_pass=args.no_summarizer_pass,
         args=args, glossary=glossary,
     )
-    print(f"✅ Assembly complete: {out_md}")
+    log_ok("done", f"assembly complete -> {out_md}")
 
 
 def _apply_early_config_override() -> None:
@@ -252,10 +259,10 @@ def _resolve_runtime_targets(
         Path(args.world_identity_dir) if args.world_identity_dir else WORLD_IDENTITY_DIR
     )
     if world_identity_dir and world_identity_dir.is_dir():
-        print(f"[init] world-id    : {world_identity_dir}")
+        log_kv("init", "world-id", world_identity_dir)
     else:
         world_identity_dir = None
-        print("[init] world-id    : not found (world identity context disabled)")
+        log_warn("init", "world-id directory not found; world identity context disabled")
 
     return model, world_identity_dir
 
@@ -265,7 +272,7 @@ def _discover_workspace_chunks(workspace: Path) -> List[Path]:
     try:
         return discover_chunks(workspace)
     except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+        log_error("init", str(e))
         sys.exit(1)
 
 
@@ -280,7 +287,7 @@ def _load_or_detect_signals(workspace: Path) -> dict:
                 return data
         except Exception:
             pass
-    print("[signals] Detecting domain signals...")
+    log_info("signals", "detecting domain signals across chunks")
     signals = detect_signals_for_chunks(workspace)
     if signals:
         signals_file.write_text(json.dumps(signals, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -310,38 +317,33 @@ def _prepare_transcript_mappings(workspace: Path) -> Tuple[list, list, bool]:
     src_label = detect_transcript_source(workspace)
 
     if is_yt_auto:
-        print("[transcript] Source: YouTube Auto-Transcript -> Enabling Garbled replacements & collector.")
+        log_info("transcript", "source=YouTube Auto-Transcript -> garbled collector enabled")
         garbled = load_garbled_replacements()
     else:
-        print(f"[transcript] Source: {src_label.capitalize()}/clean transcript -> Skipping Garbled replacements & collector.")
+        log_info("transcript", f"source={src_label.capitalize()}/clean -> garbled collector skipped")
         garbled = []
 
     mappings = load_mappings()
     if garbled:
-        print(f"[knowledge] Loaded {len(garbled)} garbled replacement entries (garbled_replacements.json)")
+        log_info("knowledge", f"loaded {len(garbled)} garbled replacements (garbled_replacements.json)")
     if mappings:
-        print(f"[knowledge] Loaded {len(mappings)} phonetic entity mappings (default_mappings.json)")
+        log_info("knowledge", f"loaded {len(mappings)} phonetic mappings (default_mappings.json)")
 
     return garbled + mappings, garbled, is_yt_auto
 
 
-def _print_run_header(
-    workspace: Path,
-    model: str,
-    endpoint: str,
-    mode: str,
-    multimodal: bool,
-    total_chunks: int,
-    lang: str,
-) -> None:
-    """Print initialization status header."""
-    print(f"[init] workspace   : {workspace}")
-    print(f"[init] model       : {model}")
-    print(f"[init] endpoint    : {endpoint}")
-    print(f"[init] mode        : {mode}")
-    print(f"[init] multimodal  : {'enabled' if multimodal else 'disabled (text-only)'}")
-    print(f"[init] total chunks: {total_chunks}")
-    print(f"[init] lang        : {lang}")
+def _print_run_header(args: argparse.Namespace, model: str, total_chunks: int) -> None:
+    """Print aligned initialization configuration summary."""
+    mm_on = bool(getattr(args, "multimodal_chunks", False))
+    rx_on = bool(getattr(args, "reaction_verify", False))
+    corner = getattr(args, "webcam_corner", WEBCAM_CORNER)
+    remote = bool(getattr(args, "remote_snap", False))
+    log_kv("init", "workspace", args.workspace)
+    log_kv("init", "model", model)
+    log_kv("init", "endpoint", args.endpoint)
+    log_kv("init", "multimodal", "enabled" if mm_on else "disabled (text-only)")
+    log_kv("init", "reaction-verify", f"enabled (corner={corner}, remote={remote})" if rx_on else "disabled")
+    log_kv("init", "total_chunks", total_chunks)
 
 
 def _dispatch_pipeline_mode(
@@ -422,9 +424,11 @@ def main() -> None:
 
     workspace = Path(args.workspace)
     if not workspace.exists():
-        print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
+        log_error("init", f"workspace not found: {workspace}")
         sys.exit(1)
 
+    if not args.summarize_only:
+        log_banner(f"ANIBON TIMESTAMPER :: {args.mode.upper()} MODE ({args.lang.upper()})")
     model, world_identity_dir = _resolve_runtime_targets(args, workspace)
     _ensure_livechat_if_requested(workspace, args)
     ensure_mood_555(workspace)
@@ -434,13 +438,10 @@ def main() -> None:
         return
 
     chunk_files = _discover_workspace_chunks(workspace)
-    _print_run_header(
-        workspace, model, args.endpoint, args.mode,
-        getattr(args, "multimodal_chunks", False), len(chunk_files), args.lang
-    )
+    _print_run_header(args, model, len(chunk_files))
 
     if args.dry_run:
-        print(f"[dry-run] Discovered {len(chunk_files)} chunks.")
+        log_info("init", f"dry-run complete ({len(chunk_files)} chunks discovered)")
         return
 
     _run_active_pipeline(_PipelineContext(args, workspace, model, chunk_files, world_identity_dir))

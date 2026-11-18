@@ -166,7 +166,7 @@ class TestConfig(unittest.TestCase):
                 cwd=str(SKILL_CONFIG_PATH.parent),
             )
             self.assertEqual(res.returncode, 0)
-            self.assertIn("multimodal  : disabled (text-only)", res.stdout)
+            self.assertRegex(res.stdout, r"multimodal\s+:\s+disabled \(text-only\)")
 
 
     def test_multimodal_batch_and_scene_config_defaults(self):
