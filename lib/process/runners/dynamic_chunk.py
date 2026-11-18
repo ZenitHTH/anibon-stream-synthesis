@@ -12,6 +12,7 @@ from process.multimodal_situations import (
     collect_situational_candidates,
     select_spaced_seconds,
 )
+from process.runners.corner_consensus import make_segment_layout_fn, pick_consensus_corner
 from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
 from video.dynamic_balance import DynamicPlan, assess_storyboard_webcam_motion, decode_tile_box, trim_storyboard_frames
 from video.face_motion_metrics import compute_frame_delta
@@ -143,9 +144,9 @@ def _resolve_chunk_webcam_box(
         return WEBCAM_BOX_PRESETS[key]
     lo = int(float(items[0].get("start", 0) or 0)) if items else 0
     hi = int(float(items[-1].get("start", lo) or lo)) + 5 if items else lo + 60
-    cache_key = (str(workspace), str(source), key, lo // 300)
+    cache_key = (str(workspace), str(source), key, lo * 100000 + hi)
     if cache_key not in _LAYOUT_CACHE:
-        box = _pick_persistent_corner(source, (lo, hi), sb_frames) if len(sb_frames) >= 2 else None
+        box = pick_consensus_corner(source, (lo, hi), sb_frames, _rank_active_corners) if len(sb_frames) >= 2 else None
         _LAYOUT_CACHE[cache_key] = box if box is not None else _probe_chunk_layout_box(source, lo, hi, key)
     return _LAYOUT_CACHE[cache_key]
 
@@ -154,16 +155,16 @@ def _extract_dynamic_webcam(
     workspace: Path,
     chunk: dict,
     source: Path | str,
-    box_and_plan: Tuple[Optional[FaceBox], DynamicPlan],
+    box_and_plan: Tuple,
     args: Optional[argparse.Namespace],
 ) -> list:
     """Sample packed HD webcam storyboard sheets when dynamic plan allocates webcam frames."""
-    box, plan = box_and_plan
+    box, plan, *extra = box_and_plan
     if plan.wc_frames <= 0:
         return []
     pref = getattr(args, "webcam_corner", WEBCAM_CORNER) if args else WEBCAM_CORNER
     secs = _expand_around_spikes(plan.spike_secs, chunk.get("items", []), plan.wc_frames)
-    req = ChunkWebcamRequest(workspace, source, chunk, secs, pref, plan.wc_frames, box)
+    req = ChunkWebcamRequest(workspace, source, chunk, secs, pref, plan.wc_frames, box, layout_fn=extra[0] if extra else None)
     try:
         return sample_chunk_webcam_frames(req)
     except Exception as ex:
@@ -185,7 +186,8 @@ def _balance_dynamic_chunk_frames(
     box = _resolve_chunk_webcam_box(workspace, source, items, args, sb_frames=sb_frames)
     has_cue = any(cue in (it.get("text") or "") for it in items for cue in EMOTION_REACTION_CUES)
     plan = assess_storyboard_webcam_motion(sb_frames, box, has_emotion_cue=has_cue)
-    wc_frames = _extract_dynamic_webcam(workspace, chunk, source, (box, plan), args)
+    layout_fn = make_segment_layout_fn(sb_frames, _rank_active_corners) if len(sb_frames) >= 2 else None
+    wc_frames = _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
     sb_balanced = trim_storyboard_frames(sb_frames, plan.sb_keep) if wc_frames else sb_frames
     return sb_balanced, wc_frames, f"{plan.tier}(mad={plan.mean_mad:.3f})"
 

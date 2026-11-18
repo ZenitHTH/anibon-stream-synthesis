@@ -90,6 +90,8 @@ def sample_chunk_webcam_frames(req: ChunkWebcamRequest) -> List[Tuple[str, Path,
         return []
     vf = _export_vf(box, _WC_EXPORT_SIZE)
     frames = [f for sec in secs if (f := _load_or_render_wc(req, sec, vf)) is not None]
+    from video.chunk_webcam_reprobe import ReprobePlan, reprobe_switched_frames
+    frames = reprobe_switched_frames(req, frames, ReprobePlan(secs, box, lambda b: _export_vf(b, _WC_EXPORT_SIZE), _load_or_render_wc))
     return _chunked_sheets(frames, Path(req.workspace), int(req.chunk.get("_idx", 0) or 0))
 
 
