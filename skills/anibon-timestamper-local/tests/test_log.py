@@ -105,8 +105,7 @@ class TestCommonLog(unittest.TestCase):
         self.assertIn("PASS 2 :: WEBCAM REACTION VERIFY", text)
         self.assertIn("10:15:03 | INFO  | reaction   | [01] 00:00:20 | layout=mid-right", text)
         self.assertIn("| webcam=1 storyboard=1 -> VLM", text)
-        self.assertIn("webcam[00:00:22] (frame): ", text)
-        self.assertIn("storyboard[00:00:22]", text)
+        self.assertNotIn("frames_reaction/", text)
         self.assertIn("10:15:03 | OK    | reaction   | [01] 00:00:20 -> 00:00:22 (+2s) | shock (conf=0.91)", text)
         self.assertIn("10:15:03 | OK    | reaction   | summary: checked=1, snapped=1", text)
 

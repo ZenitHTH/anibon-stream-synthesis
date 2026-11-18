@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from common.config import AUDIO_RMS_Z_THRESHOLD, DEFAULT_MODEL, ONSET_SNAP_POST_SEC, ONSET_SNAP_PRE_SEC
-from common.log import log_cont, log_info, log_ok, log_warn
+from common.log import log_info, log_ok, log_warn
 from common.time import parse_ts
 from download.ytdlp import ytdlp_cmd
 from process.multimodal_situations import score_item_situations
@@ -168,16 +168,10 @@ def sync_raw_timestamps(workspace: Path, mapping: Dict[str, str]) -> None:
 
 
 def log_reaction_dispatch(header: str, wb_exported: dict, sb_exported: dict) -> None:
-    """Log separated webcam and storyboard image counts and dispatched file paths."""
-    wb_frames = wb_exported.get("frames") or []
-    sb_frames = sb_exported.get("frames") or []
-    log_info("reaction", f"{header} | webcam={len(wb_frames)} storyboard={len(sb_frames)} -> VLM")
-    for f in wb_frames:
-        log_cont(f"webcam[{f.get('ts', '')}] ({f.get('role') or 'frame'}): {f.get('path', '')}")
-    for f in sb_frames:
-        log_cont(f"storyboard[{f.get('ts', '')}] ({f.get('role') or 'screen'}): {f.get('path', '')}")
-    if wb_exported.get("strip_path"):
-        log_cont(f"strip: {wb_exported['strip_path']}")
+    """Log separated webcam and storyboard image counts dispatched to the VLM."""
+    wb_count = len(wb_exported.get("frames") or ())
+    sb_count = len(sb_exported.get("frames") or ())
+    log_info("reaction", f"{header} | webcam={wb_count} storyboard={sb_count} -> VLM")
 
 
 def log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> None:
