@@ -14,20 +14,16 @@ from common.lmstudio import resolve_endpoint
 from common.log import format_duration, log_info, log_ok, log_stage, log_warn
 from process.multimodal import build_multimodal_content, call_multimodal
 from process.reaction_io import (
-    CoTriggerContext, ReactionRunConfig, collect_co_triggers, load_chunk_context,
-    load_reaction_log, log_reaction_dispatch, log_reaction_result, resolve_reaction_source,
+    CoTriggerContext, ReactionRunConfig, collect_co_triggers, load_chunk_context, load_reaction_log,
+    log_reaction_dispatch, log_reaction_result, resolve_reaction_audio_source, resolve_reaction_source,
     result_from_cache, result_to_cache, save_reaction_log, sync_raw_timestamps,
 )
 from process.reaction_prompt import (
-    PROTECTED_MILESTONE_TAGS, CoTriggerSignals, ParseConstraints, PromptContext,
-    ReactionVerifyResult, build_face_reaction_prompt, needs_reaction_verify,
-    parse_snapped_response, resolve_monotonic_snap,
+    PROTECTED_MILESTONE_TAGS, CoTriggerSignals, ParseConstraints, PromptContext, ReactionVerifyResult,
+    build_face_reaction_prompt, needs_reaction_verify, parse_snapped_response, resolve_monotonic_snap,
 )
 from process.vision_verify import stamp_seconds
-from video.face_motion import (
-    FrameExportSpec, expand_reaction_keyframes, export_vlm_keyframes,
-    extract_dual_motion_series, pick_storyboard_keyframes,
-)
+from video.face_motion import FrameExportSpec, expand_reaction_keyframes, export_vlm_keyframes, extract_dual_motion_series, pick_storyboard_keyframes
 from video.webcam_storyboard import pack_exported_webcam_storyboard
 from video.face_motion_metrics import classify_dual_regime
 from video.motion_types import LayoutSegment, MotionRegime, RegimeThresholds, WindowBounds
@@ -38,6 +34,7 @@ from video.obs_layout import detect_obs_layout
 class VerifyOptions:
     """Injected dependencies and thresholds for verify_reaction_stamps."""
     source: Optional[Path | str] = None
+    audio_source: Optional[Path | str] = None
     endpoint: str = ""
     model: str = DEFAULT_MODEL
     preferred_corner: str = WEBCAM_CORNER
@@ -89,7 +86,7 @@ def _export_reaction_pair(ev: _StampEval, workspace: Path, opts: VerifyOptions) 
     wb_cap = FACE_MAX_FRAMES if high_wc else min(4, FACE_MAX_FRAMES)
     sb_cap = min(2, REACTION_STORYBOARD_FRAMES) if high_wc else REACTION_STORYBOARD_FRAMES
     wb_kfs = expand_reaction_keyframes(ev.regime.keyframes, wb_cap)
-    wb_exp = export_fn(opts.source, FrameExportSpec(wb_kfs, ev.layout.webcam_box, out_dir, f"rx_{ev.idx:03d}"))
+    wb_exp = export_fn(opts.source, FrameExportSpec(wb_kfs, ev.layout.webcam_box, out_dir, f"rx_{ev.idx:03d}", out_size=320))
     wb_items = pack_exported_webcam_storyboard(wb_exp, out_dir / f"wb_sheet_{ev.idx:03d}.jpg")
     sb_exp: Dict[str, object] = {"frames": [], "strip_path": None}
     if ev.layout.layout != "fullscreen":
@@ -141,7 +138,8 @@ def _evaluate_stamp(idx: int, stamp: str, ctx: tuple) -> ReactionVerifyResult:
         return res
     sec = stamp_seconds(stamp)
     transcript_ctx = (opts.context_fn or (lambda s: load_chunk_context(workspace, s)))(sec)
-    triggers = collect_co_triggers(workspace, sec, CoTriggerContext(transcript_ctx, opts.source, opts.audio_fn))
+    aud_src = opts.audio_source if opts.audio_source is not None else opts.source
+    triggers = collect_co_triggers(workspace, sec, CoTriggerContext(transcript_ctx, aud_src, opts.audio_fn))
     if not needs_reaction_verify(stamp, transcript_ctx, triggers):
         return _unchanged(stamp)
     res = _eval_kinematics(idx, stamp, (workspace, opts, triggers, transcript_ctx))
@@ -180,7 +178,8 @@ def apply_reaction_verify(stamps: List[str], workspace: Path, runtime: Any) -> L
         return stamps
     model = (runtime.model if isinstance(runtime, ReactionRunConfig) else "") or getattr(args, "vision_model", None) or DEFAULT_MODEL
     opts = VerifyOptions(
-        source=source, endpoint=resolve_endpoint(getattr(args, "endpoint", None)), model=model,
+        source=source, audio_source=resolve_reaction_audio_source(ws, args) or source,
+        endpoint=resolve_endpoint(getattr(args, "endpoint", None)), model=model,
         preferred_corner=getattr(args, "webcam_corner", WEBCAM_CORNER),
         face_threshold=float(getattr(args, "face_threshold", FACE_MOTION_THRESHOLD)),
     )

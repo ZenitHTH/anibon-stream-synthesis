@@ -401,6 +401,30 @@ class TestReactionVerifyTask5(unittest.TestCase):
             self.assertEqual(len(seen_windows), 2)
             self.assertEqual(exported_boxes, [b1, None, b2, None])
 
+    def test_high_res_video_priority_and_audio_stream_split(self):
+        import subprocess
+        from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            low = ws / "video_360p.mp4"
+            hi = ws / "video.mp4"
+            low.write_bytes(b"360")
+            hi.write_bytes(b"1080")
+            self.assertEqual(resolve_reaction_source(ws, argparse.Namespace(remote_snap=True)), hi)
+            hi.unlink()
+            low.unlink()
+            (ws / ".video_url").write_text("https://youtu.be/abc", encoding="utf-8")
+            seen_fmts = []
+            def fake_run(cmd, **kw):
+                seen_fmts.append(cmd[cmd.index("-f") + 1])
+                return subprocess.CompletedProcess(cmd, 0, stdout="https://stream.example/u\n", stderr="")
+            with patch("process.reaction_source.subprocess.run", side_effect=fake_run):
+                resolve_reaction_source(ws, argparse.Namespace(remote_snap=True))
+                resolve_reaction_audio_source(ws, argparse.Namespace(remote_snap=True))
+            self.assertIn("1080", seen_fmts[0])
+            self.assertIn("bestaudio", seen_fmts[1])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,9 +9,11 @@ from typing import Callable, List, Optional, Tuple
 from common.config import PASS1_WEBCAM_FRAMES, WEBCAM_CORNER
 from common.time import fmt_ts
 from video.face_motion import _export_vf, _render_single_jpeg
-from video.motion_types import LayoutSegment, WindowBounds
+from video.motion_types import FaceBox, LayoutSegment, WindowBounds
 from video.obs_layout import detect_obs_layout
 from video.webcam_storyboard import assemble_webcam_storyboard
+
+_WC_EXPORT_SIZE = 320
 
 
 @dataclass(frozen=True)
@@ -24,6 +26,7 @@ class ChunkWebcamRequest:
     target_secs: Tuple[int, ...] = ()
     preferred: str = WEBCAM_CORNER
     max_frames: int = PASS1_WEBCAM_FRAMES
+    webcam_box: Optional[FaceBox] = None
     layout_fn: Optional[Callable[..., LayoutSegment]] = None
     render_fn: Optional[Callable[..., bool]] = None
 
@@ -73,16 +76,19 @@ def _chunked_sheets(frames: list, ws: Path, ch_idx: int) -> List[Tuple[str, Path
 
 
 def sample_chunk_webcam_frames(req: ChunkWebcamRequest) -> List[Tuple[str, Path, str, str]]:
-    """Sample cropped webcam closeup JPEGs and pack as storyboard sheet(s) for Pass 1."""
+    """Sample cropped HD webcam closeup JPEGs and pack as storyboard sheet(s) for Pass 1."""
     if not _is_valid_media(req.source) or req.max_frames <= 0:
         return []
     secs = sorted(req.target_secs[:req.max_frames]) if req.target_secs else _select_fallback_seconds(req.chunk.get("items", []), req.max_frames)
     if not secs:
         return []
-    layout = (req.layout_fn or detect_obs_layout)(req.source, WindowBounds(max(0.0, secs[0] - 3.0), secs[0] + 5.0), preferred=req.preferred)
-    if layout.webcam_box is None:
+    box = req.webcam_box
+    if box is None:
+        layout = (req.layout_fn or detect_obs_layout)(req.source, WindowBounds(max(0.0, secs[0] - 3.0), secs[0] + 5.0), preferred=req.preferred)
+        box = layout.webcam_box
+    if box is None:
         return []
-    vf = _export_vf(layout.webcam_box, 256)
+    vf = _export_vf(box, _WC_EXPORT_SIZE)
     frames = [f for sec in secs if (f := _load_or_render_wc(req, sec, vf)) is not None]
     return _chunked_sheets(frames, Path(req.workspace), int(req.chunk.get("_idx", 0) or 0))
 

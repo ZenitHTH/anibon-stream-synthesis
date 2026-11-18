@@ -33,7 +33,7 @@ def _paint_box(size: int, box: FaceBox, rgb: tuple[int, int, int]) -> bytes:
 
 class TestObsLayout(unittest.TestCase):
     def test_corner_presets_and_tight_face_within_unit_bounds(self) -> None:
-        for name in ("top-right", "mid-right", "mid-left", "bottom-right", "bottom-left", "top-left"):
+        for name in ("top-right", "mid-right", "lower-right", "mid-left", "bottom-right", "bottom-left", "top-left"):
             wb = WEBCAM_BOX_PRESETS[name]
             self.assertIsNotNone(wb)
             fb = wb.derive_tight_face()

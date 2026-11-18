@@ -36,21 +36,21 @@ class TestDynamicBalance(unittest.TestCase):
     """Verify dynamic allocation shifts to webcam on high motion and screen on calm."""
 
     def test_plan_dynamic_allocation_tiers(self) -> None:
-        low = plan_dynamic_allocation(mean_mad=0.02, has_emotion_cue=False, avail_slots=16)
+        low = plan_dynamic_allocation(mean_mad=0.065, has_emotion_cue=False, avail_slots=16)
         self.assertEqual(low.tier, "low")
         self.assertGreaterEqual(low.sb_keep, 12)
         self.assertEqual(low.wc_frames, 0)
 
-        low_cue = plan_dynamic_allocation(mean_mad=0.02, has_emotion_cue=True, avail_slots=16)
+        low_cue = plan_dynamic_allocation(mean_mad=0.065, has_emotion_cue=True, avail_slots=16)
         self.assertEqual(low_cue.tier, "low")
         self.assertGreaterEqual(low_cue.sb_keep, 10)
         self.assertEqual(low_cue.wc_frames, 4)
 
-        med = plan_dynamic_allocation(mean_mad=0.065, has_emotion_cue=False, avail_slots=16)
+        med = plan_dynamic_allocation(mean_mad=0.11, has_emotion_cue=False, avail_slots=16)
         self.assertEqual(med.tier, "medium")
         self.assertEqual(med.wc_frames, 6)
 
-        high = plan_dynamic_allocation(mean_mad=0.14, has_emotion_cue=False, avail_slots=16)
+        high = plan_dynamic_allocation(mean_mad=0.15, has_emotion_cue=False, avail_slots=16)
         self.assertEqual(high.tier, "high")
         self.assertLessEqual(high.sb_keep, 6)
         self.assertGreaterEqual(high.wc_frames, 12)

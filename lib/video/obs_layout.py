@@ -11,7 +11,7 @@ from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import WEBCAM_BOX_PRESETS, FaceBox, LayoutSegment, WindowBounds
 
 _CORNER_KEYS: Tuple[str, ...] = (
-    "top-right", "mid-right", "mid-left", "bottom-right", "bottom-left", "top-left",
+    "top-right", "mid-right", "lower-right", "mid-left", "bottom-right", "bottom-left", "top-left",
 )
 _CENTER_PROBE = FaceBox(0.28, 0.08, 0.44, 0.65, "center")
 
@@ -88,12 +88,19 @@ def _has_trackable_face(frames: List[bytes], sample_size: int, box: Optional[Fac
     return _region_mad(frames, sample_size, probe) >= 0.010
 
 
+def _corner_score(clean: List[bytes], sample_size: int, box: FaceBox) -> Tuple[float, float]:
+    """Return (weighted inner-face+corner score, raw corner MAD) for corner ranking."""
+    c_mad = _region_mad(clean, sample_size, box)
+    i_mad = _region_mad(clean, sample_size, box.derive_tight_face())
+    return (0.35 * c_mad + 0.65 * i_mad, c_mad)
+
+
 def _match_fixed_corner(clean: List[bytes], sample_size: int) -> Optional[str]:
-    """Check fixed corner presets first and return dominant corner if trackable."""
-    scores: Dict[str, float] = {k: _region_mad(clean, sample_size, WEBCAM_BOX_PRESETS[k]) for k in _CORNER_KEYS}
-    best_k, best_mad = max(scores.items(), key=lambda kv: kv[1])
-    med_mad = statistics.median(scores.values())
-    if _has_trackable_face(clean, sample_size, WEBCAM_BOX_PRESETS[best_k]) and best_mad >= max(0.012, 1.45 * max(med_mad, 0.002)):
+    """Check fixed corner presets first, weighting inner face motion over edges."""
+    scored = {k: _corner_score(clean, sample_size, WEBCAM_BOX_PRESETS[k]) for k in _CORNER_KEYS}
+    best_k, (best_sc, _) = max(scored.items(), key=lambda kv: kv[1][0])
+    med_sc = statistics.median(v[0] for v in scored.values())
+    if best_sc >= max(0.012, 1.45 * max(med_sc, 0.002)) and _has_trackable_face(clean, sample_size, WEBCAM_BOX_PRESETS[best_k]):
         return best_k
     return None
 

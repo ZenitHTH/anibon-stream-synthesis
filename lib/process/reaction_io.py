@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -11,9 +10,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from common.config import AUDIO_RMS_Z_THRESHOLD, DEFAULT_MODEL, ONSET_SNAP_POST_SEC, ONSET_SNAP_PRE_SEC
 from common.log import log_info, log_ok, log_warn
 from common.time import parse_ts
-from download.ytdlp import ytdlp_cmd
 from process.multimodal_situations import score_item_situations
 from process.reaction_prompt import CoTriggerSignals, ReactionVerifyResult
+from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
 from process.vision_verify import stamp_seconds
 from video.audio_envelope import AudioBurstMetrics, extract_audio_burst_metrics
 from video.motion_types import WindowBounds
@@ -87,35 +86,6 @@ def load_chunk_context(workspace: Path, sec: int) -> str:
             if m and abs((int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))) - sec) <= 25:
                 matched.append(line.strip())
     return " | ".join(matched)[:600]
-
-
-def _resolve_remote_url(workspace: Path, args: Any) -> Optional[str]:
-    """Resolve direct stream URL via yt-dlp -g when --remote-snap is set."""
-    url = getattr(args, "video_url", None)
-    if not url and (workspace / ".video_url").is_file():
-        url = (workspace / ".video_url").read_text(encoding="utf-8").strip()
-    if not url:
-        return None
-    cmd = [*ytdlp_cmd(), "-f", "best[height<=480][ext=mp4]/best[height<=720]/best", "-g", url]
-    try:
-        res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        return res.stdout.strip().splitlines()[0] if (res.returncode == 0 and res.stdout.strip()) else None
-    except (OSError, subprocess.SubprocessError):
-        return None
-
-
-def resolve_reaction_source(workspace: Path, args: Any) -> Optional[Path | str]:
-    """Locate local video file or remote stream URL for reaction verification."""
-    vf = getattr(args, "video_file", None)
-    if vf and Path(vf).is_file():
-        return Path(vf)
-    for name in ("video_360p.mp4", "video.mp4"):
-        cand = Path(workspace) / name
-        if cand.is_file():
-            return cand
-    if getattr(args, "remote_snap", False):
-        return _resolve_remote_url(Path(workspace), args)
-    return None
 
 
 def load_reaction_log(log_path: Path) -> Dict[str, dict]:

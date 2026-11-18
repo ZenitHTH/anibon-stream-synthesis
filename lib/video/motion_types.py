@@ -57,6 +57,7 @@ class FaceBox:
 WEBCAM_BOX_PRESETS: Dict[str, Optional[FaceBox]] = {
     "top-right": FaceBox(0.76, 0.00, 0.24, 0.30, "top-right"),
     "mid-right": FaceBox(0.75, 0.33, 0.25, 0.32, "mid-right"),
+    "lower-right": FaceBox(0.77, 0.55, 0.23, 0.23, "lower-right"),
     "mid-left": FaceBox(0.00, 0.38, 0.22, 0.24, "mid-left"),
     "bottom-right": FaceBox(0.75, 0.70, 0.25, 0.30, "bottom-right"),
     "bottom-left": FaceBox(0.00, 0.70, 0.25, 0.30, "bottom-left"),
