@@ -435,22 +435,17 @@ def sample_chunk_keyframes(
     return results
 
 
-def build_multimodal_content(prompt_text: str, keyframes: List[Tuple[str, Path, str]]) -> List[dict]:
-    """Construct standard OpenAI multi-modal messages content list.
-
-    Pairs each image with explicit text stating its exact timestamp and instructing
-    the model to save/emit that timestamp if the visual marks a key event/shift.
-    """
+def build_multimodal_content(prompt_text: str, keyframes: List[tuple]) -> List[dict]:
+    """Construct OpenAI multimodal payload pairing each image with source role and timestamp."""
     content: List[dict] = [{"type": "text", "text": prompt_text}]
-    for i, (ts_str, _, b64_data) in enumerate(keyframes):
+    for i, item in enumerate(keyframes):
+        ts_str, _, b64_data = item[0], item[1], item[2]
+        label = str(item[3]) if len(item) > 3 and item[3] else "STORYBOARD SCREEN"
         content.append({
             "type": "text",
-            "text": f"[Attached Frame {i+1} at timestamp {ts_str} — Save and use this exact timestamp {ts_str} when referencing this visual event in your output]:"
+            "text": f"[{label} Frame {i+1} at timestamp {ts_str} — Save and use this exact timestamp {ts_str} when referencing this visual event]:",
         })
-        content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{b64_data}"}
-        })
+        content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_data}"}})
     return content
 
 

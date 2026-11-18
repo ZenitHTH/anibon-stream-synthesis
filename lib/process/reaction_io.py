@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from common.config import AUDIO_RMS_Z_THRESHOLD, DEFAULT_MODEL, ONSET_SNAP_POST_SEC, ONSET_SNAP_PRE_SEC
+from common.log import log_cont, log_info, log_ok, log_warn
 from common.time import parse_ts
 from download.ytdlp import ytdlp_cmd
 from process.multimodal_situations import score_item_situations
@@ -74,16 +75,17 @@ def collect_co_triggers(
 
 
 def load_chunk_context(workspace: Path, sec: int) -> str:
-    """Return brief transcript context around sec from workspace/chunks."""
+    """Return full transcript window within +-25s of sec from workspace/chunks."""
     chunks_dir = Path(workspace) / "chunks"
     if not chunks_dir.is_dir():
         return ""
+    matched: List[str] = []
     for cf in sorted(chunks_dir.glob("chunk_*.txt")):
         for line in cf.read_text(encoding="utf-8", errors="replace").splitlines():
-            m = re.match(r"\[(\d{2}):(\d{2}):(\d{2})\]", line)
-            if m and abs((int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))) - sec) <= 45:
-                return line[:240]
-    return ""
+            m = re.match(r"[\[(](\d{2}):(\d{2}):(\d{2})[\])]", line)
+            if m and abs((int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))) - sec) <= 25:
+                matched.append(line.strip())
+    return " | ".join(matched)[:600]
 
 
 def _resolve_remote_url(workspace: Path, args: Any) -> Optional[str]:
@@ -163,3 +165,27 @@ def sync_raw_timestamps(workspace: Path, mapping: Dict[str, str]) -> None:
     lines = raw_ts.read_text(encoding="utf-8").splitlines()
     updated = [mapping.get(line.strip(), line) for line in lines]
     raw_ts.write_text("\n".join(updated) + "\n", encoding="utf-8")
+
+
+def log_reaction_dispatch(header: str, wb_exported: dict, sb_exported: dict) -> None:
+    """Log separated webcam and storyboard image counts and dispatched file paths."""
+    wb_frames = wb_exported.get("frames") or []
+    sb_frames = sb_exported.get("frames") or []
+    log_info("reaction", f"{header} | webcam={len(wb_frames)} storyboard={len(sb_frames)} -> VLM")
+    for f in wb_frames:
+        log_cont(f"webcam[{f.get('ts', '')}] ({f.get('role') or 'frame'}): {f.get('path', '')}")
+    for f in sb_frames:
+        log_cont(f"storyboard[{f.get('ts', '')}] ({f.get('role') or 'screen'}): {f.get('path', '')}")
+    if wb_exported.get("strip_path"):
+        log_cont(f"strip: {wb_exported['strip_path']}")
+
+
+def log_reaction_result(idx: int, stamp: str, res: ReactionVerifyResult) -> None:
+    """Emit aligned reaction verification outcome for a candidate stamp."""
+    prefix = f"[{idx + 1:02d}] {stamp[:8]}"
+    if res.accepted:
+        delta = res.snapped_sec - stamp_seconds(stamp)
+        log_ok("reaction", f"{prefix} -> {res.updated[:8]} ({delta:+d}s) | {res.emotion_class} (conf={res.confidence:.2f})")
+        return
+    reason = res.emotion_class or "unchanged"
+    log_warn("reaction", f"{prefix} | rejected ({reason}, conf={res.confidence:.2f}) -> kept original")

@@ -104,10 +104,25 @@ class TestCommonLog(unittest.TestCase):
         text = out.getvalue()
         self.assertIn("PASS 2 :: WEBCAM REACTION VERIFY", text)
         self.assertIn("10:15:03 | INFO  | reaction   | [01] 00:00:20 | layout=mid-right", text)
-        self.assertIn("| 1 img -> VLM", text)
-        self.assertIn("img[00:00:22] (frame): ", text)
+        self.assertIn("| webcam=1 storyboard=1 -> VLM", text)
+        self.assertIn("webcam[00:00:22] (frame): ", text)
+        self.assertIn("storyboard[00:00:22]", text)
         self.assertIn("10:15:03 | OK    | reaction   | [01] 00:00:20 -> 00:00:22 (+2s) | shock (conf=0.91)", text)
         self.assertIn("10:15:03 | OK    | reaction   | summary: checked=1, snapped=1", text)
+
+    def test_load_chunk_context_collects_full_window_lines(self):
+        from process.reaction_io import load_chunk_context
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "chunks").mkdir()
+            (ws / "chunks" / "chunk_00.txt").write_text(
+                "[00:00:50] บรรทัดหนึ่ง\n[00:01:00] บรรทัดสอง\n[00:01:15] บรรทัดสาม\n",
+                encoding="utf-8",
+            )
+            ctx = load_chunk_context(ws, 60)
+        self.assertIn("บรรทัดหนึ่ง", ctx)
+        self.assertIn("บรรทัดสอง", ctx)
+        self.assertIn("บรรทัดสาม", ctx)
 
 
 if __name__ == "__main__":

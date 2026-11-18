@@ -137,3 +137,38 @@ def export_vlm_keyframes(source: Path | str, spec: FrameExportSpec) -> Dict[str,
         })
     strip = _hstack_strip(paths, spec.out_dir, spec.prefix)
     return {"frames": exported, "strip_path": str(strip) if strip else None}
+
+
+def _midpoint_pick(a: KeyframePick, b: KeyframePick) -> KeyframePick:
+    """Create an intermediate transition keyframe midway between two picks."""
+    mid_abs = round((a.abs_sec + b.abs_sec) * 0.5, 3)
+    mid_rel = round((a.rel_sec + b.rel_sec) * 0.5, 3)
+    return KeyframePick("transition_step", (a.idx + b.idx) // 2, mid_rel, mid_abs, fmt_ts(mid_abs), a.vel_1s, a.pose_shift, a.z_score)
+
+
+def expand_reaction_keyframes(
+    keyframes: Tuple[KeyframePick, ...], max_frames: int = 6
+) -> Tuple[KeyframePick, ...]:
+    """Expand 4 core keyframes with intermediate transition picks up to max_frames."""
+    if len(keyframes) >= max_frames or len(keyframes) < 2:
+        return keyframes[:max_frames]
+    expanded, seen = [], set()
+    for i, kf in enumerate(keyframes):
+        if int(round(kf.abs_sec)) not in seen:
+            expanded.append(kf)
+            seen.add(int(round(kf.abs_sec)))
+        if i + 1 < len(keyframes) and len(expanded) < max_frames and (keyframes[i + 1].abs_sec - kf.abs_sec) >= 2.0:
+            mid = _midpoint_pick(kf, keyframes[i + 1])
+            if int(round(mid.abs_sec)) not in seen:
+                expanded.append(mid)
+                seen.add(int(round(mid.abs_sec)))
+    return tuple(sorted(expanded[:max_frames], key=lambda k: k.abs_sec))
+
+
+def pick_storyboard_keyframes(
+    keyframes: Tuple[KeyframePick, ...], max_frames: int = 3
+) -> Tuple[KeyframePick, ...]:
+    """Select onset, peak, and post-peak picks for full-screen storyboard context."""
+    preferred = [k for k in keyframes if k.role in ("onset_inflection", "peak_delta", "post_peak_state")]
+    chosen = preferred if len(preferred) >= min(len(keyframes), max_frames) else list(keyframes)
+    return tuple(chosen[:max_frames])

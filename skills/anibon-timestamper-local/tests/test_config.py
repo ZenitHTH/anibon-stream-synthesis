@@ -172,16 +172,16 @@ class TestConfig(unittest.TestCase):
     def test_multimodal_batch_and_scene_config_defaults(self):
         import common.config as cfg
         cfg.load_config(override=True)
-        self.assertEqual(cfg.EVAL_BATCH_SIZE, 4096)
+        self.assertEqual(cfg.EVAL_BATCH_SIZE, 12288)
         self.assertEqual(cfg.TOKENS_PER_IMAGE, 260)
         self.assertAlmostEqual(cfg.SCENE_DELTA_THRESHOLD, 0.12)
-        self.assertEqual(cfg.MAX_CHUNK_FRAMES, 6)
+        self.assertEqual(cfg.MAX_CHUNK_FRAMES, 12)
 
     def test_multimodal_frame_budget_defaults_tuned_for_12b_attention(self):
         from common import config
         from process import prompts
         config.load_config(config.SKILL_CONFIG_PATH, override=True)
-        self.assertEqual(config.MAX_CHUNK_FRAMES, 6)
+        self.assertEqual(config.MAX_CHUNK_FRAMES, 12)
         self.assertAlmostEqual(config.SCENE_DELTA_THRESHOLD, 0.12)
         self.assertEqual(prompts._WI_SNIPPET_LIMIT, 1800)
 
@@ -194,7 +194,9 @@ class TestConfig(unittest.TestCase):
         self.assertAlmostEqual(config.FACE_MOTION_THRESHOLD, 0.060)
         self.assertAlmostEqual(config.FACE_SPIKE_RATIO, 2.2)
         self.assertAlmostEqual(config.FACE_POSE_THRESHOLD, 0.075)
-        self.assertEqual(config.FACE_MAX_FRAMES, 4)
+        self.assertEqual(config.FACE_MAX_FRAMES, 6)
+        self.assertEqual(config.REACTION_STORYBOARD_FRAMES, 3)
+        self.assertEqual(config.COMPACT_CHUNK_MAX_LINES, 65)
         self.assertEqual(config.WEBCAM_CORNER, "auto")
         self.assertAlmostEqual(config.AUDIO_RMS_Z_THRESHOLD, 2.5)
         self.assertFalse(config.REACTION_VERIFY)

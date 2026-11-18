@@ -316,6 +316,19 @@ class TestPrompts(unittest.TestCase):
         self.assertIn("REACTION VISUAL ONSET", rec)
         self.assertIn("REACTION VISUAL ONSET", grp)
 
+    def test_coalesce_chunk_items_reduces_line_count_without_dropping_words(self):
+        from process.prompts import coalesce_chunk_items
+        items = [
+            {"start": i * 2, "timestamp": f"00:{(i*2)//60:02d}:{(i*2)%60:02d}", "text": f"คำที่{i}"}
+            for i in range(120)
+        ]
+        lines = coalesce_chunk_items(items, max_lines=65)
+        self.assertLessEqual(len(lines), 65)
+        joined = "\n".join(lines)
+        for i in range(120):
+            self.assertIn(f"คำที่{i}", joined)
+        self.assertTrue(lines[0].startswith("(00:00:00)"))
+
 
 if __name__ == "__main__":
     unittest.main()

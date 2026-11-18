@@ -399,7 +399,7 @@ class TestReactionVerifyTask5(unittest.TestCase):
                     ["00:02:00 - [Reaction] อึ้ง", "00:05:00 - [Reaction] เหวอ"], ws, opts
                 )
             self.assertEqual(len(seen_windows), 2)
-            self.assertEqual(exported_boxes, [b1, b2])
+            self.assertEqual(exported_boxes, [b1, None, b2, None])
 
 
 if __name__ == "__main__":

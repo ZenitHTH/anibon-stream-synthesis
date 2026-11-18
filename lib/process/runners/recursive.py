@@ -475,9 +475,11 @@ def _process_single_recursive_chunk(
 
     prompt_tokens = len(prompt) // 4
     prog = format_progress(ch_num + 1, total_chunks)
-    kf_info = f"{len(keyframes)} img" if keyframes else "0 img"
     chunk["_log_header"] = f"{prog} {chunk_idx}"
-    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | {kf_info} -> running")
+    log_info("chunk", f"{chunk['_log_header']} | ~{prompt_tokens} tok | storyboard={len(keyframes)} webcam=0 -> running")
+    if keyframes:
+        from common.log import log_cont
+        log_cont("storyboard: " + ", ".join(f"{ts}({Path(p).name})" for ts, p, _ in keyframes))
 
     return _execute_and_persist_chunk(
         endpoint=endpoint, model=model, prompt=prompt, keyframes=keyframes, max_tokens=max_tokens,

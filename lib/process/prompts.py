@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple, Set
 
 from common.time import fmt_ts, parse_ts
 from common.timestamps import TAGS
-from common.config import ENTITY_CONTEXT_MAX_TOKENS
+from common.config import COMPACT_CHUNK_MAX_LINES, ENTITY_CONTEXT_MAX_TOKENS
 from common.resources import plugin_root
 from process.signals import get_domain_guidance
 
@@ -347,6 +347,21 @@ def _build_chunk_media_block(chunk: dict, livechat: str = "") -> str:
     )
 
 
+def coalesce_chunk_items(items: list, max_lines: int = COMPACT_CHUNK_MAX_LINES) -> List[str]:
+    """Merge adjacent ASR fragments to reduce line count without dropping spoken words."""
+    clean = [
+        (it.get("timestamp", fmt_ts(it.get("start", 0))), it.get("text", "").strip())
+        for it in items if it.get("text", "").strip()
+    ]
+    if not clean or len(clean) <= max(1, max_lines):
+        return [f"({ts}) {txt}" for ts, txt in clean]
+    per_line = max(2, (len(clean) + max_lines - 1) // max_lines)
+    return [
+        f"({clean[i][0]}) " + " ".join(txt for _, txt in clean[i : i + per_line])
+        for i in range(0, len(clean), per_line)
+    ]
+
+
 def build_recursive_prompt(
     chunk: dict,
     current_topic: str,
@@ -369,8 +384,7 @@ def build_recursive_prompt(
     start_ts, end_ts = _chunk_range(items)
     lang_note = "Thai (ภาษาไทย)" if lang == "th" else "English"
 
-    lines = [f"({it.get('timestamp', fmt_ts(it.get('start', 0)))}) {it.get('text', '').strip()}"
-             for it in items if it.get("text", "").strip()]
+    lines = coalesce_chunk_items(items)
     transcript_block = "\n".join(lines) if lines else "(no transcript data)"
 
     extra_tags, domain_block = get_domain_guidance(signal)
@@ -555,8 +569,7 @@ def build_group_prompt(
         if mb and mb not in collected_media_blocks:
             collected_media_blocks.append(mb)
 
-        lines = [f"({it.get('timestamp', fmt_ts(it.get('start', 0)))}) {it.get('text', '').strip()}"
-                 for it in c_items if it.get("text", "").strip()]
+        lines = coalesce_chunk_items(c_items)
         ch_text = "\n".join(lines) if lines else "(silent or empty)"
 
         meta_info = []

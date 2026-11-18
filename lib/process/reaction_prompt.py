@@ -105,9 +105,11 @@ def build_face_reaction_prompt(
     ctx = context or PromptContext()
     telemetry = _format_telemetry(regime, ctx.triggers)
     rules = _calibration_rules()
-    transcript = f"\nTranscript: {ctx.transcript_ctx[:240]}" if ctx.transcript_ctx else ""
+    transcript = f"\nTranscript: {ctx.transcript_ctx[:600]}" if ctx.transcript_ctx else ""
     return (
         f"Draft timestamp: {stamp}{transcript}\n{telemetry}\n{rules}\n"
+        "Inspect BOTH [WEBCAM ONLY] frames (streamer face/hands/bed for onset+emotion) AND [STORYBOARD SCREEN] frames "
+        "(full game/web screen for what triggered the reaction). Preserve accurate proper nouns from Draft timestamp. "
         "Image 1 is [pre_onset_baseline] within 15s of onset. Return JSON ONLY:\n"
         '{"snapped_ts":"HH:MM:SS","emotion_class":"shock|stunned_freeze|playful_tease|angry|'
         'joy_flex|physical_act|calm_talking|empty_chair_afk","pose_cue":"none|lean_into_cam|'

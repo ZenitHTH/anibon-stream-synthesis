@@ -377,6 +377,17 @@ class TestMultimodal(unittest.TestCase):
         for banned in ("ไฝ", "ซี่โครง", "พาร์เฟต์", "มัทฉะ"):
             self.assertNotIn(banned, EMOTION_REACTION_CUES)
 
+    def test_build_multimodal_content_labels_webcam_vs_storyboard_distinctly(self):
+        from process.multimodal import build_multimodal_content
+        c_board = build_multimodal_content("p", [("00:01:00", Path("/tmp/t.jpg"), "AA==")])
+        self.assertIn("STORYBOARD SCREEN", c_board[1]["text"])
+        c_mix = build_multimodal_content("p", [
+            ("00:01:00", Path("/tmp/w.jpg"), "AA==", "WEBCAM ONLY (peak_delta)"),
+            ("00:01:00", Path("/tmp/s.jpg"), "BB==", "STORYBOARD SCREEN (peak_delta)"),
+        ])
+        self.assertIn("WEBCAM ONLY (peak_delta)", c_mix[1]["text"])
+        self.assertIn("STORYBOARD SCREEN (peak_delta)", c_mix[3]["text"])
+
 
 if __name__ == "__main__":
     unittest.main()
