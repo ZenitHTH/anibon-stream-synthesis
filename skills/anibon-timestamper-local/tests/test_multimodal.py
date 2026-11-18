@@ -367,6 +367,16 @@ class TestMultimodal(unittest.TestCase):
                 im_hud.save(hud_tile)
                 self.assertGreaterEqual(compute_tile_visual_delta(base_tile, hud_tile), 0.06)
 
+    def test_score_item_situations_detects_domain_agnostic_emotion_cues(self):
+        from process.multimodal_situations import EMOTION_REACTION_CUES, score_item_situations
+        self.assertGreaterEqual(score_item_situations("เห้ย เชี่ย อะไรวะเนี่ย แคชอีกแล้ว"), 2.0)
+        self.assertGreaterEqual(score_item_situations("โอ้โห โคตรโหด ขนลุกเลย"), 2.0)
+        self.assertGreaterEqual(score_item_situations("เอาจริงดิ แม่งออกแบบบอสพังจัด"), 2.0)
+        self.assertEqual(score_item_situations("วันนี้อากาศดีครับ รายงานข่าวต่อ"), 0.0)
+        # Ensure single-VOD FGO design nouns are never reintroduced
+        for banned in ("ไฝ", "ซี่โครง", "พาร์เฟต์", "มัทฉะ"):
+            self.assertNotIn(banned, EMOTION_REACTION_CUES)
+
 
 if __name__ == "__main__":
     unittest.main()

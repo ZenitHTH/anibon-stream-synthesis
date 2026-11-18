@@ -1,4 +1,6 @@
 """Zero-dependency JSON configuration loader and management for anibon-timestamper-local."""
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -211,6 +213,35 @@ TOKENS_PER_IMAGE: int = 260
 SCENE_DELTA_THRESHOLD: float = 0.12
 MAX_CHUNK_FRAMES: int = 6
 
+REACTION_MIN_GAP_SEC: int = 45
+ONSET_SNAP_PRE_SEC: int = 20
+ONSET_SNAP_POST_SEC: int = 35
+FACE_MOTION_THRESHOLD: float = 0.060
+FACE_SPIKE_RATIO: float = 2.2
+FACE_POSE_THRESHOLD: float = 0.075
+FACE_MAX_FRAMES: int = 4
+WEBCAM_CORNER: str = "auto"
+AUDIO_RMS_Z_THRESHOLD: float = 2.5
+REACTION_VERIFY: bool = False
+
+
+def _reload_reaction_config() -> None:
+    """Reload reaction onset and webcam grounding configuration constants."""
+    global REACTION_MIN_GAP_SEC, ONSET_SNAP_PRE_SEC, ONSET_SNAP_POST_SEC
+    global FACE_MOTION_THRESHOLD, FACE_SPIKE_RATIO, FACE_POSE_THRESHOLD
+    global FACE_MAX_FRAMES, WEBCAM_CORNER, AUDIO_RMS_Z_THRESHOLD, REACTION_VERIFY
+
+    REACTION_MIN_GAP_SEC = cfg_int("reaction_min_gap_sec", 45)
+    ONSET_SNAP_PRE_SEC = cfg_int("onset_snap_pre_sec", 20)
+    ONSET_SNAP_POST_SEC = cfg_int("onset_snap_post_sec", 35)
+    FACE_MOTION_THRESHOLD = cfg_float("face_motion_threshold", 0.060)
+    FACE_SPIKE_RATIO = cfg_float("face_spike_ratio", 2.2)
+    FACE_POSE_THRESHOLD = cfg_float("face_pose_threshold", 0.075)
+    FACE_MAX_FRAMES = cfg_int("face_max_frames", 4)
+    WEBCAM_CORNER = cfg_str("webcam_corner", "auto")
+    AUDIO_RMS_Z_THRESHOLD = cfg_float("audio_rms_z_threshold", 2.5)
+    REACTION_VERIFY = cfg_bool("reaction_verify", False)
+
 
 def reload_config() -> None:
     """Reload all module constants from active _CONFIG and os.environ."""
@@ -264,6 +295,7 @@ def reload_config() -> None:
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
     SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
     MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 6)
+    _reload_reaction_config()
 
 
 # Initialize from default config.json

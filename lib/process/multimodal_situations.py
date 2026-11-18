@@ -24,13 +24,23 @@ TOPIC_SHIFT_CUES: Tuple[str, ...] = (
     "เปิดตัว", "เปลี่ยนเกม",
 )
 
+EMOTION_REACTION_CUES: Tuple[str, ...] = (
+    "เห้ย", "เชี่ย", "แม่ง", "ว้าว", "โอ้โห", "ห๊ะ", "ตกใจ", "ขนลุก",
+    "ขิง", "เกลือ", "เอาจริงดิ", "โคตรโหด", "หัวร้อน", "เดือดจัด",
+    "ฟิวส์ขาด", "บ้าไปแล้ว", "พัง", "บัค",
+)
+
 SOFT_DEICTIC_CUES: Tuple[str, ...] = (
     "อันนี้", "ตัวนี้", "แบบนี้", "หน้าตา", "ใครเนี่ย", "อะไรเนี่ย",
     "โอ้โห", "เฮ้ย", "โห", "ดูดิ", "เนี่ย",
 )
 
 STRONG_VISUAL_CUES: Tuple[str, ...] = (
-    DEICTIC_CUES + BOSS_COMBAT_CUES + GEAR_GACHA_UI_CUES + TOPIC_SHIFT_CUES
+    DEICTIC_CUES
+    + BOSS_COMBAT_CUES
+    + GEAR_GACHA_UI_CUES
+    + TOPIC_SHIFT_CUES
+    + EMOTION_REACTION_CUES
 )
 
 INCOMPLETE_CONTEXT_CUES: Tuple[str, ...] = STRONG_VISUAL_CUES + SOFT_DEICTIC_CUES
@@ -40,6 +50,7 @@ _WEIGHTED_GROUPS: Tuple[Tuple[Tuple[str, ...], float], ...] = (
     (BOSS_COMBAT_CUES, 2.5),
     (GEAR_GACHA_UI_CUES, 2.0),
     (TOPIC_SHIFT_CUES, 2.0),
+    (EMOTION_REACTION_CUES, 2.0),
     (SOFT_DEICTIC_CUES, 1.0),
 )
 

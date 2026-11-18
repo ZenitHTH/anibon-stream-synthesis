@@ -185,6 +185,20 @@ class TestConfig(unittest.TestCase):
         self.assertAlmostEqual(config.SCENE_DELTA_THRESHOLD, 0.12)
         self.assertEqual(prompts._WI_SNIPPET_LIMIT, 1800)
 
+    def test_reaction_grounding_config_defaults(self):
+        from common import config
+        config.load_config(config.SKILL_CONFIG_PATH, override=True)
+        self.assertEqual(config.REACTION_MIN_GAP_SEC, 45)
+        self.assertEqual(config.ONSET_SNAP_PRE_SEC, 20)
+        self.assertEqual(config.ONSET_SNAP_POST_SEC, 35)
+        self.assertAlmostEqual(config.FACE_MOTION_THRESHOLD, 0.060)
+        self.assertAlmostEqual(config.FACE_SPIKE_RATIO, 2.2)
+        self.assertAlmostEqual(config.FACE_POSE_THRESHOLD, 0.075)
+        self.assertEqual(config.FACE_MAX_FRAMES, 4)
+        self.assertEqual(config.WEBCAM_CORNER, "auto")
+        self.assertAlmostEqual(config.AUDIO_RMS_Z_THRESHOLD, 2.5)
+        self.assertFalse(config.REACTION_VERIFY)
+
 
 if __name__ == "__main__":
     unittest.main()
