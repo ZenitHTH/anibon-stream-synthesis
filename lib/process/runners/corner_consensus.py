@@ -5,13 +5,14 @@ from collections import Counter
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Tuple
 
-from video.chunk_webcam_reprobe import face_tone_fraction
+from video.chunk_webcam_reprobe import face_tone_fraction, green_chat_fraction
 from video.dynamic_balance import decode_tile_box
 from video.face_motion_metrics import compute_frame_delta
 from video.motion_types import FaceBox, LayoutSegment, WindowBounds
 from video.obs_layout import (
     _crop_rgb_box,
     _probe_full_frames,
+    _region_mad,
     detect_layout_cuts,
     detect_obs_layout,
     split_around_cuts,
@@ -23,6 +24,7 @@ _NEARBY_SB_WINDOW_SEC = 90.0
 _CHAT_OVERLAP_WEIGHT = 0.65
 _SB_STEADY_CAP = 0.19
 _CENTER_CAM_BOX = FaceBox(0.22, 0.0, 0.56, 0.68, "fullscreen")
+_CENTER_CAM_TONE_FLOOR = 0.25
 
 
 def _parse_hhmmss(label: str) -> Optional[float]:
@@ -72,19 +74,18 @@ def _mean_color_drift(means: Sequence[Tuple[float, float, float]]) -> float:
 
 def _pixel_tone_stats(raws: Sequence[bytes]) -> Tuple[float, float, float]:
     """Compute (face_tone_fraction, color_drift, green_chat_fraction) across tile RGB buffers."""
-    face_ratios, means, green_hits, total_px = [], [], 0, 0
+    face_ratios, green_ratios, means = [], [], []
     for rgb in raws:
         n = len(rgb) // 3
         if n < 16:
             continue
         rs, gs, bs = rgb[0 : n * 3 : 3], rgb[1 : n * 3 : 3], rgb[2 : n * 3 : 3]
-        green_hits += sum(1 for r, g, b in zip(rs, gs, bs) if g > r + 10 and g > b + 10)
-        total_px += n
         face_ratios.append(face_tone_fraction(rgb))
+        green_ratios.append(green_chat_fraction(rgb))
         means.append((sum(rs) / n, sum(gs) / n, sum(bs) / n))
     if not means:
         return 0.0, 1.0, 0.0
-    return sum(face_ratios) / len(face_ratios), _mean_color_drift(means), green_hits / max(1, total_px)
+    return sum(face_ratios) / len(face_ratios), _mean_color_drift(means), sum(green_ratios) / len(green_ratios)
 
 
 def _score_persistent_box(sb_frames: Sequence[tuple], box: FaceBox, fallback_mad: float) -> float:
@@ -102,10 +103,9 @@ def _score_persistent_box(sb_frames: Sequence[tuple], box: FaceBox, fallback_mad
 
 def _maybe_center_fallback(
     clean: Sequence[bytes],
-    sb_frames: Sequence[tuple],
     best: Tuple[FaceBox, float],
 ) -> Tuple[FaceBox, float]:
-    """Promote fullscreen center crop when chosen corner shows curtain/blank and center has face."""
+    """Promote fullscreen center crop when chosen corner lacks face and center shows active person."""
     box, score = best
     if not clean or len(clean[0]) < 48 * 48 * 3:
         return best
@@ -115,10 +115,10 @@ def _maybe_center_fallback(
         return best
     center_inner = _CENTER_CAM_BOX.derive_tight_face()
     center_tone = sum(face_tone_fraction(_crop_rgb_box(f, 48, center_inner)) for f in clean) / len(clean)
-    if center_tone < 0.06:
-        return best
-    center_score = _score_persistent_box(sb_frames, _CENTER_CAM_BOX, score)
-    return (_CENTER_CAM_BOX, max(score, center_score)) if center_score > score else best
+    center_mad = _region_mad(list(clean), 48, center_inner)
+    if center_tone >= _CENTER_CAM_TONE_FLOOR and center_mad >= 0.008:
+        return _CENTER_CAM_BOX, max(score, 0.25)
+    return best
 
 
 def _probe_best_active(
@@ -135,7 +135,7 @@ def _probe_best_active(
     active = [(item[2], _score_persistent_box(sb_frames, item[2], item[1])) for item in rank_fn(clean, sb_frames) if item[0]]
     if not active:
         return None
-    best_box, best_score = _maybe_center_fallback(clean, sb_frames, max(active, key=lambda item: item[1]))
+    best_box, best_score = _maybe_center_fallback(clean, max(active, key=lambda item: item[1]))
     return len(active), best_score, best_box
 
 
