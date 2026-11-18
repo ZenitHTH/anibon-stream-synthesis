@@ -450,12 +450,16 @@ def build_multimodal_content(prompt_text: str, keyframes: List[tuple]) -> List[d
 
 
 def _post_multimodal(url: str, payload: dict, headers: dict, timeout: int) -> str:
-    """Send multimodal JSON payload and return assistant message text."""
+    """Send multimodal JSON payload, log think telemetry, and return clean text."""
+    import time
+    from common.lm_think_log import record_lm_response
+
+    t0 = time.monotonic()
     req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-    msg = data["choices"][0]["message"]
-    return msg.get("content") or msg.get("reasoning_content") or ""
+    res = record_lm_response(data, "multimodal", str(payload.get("model") or ""), time.monotonic() - t0)
+    return res.clean_content or res.think_text or ""
 
 
 def call_multimodal(

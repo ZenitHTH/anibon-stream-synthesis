@@ -30,6 +30,7 @@ from common.config import (
     MAX_RETRIES,
 )
 from common.log import log_info, log_ok, log_warn
+from common.lm_think_log import analyze_lm_response, record_lm_response
 
 SYSTEM_PROMPT = """\
 You are an expert livestream editor for Thai livestreams by Pu Boat (Anibon Official).
@@ -336,20 +337,8 @@ def _extract_content_or_reasoning(content: str, reasoning: Optional[str]) -> str
 
 def extract_chat_response(data: Dict[str, Any]) -> str:
     """Extract content from either OpenAI choices or LM Studio output array."""
-    if "choices" in data and data["choices"]:
-        msg = data["choices"][0]["message"]
-        content = msg.get("content", "").strip()
-        reasoning = msg.get("reasoning_content") or msg.get("reasoning")
-        return _extract_content_or_reasoning(content, reasoning)
-
-    if "output" in data:
-        msgs = [item.get("content", "") for item in data["output"] if item.get("type") == "message"]
-        rsns = [item.get("content", "") for item in data["output"] if item.get("type") == "reasoning"]
-        content = "\n".join(msgs).strip()
-        reasoning = "\n".join(rsns).strip() if rsns else None
-        return _extract_content_or_reasoning(content, reasoning)
-
-    return ""
+    res = analyze_lm_response(data)
+    return _extract_content_or_reasoning(res.clean_content, res.think_text)
 
 
 def _prepare_request(
@@ -382,11 +371,20 @@ def _prepare_request(
     return urllib.request.Request(endpoint, data=data_bytes, headers=headers, method="POST")
 
 
+def _request_model_name(req: urllib.request.Request) -> str:
+    try:
+        return str(json.loads((req.data or b"{}").decode("utf-8")).get("model") or "")
+    except Exception:
+        return ""
+
+
 def _execute_http_call(req: urllib.request.Request, timeout: int) -> str:
-    """Execute request and parse message or reasoning response."""
+    """Execute request, log think/token telemetry, and parse message response."""
+    t0 = time.monotonic()
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-    return extract_chat_response(data)
+    res = record_lm_response(data, "text", _request_model_name(req), time.monotonic() - t0)
+    return _extract_content_or_reasoning(res.clean_content, res.think_text)
 
 
 def _try_fallback_native_chat(
@@ -487,7 +485,8 @@ def call_vision(
     """Call local LM Studio vision endpoint with an image file."""
     data_uri = encode_image_base64(image_path)
     payload = build_vision_payload(model, prompt, data_uri, max_tokens, temperature)
-    data_bytes = json.dumps(payload).encode("utf-8")
+    if "tokenme" not in endpoint.lower():
+        payload["reasoning_effort"] = "none"
     api_key = api_key or os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY") or os.environ.get("OPENAI_API_KEY")
     headers = {
         "Content-Type": "application/json",
@@ -495,18 +494,19 @@ def call_vision(
     }
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
-    req = urllib.request.Request(
-        endpoint,
-        data=data_bytes,
-        headers=headers,
-        method="POST",
-    )
 
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-    msg = data["choices"][0]["message"]
-    content = msg.get("content", "").strip()
-    reasoning = msg.get("reasoning_content") or msg.get("reasoning")
-    if not content and reasoning:
-        content = reasoning.strip()
-    return content
+    def _send(body: Dict[str, Any]) -> str:
+        t0 = time.monotonic()
+        req = urllib.request.Request(endpoint, data=json.dumps(body).encode("utf-8"), headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        res = record_lm_response(data, "vision", model, time.monotonic() - t0)
+        return _extract_content_or_reasoning(res.clean_content, res.think_text)
+
+    try:
+        return _send(payload)
+    except urllib.error.HTTPError as e:
+        if e.code == 400 and "reasoning_effort" in payload:
+            payload.pop("reasoning_effort", None)
+            return _send(payload)
+        raise

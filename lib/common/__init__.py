@@ -44,6 +44,10 @@ from common.lmstudio import (
     resolve_endpoint,
     resolve_model,
 )
+from common.lm_think_log import (
+    configure_lm_think_logging,
+    summarize_lm_trace,
+)
 from common.log import (
     format_duration,
     format_progress,
@@ -102,6 +106,8 @@ __all__ = [
     # LM Studio
     "call_local",
     "call_vision",
+    "configure_lm_think_logging",
+    "summarize_lm_trace",
     "resolve_endpoint",
     "resolve_model",
     "get_loaded_models",

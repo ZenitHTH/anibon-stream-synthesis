@@ -57,6 +57,7 @@ from interface import (
     call_vision,
     cfg_bool,
     clean_workspace_chunks,
+    configure_lm_think_logging,
     detect_signals_for_chunks,
     detect_transcript_source,
     discover_chunks,
@@ -87,6 +88,7 @@ from interface import (
     sample_chunk_keyframes,
     sanitize_and_audit_timestamps,
     save_entity_glossary,
+    summarize_lm_trace,
     write_worker_pid,
 )
 
@@ -177,8 +179,9 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument(
         "--webcam-corner",
         default=WEBCAM_CORNER,
-        choices=["auto", "top-right", "mid-right", "mid-left", "bottom-right", "bottom-left", "top-left", "fullscreen", "none"],
+        choices=["auto", "top-right", "mid-right", "lower-right", "mid-left", "bottom-right", "bottom-left", "top-left", "fullscreen", "none"],
     )
+    ap.add_argument("--log-think", action="store_true", help="Print LM thinking/token metrics live in addition to lm_think_trace.jsonl")
     ap.add_argument("--face-threshold", type=float, default=FACE_MOTION_THRESHOLD)
     ap.add_argument("--remote-snap", action="store_true")
     ap.add_argument("--multimodal-chunks", "--multimodal", dest="multimodal_chunks", action="store_true", default=default_multimodal)
@@ -398,6 +401,10 @@ class _PipelineContext:
 
 def _run_active_pipeline(ctx: _PipelineContext) -> None:
     """Prepare mappings, signals, glossary, and dispatch runner under PID tracking."""
+    configure_lm_think_logging(
+        ctx.workspace / "lm_think_trace.jsonl",
+        verbose=bool(getattr(ctx.args, "log_think", False)),
+    )
     write_worker_pid(ctx.workspace)
     try:
         mappings, _, is_yt_auto = _prepare_transcript_mappings(ctx.workspace)
@@ -412,6 +419,13 @@ def _run_active_pipeline(ctx: _PipelineContext) -> None:
             signals_map, mappings, ctx.world_identity_dir, glossary,
         )
     finally:
+        stats = summarize_lm_trace(ctx.workspace / "lm_think_trace.jsonl")
+        if stats.get("calls"):
+            log_info(
+                "lm-think",
+                f"summary: calls={stats['calls']}, comp={stats['completion_tokens']} tok ({stats['tok_per_sec']} tok/s), "
+                f"think={stats['reasoning_tokens']} tok, errs={stats['errors'] or 'none'}",
+            )
         remove_worker_pid(ctx.workspace)
 
 
