@@ -7,7 +7,7 @@ import struct
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from video.motion_types import WindowBounds
 
@@ -78,20 +78,48 @@ def compute_audio_envelope_from_pcm(
     return _score_rms_bins(bins, bin_sec, z_thresh=2.5)
 
 
-def extract_audio_burst_metrics(
-    source: Path | str, bounds: WindowBounds, z_thresh: float = 2.5
-) -> AudioBurstMetrics:
-    """Decode window audio as 8kHz mono s16le via ffmpeg and score RMS bursts."""
+def _decode_mono_pcm(source: Path | str, bounds: WindowBounds) -> bytes:
+    """Decode bounded audio window as 8kHz mono s16le via ffmpeg."""
     src = str(source)
     if not src.startswith(("http://", "https://")) and not Path(src).is_file():
-        return AudioBurstMetrics(0.0, None, None, False)
+        return b""
     dur = max(0.5, bounds.end_sec - bounds.start_sec)
     cmd = ["ffmpeg", "-v", "error", "-ss", f"{max(0.0, bounds.start_sec):.3f}", "-i", src,
            "-t", f"{dur:.3f}", "-vn", "-ac", "1", "-ar", "8000", "-f", "s16le", "-"]
     try:
         res = subprocess.run(cmd, capture_output=True, timeout=45)
+        return res.stdout if res.returncode == 0 else b""
     except (OSError, subprocess.SubprocessError):
+        return b""
+
+
+def extract_chunk_rms_bins(
+    source: Path | str, bounds: WindowBounds, bin_sec: float = 1.0
+) -> List[Tuple[int, float, float]]:
+    """Return (abs_sec, rms_z_score, onset_jump_z) across bounds for peak finding."""
+    pcm = _decode_mono_pcm(source, bounds)
+    bins = _pcm_rms_bins(pcm, 8000, bin_sec)
+    if len(bins) < 3:
+        return []
+    med = statistics.median(bins)
+    mad = statistics.median([abs(v - med) for v in bins])
+    sigma = max(1.4826 * mad, 0.005)
+    base = int(round(max(0.0, bounds.start_sec)))
+    return [
+        (
+            base + int(round(i * bin_sec)),
+            (val - med) / sigma,
+            max(0.0, val - (bins[i - 1] if i > 0 else val)) / sigma,
+        )
+        for i, val in enumerate(bins)
+    ]
+
+
+def extract_audio_burst_metrics(
+    source: Path | str, bounds: WindowBounds, z_thresh: float = 2.5
+) -> AudioBurstMetrics:
+    """Decode window audio as 8kHz mono s16le via ffmpeg and score RMS bursts."""
+    pcm = _decode_mono_pcm(source, bounds)
+    if not pcm:
         return AudioBurstMetrics(0.0, None, None, False)
-    if res.returncode != 0 or not res.stdout:
-        return AudioBurstMetrics(0.0, None, None, False)
-    return _score_rms_bins(_pcm_rms_bins(res.stdout, 8000, 0.5), 0.5, z_thresh)
+    return _score_rms_bins(_pcm_rms_bins(pcm, 8000, 0.5), 0.5, z_thresh)
