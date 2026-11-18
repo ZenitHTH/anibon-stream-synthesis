@@ -85,6 +85,19 @@ class TestLiveCornerAndPeaks(unittest.TestCase):
             self.assertIn(15275, expanded)
             self.assertIn(15277, expanded)
 
+    def test_grass_edge_webcam_accepted_while_livechat_rejected_and_islands_kept(self) -> None:
+        from video.chunk_webcam_reprobe import _select_runs_to_check
+
+        grass_cam = CornerStats(WEBCAM_BOX_PRESETS["lower-right"], mad=0.027, tone=0.28, green=0.19, bright=0.0, blue_ui=0.0)
+        chat_bar = CornerStats(WEBCAM_BOX_PRESETS["bottom-right"], mad=0.02, tone=0.05, green=0.50, bright=0.0, blue_ui=0.05)
+        self.assertTrue(is_live_webcam_stats(grass_cam))
+        self.assertFalse(is_live_webcam_stats(chat_bar))
+        skin = bytes([180, 150, 130] * (48 * 48))
+        green = bytes([40, 200, 40] * (48 * 48))
+        bufs = [green, green, skin, green, green]
+        selected = _select_runs_to_check([(0, 2), (2, 3), (3, 5)], [0.0, 0.2, 0.2, 0.0], bufs)
+        self.assertEqual(selected, [(0, 2), (2, 3), (3, 5)])
+
 
 if __name__ == "__main__":
     unittest.main()

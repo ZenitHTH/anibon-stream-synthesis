@@ -18,7 +18,7 @@ _DEAD_MOTION_CEIL = 0.006
 _BLANK_FACE_TONE_CEIL = 0.095
 _CHAT_GREEN_MEAN_FLOOR = 0.05
 _CHAT_GREEN_MAX_FLOOR = 0.06
-_MAX_RUN_REPROBES = 4
+_MAX_RUN_REPROBES = 6
 
 
 @dataclass(frozen=True)
@@ -35,12 +35,7 @@ def _same_box(a: Optional[FaceBox], b: Optional[FaceBox]) -> bool:
     """Return True when two FaceBox regions match within 2% tolerance."""
     if a is None or b is None:
         return a is b
-    return (
-        abs(a.x - b.x) < 0.02
-        and abs(a.y - b.y) < 0.02
-        and abs(a.w - b.w) < 0.02
-        and abs(a.h - b.h) < 0.02
-    )
+    return all(abs(getattr(a, k) - getattr(b, k)) < 0.02 for k in ("x", "y", "w", "h"))
 
 
 def _frame_sec(frame: Tuple[str, Path, str, str], fallback: int) -> int:
@@ -155,9 +150,12 @@ def _select_runs_to_check(
     deltas: Sequence[float],
     bufs: Sequence[bytes],
 ) -> List[Tuple[int, int]]:
-    """Pick only broken, dead, or chat-covered runs so valid webcam segments stay intact."""
-    bad = [r for r in runs if _run_needs_reprobe(bufs, deltas, r)]
-    ranked = sorted(bad, key=lambda r: (-(r[1] - r[0]), r[0]))
+    """Pick broken runs plus isolated 1-frame islands next to them."""
+    bad_idx = {i for i, r in enumerate(runs) if _run_needs_reprobe(bufs, deltas, r)}
+    if not bad_idx:
+        return []
+    keep = set(bad_idx) | {i for i, r in enumerate(runs) if r[1] - r[0] == 1 and ((i - 1) in bad_idx or (i + 1) in bad_idx)}
+    ranked = sorted((runs[i] for i in keep), key=lambda r: (-(r[1] - r[0]), r[0]))
     return sorted(ranked[:_MAX_RUN_REPROBES], key=lambda r: r[0])
 
 

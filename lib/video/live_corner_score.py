@@ -10,6 +10,8 @@ from video.pixel_tones import face_tone_fraction, green_chat_fraction
 
 _MIN_LIVE_TONE: float = 0.13
 _MAX_CHAT_GREEN: float = 0.06
+_MAX_GRASS_GREEN: float = 0.22
+_MIN_GRASS_FACE_TONE: float = 0.20
 _MAX_BRIGHT_UI: float = 0.25
 _MAX_BLUE_UI: float = 0.22
 _MIN_LIVE_MAD: float = 0.004
@@ -67,10 +69,22 @@ def measure_corner_stats(clean: Sequence[bytes], box: FaceBox, size: int = 48) -
     return CornerStats(box, mad, tone, green, bright, blue_ui)
 
 
+def _passes_green_check(st: CornerStats) -> bool:
+    """Reject LiveChat bars while tolerating green game map grass behind a crisp face."""
+    if st.green < _MAX_CHAT_GREEN:
+        return True
+    return (
+        st.green < _MAX_GRASS_GREEN
+        and st.tone >= _MIN_GRASS_FACE_TONE
+        and st.tone > 1.2 * st.green
+        and st.bright < 0.05
+    )
+
+
 def is_live_webcam_stats(st: CornerStats) -> bool:
     """Return True when stats match a live talking-head webcam rather than game UI."""
     return (
-        st.green < _MAX_CHAT_GREEN
+        _passes_green_check(st)
         and st.bright < _MAX_BRIGHT_UI
         and st.blue_ui < _MAX_BLUE_UI
         and st.tone >= _MIN_LIVE_TONE
@@ -80,7 +94,7 @@ def is_live_webcam_stats(st: CornerStats) -> bool:
 
 def score_live_corner(st: CornerStats) -> float:
     """Score candidate live corner favoring skin purity without letting UI/motion blow up."""
-    purity = max(0.0, 1.0 - 2.0 * st.bright - 2.0 * st.blue_ui)
+    purity = max(0.0, 1.0 - 1.5 * st.green - 2.0 * st.bright - 2.0 * st.blue_ui)
     return min(st.tone, 0.30) * purity + min(st.mad, 0.04) * 0.3
 
 
