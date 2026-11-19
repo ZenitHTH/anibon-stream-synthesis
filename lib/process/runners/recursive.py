@@ -152,6 +152,8 @@ def _format_garbled_line(gn: str, chunk_idx: str) -> Optional[str]:
     if not (isinstance(gn, str) and gn.strip()):
         return None
     val = gn.strip()
+    if "[" in val or "]" in val:
+        return None
     if "@" in val and not val.startswith('"'):
         tok, rest = val.split("@", 1)
         if "->" in tok:
@@ -168,10 +170,10 @@ def _save_chunk_garbled_notes(res: dict, workspace: Path, chunk_idx: str) -> Non
     if not (isinstance(garbled_notes, list) and garbled_notes):
         return
 
-    raw_notes_dir = workspace / "garbled_notes_raw"
-    raw_notes_dir.mkdir(exist_ok=True)
     gn_lines = [line for gn in garbled_notes if (line := _format_garbled_line(gn, chunk_idx))]
     if gn_lines:
+        raw_notes_dir = workspace / "garbled_notes_raw"
+        raw_notes_dir.mkdir(exist_ok=True)
         (raw_notes_dir / f"{chunk_idx}.txt").write_text(
             "GARBLED_NOTES:\n" + "\n".join(gn_lines) + "\n",
             encoding="utf-8",

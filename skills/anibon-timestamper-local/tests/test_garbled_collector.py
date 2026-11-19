@@ -183,6 +183,21 @@ class TestGarbledCollector(unittest.TestCase):
                 count = resolve_garbled_notes(ws, notes_path, endpoint="http://127.0.0.1:1234", model="test")
             self.assertEqual(count, 2)
 
+    def test_bracketed_prompt_markers_rejected_by_garbled_pipeline(self):
+        from process.garbled_rules import is_valid_candidate_token
+        from process.runners.recursive import _format_garbled_line, _save_chunk_garbled_notes
+
+        token = "อื[STORYBOARD SCREEN Frame 4 at timestamp 00:22:23]"
+        self.assertFalse(is_valid_candidate_token(token))
+        self.assertFalse(is_valid_candidate_token("อื[FRAME 1]"))
+        self.assertIsNone(_format_garbled_line(f'"{token}" @ 00:22:28', "chunk_09"))
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            _save_chunk_garbled_notes(
+                {"garbled_notes": [f'"{token}" @ 00:22:28']}, ws, "chunk_09"
+            )
+            self.assertFalse((ws / "garbled_notes_raw").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

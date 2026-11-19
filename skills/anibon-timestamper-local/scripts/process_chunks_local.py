@@ -436,7 +436,8 @@ def main() -> None:
     ap = build_argument_parser()
     args = ap.parse_args()
 
-    workspace = Path(args.workspace)
+    workspace = Path(args.workspace).expanduser()
+    args.workspace = str(workspace)
     if not workspace.exists():
         log_error("init", f"workspace not found: {workspace}")
         sys.exit(1)

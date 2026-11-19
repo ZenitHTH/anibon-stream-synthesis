@@ -93,6 +93,19 @@ class TestTimestamps(unittest.TestCase):
         parsed = parse_timestamps(raw, max_stamps=4)
         self.assertEqual(len(parsed), 2)
 
+    def test_write_and_reload_raw_timestamps_strip_leading_speaker(self):
+        import tempfile
+        from pathlib import Path
+        from process.assembly import _reload_cleaned_raw_timestamps, _write_raw_timestamps
+
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            raw_path = _write_raw_timestamps(ws, ["00:14:58 - [Reaction] ปู่โบ๊ตสูดหายใจแรง"])
+            self.assertEqual(raw_path.read_text(encoding="utf-8"), "00:14:58 - [Reaction] สูดหายใจแรง")
+            raw_path.write_text("00:14:58 - [Reaction] ปู่โบ๊ตสูดหายใจแรง\n", encoding="utf-8")
+            reloaded = _reload_cleaned_raw_timestamps(ws, [])
+            self.assertEqual(reloaded, ["00:14:58 - [Reaction] สูดหายใจแรง"])
+
 
 if __name__ == "__main__":
     unittest.main()

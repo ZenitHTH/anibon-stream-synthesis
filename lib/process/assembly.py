@@ -15,6 +15,7 @@ from common.time import parse_ts as ts_to_sec
 from download.transcript_source import is_youtube_auto_transcript
 from process.audit import audit_timestamps_against_glossary
 from process.byte_cap import enforce_byte_cap, enforce_line_cap
+from process.caveman import clean_caveman_text
 from process.garbled_collector import run_garbled_collector
 from process.parity_gates import run_mood_validation, run_parity_gates
 from process.summarizer import (
@@ -28,9 +29,10 @@ from process.vision_verify import apply_vision_verify
 
 def _write_raw_timestamps(workspace: Path, deduped: List[str]) -> Path:
     """Save raw deduplicated timestamp lines to all_timestamps.txt."""
+    cleaned = [clean_caveman_text(line) for line in deduped]
     raw_ts = workspace / "all_timestamps.txt"
-    raw_ts.write_text("\n".join(deduped), encoding="utf-8")
-    log_ok("assemble", f"wrote raw timestamps ({len(deduped)}) -> {raw_ts}")
+    raw_ts.write_text("\n".join(cleaned), encoding="utf-8")
+    log_ok("assemble", f"wrote raw timestamps ({len(cleaned)}) -> {raw_ts}")
     return raw_ts
 
 
@@ -41,7 +43,11 @@ def _reload_cleaned_raw_timestamps(workspace: Path, fallback: List[str]) -> List
     if not raw_ts.is_file():
         return fallback
     compiled = load_replacements()
-    lines = [clean_text(l.strip(), compiled) for l in raw_ts.read_text(encoding="utf-8").splitlines() if l.strip()]
+    lines = [
+        clean_caveman_text(clean_text(l.strip(), compiled))
+        for l in raw_ts.read_text(encoding="utf-8").splitlines()
+        if l.strip()
+    ]
     if lines:
         raw_ts.write_text("\n".join(lines), encoding="utf-8")
         return lines

@@ -28,6 +28,8 @@ Heuristic verdicts:
 Peak windows are computed by sliding a BUCKET seconds bucket over the sorted
 message timestamps and finding buckets with the most laugh markers.
 """
+from __future__ import annotations
+
 import argparse
 import json
 import re

@@ -119,7 +119,7 @@ def cmd_status(workspace: Path) -> int:
 def main(argv: Optional[List[str]] = None) -> int:
     """CLI entry point for local timestamper pause/continue/status control."""
     args = build_argument_parser().parse_args(argv)
-    workspace = Path(args.workspace)
+    workspace = Path(args.workspace).expanduser()
     if not workspace.is_dir():
         print(f"ERROR: workspace not found: {workspace}", file=sys.stderr)
         return 1

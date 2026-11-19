@@ -328,6 +328,25 @@ class TestControlChunksCLI(unittest.TestCase):
         self.assertEqual(observed_pid.get("during_run"), os.getpid())
         self.assertIsNone(read_worker_pid(self.ws))
 
+    def test_cli_entrypoints_expand_tilde_workspace(self):
+        ws = self.ws / "youtube_tilde_workspace"
+        (ws / "chunks").mkdir(parents=True)
+        (ws / "chunks" / "chunk_00.txt").write_text("[00:00:00] hi\n", encoding="utf-8")
+        with patch.dict(os.environ, {"HOME": str(self.ws)}):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                rc_status = ccl.main(["~/youtube_tilde_workspace", "status"])
+            self.assertEqual(rc_status, 0)
+            with patch.object(pcl, "resolve_endpoint", return_value="http://localhost:1234/v1/chat/completions"), \
+                 patch.object(pcl, "resolve_model", return_value="test-model"), \
+                 patch.object(pcl, "ensure_mood_555"), \
+                 patch.object(pcl, "_prepare_transcript_mappings", return_value=([], [], False)), \
+                 patch.object(pcl, "_load_or_detect_signals", return_value={}), \
+                 patch.object(pcl, "_load_or_discover_glossary", return_value={}), \
+                 patch.object(pcl, "_dispatch_pipeline_mode"), \
+                 patch("sys.argv", ["process_chunks_local.py", "~/youtube_tilde_workspace", "--no-knowledge-reader"]):
+                pcl.main()
+
 
 if __name__ == "__main__":
     unittest.main()

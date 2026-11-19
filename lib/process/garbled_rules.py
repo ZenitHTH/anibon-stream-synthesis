@@ -61,6 +61,8 @@ def is_valid_candidate_token(garbled: str) -> bool:
     """Check if a garbled token is safe to consider for regex replacement."""
     if not (MIN_GARBLED_LEN <= len(garbled) <= MAX_GARBLED_LEN):
         return False
+    if "[" in garbled or "]" in garbled:
+        return False
     if garbled in BLOCKED_THAI_WORDS:
         return False
     if garbled.isascii() and len(garbled) < MIN_ASCII_GARBLED_LEN:
