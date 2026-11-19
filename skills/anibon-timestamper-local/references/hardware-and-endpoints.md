@@ -17,6 +17,7 @@ Load payload (`POST http://100.115.25.30:1234/api/v1/models/load`):
 ```json
 {
   "model": "google/gemma-4-12b-qat",
+  "parallel": 1,
   "context_length": 24576,
   "eval_batch_size": 1024,
   "flash_attention": true,
@@ -50,7 +51,7 @@ Controlled A/B across 5 multimodal chunks (`22.5 min`, 25 Storyboard keyframes, 
 
 - **Endpoint Auto-Probe**: `lib/common/lmstudio.py` (`resolve_endpoint()`) probes `http://100.115.25.30:1234` (1.0s TCP socket) and automatically falls back to `http://127.0.0.1:1234` when unreachable.
 - **TokenMe & OpenAI-Compatible Remotes**: Target `--endpoint https://api.tokenme.limited/api/v1/chat/completions` (or `api.tokenme.limited`) with `TOKENME_API_KEY` / `LM_API_KEY` or `--api-key`:
-  - **Max 8 Images**: Remote endpoints enforce `<= 8` images/request. Pass `--max-chunk-frames 8` (runner also auto-subsamples `<= 8` for remote URLs).
+  - **Max 8 Images**: Remote endpoints enforce `<= 8` images/request. Pass `--max-chunk-frames 8` (runner also auto-subsamples `<= 8` for TokenMe URLs).
   - **Case-Sensitive Model IDs**: Slugs are strictly case-sensitive (`google/gemma-4-31b-it`; `31B` returns HTTP 400 `Model not found`). Query `GET /api/v1/models` on 400 errors.
   - **HTTPS Recovery & Routing**: `_wait_for_network_recovery` resolves implicit port `443` (`https://`) and `80` (`http://`) before `1234`. Both `/v1/chat/completions` and `/api/v1/chat/completions` route automatically with `Authorization: Bearer <KEY>` and browser `User-Agent` (Cloudflare WAF code 1010 bypass). Vision uses base64 `image_url` payloads.
 - **Configuration (`config.json` & `--config`)**: Numeric defaults, timeouts, temperatures, pruning bounds, and multimodal settings live in `skills/anibon-timestamper-local/config.json` and load via `lib/common/config.py` (zero dependencies). Keep secrets in gitignored `.env`. Override per run via `--config /path/to/config.json` (`--env-file` alias) or env vars (`ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_TEMPERATURE`, etc.).
@@ -93,9 +94,11 @@ python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtub
 
 ```powershell
 python scripts\prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" --workspace "$HOME\youtube_<VIDEO_ID>_workspace" --format txt --block 150 --overlap 15 --live-chat
-python -X utf8 skills\anibon-timestamper-local\scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th --vision-verify
+python -X utf8 skills\anibon-timestamper-local\scripts\process_chunks_local.py "$HOME\youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
 powershell -ExecutionPolicy Bypass -File "skills\anibon-timestamper-local\scripts\launch_local.ps1" -Workspace "$HOME\youtube_<VIDEO_ID>_workspace" -Endpoint "100.115.25.30"
 ```
+
+Add `--vision-verify` to inspect `[?]` / deictic markers when a local `video_360p.mp4` / `video.mp4` or `--video-file` is present.
 
 ```cmd
 skills\anibon-timestamper-local\scripts\launch_local.bat "%USERPROFILE%\youtube_<VIDEO_ID>_workspace" 100.115.25.30 auto th
