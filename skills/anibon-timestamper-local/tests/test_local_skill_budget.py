@@ -36,6 +36,34 @@ class TestLocalSkillBudget(unittest.TestCase):
         self.assertNotIn("config default `4096`", text)
         self.assertNotIn("anibon/config.py", text)
 
+    def test_stage5_audit_checklist_coverage(self) -> None:
+        path = REFS_DIR / "stage5-audit-checklist.md"
+        text = path.read_text(encoding="utf-8")
+        for token in (
+            "livechat_events.txt",
+            "t+90s",
+            "atlas_fgo.db",
+            "pokemon.db",
+            "Dual-Track Desync",
+            "cutoff=",
+            "slide_",
+            "Discord",
+            "วิพากษ์",
+            "[Victory]",
+            "[Ending]",
+            "[Donation]",
+            "Rage-Quit",
+            "Tokusatsu",
+            "Kamen Rider Shinobi",
+            "Strategy of Lily",
+            "reaction_verify_log.json",
+            "Stream Chronology & Play History",
+            "scripts/audit_gaps.py",
+            "scripts/check_sections.py",
+            "update_garbled_dictionary.py",
+        ):
+            self.assertIn(token, text, f"stage5-audit-checklist.md missing: {token}")
+
 
 if __name__ == "__main__":
     unittest.main()
