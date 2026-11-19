@@ -45,7 +45,7 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 
 ```bash
 python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
-  --workspace "~/youtube_<VIDEO_ID>_workspace" --format txt --block 150 --overlap 15 --live-chat
+  --workspace ~/youtube_<VIDEO_ID>_workspace --format txt --block 150 --overlap 15 --live-chat
 ```
 
 Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
@@ -63,7 +63,7 @@ curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | s
 
 ```bash
 # Foreground (storyboard multimodal ON by default; --reaction-verify OFF by default; pass --help for tuning flags):
-python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py "~/youtube_<VIDEO_ID>_workspace" --mode recursive --lang th
+python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
 
 # Detached background (macOS/Linux; Windows scripts in hardware-and-endpoints.md):
 bash skills/anibon-timestamper-local/scripts/launch_local.sh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
@@ -74,9 +74,9 @@ python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtub
 python3 skills/anibon-timestamper-local/scripts/control_chunks_local.py ~/youtube_<VIDEO_ID>_workspace continue
 ```
 
-### 4. Garbled Collector (Automatic Post-Pass 2)
+### 4. Garbled Collector (Automatic Pre-Pass 2 / Post-Pass 1)
 
-Runs `whisper.cpp` on `<workspace>/garbled_notes_raw/` automatically after assembly (`--video-url` enables on-the-fly stream slicing; `--no-garbled-collector` skips).
+Runs `whisper.cpp` on `<workspace>/garbled_notes_raw/` automatically after Pass 1 / before Pass 2 summarization (`--video-url` enables on-the-fly stream slicing; `--no-garbled-collector` skips).
 
 ### 5. Mandatory Stage 5 Audit & Gate Re-Run
 

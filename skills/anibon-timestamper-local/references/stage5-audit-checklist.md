@@ -41,6 +41,8 @@ Do **not** audit only chunks flagged for ASR/glossary warnings — unread contin
   - *Outro & EOF-Stranded `[Ending]`*: Scan the final 3–5 minutes for closing tokens (`ขอบคุณครับ`, `ลงไลฟ์`, `ราตรีสวัสดิ์`, `บ๊ายบาย`), separate `[Donation]` donor-list/birthday shoutouts, and rewind `[Ending]` if stranded in the last ~30s.
   - *Strict Truth on `[Ending]`*: Never emit `"แจ้งกำหนดการสตรีมถัดไป"` unless Boat explicitly states the next stream time/topic in the final 3–5 minutes of `chunks/`.
   - *22:00 Routine & Rage-Quit*: Map `"ไลฟ์โทกุ"` ASR drifts (`โทกกู`, `ทั่วกุ`, `คอนเทนทุกคึ`) to `โทคุซัตสึ (Tokusatsu)`, never *Tokyo Ghoul*. On abrupt crash/rage-quit (`พอ`, `เลิก`, `ไม่ไหวแล้ว`, `ปิดไลฟ์`), anchor `[Ending]` to the quit moment.
+- **Custom-Avatar Donation Popups**: Do not label 3D/figure donation alert popups as literal product reviews or showcases (`[Talk] โชว์ฟิกเกอร์`); confirm in `livechat_events.txt` and `chunks/*.txt`.
+- **Game-Switch Carryover & Unmentioned Lore**: Never attribute a previous game's endgame mechanics (`"หอรี"`, `"เฟ้อกว่าเวเนซุเอลา"`) to a newly booted game, and reject unmentioned franchise lore (`"Lostbelt"`) hallucinated from pre-training when absent from `chunks/*.txt` and `livechat/`.
 
 ## 5. Style, Conciseness & Verb Diversity
 - **Conciseness & Sharpness (50–65 Thai Chars Target)**: Keep each line to **1 core claim + concrete entities** (`~50–65` Thai chars, 8–16 words, 95-char max): `[Action/Verb] <Entity/Topic> + <Specific Angle/Verdict>`. Hard-trim filler (`เรื่องการ...`, `พร้อมทั้ง...`, `เพื่อความสมดุลและน่าสนใจ`, `ที่ทำให้...`, `โดยมีการ...`, `ในเกม`).
@@ -56,7 +58,7 @@ Do **not** audit only chunks flagged for ASR/glossary warnings — unread contin
 - **Pass-2 Rewrites (`reaction_verify_log.json`)**: Compare accepted `updated` entries against original Pass-1 lines, `chunks/*.txt`, and `livechat/`. Reject speculative proper nouns, invented third-person names, character misattribution, or `[Talk]`/`[Gameplay]` explanations flipped into `[Reaction]`; ensure sudden shock peaks (`"What?!"`) are not absorbed 20–30s late.
 
 ## 7. Dual-File Sync, Gate Re-Run & Knowledge Harvesting
-1. **Sync Both Files**: Apply every fix to both `anibon_timestamps.md` (`anibon_timestamps_essential.md`) and `all_timestamps.txt` (`anibon_timestamps_full.md`, plus `timestamp_<VID>.md` if backed up).
+1. **Verify Pruning & Sync Both Files**: Confirm `anibon_timestamps.md` is pruned to essential milestones (`~40–60` stamps; if `prune_essential()` silently fell back to the full unpruned list, manually prune micro-talk stamps first). Apply every fix to both `anibon_timestamps.md` (`anibon_timestamps_essential.md`) and `all_timestamps.txt` (`anibon_timestamps_full.md`, plus `timestamp_<VID>.md` if backed up).
 2. **Re-Run Root Gates** (live at plugin root `scripts/`, not skill `scripts/`):
    ```bash
    python3 scripts/audit_gaps.py ~/youtube_<VIDEO_ID>_workspace/anibon_timestamps.md --chunks-dir ~/youtube_<VIDEO_ID>_workspace/chunks

@@ -162,6 +162,16 @@ class TestLocalSkillBudget(unittest.TestCase):
         ):
             self.assertNotIn(stale, all_text, f"Stale path still present: {stale}")
 
+    def test_reviewer_critical_and_important_guards(self) -> None:
+        skill_text = SKILL_MD.read_text(encoding="utf-8")
+        self.assertNotIn('"~/', skill_text, "Quoted tilde path disables shell ~ expansion")
+        self.assertNotIn("Post-Pass 2", skill_text)
+        self.assertNotIn("automatically after assembly", skill_text)
+        self.assertIn("before Pass 2 summarization", skill_text)
+        checklist = (REFS_DIR / "stage5-audit-checklist.md").read_text(encoding="utf-8")
+        for token in ("prune_essential", "โชว์ฟิกเกอร์", "Lostbelt"):
+            self.assertIn(token, checklist, f"stage5-audit-checklist.md missing: {token}")
+
 
 if __name__ == "__main__":
     unittest.main()
