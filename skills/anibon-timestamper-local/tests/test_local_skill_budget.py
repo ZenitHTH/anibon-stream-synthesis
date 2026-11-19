@@ -64,6 +64,32 @@ class TestLocalSkillBudget(unittest.TestCase):
         ):
             self.assertIn(token, text, f"stage5-audit-checklist.md missing: {token}")
 
+    def test_troubleshooting_coverage(self) -> None:
+        path = REFS_DIR / "troubleshooting.md"
+        self.assertTrue(path.is_file(), "Missing references/troubleshooting.md")
+        text = path.read_text(encoding="utf-8")
+        for token in (
+            "parse_live_chat.py",
+            "extract_visual_livechat.py",
+            "whisper_dispatcher.py",
+            "skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py",
+            "recursive_outputs_text_only",
+            "-f 160",
+            "mmproj",
+            "--no-resume",
+            "image/webp",
+            "--skip-download",
+            "call_multimodal",
+            "call_local",
+            "88.94",
+            "Tailscale.app",
+            "wc_sheet_",
+            "lib/process/multimodal.py",
+        ):
+            self.assertIn(token, text, f"troubleshooting.md missing: {token}")
+        self.assertNotIn("../cleaning-auto-transcripts/", text)
+        self.assertNotIn("anibon/multimodal.py", text)
+
 
 if __name__ == "__main__":
     unittest.main()
