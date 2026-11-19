@@ -82,6 +82,7 @@ python3 skills/anibon-world-identity/scripts/fetch_pokemon_db.py --check --db "s
 ```
 
 > **SQLite Table Note**: `atlas_fgo.db` stores Servants in `basic_servant(collectionNo, name, originalName, className, rarity, type)`, not `servants`.
+> **Freshness Check (Live-Service Streams)**: `--check` only validates local SQLite table integrity and exits `0` even when behind Atlas Academy's live export. For recent FGO JP streams (≤ 7 days old) or when chat mentions a brand-new Servant, run `fetch_fgo_db.py --force --db "skills/reference/FGO and DATA/atlas_fgo.db"` before Pass 1 so new `collectionNo` entries populate `entity_glossary.json`.
 
 ## Mandatory Pokémon Naming Rules
 

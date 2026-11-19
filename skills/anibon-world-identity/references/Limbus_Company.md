@@ -3,7 +3,7 @@
 คู่มืออ้างอิงระบบ เนื้อเรื่อง และแสลง **Limbus Company** สำหรับทำไทม์สแตมป์ Anibon
 
 ## 🔥 สถานะแพตช์ล่าสุด (Current Live Patch: พ.ย. 2026)
-* **Active Event (12 พ.ย. 2026):** **The 10th Walpurgis Night** ("The Wedge in the Wake of Dawnbreak", Library of Ruina) — **Wedge Office Rep. Outis** `[000]`, **Wedge Office Don & Sinclair** `[000]` (Burn), **The Sword Sharpened with Tears Hong Lu** `[HE]` E.G.O, **Hokma** Announcer, เชื่อม **Dawn Office** (Philip, Yuna, Salvador, Stigma Workshop, Flash of Sunup, Crack of Dawn) และ **Wedge Office** (Oscar, Pamela, Pameli).
+* **Active Event (12 พ.ย. 2026):** **The 10th Walpurgis Night** ("The Wedge in the Wake of Dawnbreak", Library of Ruina) — **Wedge Office Rep. Outis** `[000]`, **Wedge Office Don & Sinclair** `[000]` (Burn), **The Sword Sharpened with Tears Hong Lu** `[HE]` E.G.O, **Hokma** Announcer, เชื่อม **Dawn Office** (Philip, Yuna, Salvador, Stigma Workshop, Flash of Sunup, Crack of Dawn) และ **Wedge Office** (Oscar, Pamela, Pameli). **Project Moon 10th Anniversary MV:** เพลง **"City Blue"** (Mili).
 * **Current Main Story:** **Canto X: The Gaze Bearing** (**Meursault / เมอร์โซต์**, Season 8: STÚDĬUM PUNCTUM, **Grand Magasin Sisyphe / ห้างซิซิฟ**). ถัดไป: **Intervallo 8.5: Spring Cultivation**.
 * **คำพ้องเสียง ASR:** `วกิช/perกิ/วากิส`->**Walpurgis**; `คันโต/คโต`->**Canto**; `อิโร`->**Intervallo**; `บrี่รู`->**Library of Ruina**; `Don/W of Fit/Sigma`->**Dawn/Wedge Office/Stigma Workshop**; `ดงกระจก`->**Mirror Dungeon**; `ห้างซิเฟีย`->**ห้างซิซิฟ**; `หงหลิว`->**หงหลู่**; `ริ้วฉู`->**เรียวชู**; `อิชี่`->**อิชมาเอล**; `พี่มือ`->**เมอร์โซต์**; `ฮอกหมา/มังคุด`->**ฮอกม่า/มัลคุธ**; `เทีย 3/NCO/สายเทม`->**Uptie 3/Owned Passive/Tremor**; `ทำ King Time/บล็อกกัน/เคียรี่ Water`->**Timekilling Time/BokGak/Clear Mirror, Calm Water**; `Off-level/เฟน`->**Offense/Defense Level**.
 
@@ -23,6 +23,7 @@
 | Canto VIII | **Hong Lu (หงหลู่)** | *The Surrendered Witnessing* | **พฤษภาคม 2025 (Season 6)** — ตระกูลและความสูญเสียภายในจิตใจของหงหลู่ ณ ดินแดน H-Corp |
 | Canto IX | **Ryōshū (เรียวชู)** | *The Unsevering* | **31 ธันวาคม 2025 (Season 7)** — เรื่องราวความเป็นมา การสังหาร และการแยกสายศิลปะดาบของเรียวชู |
 | Canto X | **Meursault (เมอร์โซต์)** | *The Gaze Bearing* | **กันยายน - ตุลาคม 2026 (Season 8: STÚDĬUM PUNCTUM [Current Live Arc])** — เรื่องราวบทสรุปการไต่สวนความตายและหน้าที่ของ Meursault อิงจาก *The Stranger* และ *The Myth of Sisyphus* ณ ห้าง Grand Magasin Sisyphe เผชิญหน้าผู้คุม The Warden, Jeanne, Pwie และการทลายโครงสร้างจำลอง N-Corp ด้วย Cogito (เปิดตัวระบบเดินสำรวจดันเจี้ยนแบบ RPG Maker, แพตช์ 8, 15, 22 ต.ค. เนิร์ฟปรับลดความยากบอสช่วงท้าย) |
+| Canto XI | **Outis (อูทิส)** *(คาดการณ์)* | *The Unreturning (ผู้ไม่หวนคืน)* | **ประกาศชื่อบทถัดไป (พ.ย. 2026)** — เปิดตัวชื่อบท Canto XI: *The Unreturning* ต่อจาก Season 8 |
 
 ---
 

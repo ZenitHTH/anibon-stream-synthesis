@@ -15,3 +15,6 @@ Reference for recurring channel co-hosts and non-game entertainment/studio news 
 | **Darkseid (ดาร์กไซด์)** | DC Villain | ตัวละครฝั่ง DC ที่ถูกเปรียบเทียบในจักรวาล Flashpoint / Absolute Universe |
 | **Flashpoint / Absolute Universe (แฟลชพอยต์ / แอบโซลูท)** | DC Comics / DCU | อีเวนต์รีเซ็ตจักรวาล Flashpoint และจักรวาลการ์ตูน Absolute (Batman / Superman / Wonder Woman) |
 | **Batman (แบทแมน)** | DC Hero | ตัวละครหลักฝั่ง DC ในประเด็นข่าวภาพยนตร์และ Absolute Batman |
+| **Robert Pattinson (โรเบิร์ต แพททินสัน)** | Actor / James Bond 007 | Amazon MGM ประกาศรับบท **James Bond 007** คนใหม่ (คนที่ 7) ต่อจาก Daniel Craig กำกับโดย Denis Villeneuve (พ.ย. 2026) |
+| **Tom Felton (ทอม เฟลตัน)** | Actor | นักแสดงบท Draco Malfoy (ลือกลับมารับบท Lucius Malfoy ในซีรีส์ *Harry Potter* ของ HBO; ASR: `ทอม ฟลิตแมน`) |
+| **พีท พีระ (พีราวัชร์ อัศววชิรวิท)** | Thai Singer (Peacemaker) | อดีตนักร้องนำวง Peacemaker เสียชีวิตในวัย 47 ปี (17 พ.ย. 2026) |

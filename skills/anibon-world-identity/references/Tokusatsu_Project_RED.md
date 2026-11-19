@@ -60,6 +60,7 @@ Reference for Anibon Official streams discussing Tokusatsu news, Kamen Rider ser
 |---|---|---|
 | **Ultraman Teo (อุลตร้าแมน เทโอ)** | Tsuburaya Productions (UTTF) | ยักษ์สีน้ำเงินปี 2026 (EP 15 *Dragon's Lair*, EP 16 *Hierarchy of Life*, EP 17 *Between Ideal and Reality*) |
 | **Ibuki Mitsuishi (อิบุกิ มิทสึอิชิ)** | Ultraman Teo | ตัวละครหลักสังกัด **UTTF** |
+| **Noa Nakada / Kanna Izumi (โนอะ นาคาดะ / คานนะ อิซึมิ)** | Ultraman Teo | นักแสดงบท Kanna Izumi (เสียชีวิต พ.ย. 2026 อายุ 23 ปี; ASR: `นากาตะโนเอะ`) |
 | **Bechi / Onibi / Pucchi (เบจิ / อนิบิ / ปูจิ)** | Ultraman Teo | ไคจูในซีรีส์ |
 | **Pitterus / Therizirus / Degora (พิทเทรัส / เทริซิรัส / เดโกร่า)** | Ultraman Teo | ไคจูยุคโลกร้อน |
 | **Ultraman Zero / Ultraseven (อุลตร้าแมน ซีโร่ / เซเว่น)** | Tsuburaya Productions | ร่วมงาน **Animonium 2027** (13–14 ก.พ. 2027, Siam Paragon) |
@@ -84,6 +85,7 @@ Reference for Anibon Official streams discussing Tokusatsu news, Kamen Rider ser
 | **Kamen Rider Atlas (มาสค์ไรเดอร์ แอตลาส)** | Kamen Rider Kabuto 20th | ไรเดอร์ใหม่จากองค์กร ZECT ใช้ Atlas Zecter |
 | **Kamen Rider Giraffa (มาสค์ไรเดอร์ กิราฟฟา)** | Kamen Rider Kabuto 20th | Masato Mishima ร่าง Worm เลียนแบบ |
 | **ZECT / Worms (เซ็คท์ / เวิร์ม)** | Kamen Rider Kabuto 20th | องค์กรลับและสิ่งมีชีวิตต่างดาวในจักรวาล Kabuto |
+| **Yukio Yamagata (ยูกิโอะ ยามากาตะ)** | *Hyakujuu Sentai Gaoranger* | นักร้องเพลงเปิด Gaoranger (เสียชีวิต พ.ย. 2026 อายุ 69 ปี; ASR: `ยูกิโอะ ยามาตะ`) |
 
 ---
 

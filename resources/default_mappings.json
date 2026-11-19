@@ -648,6 +648,104 @@
         "ทอสก้า",
         "toshka"
       ]
+    },
+    {
+      "correct": "Resonance Solstice",
+      "patterns": [
+        "resonance story",
+        "resonance source tight"
+      ]
+    },
+    {
+      "correct": "Burning Sword: Death Sun",
+      "patterns": [
+        "burning sword the sun",
+        "burning sword death sun",
+        "burning soday sun",
+        "burning source day to sun"
+      ]
+    },
+    {
+      "correct": "Infinite Stratos",
+      "patterns": [
+        "infinit strat"
+      ]
+    },
+    {
+      "correct": "Balatro",
+      "patterns": [
+        "bataro",
+        "บาราโท",
+        "บารโท"
+      ]
+    },
+    {
+      "correct": "Petit Planet",
+      "patterns": [
+        "play planet",
+        "platit planet"
+      ]
+    },
+    {
+      "correct": "Ace Combat 8: Wings of Theve",
+      "patterns": [
+        "wing of death",
+        "s combat wing of def"
+      ]
+    },
+    {
+      "correct": "Gears of War: E-Day",
+      "patterns": [
+        "gear of war"
+      ]
+    },
+    {
+      "correct": "Aniimo",
+      "patterns": [
+        "แอนิอิโม",
+        "อนิโม่"
+      ]
+    },
+    {
+      "correct": "Noa Nakada (โนอะ นาคาดะ)",
+      "patterns": [
+        "นากาตะโนเอะ",
+        "นากตะโนเอะ"
+      ]
+    },
+    {
+      "correct": "Yukio Yamagata (ยูกิโอะ ยามากาตะ)",
+      "patterns": [
+        "ยูกิโอะ ยามาตะ",
+        "ยูกิโอยามตะ"
+      ]
+    },
+    {
+      "correct": "Sen no Rikyu (เซน โนะ ริคิว)",
+      "patterns": [
+        "เซนคิว"
+      ]
+    },
+    {
+      "correct": "Fate/strange Fake",
+      "patterns": [
+        "เฟสเซนเซอร์",
+        "เฟสเซงเฟ"
+      ]
+    },
+    {
+      "correct": "Tom Felton",
+      "patterns": [
+        "ทอม ฟลิตแมน",
+        "ทอฟเฟลตัน",
+        "ทอมฟลตัน"
+      ]
+    },
+    {
+      "correct": "Mikiya Kokutou",
+      "patterns": [
+        "มิกิยา"
+      ]
     }
   ]
 }
