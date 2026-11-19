@@ -90,6 +90,78 @@ class TestLocalSkillBudget(unittest.TestCase):
         self.assertNotIn("../cleaning-auto-transcripts/", text)
         self.assertNotIn("anibon/multimodal.py", text)
 
+    def test_skill_md_size_and_line_budget(self) -> None:
+        raw = SKILL_MD.read_bytes()
+        lines = SKILL_MD.read_text(encoding="utf-8").splitlines()
+        self.assertLessEqual(len(raw), 12_500, f"SKILL.md too large: {len(raw)} bytes")
+        self.assertLessEqual(len(lines), 180, f"SKILL.md too long: {len(lines)} lines")
+
+    def test_frontmatter_sdo_constraints(self) -> None:
+        text = SKILL_MD.read_text(encoding="utf-8")
+        parts = text.split("---", 2)
+        self.assertGreaterEqual(len(parts), 3)
+        fm = dict(line.split(":", 1) for line in parts[1].strip().splitlines() if ":" in line)
+        desc = fm["description"].strip()
+        self.assertEqual(fm["name"].strip(), "anibon-timestamper-local")
+        self.assertTrue(desc.startswith("Use when "), f"Description must start with 'Use when ': {desc}")
+        self.assertLessEqual(len(desc), 500, f"Description too long: {len(desc)} chars")
+
+    def test_all_reference_links_resolve_and_are_portable(self) -> None:
+        managed = [
+            SKILL_MD,
+            REFS_DIR / "hardware-and-endpoints.md",
+            REFS_DIR / "stage5-audit-checklist.md",
+            REFS_DIR / "troubleshooting.md",
+        ]
+        link_re = re.compile(r"\]\((references/[^)#]+)\)")
+        for md in managed:
+            text = md.read_text(encoding="utf-8")
+            self.assertNotIn("file:///", text, f"Non-portable file:/// link in {md.name}")
+            self.assertNotIn("/Users/", text, f"Machine-specific /Users/ path in {md.name}")
+            for rel in link_re.findall(text):
+                self.assertTrue((SKILL_DIR / rel).exists(), f"Broken link {rel} in {md.name}")
+
+    def test_skill_md_core_coverage_and_no_stale_paths(self) -> None:
+        text = SKILL_MD.read_text(encoding="utf-8")
+        for required in (
+            "anibon-world-identity",
+            "scripts/prepare_video.py",
+            "skills/anibon-timestamper-local/scripts/process_chunks_local.py",
+            "bash skills/anibon-timestamper-local/scripts/launch_local.sh",
+            "skills/anibon-timestamper-local/scripts/control_chunks_local.py",
+            "/api/v1/models",
+            "*:cloud",
+            "scripts/audit_gaps.py",
+            "scripts/check_sections.py",
+            "NEVER TIME-LOCK",
+            "references/hardware-and-endpoints.md",
+            "references/stage5-audit-checklist.md",
+            "references/troubleshooting.md",
+            "references/anibon_emoji_dictionary.md",
+            "references/timestamper-handoff.md",
+        ):
+            self.assertIn(required, text, f"SKILL.md missing required token: {required}")
+        all_text = "\n".join(
+            p.read_text(encoding="utf-8")
+            for p in (
+                SKILL_MD,
+                REFS_DIR / "hardware-and-endpoints.md",
+                REFS_DIR / "stage5-audit-checklist.md",
+                REFS_DIR / "troubleshooting.md",
+            )
+        )
+        for stale in (
+            "lib/process/lmstudio.py",
+            "lib/process/state.py",
+            "lib/process/timestamps.py",
+            "lib/process/knowledge_reader.py",
+            "lib/anibon/signal_detector.py",
+            "anibon/multimodal.py",
+            "anibon/config.py",
+            "../cleaning-auto-transcripts/",
+        ):
+            self.assertNotIn(stale, all_text, f"Stale path still present: {stale}")
+
 
 if __name__ == "__main__":
     unittest.main()
