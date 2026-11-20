@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import sys
 from pathlib import Path
 
@@ -41,35 +42,69 @@ def _extract_and_save_anchors(cleaned: list, workspace: Path) -> None:
         save_music_anchors(anchors, workspace)
 
 
-def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int:
-    """Load transcript, clean, and write chunk files. Returns number of chunks."""
+@dataclass(frozen=True)
+class ChunkBuildOptions:
+    """Chunking window parameters for transcript splitting."""
+
+    block: int = 150
+    overlap: int = 15
+    fmt: str = "json"
+
+
+def _load_cleaned_transcript(workspace: Path) -> list:
+    """Load, correct, and extract music anchors from workspace transcript."""
     transcript = load_transcript(workspace)
-    mappings = load_default_mappings()
-    cleaned = correct_transcript(transcript, mappings)
+    cleaned = correct_transcript(transcript, load_default_mappings())
+    if cleaned:
+        _extract_and_save_anchors(cleaned, workspace)
+    return cleaned
+
+
+def _write_single_chunk(
+    chunk_dir: Path, idx: int, window: tuple[int, int, list], opts: ChunkBuildOptions
+) -> None:
+    """Write one chunk file in txt, xml, or json format."""
+    start, end, items = window
+    path = chunk_dir / f"chunk_{idx:02d}.{opts.fmt}"
+    if opts.fmt == "txt":
+        write_chunk_txt(path, idx, start, end, opts.overlap, items)
+    elif opts.fmt == "xml":
+        write_chunk_xml(path, idx, start, end, items)
+    else:
+        write_chunk_json(path, start, end, items)
+
+
+def _write_chunk_windows(
+    workspace: Path, opts: ChunkBuildOptions, include_empty: tuple[bool]
+) -> int:
+    """Split cleaned transcript into sequential chunk files."""
+    cleaned = _load_cleaned_transcript(workspace)
     if not cleaned:
         return 0
-    _extract_and_save_anchors(cleaned, workspace)
-
     chunk_dir = workspace / "chunks"
     chunk_dir.mkdir(exist_ok=True)
     total = int(cleaned[-1]["start"] + cleaned[-1].get("duration", 0))
-    step = block - overlap
+    step = max(1, opts.block - opts.overlap)
     idx = 0
-
+    keep_empty = include_empty[0]
     for start in range(0, total, step):
-        end = start + block
+        end = start + opts.block
         items = [x for x in cleaned if start <= x["start"] < end]
-        if not items:
+        if not items and not keep_empty:
             continue
-        path = chunk_dir / f"chunk_{idx:02d}.{fmt}"
-        if fmt == "txt":
-            write_chunk_txt(path, idx, start, end, overlap, items)
-        elif fmt == "xml":
-            write_chunk_xml(path, idx, start, end, items)
-        else:
-            write_chunk_json(path, start, end, items)
+        _write_single_chunk(chunk_dir, idx, (start, end, items), opts)
         idx += 1
     return idx
+
+
+def chunk_transcript(workspace: Path, block: int, overlap: int, fmt: str) -> int:
+    """Load transcript, clean, and write non-empty chunk files. Returns count."""
+    return _write_chunk_windows(workspace, ChunkBuildOptions(block, overlap, fmt), (False,))
+
+
+def chunk_transcript_with_silent_windows(workspace: Path, opts: ChunkBuildOptions) -> int:
+    """Load transcript, clean, and write all windows including silent gaps."""
+    return _write_chunk_windows(workspace, opts, (True,))
 
 
 def main() -> None:
@@ -116,6 +151,11 @@ def main() -> None:
         help="Download, parse, and align YouTube live_chat replay into livechat/ chunks",
     )
     ap.add_argument(
+        "--keep-silent-chunks",
+        action="store_true",
+        help="Emit placeholder chunk files for empty-transcript silent windows",
+    )
+    ap.add_argument(
         "--workspace",
         "-o",
         default=None,
@@ -139,7 +179,11 @@ def main() -> None:
     download_transcript(url, workspace, sub_langs=args.sub_langs)
     if not args.no_storyboard:
         download_storyboard(url, workspace)
-    n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
+    opts = ChunkBuildOptions(block=args.block, overlap=args.overlap, fmt=args.format)
+    if args.keep_silent_chunks:
+        n = chunk_transcript_with_silent_windows(workspace, opts)
+    else:
+        n = chunk_transcript(workspace, block=args.block, overlap=args.overlap, fmt=args.format)
     if args.live_chat:
         prepare_livechat(url, workspace)
 
