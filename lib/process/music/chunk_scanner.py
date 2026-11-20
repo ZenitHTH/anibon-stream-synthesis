@@ -15,7 +15,6 @@ from process.audio_separator_engine import (
     convert_audio_to_16k_mono,
     separate_via_audiocpp_api,
 )
-from process.music.acoustic import analyze_acoustic_features, is_music_spectral
 from process.music.sensor import TrackMetadata, has_music_chat_surge, recognize_shazam_slice
 from process.whisper_dispatcher import find_whisper_cli, find_whisper_model, run_whisper_slice
 
@@ -92,6 +91,7 @@ def _probe_spectral_music(audio_source: Optional[Path | str], start_sec: int, en
            "-vn", "-ac", "1", "-ar", "16000", "-f", "s16le", "-"]
     try:
         import numpy as np
+        from process.music.acoustic import analyze_acoustic_features, is_music_spectral
         res = subprocess.run(cmd, capture_output=True, timeout=20)
         if res.returncode != 0 or len(res.stdout) < 3200:
             return False

@@ -131,6 +131,16 @@ python3 -X utf8 ../anibon-stream-activity/scripts/align_activity_timeline.py --t
 
 Output: `<workspace>/activity/activity_chunk_NN.txt` containing on-screen game/app state, webcam presence, and physical expressions for subagent injection.
 
+### 3.65 Pre-Chunk Audio, Webcam & Shazam Enrichment (Optional)
+
+Before building subagent prompts (`build_subagent_prompts.py`), scan chunk audio for loud yells, silence drops/sustained silence (cropping webcam closeups into `frames/webcam_chunk/`), and Shazam (`shazamio`) song hits -> `audio.cpp` vocal split -> `whisper.cpp` real-speech recovery:
+
+```bash
+python3 -X utf8 scripts/enrich_chunks.py ~/youtube_<id>_workspace --remote-snap
+```
+
+Emits `<workspace>/enrichment/chunk_NN.json` and merges `[AUDIO_PEAK]`, `[SILENCE_SHOCK]`, and `[SHAZAM_SONG]` cues into `activity/activity_chunk_NN.txt`.
+
 ### 3.7 Detect Thai-Laugh / Meme Pulses (Optional but preferred)
 
 Downstream of `align_live_chat.py`. Thai watchers mark laughter with `555...` / `xD` / `ฮา` / `ขำ`. A clustered burst in a short window = a meme/laugh peak. This is the only reliable laugh proxy when the autotranscript can't hear the streamer actually laughing. Emits per-chunk **mood verdicts + Thai tone guidance** that subagent prompts MUST weight when writing mood-bearing descriptions.

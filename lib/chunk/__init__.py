@@ -34,6 +34,7 @@ from chunk.pause import (
 from chunk.state import (
     discover_chunks,
     load_chunk_activity,
+    load_chunk_enrichment,
     load_chunk_livechat,
     load_chunk_mood,
     load_state,
@@ -67,6 +68,7 @@ __all__ = [
     "load_state",
     "save_state",
     "load_chunk_activity",
+    "load_chunk_enrichment",
     "load_chunk_livechat",
     "load_chunk_mood",
     "parse_timestamp_line",

@@ -28,7 +28,7 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 
 | Stage | Entrypoint / Modules | Role |
 |---|---|---|
-| **1. Prepare & Chunk** | `scripts/prepare_video.py` | Downloads subtitles, chunks transcript (`chunks/*.txt`), aligns `--live-chat`, computes `mood_555.json`. |
+| **1. Prepare & Chunk** | `scripts/prepare_video.py`, `scripts/enrich_chunks.py` | Downloads subtitles, chunks transcript (`--keep-silent-chunks` preserves quiet gaps), aligns `--live-chat`, computes `mood_555.json`, optionally pre-enriches yell/silence webcam cues + Shazam -> `audio.cpp` -> `whisper.cpp`. |
 | **1.5 Clean & Glossary** | `lib/process/audit.py`, `lib/process/knowledge/` | Applies `garbled_replacements.json` + `default_mappings.json` on disk, writes `signals.json` + `entity_glossary.json`. |
 | **2. Pass 1 Segmentation** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py`, `control_chunks_local.py`, `scripts/validate_mood.py` | Runs rolling state-machine (`lib/chunk/state.py`, `lib/chunk/pause.py`) with multimodal keyframes + mood hints → `all_timestamps.txt`. |
 | **3. Garbled Collector** | `lib/process/garbled_collector.py`, `scripts/whisper_dispatcher.py` | Slices audio on-the-fly via local `whisper.cpp`, updates `garbled_replacements.json`, cleans `all_timestamps.txt` & `chunks/`. |
@@ -62,7 +62,7 @@ curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | s
 ### 3. Run Timestamper / Detached Launch / Pause Control
 
 ```bash
-# Foreground (storyboard multimodal ON by default; --reaction-verify OFF by default; pass --help for tuning flags):
+# Foreground (storyboard multimodal ON by default; --reaction-verify OFF by default; pass --enrich to pre-scan yells/silence/Shazam):
 python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
 
 # Detached background (macOS/Linux; Windows scripts in hardware-and-endpoints.md):

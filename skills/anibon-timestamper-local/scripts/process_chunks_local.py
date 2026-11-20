@@ -62,6 +62,7 @@ from interface import (
     detect_transcript_source,
     discover_chunks,
     enrich_with_sqlite_databases,
+    enrich_workspace_chunks,
     ensure_mood_555,
     extract_entity_glossary,
     finalize_and_assemble_timestamps,
@@ -194,6 +195,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument("--vision-model", default=None)
     ap.add_argument("--no-knowledge-reader", action="store_true")
     ap.add_argument("--live-chat", action="store_true", help="Download and align live chat replay into livechat/ chunks")
+    ap.add_argument("--enrich", action="store_true", help="Run pre-chunk audio/webcam/Shazam enrichment before timestamping")
     ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"))
     return ap
 
@@ -388,6 +390,22 @@ def _ensure_livechat_if_requested(workspace: Path, args: argparse.Namespace) -> 
         prepare_livechat(url, workspace)
 
 
+def _run_pre_enrichment_if_requested(workspace: Path, args: argparse.Namespace) -> None:
+    """Run pre-chunk audio yell/silence webcam and Shazam enrichment when --enrich is set."""
+    if not getattr(args, "enrich", False):
+        return
+    from process.chunk_enrichment import ChunkEnrichConfig, resolve_workspace_media
+    audio_src, video_src = resolve_workspace_media(workspace, args)
+    cfg = ChunkEnrichConfig(
+        workspace=workspace,
+        audio_source=audio_src,
+        video_source=video_src,
+        webcam_corner=getattr(args, "webcam_corner", WEBCAM_CORNER),
+    )
+    count = enrich_workspace_chunks(cfg)
+    log_info("enrich", f"pre-enriched {count} chunks (audio/webcam/Shazam)")
+
+
 @dataclass(frozen=True)
 class _PipelineContext:
     """Bundled runtime inputs for an active chunk processing run."""
@@ -414,6 +432,7 @@ def _run_active_pipeline(ctx: _PipelineContext) -> None:
         glossary = _load_or_discover_glossary(
             ctx.workspace, signals_map, ctx.world_identity_dir, ctx.args.no_knowledge_reader
         )
+        _run_pre_enrichment_if_requested(ctx.workspace, ctx.args)
         _dispatch_pipeline_mode(
             ctx.args, ctx.workspace, ctx.model, ctx.chunk_files,
             signals_map, mappings, ctx.world_identity_dir, glossary,

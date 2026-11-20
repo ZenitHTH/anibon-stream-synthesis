@@ -5,6 +5,11 @@ process — Core livestream timestamping, prompting, summarization, and verifica
 from __future__ import annotations
 
 from process.assembly import finalize_and_assemble_timestamps
+from process.chunk_enrichment import (
+    ChunkEnrichConfig,
+    enrich_workspace_chunks,
+    resolve_workspace_media,
+)
 from process.audit import (
     audit_timestamps_against_glossary,
     clean_workspace_chunks,
@@ -74,6 +79,9 @@ from process.world_sanitizer import audit_and_sanitize_final_markdown
 
 __all__ = [
     "finalize_and_assemble_timestamps",
+    "ChunkEnrichConfig",
+    "enrich_workspace_chunks",
+    "resolve_workspace_media",
     "clean_workspace_chunks",
     "sanitize_and_audit_timestamps",
     "audit_timestamps_against_glossary",
