@@ -40,6 +40,8 @@ def _get_runtime_hook(hook_name: str, fallback: any) -> any:
 def _compute_chunk_time_window(chunk: dict, ch_num: int) -> Tuple[int, int]:
     """Calculate starting and ending second offsets for a chunk."""
     items = chunk.get("items", [])
+    if not items and int(chunk.get("end_sec", 0) or 0) > int(chunk.get("start_sec", 0) or 0):
+        return int(chunk["start_sec"]), int(chunk["end_sec"])
     st_sec = items[0].get("start", 0) if items else ch_num * 270
     en_sec = items[-1].get("start", 0) + items[-1].get("duration", 5) if items else st_sec + 270
     return int(st_sec), int(en_sec)

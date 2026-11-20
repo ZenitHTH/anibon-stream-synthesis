@@ -79,6 +79,18 @@ def load_chunk_activity(workspace: Path, chunk_idx: str) -> str:
     return ""
 
 
+def load_chunk_enrichment(workspace: Path, chunk_idx: str) -> dict:
+    """Load cached pre-chunk audio/webcam/Shazam enrichment JSON if available."""
+    enr_file = workspace / "enrichment" / f"{chunk_idx}.json"
+    if not enr_file.is_file():
+        return {}
+    try:
+        data = json.loads(enr_file.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
 def load_chunk_mood(workspace: Path, chunk_idx: str) -> str:
     """Return dual-side (speaker + chat) mood verdict and cues if available."""
     mood_file = workspace / "mood_555.json"

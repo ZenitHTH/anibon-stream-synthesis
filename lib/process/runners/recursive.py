@@ -40,6 +40,7 @@ from process.runners.common import (
 from chunk.pause import clear_pause, wait_if_paused
 from chunk.state import (
     load_chunk_activity,
+    load_chunk_enrichment,
     load_chunk_file,
     load_chunk_livechat,
     load_chunk_mood,
@@ -475,11 +476,12 @@ def _process_single_recursive_chunk(
     )
     sb_frames, wc_frames, tier = _balance_dynamic_chunk_frames(workspace, chunk, sb_raw, webcam_source, args)
     keyframes = sb_frames + wc_frames
+    enrichment = load_chunk_enrichment(workspace, chunk_idx)
     prompt = build_recursive_prompt(
         chunk=chunk, current_topic=current_topic_title, rolling_summary=rolling_summary,
         lang=lang, signal=sig, livechat=lc, activity=act, mood=mood,
         world_identity_ref=wi_ref, glossary=glossary, keyframes=keyframes if keyframes else None,
-        recent_timestamps=all_timestamps[-3:],
+        recent_timestamps=all_timestamps[-3:], enrichment=enrichment,
     )
 
     prompt_tokens = len(prompt) // 4

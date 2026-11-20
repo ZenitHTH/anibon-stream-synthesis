@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from pathlib import Path
 from typing import Dict, Optional, Sequence, Tuple
 
+from chunk.state import load_chunk_enrichment
 from common.config import WEBCAM_CORNER
 from common.log import log_warn
+from common.time import fmt_ts
 from process.multimodal_situations import EMOTION_REACTION_CUES, collect_situational_candidates
 from process.reaction_source import resolve_reaction_audio_source
 from process.runners.corner_consensus import make_segment_layout_fn, pick_consensus_corner
@@ -174,6 +177,21 @@ def _enrich_plan_with_peaks(
     return DynamicPlan(plan.tier, plan.sb_keep, plan.wc_frames, plan.mean_mad, eff), max_z
 
 
+def _load_cached_enrichment_webcam(workspace: Path, chunk: dict) -> list:
+    """Load pre-extracted webcam sheets/frames from enrichment/chunk_NN.json."""
+    cid = f"chunk_{int(chunk.get('_idx', 0) or 0):02d}"
+    enr = load_chunk_enrichment(workspace, cid)
+    frames = []
+    for raw_path in enr.get("webcam_frames") or ():
+        p = Path(raw_path)
+        if not p.is_file():
+            continue
+        b64 = base64.b64encode(p.read_bytes()).decode("ascii")
+        ts = fmt_ts(int(chunk.get("start_sec", 0) or 0))
+        frames.append((ts, p, b64, "WEBCAM CLOSEUP (PRE-CHUNK)"))
+    return frames
+
+
 def _balance_dynamic_chunk_frames(
     workspace: Path,
     chunk: dict,
@@ -182,15 +200,16 @@ def _balance_dynamic_chunk_frames(
     args: Optional[argparse.Namespace],
 ) -> Tuple[list, list, str]:
     """Dynamically allocate screen vs webcam storyboard frames from motion + audio bursts."""
+    cached_wc = _load_cached_enrichment_webcam(workspace, chunk)
     if not source:
-        return sb_frames, [], "static"
+        return (sb_frames, cached_wc, "cached-enrichment") if cached_wc else (sb_frames, [], "static")
     items = chunk.get("items", [])
     box = _resolve_chunk_webcam_box(workspace, source, items, args, sb_frames=sb_frames)
     has_cue = any(cue in (it.get("text") or "") for it in items for cue in EMOTION_REACTION_CUES)
     base_plan = assess_storyboard_webcam_motion(sb_frames, box, has_emotion_cue=has_cue)
     plan, max_z = _enrich_plan_with_peaks(workspace, items, sb_frames, (base_plan, _resolve_chunk_audio_source(workspace, source, args)))
     layout_fn = make_segment_layout_fn(sb_frames, _rank_active_corners, preferred_box=box) if len(sb_frames) >= 2 else None
-    wc_frames = _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
+    wc_frames = cached_wc or _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
     sb_balanced = trim_storyboard_frames(sb_frames, plan.sb_keep) if wc_frames else sb_frames
     suffix = f",peak_z={max_z:.1f}" if max_z >= 2.0 else ""
     return sb_balanced, wc_frames, f"{plan.tier}(mad={plan.mean_mad:.3f}{suffix})"

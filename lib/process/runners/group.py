@@ -28,6 +28,7 @@ from process.runners.common import _get_runtime_hook
 from chunk.pause import clear_pause, wait_if_paused
 from chunk.state import (
     load_chunk_activity,
+    load_chunk_enrichment,
     load_chunk_file,
     load_chunk_livechat,
     load_chunk_mood,
@@ -162,7 +163,7 @@ def _process_single_group(
     prompt = build_group_prompt(
         g_chunks, g, prev_tail, lang, signals_map, workspace, world_identity_dir,
         livechat_loader=load_chunk_livechat, activity_loader=load_chunk_activity, mood_loader=load_chunk_mood,
-        glossary=glossary,
+        glossary=glossary, enrichment_loader=load_chunk_enrichment,
     )
     prompt_tokens = len(prompt) // 4
     prog = format_progress(g + 1, num_groups)

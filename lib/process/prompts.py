@@ -16,6 +16,7 @@ from common.time import fmt_ts, parse_ts
 from common.timestamps import TAGS
 from common.config import COMPACT_CHUNK_MAX_LINES, ENTITY_CONTEXT_MAX_TOKENS
 from common.resources import plugin_root
+from process.enrichment_prompt import format_enrichment_context
 from process.signals import get_domain_guidance
 
 _ROOT = plugin_root()
@@ -403,6 +404,7 @@ def build_recursive_prompt(
     glossary: Optional[dict] = None,
     keyframes: Optional[list] = None,
     recent_timestamps: Optional[List[str]] = None,
+    enrichment: Optional[dict] = None,
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
@@ -457,6 +459,9 @@ def build_recursive_prompt(
     media_block = _build_chunk_media_block(chunk, livechat)
     if media_block:
         context_extras.append(media_block)
+    enr_block = format_enrichment_context(enrichment)
+    if enr_block:
+        context_extras.append(enr_block)
 
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
@@ -540,6 +545,7 @@ def build_group_prompt(
     activity_loader=None,
     mood_loader=None,
     glossary: Optional[dict] = None,
+    enrichment_loader=None,
 ) -> str:
     """Build group prompt combining 3-5 chunks (~15-25 min) with continuity awareness."""
     first_items = chunks[0].get("items", [])
@@ -580,6 +586,8 @@ def build_group_prompt(
         lc = livechat_loader(workspace, idx_str) if livechat_loader else ""
         act = activity_loader(workspace, idx_str) if activity_loader else ""
         mood = mood_loader(workspace, idx_str) if mood_loader else ""
+        enr = enrichment_loader(workspace, idx_str) if enrichment_loader else None
+        enr_block = format_enrichment_context(enr)
 
         mb = _build_chunk_media_block(ch, lc)
         if mb and mb not in collected_media_blocks:
@@ -587,6 +595,8 @@ def build_group_prompt(
 
         lines = coalesce_chunk_items(c_items)
         ch_text = "\n".join(lines) if lines else "(silent or empty)"
+        if enr_block:
+            ch_text = f"{enr_block}\n{ch_text}"
 
         meta_info = []
         if mood:

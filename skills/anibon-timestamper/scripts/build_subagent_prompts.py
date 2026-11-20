@@ -4,6 +4,13 @@ import glob
 import re
 import sys
 import argparse
+from pathlib import Path
+
+_LIB_DIR = str(Path(__file__).resolve().parents[3] / "lib")
+if _LIB_DIR not in sys.path:
+    sys.path.insert(0, _LIB_DIR)
+
+from process.enrichment_prompt import format_enrichment_context
 
 
 def format_chunk_mood_guidance(cmood: dict) -> str:
@@ -87,6 +94,14 @@ def build_prompts(workspace):
         cmood = mood_data.get(cid, {})
         mood_str = format_chunk_mood_guidance(cmood)
 
+        # Enrichment (Shazam, recovered speech, audio/silence webcam cues)
+        enr_path = os.path.join(workspace, "enrichment", f"{cid}.json")
+        enr_str = ""
+        if os.path.exists(enr_path):
+            with open(enr_path, 'r', encoding='utf-8') as enf:
+                enr_str = format_enrichment_context(json.load(enf))
+        enr_section = f"\nENRICHMENT (SONG / RECOVERED SPEECH / AUDIO CUES):\n{enr_str}\n" if enr_str else ""
+
         try:
             import xml.etree.ElementTree as ET
             root = ET.parse(cpath).getroot()
@@ -106,7 +121,7 @@ PRIMARY TOPIC: {primary_topic}
 BEST KNOWLEDGE FILE: {best_file} (confidence: {conf})
 MOOD & TONE GUIDANCE: {mood_str}
 ON-SCREEN ACTIVITY: {act_content}
-
+{enr_section}
 DETECTION SIGNALS:
 {json.dumps(csig, ensure_ascii=False, indent=2)}
 
