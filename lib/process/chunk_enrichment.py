@@ -4,25 +4,20 @@ from __future__ import annotations
 import json
 import re
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from chunk.state import load_chunk_file
 from common.config import WEBCAM_CORNER
 from common.time import fmt_ts
-from process.music.chunk_scanner import (
-    SongRecoveryResult,
-    SongScanConfig,
-    SongScanRequest,
-    SongTriggerInput,
-    scan_and_recover_chunk_song,
-    should_scan_chunk_for_song,
-)
 from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
 from video.audio_webcam_cues import AudioWebcamCue, select_audio_webcam_cues
 from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
 from video.motion_types import WindowBounds
+
+if TYPE_CHECKING:
+    from process.music.chunk_scanner import SongRecoveryResult, SongScanConfig
 
 _LOCAL_AUDIO_NAMES = ("audio.m4a", "audio.opus", "audio.wav", "audio.mp3")
 _ENRICH_MARKER = "--- PRE-CHUNK AUDIO/SONG ---"
@@ -36,8 +31,20 @@ class ChunkEnrichConfig:
     audio_source: Optional[Path | str] = None
     video_source: Optional[Path | str] = None
     webcam_corner: str = WEBCAM_CORNER
-    song_cfg: SongScanConfig = field(default_factory=SongScanConfig)
+    song_cfg: Optional["SongScanConfig"] = None
     force: bool = False
+
+
+def should_scan_chunk_for_song(inp: Any) -> bool:
+    """Lazy-forward to process.music.chunk_scanner without eager numpy import."""
+    from process.music.chunk_scanner import should_scan_chunk_for_song as _fn
+    return _fn(inp)
+
+
+def scan_and_recover_chunk_song(req: Any, cfg: Optional["SongScanConfig"]) -> Optional["SongRecoveryResult"]:
+    """Lazy-forward to process.music.chunk_scanner without eager numpy import."""
+    from process.music.chunk_scanner import SongScanConfig, scan_and_recover_chunk_song as _fn
+    return _fn(req, cfg or SongScanConfig())
 
 
 def resolve_workspace_media(
@@ -102,7 +109,7 @@ def _extract_cue_webcam_paths(
 
 
 def _format_activity_block(
-    cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional[SongRecoveryResult]
+    cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional["SongRecoveryResult"]
 ) -> str:
     """Render pre-chunk audio, webcam, and Shazam signals for activity_chunk_NN.txt."""
     lines: List[str] = []
@@ -130,7 +137,7 @@ def _merge_activity_sidecar(workspace: Path, cid: str, block: str) -> None:
 
 
 def _build_enrichment_payload(
-    cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional[SongRecoveryResult]
+    cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional["SongRecoveryResult"]
 ) -> dict:
     """Serialize cues, webcam frame paths, song metadata, and recovered speech."""
     return {
@@ -152,10 +159,12 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
     cues = select_audio_webcam_cues(cfg.audio_source, bounds)
     wc_paths = _extract_cue_webcam_paths(chunk, cues, cfg)
     chat_lines, anchors = _load_chat_and_anchors(cfg.workspace, cid)
-    song: Optional[SongRecoveryResult] = None
-    if cfg.audio_source and should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
-        scratch = cfg.workspace / "enrichment" / "scratch" / cid
-        song = scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
+    song: Optional["SongRecoveryResult"] = None
+    if cfg.audio_source:
+        from process.music.chunk_scanner import SongScanRequest, SongTriggerInput
+        if should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
+            scratch = cfg.workspace / "enrichment" / "scratch" / cid
+            song = scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
     payload = _build_enrichment_payload(cues, wc_paths, song)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
