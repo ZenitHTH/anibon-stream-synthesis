@@ -29,6 +29,7 @@ class PeakSearchInput:
     items: Sequence[dict]
     audio_source: Optional[Path | str]
     sb_spikes: Tuple[int, ...] = ()
+    chunk_bounds: Optional[Tuple[int, int]] = None
 
 
 def _chunk_bounds(items: Sequence[dict]) -> Optional[Tuple[int, int]]:
@@ -125,7 +126,7 @@ def detect_chunk_reaction_peaks(
     query: PeakSearchInput, max_peaks: int = 4
 ) -> Tuple[Tuple[int, ...], float, bool]:
     """Fuse audio RMS bursts, silence cues, storyboard spikes, and livechat echoes."""
-    bounds = _chunk_bounds(query.items)
+    bounds = _chunk_bounds(query.items) or query.chunk_bounds
     if bounds is None:
         return query.sb_spikes, 0.0, False
     chat_bins = _load_livechat_bins(query.workspace, bounds)

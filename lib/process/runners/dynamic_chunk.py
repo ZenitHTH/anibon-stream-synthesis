@@ -124,14 +124,20 @@ def _resolve_chunk_webcam_box(
     items: list,
     args: Optional[argparse.Namespace],
     sb_frames: Sequence[tuple] = (),
+    chunk_bounds: Optional[Tuple[int, int]] = None,
 ) -> Optional[FaceBox]:
     """Resolve per-chunk OBS webcam box using 1s-vs-5m persistence when tiles exist."""
     pref = getattr(args, "webcam_corner", WEBCAM_CORNER) if args else WEBCAM_CORNER
     key = (pref or "auto").strip().lower()
     if key == "none" or (key != "auto" and key in WEBCAM_BOX_PRESETS):
         return WEBCAM_BOX_PRESETS[key]
-    lo = int(float(items[0].get("start", 0) or 0)) if items else 0
-    hi = int(float(items[-1].get("start", lo) or lo)) + 5 if items else lo + 60
+    if items:
+        lo = int(float(items[0].get("start", 0) or 0))
+        hi = int(float(items[-1].get("start", lo) or lo)) + 5
+    elif chunk_bounds:
+        lo, hi = chunk_bounds
+    else:
+        lo, hi = 0, 60
     cache_key = (str(workspace), str(source), key, lo * 100000 + hi)
     if cache_key not in _LAYOUT_CACHE:
         box = pick_consensus_corner(source, (lo, hi), sb_frames, _rank_active_corners) if len(sb_frames) >= 2 else None
@@ -165,11 +171,12 @@ def _enrich_plan_with_peaks(
     items: list,
     sb_frames: list,
     plan_and_audio: Tuple[DynamicPlan, Optional[Path | str]],
+    chunk_bounds: Optional[Tuple[int, int]] = None,
 ) -> Tuple[DynamicPlan, float]:
     """Fold audio RMS bursts and livechat echoes into DynamicPlan, promoting quiet hits."""
     plan, audio_src = plan_and_audio
     peaks, max_z, promote = detect_chunk_reaction_peaks(
-        PeakSearchInput(workspace, items, audio_src, plan.spike_secs)
+        PeakSearchInput(workspace, items, audio_src, plan.spike_secs, chunk_bounds=chunk_bounds)
     )
     eff = peaks or plan.spike_secs
     if plan.tier == "low" and promote:
@@ -181,14 +188,17 @@ def _load_cached_enrichment_webcam(workspace: Path, chunk: dict) -> list:
     """Load pre-extracted webcam sheets/frames from enrichment/chunk_NN.json."""
     cid = f"chunk_{int(chunk.get('_idx', 0) or 0):02d}"
     enr = load_chunk_enrichment(workspace, cid)
+    cues = [c for c in (enr.get("audio_cues") or ()) if isinstance(c, dict)]
+    cue_legend = ", ".join(f"{fmt_ts(int(c.get('sec', 0)))}:{c.get('event_type', 'cue')}" for c in cues)
     frames = []
-    for raw_path in enr.get("webcam_frames") or ():
+    for idx, raw_path in enumerate(enr.get("webcam_frames") or ()):
         p = Path(raw_path)
         if not p.is_file():
             continue
         b64 = base64.b64encode(p.read_bytes()).decode("ascii")
-        ts = fmt_ts(int(chunk.get("start_sec", 0) or 0))
-        frames.append((ts, p, b64, "WEBCAM CLOSEUP (PRE-CHUNK)"))
+        sec = int(cues[idx]["sec"]) if idx < len(cues) else (int(cues[0]["sec"]) if cues else int(chunk.get("start_sec", 0) or 0))
+        label = f"WEBCAM CLOSEUP (PRE-CHUNK: {cue_legend})" if cue_legend else "WEBCAM CLOSEUP (PRE-CHUNK)"
+        frames.append((fmt_ts(sec), p, b64, label))
     return frames
 
 
@@ -201,15 +211,19 @@ def _balance_dynamic_chunk_frames(
 ) -> Tuple[list, list, str]:
     """Dynamically allocate screen vs webcam storyboard frames from motion + audio bursts."""
     cached_wc = _load_cached_enrichment_webcam(workspace, chunk)
+    if cached_wc:
+        return trim_storyboard_frames(sb_frames, min(10, max(len(sb_frames), 1))), cached_wc, "cached-enrichment"
     if not source:
-        return (sb_frames, cached_wc, "cached-enrichment") if cached_wc else (sb_frames, [], "static")
+        return sb_frames, [], "static"
     items = chunk.get("items", [])
-    box = _resolve_chunk_webcam_box(workspace, source, items, args, sb_frames=sb_frames)
+    s_sec, e_sec = int(chunk.get("start_sec", 0) or 0), int(chunk.get("end_sec", 0) or 0)
+    bounds = (s_sec, e_sec) if e_sec > s_sec else None
+    box = _resolve_chunk_webcam_box(workspace, source, items, args, sb_frames=sb_frames, chunk_bounds=bounds)
     has_cue = any(cue in (it.get("text") or "") for it in items for cue in EMOTION_REACTION_CUES)
     base_plan = assess_storyboard_webcam_motion(sb_frames, box, has_emotion_cue=has_cue)
-    plan, max_z = _enrich_plan_with_peaks(workspace, items, sb_frames, (base_plan, _resolve_chunk_audio_source(workspace, source, args)))
+    plan, max_z = _enrich_plan_with_peaks(workspace, items, sb_frames, (base_plan, _resolve_chunk_audio_source(workspace, source, args)), chunk_bounds=bounds)
     layout_fn = make_segment_layout_fn(sb_frames, _rank_active_corners, preferred_box=box) if len(sb_frames) >= 2 else None
-    wc_frames = cached_wc or _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
+    wc_frames = _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
     sb_balanced = trim_storyboard_frames(sb_frames, plan.sb_keep) if wc_frames else sb_frames
     suffix = f",peak_z={max_z:.1f}" if max_z >= 2.0 else ""
     return sb_balanced, wc_frames, f"{plan.tier}(mad={plan.mean_mad:.3f}{suffix})"

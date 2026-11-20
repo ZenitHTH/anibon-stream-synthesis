@@ -13,7 +13,6 @@ if _LIB_DIR not in sys.path:
 from common.config import WEBCAM_CORNER
 from process.audio_separator_engine import DEFAULT_AUDIOCPP_URL
 from process.chunk_enrichment import ChunkEnrichConfig, enrich_workspace_chunks, resolve_workspace_media
-from process.music.chunk_scanner import SongScanConfig
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -30,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    from process.music.chunk_scanner import SongScanConfig
     args = build_parser().parse_args()
     ws = args.workspace.expanduser().resolve()
     audio_src, video_src = resolve_workspace_media(ws, args)

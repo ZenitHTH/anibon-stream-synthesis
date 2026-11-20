@@ -395,12 +395,18 @@ def _run_pre_enrichment_if_requested(workspace: Path, args: argparse.Namespace) 
     if not getattr(args, "enrich", False):
         return
     from process.chunk_enrichment import ChunkEnrichConfig, resolve_workspace_media
+    from process.music.chunk_scanner import SongScanConfig
     audio_src, video_src = resolve_workspace_media(workspace, args)
+    song_cfg = SongScanConfig(
+        whisper_bin=getattr(args, "whisper_bin", None),
+        whisper_model=getattr(args, "whisper_model", None),
+    )
     cfg = ChunkEnrichConfig(
         workspace=workspace,
         audio_source=audio_src,
         video_source=video_src,
         webcam_corner=getattr(args, "webcam_corner", WEBCAM_CORNER),
+        song_cfg=song_cfg,
     )
     count = enrich_workspace_chunks(cfg)
     log_info("enrich", f"pre-enriched {count} chunks (audio/webcam/Shazam)")

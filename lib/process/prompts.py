@@ -28,8 +28,10 @@ WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir
 _WI_SNIPPET_LIMIT = 1800
 
 
-def _chunk_range(items: list) -> Tuple[str, str]:
+def _chunk_range(items: list, chunk: Optional[dict] = None) -> Tuple[str, str]:
     if not items:
+        if chunk and int(chunk.get("end_sec", 0) or 0) > int(chunk.get("start_sec", 0) or 0):
+            return fmt_ts(int(chunk["start_sec"])), fmt_ts(int(chunk["end_sec"]))
         return "00:00:00", "00:00:00"
     start = items[0].get("start", 0)
     last = items[-1]
@@ -408,7 +410,7 @@ def build_recursive_prompt(
 ) -> str:
     """Build prompt for recursive rolling summary state-machine."""
     items = chunk.get("items", [])
-    start_ts, end_ts = _chunk_range(items)
+    start_ts, end_ts = _chunk_range(items, chunk)
     lang_note = "Thai (ภาษาไทย)" if lang == "th" else "English"
 
     lines = coalesce_chunk_items(items)
@@ -548,10 +550,8 @@ def build_group_prompt(
     enrichment_loader=None,
 ) -> str:
     """Build group prompt combining 3-5 chunks (~15-25 min) with continuity awareness."""
-    first_items = chunks[0].get("items", [])
-    last_items = chunks[-1].get("items", [])
-    group_start = fmt_ts(first_items[0].get("start", 0)) if first_items else "00:00:00"
-    group_end = fmt_ts(last_items[-1].get("start", 0) + last_items[-1].get("duration", 5)) if last_items else "00:00:00"
+    group_start = _chunk_range(chunks[0].get("items", []), chunks[0])[0]
+    group_end = _chunk_range(chunks[-1].get("items", []), chunks[-1])[1]
     lang_note = "Thai (ภาษาไทย)" if lang == "th" else "English"
 
     if prev_tail:
@@ -570,7 +570,7 @@ def build_group_prompt(
     for ch in chunks:
         idx_str = f"chunk_{ch.get('_idx', 0):02d}"
         c_items = ch.get("items", [])
-        c_start, c_end = _chunk_range(c_items)
+        c_start, c_end = _chunk_range(c_items, ch)
 
         sig = signals_map.get(idx_str)
         if sig:

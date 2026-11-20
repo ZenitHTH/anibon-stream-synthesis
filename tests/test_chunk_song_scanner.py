@@ -73,6 +73,41 @@ class TestChunkSongScanner(unittest.TestCase):
         self.assertEqual(res.title, "Ao no Sumika")
         self.assertEqual(res.recovered_items, ())
 
+    def test_scan_handles_no_shazam_match_and_whisper_errors(self) -> None:
+        chunk = {"start_sec": 300, "end_sec": 360, "items": []}
+        with tempfile.TemporaryDirectory() as tmp:
+            work_dir = Path(tmp)
+            vocals = work_dir / "vocals.wav"
+            vocals.write_bytes(b"RIFF")
+            req = SongScanRequest(chunk, Path("audio.m4a"), work_dir)
+            with patch("process.music.chunk_scanner._slice_wav_range", return_value=True), \
+                 patch("process.music.chunk_scanner.recognize_shazam_slice", new=AsyncMock(return_value=None)):
+                self.assertIsNone(scan_and_recover_chunk_song(req, SongScanConfig()))
+
+            with patch("process.music.chunk_scanner._slice_wav_range", return_value=True), \
+                 patch("process.music.chunk_scanner.recognize_shazam_slice", new=AsyncMock(return_value=TrackMetadata("Song", "Art"))), \
+                 patch("process.music.chunk_scanner.separate_via_audiocpp_api", return_value=(vocals, work_dir / "inst.wav")), \
+                 patch("process.music.chunk_scanner.find_whisper_cli", return_value=None):
+                res_no_bin = scan_and_recover_chunk_song(req, SongScanConfig())
+            self.assertIsNotNone(res_no_bin)
+            self.assertEqual(res_no_bin.recovered_items, ())
+
+            with patch("process.music.chunk_scanner._slice_wav_range", return_value=True), \
+                 patch("process.music.chunk_scanner.recognize_shazam_slice", new=AsyncMock(return_value=TrackMetadata("Song", "Art"))), \
+                 patch("process.music.chunk_scanner.separate_via_audiocpp_api", return_value=(vocals, work_dir / "inst.wav")), \
+                 patch("process.music.chunk_scanner.find_whisper_cli", return_value="/bin/w"), \
+                 patch("process.music.chunk_scanner.find_whisper_model", return_value="/m.bin"), \
+                 patch("process.music.chunk_scanner.convert_audio_to_16k_mono"), \
+                 patch("process.music.chunk_scanner.run_whisper_slice", side_effect=RuntimeError("whisper crash")):
+                res_err = scan_and_recover_chunk_song(req, SongScanConfig())
+            self.assertIsNotNone(res_err)
+            self.assertEqual(res_err.recovered_items, ())
+
+    def test_should_scan_triggers_on_spectral_music_probe(self) -> None:
+        chunk = {"start_sec": 0, "end_sec": 60, "items": []}
+        with patch("process.music.chunk_scanner._probe_spectral_music", return_value=True):
+            self.assertTrue(should_scan_chunk_for_song(SongTriggerInput(chunk, (), (), Path("a.m4a"))))
+
 
 if __name__ == "__main__":
     unittest.main()

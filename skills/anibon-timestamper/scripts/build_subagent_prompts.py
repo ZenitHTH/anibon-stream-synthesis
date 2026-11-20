@@ -98,8 +98,11 @@ def build_prompts(workspace):
         enr_path = os.path.join(workspace, "enrichment", f"{cid}.json")
         enr_str = ""
         if os.path.exists(enr_path):
-            with open(enr_path, 'r', encoding='utf-8') as enf:
-                enr_str = format_enrichment_context(json.load(enf))
+            try:
+                with open(enr_path, 'r', encoding='utf-8') as enf:
+                    enr_str = format_enrichment_context(json.load(enf))
+            except (OSError, ValueError):
+                enr_str = ""
         enr_section = f"\nENRICHMENT (SONG / RECOVERED SPEECH / AUDIO CUES):\n{enr_str}\n" if enr_str else ""
 
         try:

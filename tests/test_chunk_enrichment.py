@@ -69,6 +69,43 @@ class TestChunkEnrichment(unittest.TestCase):
                 count = enrich_workspace_chunks(cfg)
             self.assertEqual(count, 1)
 
+    def test_skips_cache_without_media_handles_corrupt_json_and_force_strips_stale_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ws = Path(tmp)
+            (ws / "chunks").mkdir()
+            (ws / "activity").mkdir()
+            chunk_path = ws / "chunks" / "chunk_00.txt"
+            chunk_path.write_text("CHUNK 00 | 00:00:00–00:02:30 | cutoff=00:02:15\n(00:00:10) เริ่ม", encoding="utf-8")
+
+            # 1. No media -> does not poison cache
+            no_media_cfg = ChunkEnrichConfig(workspace=ws, audio_source=None, video_source=None)
+            enrich_single_chunk(chunk_path, no_media_cfg)
+            self.assertFalse((ws / "enrichment" / "chunk_00.json").exists())
+
+            # 2. Corrupt cache + stale activity marker + stale scratch whisper json -> force cleans all
+            (ws / "enrichment").mkdir(parents=True, exist_ok=True)
+            (ws / "enrichment" / "chunk_00.json").write_text("{corrupt", encoding="utf-8")
+            scratch = ws / "enrichment" / "scratch" / "chunk_00"
+            scratch.mkdir(parents=True)
+            stale_whisper = scratch / "vocals_16k.json"
+            stale_whisper.write_text("{}", encoding="utf-8")
+            (ws / "activity" / "activity_chunk_00.txt").write_text(
+                "- 00:00:00 - 00:02:30: Game [Gameplay]\n--- PRE-CHUNK AUDIO/SONG ---\n- [AUDIO_PEAK] 00:00:20",
+                encoding="utf-8",
+            )
+
+            # Without force: corrupt JSON falls back to fresh computation or {} without crashing
+            force_cfg = ChunkEnrichConfig(workspace=ws, audio_source=Path("a.m4a"), force=True)
+            with patch("process.chunk_enrichment.select_audio_webcam_cues", return_value=()), \
+                 patch("process.chunk_enrichment.should_scan_chunk_for_song", return_value=False):
+                enrich_single_chunk(chunk_path, force_cfg)
+
+            self.assertFalse(stale_whisper.exists())
+            act_text = (ws / "activity" / "activity_chunk_00.txt").read_text(encoding="utf-8")
+            self.assertIn("Game [Gameplay]", act_text)
+            self.assertNotIn("PRE-CHUNK AUDIO/SONG", act_text)
+            self.assertNotIn("[AUDIO_PEAK]", act_text)
+
 
 if __name__ == "__main__":
     unittest.main()

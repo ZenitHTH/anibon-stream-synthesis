@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from chunk.state import load_chunk_file
 from common.config import WEBCAM_CORNER
+from common.log import log_warn
 from common.time import fmt_ts
 from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
 from video.audio_webcam_cues import AudioWebcamCue, select_audio_webcam_cues
@@ -124,16 +125,28 @@ def _format_activity_block(
 
 
 def _merge_activity_sidecar(workspace: Path, cid: str, block: str) -> None:
-    """Append or refresh pre-chunk enrichment lines inside activity/activity_NN.txt."""
-    if not block:
-        return
-    act_dir = workspace / "activity"
-    act_dir.mkdir(parents=True, exist_ok=True)
-    act_path = act_dir / f"activity_{cid}.txt"
+    """Append, refresh, or strip pre-chunk enrichment lines in activity_NN.txt."""
+    act_path = workspace / "activity" / f"activity_{cid}.txt"
     existing = act_path.read_text(encoding="utf-8") if act_path.is_file() else ""
     base = existing.split(_ENRICH_MARKER, 1)[0].strip()
+    if not block:
+        if _ENRICH_MARKER in existing:
+            act_path.write_text((base + "\n") if base else "", encoding="utf-8")
+        return
+    act_path.parent.mkdir(parents=True, exist_ok=True)
     merged = f"{base}\n{_ENRICH_MARKER}\n{block}".strip()
     act_path.write_text(merged + "\n", encoding="utf-8")
+
+
+def _read_cached_enrichment(cache_path: Path) -> Optional[dict]:
+    """Read enrichment JSON cache safely, returning None on missing or corrupt JSON."""
+    if not cache_path.is_file():
+        return None
+    try:
+        data = json.loads(cache_path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else None
+    except (OSError, ValueError):
+        return None
 
 
 def _build_enrichment_payload(
@@ -152,18 +165,22 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
     """Run audio yell/silence webcam extraction and Shazam+whisper recovery for one chunk."""
     cid = chunk_path.stem
     cache_path = cfg.workspace / "enrichment" / f"{cid}.json"
-    if cache_path.is_file() and not cfg.force:
-        return json.loads(cache_path.read_text(encoding="utf-8"))
+    if not cfg.force and (cached := _read_cached_enrichment(cache_path)) is not None:
+        return cached
+    if not cfg.audio_source and not cfg.video_source:
+        log_warn("enrich", f"{cid}: no audio/video source resolved; skipping enrichment cache")
+        return {}
     chunk = _load_chunk_meta(chunk_path)
-    bounds = WindowBounds(chunk["start_sec"], chunk["end_sec"])
-    cues = select_audio_webcam_cues(cfg.audio_source, bounds)
+    cues = select_audio_webcam_cues(cfg.audio_source, WindowBounds(chunk["start_sec"], chunk["end_sec"]))
     wc_paths = _extract_cue_webcam_paths(chunk, cues, cfg)
     chat_lines, anchors = _load_chat_and_anchors(cfg.workspace, cid)
     song: Optional["SongRecoveryResult"] = None
     if cfg.audio_source:
         from process.music.chunk_scanner import SongScanRequest, SongTriggerInput
+        scratch = cfg.workspace / "enrichment" / "scratch" / cid
+        if cfg.force:
+            (scratch / "vocals_16k.json").unlink(missing_ok=True)
         if should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
-            scratch = cfg.workspace / "enrichment" / "scratch" / cid
             song = scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
     payload = _build_enrichment_payload(cues, wc_paths, song)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
