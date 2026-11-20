@@ -56,6 +56,12 @@ Controlled A/B across 5 multimodal chunks (`22.5 min`, 25 Storyboard keyframes, 
   - **HTTPS Recovery & Routing**: `_wait_for_network_recovery` resolves implicit port `443` (`https://`) and `80` (`http://`) before `1234`. Both `/v1/chat/completions` and `/api/v1/chat/completions` route automatically with `Authorization: Bearer <KEY>` and browser `User-Agent` (Cloudflare WAF code 1010 bypass). Vision uses base64 `image_url` payloads.
 - **Configuration (`config.json` & `--config`)**: Numeric defaults, timeouts, temperatures, pruning bounds, and multimodal settings live in `skills/anibon-timestamper-local/config.json` and load via `lib/common/config.py` (zero dependencies). Keep secrets in gitignored `.env`. Override per run via `--config /path/to/config.json` (`--env-file` alias) or env vars (`ANIBON_CHUNK_MAX_TOKENS`, `ANIBON_TEMPERATURE`, etc.).
 
+## 3.5 Remote `audio.cpp` & `whisper.cpp` Servers (P100 Host)
+
+- **`audio.cpp` (`100.115.25.30:8080`)**: Set `AUDIOCPP_URL="http://100.115.25.30:8080/v1/tasks/run"` and `USE_AUDIOCPP=1` (or pass `--audiocpp-url` to `scripts/enrich_chunks.py`).
+- **`whisper.cpp` (`100.115.25.30:8082`)**: Set `WHISPER_ENDPOINT="http://100.115.25.30:8082/inference"` for both `enrich_chunks.py` and Stage 3 `whisper_dispatcher.py`.
+- **Crash / VRAM Contention Check**: Probe `GET http://100.115.25.30:8082/` and test one `audio_slices/cluster_*.wav` via `curl -F file=@...` if Stage 3 logs curl exit `56`/`28`. When `whisper-server` shares 16GB VRAM with LM Studio (`google/gemma-4-12b-qat`), transient crash/restarts can drop early slices (`cluster_000`–`002`); if `8082` remains down, omit `WHISPER_ENDPOINT` to fall back to local `whisper-cli` (`ggml-large-v3-turbo.bin`).
+
 ## 4. Multimodal Storyboard Tuning (`--multimodal-chunks`)
 
 Storyboard keyframe sampling is enabled by default (`"multimodal_chunks": true`). Key tuning flags:
@@ -76,10 +82,8 @@ python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtub
 
 ## 5. Webcam Reaction Gating & Mid-Stream Switch (`--reaction-verify`)
 
-- **Off by default (`reaction_verify: false`)**: When omitted, `_init_webcam_source()` returns `None` and `_balance_dynamic_chunk_frames()` immediately returns `"static"` (`webcam=0`)—neither `mean_mad` face-motion checks nor audio RMS peak probes run.
-- **When to enable (`--reaction-verify` + local `video*.mp4` or `--remote-snap`)**:
-  - **Use on**: WatchParty / trailer premieres, horror / jumpscare / rage games, high-stakes gacha / boss climaxes, unboxing / desk-cam bits.
-  - **Skip on**: Long Free-Talk / News / Ramble streams (`"ไปเรื่อย ไม่มีแผน"`) where speech + storyboard + LiveChat carry topic shifts; avoids per-chunk `yt-dlp -g`/`ffmpeg` seeks, `260` tokens/image budget crowding, and Pass 2 `[Reaction]` rewrite noise.
+- **Verify-First Default**: Always run pre-chunk `scripts/enrich_chunks.py` + `--reaction-verify` first unless the user explicitly asks to skip verification. Download format `18` (`yt-dlp -f 18 -o <ws>/video_360p.mp4`) once up front so `enrich_chunks.py` and `--reaction-verify` seek locally instead of firing 199+ remote `--remote-snap` HTTP requests (`enrich_chunks.py` skips all chunks silently if neither local media nor `--remote-snap` is present).
+- **Free-Talk Tradeoff**: Because `--reaction-verify` on Free-Talk streams still runs VLM rewrites, audit `reaction_verify_log.json` closely in Stage 5 to revert emotion-verb saturation (`"ตกใจ"`) and verdict flips.
 - **Built-in Dynamic Switching (when `--reaction-verify` is on)**:
   - **Pass 1 (`lib/video/dynamic_balance.py`, `lib/video/chunk_peak_select.py`)**: Calm chunks stay `tier="low"` (`webcam=0`). Switches to `medium`/`high` (`4–12` webcam frames) when `mean_mad >= 0.095` (`>= 0.135` high), `EMOTION_REACTION_CUES` match, or `max_audio_z >= 2.5` (`>= 2.0` with LiveChat echo).
   - **Pass 2 (`needs_reaction_verify`)**: Snaps only `[Reaction]` tags, active co-triggers (`triggers.has_any`), or `score_item_situations >= 2.0`.

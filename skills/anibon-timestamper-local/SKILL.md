@@ -46,6 +46,7 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 ```bash
 python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
   --workspace ~/youtube_<VIDEO_ID>_workspace --format txt --block 150 --overlap 15 --live-chat
+yt-dlp -f 18 -o ~/youtube_<VIDEO_ID>_workspace/video_360p.mp4 "https://www.youtube.com/watch?v=<VIDEO_ID>"
 ```
 
 Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
@@ -62,8 +63,20 @@ curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | s
 ### 3. Run Timestamper / Detached Launch / Pause Control
 
 ```bash
-# Foreground (storyboard multimodal ON by default; --reaction-verify OFF by default; pass --enrich to pre-scan yells/silence/Shazam):
-python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace --mode recursive --lang th
+# Pre-enrich soundwave audio cues, webcam crops, and Shazam -> audio.cpp -> whisper.cpp (verify-first default):
+WHISPER_ENDPOINT="http://100.115.25.30:8082/inference" \
+AUDIOCPP_URL="http://100.115.25.30:8080/v1/tasks/run" USE_AUDIOCPP=1 \
+python3 -X utf8 scripts/enrich_chunks.py ~/youtube_<VIDEO_ID>_workspace \
+  --video-file ~/youtube_<VIDEO_ID>_workspace/video_360p.mp4 \
+  --audiocpp-url "http://100.115.25.30:8080/v1/tasks/run"
+
+# Foreground (verify-first default: storyboard + cached enrichment + --reaction-verify on local video_360p.mp4):
+WHISPER_ENDPOINT="http://100.115.25.30:8082/inference" \
+AUDIOCPP_URL="http://100.115.25.30:8080/v1/tasks/run" USE_AUDIOCPP=1 \
+python3 -X utf8 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtube_<VIDEO_ID>_workspace \
+  --mode recursive --lang th --reaction-verify \
+  --video-file ~/youtube_<VIDEO_ID>_workspace/video_360p.mp4 \
+  --video-url "https://www.youtube.com/watch?v=<VIDEO_ID>"
 
 # Detached background (macOS/Linux; Windows scripts in hardware-and-endpoints.md):
 bash skills/anibon-timestamper-local/scripts/launch_local.sh ~/youtube_<VIDEO_ID>_workspace 100.115.25.30 auto th
