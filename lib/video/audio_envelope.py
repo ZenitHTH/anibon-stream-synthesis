@@ -93,6 +93,67 @@ def _decode_mono_pcm(source: Path | str, bounds: WindowBounds) -> bytes:
         return b""
 
 
+def extract_raw_rms_bins(
+    source: Path | str, bounds: WindowBounds, bin_sec: float = 1.0
+) -> List[Tuple[int, float]]:
+    """Decode window audio and return (abs_sec, rms) pairs."""
+    pcm = _decode_mono_pcm(source, bounds)
+    bins = _pcm_rms_bins(pcm, 8000, bin_sec)
+    if not bins:
+        return []
+    base = int(round(max(0.0, bounds.start_sec)))
+    return [(base + int(round(i * bin_sec)), val) for i, val in enumerate(bins)]
+
+
+def _sustained_silence_starts(raw_bins: List[Tuple[int, float]], bin_sec: float) -> List[int]:
+    """Return start seconds for continuous near-silence runs >= 6 seconds."""
+    min_bins = max(2, int(round(6.0 / max(bin_sec, 0.1))))
+    starts: List[int] = []
+    run_start: Optional[int] = None
+    run_len = 0
+    for sec, val in raw_bins:
+        if val <= 0.012:
+            run_start = sec if run_len == 0 else run_start
+            run_len += 1
+            if run_len == min_bins and run_start is not None:
+                starts.append(run_start)
+        else:
+            run_start, run_len = None, 0
+    return starts
+
+
+def _loud_peak_events(
+    raw_bins: List[Tuple[int, float]], z_thresh: float
+) -> List[Tuple[int, str, float]]:
+    """Detect loud RMS Z-score bursts across (abs_sec, rms) bins."""
+    vals = [v for _, v in raw_bins]
+    med = statistics.median(vals)
+    mad = statistics.median([abs(v - med) for v in vals])
+    sigma = max(1.4826 * mad, 0.005)
+    return [
+        (sec, "loud_peak", round((val - med) / sigma, 3))
+        for sec, val in raw_bins
+        if (val - med) / sigma >= z_thresh
+    ]
+
+
+def detect_audio_cue_events(
+    raw_bins: List[Tuple[int, float]], bin_sec: float = 1.0, z_thresh: float = 2.5
+) -> List[Tuple[int, str, float]]:
+    """Emit (abs_sec, event_type, score) for loud peaks, silence drops, and sustained silence."""
+    if len(raw_bins) < 3:
+        return []
+    events = _loud_peak_events(raw_bins, z_thresh)
+    drop_rel = _find_silence_drop([v for _, v in raw_bins], bin_sec)
+    if drop_rel is not None:
+        drop_idx = min(len(raw_bins) - 1, max(0, int(round(drop_rel / max(bin_sec, 0.1)))))
+        events.append((raw_bins[drop_idx][0], "silence_drop", 3.0))
+    for sec in _sustained_silence_starts(raw_bins, bin_sec):
+        events.append((sec, "sustained_silence", 2.5))
+    events.sort(key=lambda item: (item[0], -item[2]))
+    return events
+
+
 def extract_chunk_rms_bins(
     source: Path | str, bounds: WindowBounds, bin_sec: float = 1.0
 ) -> List[Tuple[int, float, float]]:

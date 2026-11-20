@@ -6,7 +6,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from video.audio_envelope import extract_chunk_rms_bins
+from video.audio_envelope import (
+    detect_audio_cue_events,
+    extract_chunk_rms_bins,
+    extract_raw_rms_bins,
+)
+from video.audio_webcam_cues import raw_bins_to_z
 from video.motion_types import WindowBounds
 
 _CHAT_TS_RE = re.compile(r"^\[(\d+):(\d{2}):(\d{2})\]")
@@ -65,23 +70,39 @@ def _chat_echo_bonus(bins: Dict[int, int], sec: int) -> float:
     return min(3.0, max(0.0, ratio - 1.2))
 
 
-def _collect_audio_candidates(
-    audio_source: Optional[Path | str], bounds: Tuple[int, int], chat_bins: Dict[int, int]
+def _score_z_bins(
+    bins: List[Tuple[int, float, float]], chat_bins: Dict[int, int]
 ) -> Tuple[List[Tuple[float, int]], float]:
-    """Score 1s audio shout-onset candidates plus delayed livechat reaction echoes."""
-    if not audio_source:
-        return [], 0.0
-    bins = extract_chunk_rms_bins(audio_source, WindowBounds(bounds[0], bounds[1]), bin_sec=1.0)
+    """Score loud onset bins with livechat echo bonus."""
     if not bins:
         return [], 0.0
     max_z = max(z for _, z, _ in bins)
-    cands: List[Tuple[float, int]] = []
-    for sec, z, onset in bins:
-        if z < _MIN_AUDIO_Z:
-            continue
-        score = z + 0.5 * onset + 0.8 * _chat_echo_bonus(chat_bins, sec)
-        cands.append((score, sec))
+    cands = [
+        (z + 0.5 * onset + 0.8 * _chat_echo_bonus(chat_bins, sec), sec)
+        for sec, z, onset in bins
+        if z >= _MIN_AUDIO_Z
+    ]
     return cands, max_z
+
+
+def _collect_audio_candidates(
+    audio_source: Optional[Path | str], bounds: Tuple[int, int], chat_bins: Dict[int, int]
+) -> Tuple[List[Tuple[float, int]], float, bool]:
+    """Score loud audio bursts, silence drops, and livechat reaction echoes."""
+    if not audio_source:
+        return [], 0.0, False
+    wb = WindowBounds(bounds[0], bounds[1])
+    raw_bins = extract_raw_rms_bins(audio_source, wb, bin_sec=1.0)
+    if not raw_bins:
+        cands, max_z = _score_z_bins(extract_chunk_rms_bins(audio_source, wb, bin_sec=1.0), chat_bins)
+        return cands, max_z, False
+    cands, max_z = _score_z_bins(raw_bins_to_z(raw_bins), chat_bins)
+    silence = [
+        (score + 0.8 * _chat_echo_bonus(chat_bins, sec), sec)
+        for sec, kind, score in detect_audio_cue_events(raw_bins, bin_sec=1.0, z_thresh=_MIN_AUDIO_Z)
+        if kind in ("silence_drop", "sustained_silence")
+    ]
+    return cands + silence, max_z, bool(silence)
 
 
 def _pick_spaced(
@@ -103,18 +124,18 @@ def _pick_spaced(
 def detect_chunk_reaction_peaks(
     query: PeakSearchInput, max_peaks: int = 4
 ) -> Tuple[Tuple[int, ...], float, bool]:
-    """Fuse audio RMS onsets, storyboard spikes, and livechat echoes into spaced peaks."""
+    """Fuse audio RMS bursts, silence cues, storyboard spikes, and livechat echoes."""
     bounds = _chunk_bounds(query.items)
     if bounds is None:
         return query.sb_spikes, 0.0, False
     chat_bins = _load_livechat_bins(query.workspace, bounds)
-    cands, max_audio_z = _collect_audio_candidates(query.audio_source, bounds, chat_bins)
+    cands, max_audio_z, has_silence = _collect_audio_candidates(query.audio_source, bounds, chat_bins)
     for sec in query.sb_spikes:
         cands.append((3.5 + 0.8 * _chat_echo_bonus(chat_bins, sec), sec))
     cands.sort(key=lambda item: (-item[0], item[1]))
     chosen = _pick_spaced(cands, [], min_spacing=_MIN_PEAK_GAP, max_count=max_peaks)
     has_chat_corroborated = any(_chat_echo_bonus(chat_bins, s) >= 0.8 for s_score, s in cands if s_score >= 2.0)
-    should_promote = max_audio_z >= _PROMOTE_AUDIO_Z or (max_audio_z >= 2.0 and has_chat_corroborated)
+    should_promote = has_silence or max_audio_z >= _PROMOTE_AUDIO_Z or (max_audio_z >= 2.0 and has_chat_corroborated)
     return tuple(sorted(chosen)), max_audio_z, should_promote
 
 
