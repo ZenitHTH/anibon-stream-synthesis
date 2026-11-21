@@ -73,7 +73,13 @@ if [[ $# -ge 7 ]]; then
     EXTRA_ARGS+=("${@:7}")
 fi
 
-nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
+WHISPER_ENDPOINT="${WHISPER_ENDPOINT:-http://100.115.25.30:8082/inference}"
+AUDIOCPP_URL="${AUDIOCPP_URL:-http://100.115.25.30:8080/v1/tasks/run}"
+USE_AUDIOCPP="${USE_AUDIOCPP:-1}"
+
+nohup env PYTHONUNBUFFERED=1 LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
+    WHISPER_ENDPOINT="$WHISPER_ENDPOINT" AUDIOCPP_URL="$AUDIOCPP_URL" USE_AUDIOCPP="$USE_AUDIOCPP" \
+    python3 -u -X utf8 "$RUNNER_SCRIPT" "$WORKSPACE" \
     --endpoint "$ENDPOINT" \
     --model "$MODEL" \
     --lang "$LANG" \

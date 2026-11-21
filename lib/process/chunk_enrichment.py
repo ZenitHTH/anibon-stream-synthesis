@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from chunk.state import load_chunk_file
 from common.config import WEBCAM_CORNER
-from common.log import log_warn
+from common.log import format_progress, log_info, log_stage, log_warn
 from common.time import fmt_ts
 from process.chunk_storyboard_prep import prep_chunk_storyboard
 from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
@@ -195,9 +195,13 @@ def enrich_workspace_chunks(cfg: ChunkEnrichConfig) -> int:
     if cfg.slides_dir is None:
         from process.multimodal import prepare_storyboard_slides
         cfg = replace(cfg, slides_dir=prepare_storyboard_slides(cfg.workspace))
-    for cf in chunk_files:
-        enrich_single_chunk(cf, cfg)
-    return len(chunk_files)
+    total = len(chunk_files)
+    log_stage(f"STAGE 2 :: PREP-FIRST ENRICHMENT ({total} chunks: storyboard + webcam@peak/silence + song)")
+    for i, cf in enumerate(chunk_files, start=1):
+        p = enrich_single_chunk(cf, cfg)
+        song_lbl = f" song={p['song']['title']}" if p.get("song") else ""
+        log_info("prep", f"{format_progress(i, total)} {cf.stem} | sb={len(p.get('storyboard_frames') or ())} cues={len(p.get('audio_cues') or ())} wc={len(p.get('webcam_frames') or ())}{song_lbl}")
+    return total
 
 
 __all__ = ["ChunkEnrichConfig", "enrich_single_chunk", "enrich_workspace_chunks", "resolve_workspace_media"]
