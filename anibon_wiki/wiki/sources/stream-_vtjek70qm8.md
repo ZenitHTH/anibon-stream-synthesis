@@ -1,0 +1,60 @@
+---
+title: "Stream _vTjEK70qm8 — Pokémon Radical Red / Rogue | ANIBON"
+category: "source"
+updated: "2026-11-21"
+video_id: "_vTjEK70qm8"
+upload_date: "2026-08-03"
+tags: ["anibon", "pokemon", "stream"]
+sources: []
+status: "active"
+---
+
+# Stream `_vTjEK70qm8` — Pokémon Radical Red / Rogue | ANIBON
+
+- **Upload Date**: `2026-08-03`
+- **YouTube URL**: `https://www.youtube.com/watch?v=_vTjEK70qm8`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-_vtjek70qm8.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp__vTjEK70qm8.md)
+
+## Linked Categories & Entities
+- **Games**: [[pokemon]]
+- **Entities**: —
+- **Topics**: —
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: ทักทายผู้ชมและเกริ่นเริ่มไลฟ์สตรีมเ | ปรับแผนจัดทีมใหม่เตรียมรับมือสายกาย (⏱ เริ่ม: 00:00:12)
+- ส่วนที่ 2: ปรับแก้ Stat สปีดของหอย Shellder | ลองของเปลี่ยนเอาเอ็มโบร์ (กวนอู) | กำจัดอูฐสำเร็จ (⏱ เริ่ม: 01:07:32)
+- ส่วนที่ 3: วางแผนเปลี่ยนเอา Mudsdale (ม้า) | ลุ้นอัปเลเวลม้าพร้อมรอวิวัฒนาการร่า (⏱ เริ่ม: 02:10:34)
+
+## Curated Timeline (32 timestamps)
+- `00:00:12` — [Greeting] ทักทายผู้ชมและเกริ่นเริ่มไลฟ์สตรีมเกม Pokémon Radical Red
+- `00:05:43` — [Gameplay] จัดตัวและวางแผนเตรียมรับมือบอส Sakaki ใน Pokémon Radical Red
+- `00:21:21` — [Boss] ท้าชนบอส Sakaki รอบ 2 ประเดิมเปิดฉากประลอง Pokémon Radical Red
+- `00:22:32` — [Boss] ลุ้นหนักสู้บอสทีมทรายสุดอึดใน Pokemon Rogue
+- `00:31:31` — [Gameplay] ปรับแผนจัดทีมใหม่เตรียมรับมือสายกายภาพ
+- `00:36:08` — [Gameplay] แซวปู่พัฒนาร่างหอย Shellder แก้ทางเฉพาะกิจ
+- `00:40:32` — [Boss] แก้มือสู้บอสทีมทรายรอบใหม่ใน Pokemon Rogue
+- `00:54:03` — [Boss] ลุ้นหนักหอยแบกทีมพลิกเอาชนะโปเกมอนตัวโหด
+- `01:00:00` — [Gameplay] ปรับแผนเปลี่ยนตัวโปเกมอนในทีมเตรียมสู้บอสรอบใหม่
+- `01:07:32` — [Gameplay] ปรับแก้ Stat สปีดของหอย Shellder และปาร์ตี้เตรียมรับมือยิมพลังจิต
+- `01:16:30` — [Gameplay] แซวปู่จัดทีมโปเกมอนน้ำดิน (Quagsire) และวางแผนแก้ทาง Trick Room ในยิม
+- `01:30:00` — [Gameplay] ปรับแต่งสกิลและ Stat ของโปเกมอนในตี้เตรียมลุยยิม
+- `01:39:50` — [Boss] ท้าชนยิมลีดเดอร์จัดทีมรับมือมอนสเตอร์ใน Radical Red
+- `01:43:52` — [Death] โดนสเกลความโกงบอสถล่ม พ่ายแพ้จนต้องปรับทีมใหม่
+- `01:48:28` — [Gameplay] ลองของเปลี่ยนเอาเอ็มโบร์ (กวนอู) เข้าทีมจัดสกิลใหม่
+- `01:52:30` — [Gameplay] ปรับแต่งท่ากวนอู (Hammer Arm/Fire Punch) และลองทีมสู้ยิม Sabrina
+- `01:57:02` — [Death] โดนทีมยิมซาบรีน่ากดสปีดและอ่านอินพุตแก้ทาง พ่ายแพ้ต้องวางแผนใหม่
+- `02:01:45` — [Boss] ปรับแผนเน้นลุยฆ่าอูฐ (Camerupt) ก่อน หวังแก้มือในยิมพลังจิต
+- `02:06:08` — [Gameplay] กำจัดอูฐสำเร็จ แต่ยังติดปัญหาตัวสู้ Iron Hands ในยิม
+- `02:10:34` — [Gameplay] วางแผนเปลี่ยนเอา Mudsdale (ม้า) เข้าทีม ปรับ Ability Inner Focus แก้ทางยิม
+- `02:15:01` — [Boss] ปู่โบ๊ตวิเคราะห์และวางกลยุทธ์ต่อสู้ยิมพลังจิตกับยิมลีดเดอร์
+- `02:18:46` — [Death] โดนสวนกลับตายยกชุด พ่ายแพ้การต่อสู้ยิมพลังจิตอีกรอบ
+- `02:22:13` — [Gameplay] ปรับแผนจัดทีมใหม่ ลองใช้ Empoleon ช่วยสู้ยิม
+- `02:24:45` — [Gameplay] ปรับแต่ง Stat และย้อนสลับท่า Pokémon เพิ่มความอึด
+- `02:33:39` — [Victory] ม้า Mudsdale แบกทีมพาทีมเอาชนะยิมลีดเดอร์พลังจิตได้สำเร็จ
+- `02:36:00` — [Gameplay] ลุ้นอัปเลเวลม้าพร้อมรอวิวัฒนาการร่างเทพก่อนนอน
+- `02:37:30` — [Gameplay] แซวเฮฮาการวิวัฒนาการได้ Lunala และ Solgaleo เข้าปาร์ตี้
+- `02:51:05` — [Gameplay] แซวจัดทีมเทพ ปรับแต่งสกิล Solgaleo และ Urshifu เตรียมลุยต่อ
+- `03:01:11` — [Gameplay] ปลดล็อกหิน Mega Evolution ของโปเกมอน Kanto Starter
+- `03:05:00` — [Gameplay] จัดสกิล Mega Blastoise และ Mega Charizard Y พร้อมวิเคราะห์ความสามารถ
+- `03:11:49` — [Death] อึ้ง Mega Charizard Y โดนปรับเปลี่ยนความสามารถเป็น Sheer Force เปิดแดดไม่ได้ โดนบ็อตตบยับ
+- `03:15:21` — [Talk] บ่นเกมบาลานซ์เนิฟความสามารถสภาพอากาศ และขอบคุณผู้ชมพร้อมปิดไลฟ์สตรีม

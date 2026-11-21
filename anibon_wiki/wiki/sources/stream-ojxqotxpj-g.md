@@ -1,0 +1,55 @@
+---
+title: "Stream ojxqOTxpJ-g — พูดคุย รีวิว บ่น บทที่ 1 ของ Project R.E.D. 🔴 + Watch Party - Gavan Infinity #23 และ Ultraman Teo #5"
+category: "source"
+updated: "2026-11-21"
+video_id: "ojxqOTxpJ-g"
+upload_date: "2026-08-05"
+tags: ["anibon", "anime-manga-cinema", "gacha-business-and-endgame-philosophy", "stream", "tokusatsu-watch-party"]
+sources: []
+status: "active"
+---
+
+# Stream `ojxqOTxpJ-g` — พูดคุย รีวิว บ่น บทที่ 1 ของ Project R.E.D. 🔴 + Watch Party - Gavan Infinity #23 และ Ultraman Teo #5
+
+- **Upload Date**: `2026-08-05`
+- **YouTube URL**: `https://www.youtube.com/watch?v=ojxqOTxpJ-g`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-ojxqotxpj-g.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_ojxqOTxpJ-g.md)
+
+## Linked Categories & Entities
+- **Games**: —
+- **Entities**: —
+- **Topics**: [[gacha-business-and-endgame-philosophy]], [[tokusatsu-watch-party]], [[anime-manga-cinema]]
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: เปิดไลฟ์ ชวนดู Ultraman Arc ข่าวสินค้า Tokusatsu (⏱ เริ่ม: 00:05:21)
+- ส่วนที่ 2: ถก Gavan Infinity ขยายจักรวาล วิเคราะห์ทิศทาง Toei (⏱ เริ่ม: 01:22:53)
+- ส่วนที่ 3: ถกลิขสิทธิ์ต่างประเทศ วงการการ์ตูนไทย และปิดไลฟ์ (⏱ เริ่ม: 03:33:25)
+
+## Curated Timeline (27 timestamps)
+- `00:05:21` — [Greeting] ทักทายต้อนรับเข้าสู่ไลฟ์ Watch Party และรีวิวตอนจบ Gavan Infinity
+- `00:12:45` — [News] เม้าท์มอยสินค้าใหม่ Digimon x Ultraman Collab และข่าวงาน Ultra Hero Expo
+- `00:22:30` — [News] อัปเดตข่าวสาร Ultraman New Generation The Live และการแสดงของเหล่านักพากย์
+- `00:27:00` — [Talk] เม้าท์มอยเรื่องการเปิด Ultraman Store และรีแบรนด์ร้านค้าออฟฟิเชียล
+- `00:33:00` — [WatchParty] ชวนดู WatchParty Ultraman Arc ตอนล่าสุดใน Discord
+- `00:37:00` — [WatchParty] สังเกตกิมมิกชื่อนักแสดงในเพลงเปิด Ultraman Arc
+- `00:41:00` — [WatchParty] ลุ้นกลุ่มเพื่อนสำรวจความลับของกระสวยอวกาศล่องหน
+- `01:14:27` — [News] อาลัยการจากไปของอาจารย์ Kazutoshi Murakami ผู้ออกแบบหุ่นยนต์แห่งยุค
+- `01:18:18` — [News] เม้าท์มอยสินค้าใหม่สินค้า Memory Edition จาก Gaoranger
+- `01:22:53` — [Talk] วิเคราะห์จุดอ่อนของ Project Boshido ในการเปิดจักรวาลใหม่
+- `01:52:32` — [Reaction] รีวิวตอนจบ Gavan Infinity พร้อมทิ้งปมคดีใหญ่เชื่อมจักรวาล
+- `02:00:21` — [News] ประกาศเปิดตัว V-Cinext Gavan Eternity พร้อมถกประเด็นไทม์ไลน์
+- `02:04:40` — [Talk] วิเคราะห์จุดเด่นจุดด้อยของการขยายจักรวาลซีรีส์โปรเจกต์ฮีโร่โทคุซัตสึ
+- `02:37:30` — [News] วิเคราะห์ทิศทาง Toei และบทสัมภาษณ์แนวคิดการสร้าง Project R
+- `02:56:44` — [News] วิเคราะห์การตลาดหนังอนิเมะญี่ปุ่น ทำไมการ์ตูนเด็กถึงทำเงินสูงสุด
+- `03:00:00` — [Talk] วิเคราะห์กลยุทธ์การตลาดของแบรนด์ฮีโร่และ Project Red
+- `03:22:30` — [Talk] เม้าท์มอยวิเคราะห์อนาคตซีรีส์ซูเปอร์เซนไตและไรเดอร์ยุคเก่า
+- `03:29:45` — [Talk] เม้าท์มอยประวัติศาสตร์การหยุดพักและฟื้นคืนชีพของมาสค์ไรเดอร์
+- `03:33:25` — [Talk] เม้าท์มอยวิเคราะห์การตีตลาดต่างประเทศและปัญหาลิขสิทธิ์โทคุซัทสึ
+- `03:45:00` — [Talk] วิเคราะห์กลยุทธ์ฉายการ์ตูนและ Tokusatsu ของ Cartoon Club
+- `03:51:33` — [News] เม้าท์มอยปัญหา Simulcast และการ์ตูนฉายล่าช้าในไทย (เซ็ต / โอเมก้าฮอร์)
+- `03:54:37` — [News] แซวอยากให้ Project R ประกาศผังไทม์ไลน์หนัง-ซีรีส์แบบ Marvel / DCU
+- `03:59:02` — [Talk] ถกประเด็นแผนฉาย Tokusatsu และแนวทางโปรดักชัน Project R / Toei
+- `04:30:00` — [Talk] เม้าท์มอยทำไม Tokusatsu / Super Sentai ถึงทำเกมลงตลาดยาก
+- `04:35:00` — [Talk] เม้าท์มอยพฤติกรรมการเล่นเกมของเด็กยุคใหม่ และการคอลแลบ Ultraman / Rider
+- `04:41:28` — [Talk] ฮาเรื่องดูอนิเมะ Shokugeki no Soma ที่ยิ่งภาคหลังๆ ยิ่งกาวและเวอร์ขึ้นเรื่อยๆ
+- `04:44:54` — [Talk] ปู่โบ๊ตกับเพื่อนเช็คระบบ YouTube Collaboration Feature และปิดไลฟ์แยกย้าย

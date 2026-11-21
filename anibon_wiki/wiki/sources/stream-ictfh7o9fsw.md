@@ -1,0 +1,61 @@
+---
+title: "Stream ictfh7o9fSw — ปู่โบ๊ต กับ ความฟินในซีซั่น 4 ของ Chaos Zero Nightmare | ANIBON"
+category: "source"
+updated: "2026-11-21"
+video_id: "ictfh7o9fSw"
+upload_date: "2026-07-29"
+tags: ["anibon", "chaos-zero-nightmare", "stream"]
+sources: []
+status: "active"
+---
+
+# Stream `ictfh7o9fSw` — ปู่โบ๊ต กับ ความฟินในซีซั่น 4 ของ Chaos Zero Nightmare | ANIBON
+
+- **Upload Date**: `2026-07-29`
+- **YouTube URL**: `https://www.youtube.com/watch?v=ictfh7o9fSw`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-ictfh7o9fsw.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_ictfh7o9fSw.md)
+
+## Linked Categories & Entities
+- **Games**: [[chaos-zero-nightmare]]
+- **Entities**: —
+- **Topics**: —
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: เปิดซีซั่น 4 วิเคราะห์ระบบใหม่และอีเวนต์ (⏱ เริ่ม: 00:04:57)
+- ส่วนที่ 2: ท้าทาย Final Desire และ Nebula Distortion (⏱ เริ่ม: 02:02:12)
+
+## Curated Timeline (34 timestamps)
+- `00:04:57` — [Greeting] เปิดรายการยามดึก ขอโทษที่มาสายวันอาสาฬหบูชา
+- `00:07:35` — [News] ซีซั่น 4 Shattered Light and Claw และระบบ Fracture DOT
+- `00:09:09` — [Talk] วิเคราะห์ซีซั่น 4 ตัวละครใหม่และความสำคัญของ Dex
+- `00:19:01` — [Talk] ระบบ Desire การ์ดใหม่และรายการแบนซีซั่น 4
+- `00:27:51` — [Event] อีเวนต์ Beach Cafe Festival ชุดว่ายน้ำและสกินราคาถูก
+- `00:36:50` — [Talk] วางแผนแลก E6 เลนัวและระบบกล่องรุ้ง
+- `00:40:55` — [Gameplay] ระบบ Dex ในฝันและเทคนิคการจัดเด็ค
+- `00:45:05` — [Gameplay] อธิบายระบบ Dex และการสร้างเด็คซีซั่น 4
+- `00:54:50` — [Talk] วิจารณ์ราคาสกินราคาถูกและระบบ 4-5 ดาว
+- `01:04:00` — [Talk] แนะนำเด็คและตัวละครสำหรับผู้เล่นใหม่
+- `01:14:30` — [Talk] เปิดเนื้อเรื่องโอเว่นปลอมตัวเป็นหญิงสาว
+- `01:22:00` — [Talk] อธิบายคอมโบ Homing Arrow และระบบ Fracture
+- `01:30:01` — [Talk] วางแผนซีซั่น 4 ข้ามตู้ลิมิต รอครบรอบปี
+- `01:36:21` — [Talk] เปิดตัว Shatter Light and Claw การ์ดลิมิตใหม่
+- `01:40:43` — [Chat] แฟนคลับอยากได้หมึก Where is หมึก my เฟรนโด
+- `01:43:58` — [Talk] วิเคราะห์เด็ค Incurious Desire การ์ดซีซั่นนี้
+- `01:49:00` — [Story] สำรวจดวงดาวแมลง รังไข่ predators เมือกกัดกิน
+- `01:55:19` — [Gameplay] สู้บอสหมึก ด่านฟาร์มเลือด 2,000
+- `01:57:41` — [Gameplay] ฟาร์มดรอปม่วง พาร์ติเคิลและกราฟฟิกสวยขึ้น
+- `02:02:12` — [Talk] ชมอนิเมชั่นใหม่ตัวละคร ฉากดื่มเหล้าทำดีมาก
+- `02:06:48` — [Story] พี่โอคลั่งสติแตก เนื้อเรื่อง Incurious Desire
+- `02:14:00` — [Talk] ระบบ QoL ใหม่ ระบบ Pin ช่วยบอกจุดที่ต้องแก้
+- `02:15:10` — [Talk] ชื่นชมระบบ QoL ใหม่และความสนุกของซีซั่น 4
+- `02:19:38` — [Boss] สู้บอสหวุดหวิดเกือบแพ้เพราะฮีลเข้าป้อมไม่ได้
+- `02:24:50` — [Gameplay] พบไอเทมดีที่สุดในด่านและอัปเกรดอุปกรณ์ต่อ
+- `02:31:36` — [Victory] ชนะ Final Desire Manipulation ได้อาวุธม่วงครบเซต
+- `02:33:43` — [Talk] อธิบายระบบปินและแชร์เด็คโค้ดเหมือนเกมยูกิโอ
+- `02:39:49` — [Chat] ตอบคำถามผู้เล่นใหม่เรื่องการจัดเด็คและตัวละคร
+- `02:44:22` — [Victory] จัดเด็คสมบูรณ์แบบ Perfect Deck สำเร็จแล้ว
+- `02:50:27` — [Gameplay] ทดสอบโหมด Nebula Distortion ในซีซั่นใหม่
+- `02:54:02` — [Gameplay] คอมโบจั่วไม่รู้จบสร้างดาเมจทะลุหลักพัน
+- `02:58:05` — [Gameplay] ลองแรง 9 พร้อมสรุปความสนุกของซีซั่น 4
+- `03:03:27` — [Victory] เคลียร์ Nebula Distortion ระดับ Risk 9 สำเร็จ
+- `03:08:50` — [Talk] ขอบคุณทุกคน ฝันดี เจอกันในอัปเดตซีซั่น 4

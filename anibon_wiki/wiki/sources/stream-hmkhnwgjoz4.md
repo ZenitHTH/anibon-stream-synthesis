@@ -1,0 +1,40 @@
+---
+title: "Stream HmkHNwGJoz4 — 📌 ส่วนที่ 1: เริ่มต้นการเดินทาง"
+category: "source"
+updated: "2026-11-21"
+video_id: "HmkHNwGJoz4"
+upload_date: "2026-06-29"
+tags: ["anibon", "anime-manga-cinema", "pokemon", "stream"]
+sources: []
+status: "active"
+---
+
+# Stream `HmkHNwGJoz4` — 📌 ส่วนที่ 1: เริ่มต้นการเดินทาง
+
+- **Upload Date**: `2026-06-29`
+- **YouTube URL**: `https://www.youtube.com/watch?v=HmkHNwGJoz4`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-hmkhnwgjoz4.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_HmkHNwGJoz4.md)
+
+## Linked Categories & Entities
+- **Games**: [[pokemon]]
+- **Entities**: —
+- **Topics**: [[anime-manga-cinema]]
+
+## Curated Timeline (17 timestamps)
+- `00:07:29` — [Greeting] กล่าวทักทายคุณผู้ชม, บ่นเรื่องหิวข้าวและพูดถึงการติดเกม Pokémon
+- `00:11:32` — [Talk] แนะนำเกม Pokémon Radical Red และพูดถึงความยากของตัวเกม
+- `00:24:40` — [Gameplay] เริ่มต้นเข้าสู่เกมและตั้งค่า Emulator สำหรับการเล่น
+- `00:27:31` — [Chat] พูดคุยสลับเรื่องมังงะ One Piece ตอนล่าสุดกับผู้ชม
+- `00:41:59` — [Talk] อธิบายและพูดคุยเกี่ยวกับระบบค่า IV และ EV ในเกม Pokémon
+- `00:47:38` — [Gameplay] เลือกโปเกมอนเริ่มต้น (Starter Pokémon) ที่ถูกสุ่มจากระบบ Randomizer
+- `00:58:34` — [Gameplay] พบบ้าน NPC ปรับเปลี่ยนนิสัย (Nature) และระดับเลเวลของโปเกมอน
+- `01:09:29` — [Gameplay] ท้าทายเทรนเนอร์บน Route 22 แต่พ่ายแพ้เนื่องจากเลเวลและประเภทโปเกมอนเสียเปรียบ
+- `01:52:30` — [Gameplay] จับ Cyndaquil (เม่นไฟ), จัดทีมโปเกมอน และวางแผนฟาร์มเวลเพื่อแก้ทางเทรนเนอร์
+- `02:32:05` — [Gameplay] พบและพยายามจับเต่า Turtwig (เต่าสตาร์ต Gen 4) ในป่า
+- `02:39:31` — [Gameplay] สู้กับเทรนเนอร์โปเกมอนสายป่วน/สายแทงค์ที่คอยฟื้นฟูพลังชีวิต
+- `02:51:39` — [Gameplay] สู้กับเทรนเนอร์เด็ก (เด็กสอนมวย) และพ่ายแพ้จนเสียเงิน
+- `03:02:53` — [Gameplay] แก้มือสู้กับเทรนเนอร์จับแมลง Bug Catcher Samy
+- `03:15:23` — [Gameplay] แวะชมพิพิธภัณฑ์วิทยาศาสตร์ Pewter Museum
+- `03:16:23` — [Boss] ท้าทายยิมบิน (Falkner) บอสยิมคนแรกของแผนที่
+- `04:12:33` — [Gameplay] เริ่มการต่อสู้กับหัวหน้ายิม (ซาคากิ/คาคิชิ)
+- `04:42:52` — [Victory] เอาชนะหัวหน้ายิมได้สำเร็จด้วยคอมโบลิงหนุมาน (คริติคอล)

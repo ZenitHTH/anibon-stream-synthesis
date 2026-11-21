@@ -1,0 +1,85 @@
+---
+title: "Stream 3_-zYtbRnj8 — บ่นเรื่อง Xbox Game Pass , เมาท์มอย EA โดนซื้อ , เปิดกาชา ตู้ O7K และ สงคราม MLBB ปะทะ ROV"
+category: "source"
+updated: "2026-11-21"
+video_id: "3_-zYtbRnj8"
+upload_date: "2025-10-13"
+tags: ["anibon", "gacha-business-and-endgame-philosophy", "genshin-impact", "pokemon", "reverse-1999", "stream", "thai-politics-and-economy"]
+sources: []
+status: "active"
+---
+
+# Stream `3_-zYtbRnj8` — บ่นเรื่อง Xbox Game Pass , เมาท์มอย EA โดนซื้อ , เปิดกาชา ตู้ O7K และ สงคราม MLBB ปะทะ ROV
+
+- **Upload Date**: `2025-10-13`
+- **YouTube URL**: `https://www.youtube.com/watch?v=3_-zYtbRnj8`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-3_-zytbrnj8.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_3_-zYtbRnj8.md)
+
+## Linked Categories & Entities
+- **Games**: [[genshin-impact]], [[pokemon]], [[reverse-1999]]
+- **Entities**: —
+- **Topics**: [[gacha-business-and-endgame-philosophy]], [[thai-politics-and-economy]]
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: พูดถึงการ mod เกม RDR2 - กาชา - ข่าว EA - Windows vs Linux - MOBA News (⏱ เริ่ม: 00:09:00)
+- ส่วนที่ 2: เล่น ROV ฮีโร่ใหม่ - AFK ทีม - Meta ROV นิ่ง - Marja (⏱ เริ่ม: 02:29:21)
+- ส่วนที่ 3: ทดลอง MLBB เปรียบเทียบ ROV vs MLBB ปิดสตรีม (⏱ เริ่ม: 04:12:00)
+
+## Curated Timeline (57 timestamps)
+- `00:09:00` — [Talk] พูดถึงการ mod เกม Red Dead Redemption 2 ความละเอียดสูงจน mod ยาก เทียบ Dead Space Remake
+- `00:27:01` — [Gacha] พูดถึงเกม Exos Heroes กาชา อัปเกรด SR สู่ SSR
+- `00:36:03` — [News] วิเคราะห์ธุรกิจ EA ฟุตบอล การลงทุนซาอุฯ/UAE ในวงการกีฬา มูลค่า 100 ล้านดอลลาร์
+- `00:45:07` — [Talk] วิจารณ์มูลค่าเกมกาชา ระบบ constellation/dupe เทียบ Genshin Impact
+- `00:54:08` — [Talk] เปรียบเทียบ Windows 11 vs 10 แนะนำ Linux สำหรับสายทำงาน IT
+- `01:12:04` — [Talk] พูดถึง Digimon Story Translanger ราคา 1,800 อยากเล่น
+- `01:21:03` — [Talk] พูดถึง Pokémon ระบบฟาร์ม arena และเกมกาชา
+- `01:30:03` — [Gacha] สุ่มกาชา Seven Knights ได้ยอนฮี (Yeonhee) และเมลคีย์ (Melkir)
+- `01:36:14` — [Talk] วิจารณ์สมดุลสกิลอันดิเวท (Ultimate) ใน Seven Knights บางตัวแรงเกิน
+- `01:39:02` — [Talk] วิเคราะห์ระบบเกม Reverse: 1999 ตัวละคร Psychubes
+- `01:41:31` — [Talk] พูดถึงราคาไอเทมในเกม แพงสุด $58 วิจารณ์เศรษฐกิจเกมมือถือ
+- `01:48:00` — [Gameplay] เล่น ROV/Arena of Valor บ่นคู่ต่อสู้
+- `01:57:03` — [Talk] วิเคราะห์ข่าว AOV การเปลี่ยนแปลงวงการ MOBA
+- `02:08:00` — [Talk] วิจารณ์สัญญาครีเอเตอร์ มุมมองคนนอกต่อการเซ็น Exclusive
+- `02:15:00` — [News] พูดถึงพี่โดย (P'Doi) อินฟลู ROV เซ็นสัญญาครีเอเตอร์กับ MLBB
+- `02:20:26` — [Talk] แนวคิดส่วนตัวเรื่องสตรีม ไม่อยากผูกขาดเล่นเกมเดียว อยากอิสระ
+- `02:24:02` — [Reaction] ดูคลิป Heartrocker (พี่เอก) เปิดเผยหน้าตัวเอง
+- `02:29:21` — [Talk] กลับมาเล่น ROV หลังจากไม่ได้เล่นนาน เกมยังรู้สึกเหมือนเดิม
+- `02:33:00` — [Gameplay] เล่น ROV ดูฮีโร่ใหม่ในร้านค้า ราคา $58
+- `02:43:39` — [Gameplay] ROV ฮีโร่ใหม่ Golvera, Superman, Toro, Tel'Annas ตื่นเต้นกับตัวละครครอสโอเวอร์
+- `02:44:31` — [Talk] ROV แท้งไม่มีตัวใหม่มานาน หายาก ต้องรอคิวนาน
+- `02:46:47` — [Talk] แรนดอม vs สร้างห้องเอง ประสบการณ์ ROV ที่แท้คือการสุ่มเจอคน
+- `02:48:19` — [Talk] แนะนำวิธีเล่น Toro (แท้ง) สกิลที่ต้องอัพ วิธีการเล่น
+- `02:51:01` — [Gameplay] ROV แมตช์ Tel'Annas AFK เพื่อนร่วมทีมไม่ยอมกลับ base สู้ 4v5
+- `02:55:23` — [Talk] บ่น AFK ทีมดันป้อมไม่ได้ แม่เรียกไปนอน เหนื่อย หิว
+- `02:57:03` — [Talk] หิวข้าวมาก แม่เรียกไปนอน แต่ยังเล่นต่อ
+- `03:00:00` — [Victory] ROV ชนะแมตช์แม้ AFK 1 คน คุยเรื่อง P'Doi tier list เมตา ROV
+- `03:06:00` — [Talk] MLBB กำลังดึงคนจาก ROV เพราะเมตาเปลี่ยนตลอดกว่า
+- `03:09:04` — [Gameplay] ROV แมตช์ถัดไป เมตาเดิมซ้ำซาก แม่เรียกไปนอน
+- `03:18:00` — [Talk] ROV เมตานิ่ง ไม่เปลี่ยน เปรียบเทียบกับ MLBB ที่มีชีวิตกว่า
+- `03:21:45` — [Talk] ดึกแล้วเด็กนอนหมด เหลือแต่บอท คิวรอเยอะ
+- `03:21:58` — [Talk] Toro เป็นแท้ง/ซับที่ดีที่สุดใน ROV ตอนนี้
+- `03:29:32` — [Gameplay] ROV ดูร้านค้าฮีโร่ อยากได้ Marja ($58) ขายของ/item สะสมเงิน
+- `03:36:01` — [Gameplay] ROV ขาย effect/emoji ได้เงิน ซื้อ Marja สำเร็จ เล่นครั้งแรก
+- `03:38:24` — [Talk] ROV ระบบเศรษฐกิจ ขายสกิน/Effect ที่ไม่ใช้ แลกเงินซื้อฮีโร่
+- `03:40:48` — [Talk] งงกลไกสกิล Marja ต้องไปดูคลิปสอน 7-9
+- `03:45:00` — [Gameplay] ROV เล่น Marja สายยิง ปรับตัวกับฮีโร่ใหม่ ประทับใจดาเมต
+- `03:51:57` — [Talk] Marja เล่นง่ายเกินไป กดสกิล 2 แล้วตี ๆ ๆ จบ
+- `03:54:43` — [Talk] ถามคนดูว่าอยากให้เล่นอะไรต่อ ลองทำห้องกับเพื่อนหรือเปล่า
+- `04:04:47` — [Gameplay] ROV วิจารณ์ดาเมต meta ไม่สมดุล บางตัวแรงเกิน เกมนิ่ง
+- `04:12:00` — [Talk] วิจารณ์ AOV meta นิ่งเหมือนเดิม 5 ปี ตัดสินใจลอง Mobile Legends
+- `04:16:00` — [Talk] ROV 9 ปีแล้ว ยังเล่นแล้วรู้สึกเหมือนเดิมไม่เปลี่ยนเลย
+- `04:21:08` — [Gameplay] MLBB เกมแรก เล่น Nana เสียงญี่ปุ่น กราฟิกสวย ตื่นเต้น
+- `04:30:00` — [Gameplay] MLBB เกมสูสี ประทับใจดาเมตบาลานซ์ ทุกตัวพลิกเกมได้
+- `04:34:00` — [Talk] MLBB ดาเมตบาลานซ์ดี ไม่มีตัวใดตัวหนึ่งแรงเกิน พลิกเกมได้ตลอด
+- `04:37:28` — [Talk] ชมเพื่อนร่วมทีม Sakura เล่นดี พาแบกจนชนะ
+- `04:40:15` — [Talk] เปรียบเทียบ MLBB กับ ROV MLBB คนเล่นเยอะกว่า มีชีวิตชีวากว่า
+- `04:43:57` — [Talk] เรียนรู้การควบคุม MLBB ยังไม่คุ้นแมป ต้องปรับตัว
+- `04:48:27` — [Gameplay] MLBB เล่น Estes support เกมที่สอง เพื่อนทีมไม่ค่อยกล้าเข้า
+- `04:50:38` — [Talk] เพื่อนทีมไม่กล้าสู้ ต้องเล่นดาเมตแต่ไม่กล้าเข้า เสียโอกาสชนะ
+- `04:56:55` — [Talk] MLBB เกมที่สอง ประทับใจทุกตาสนุก แค่กล้าสู้ก็มีโอกาสพลิก
+- `04:57:03` — [Talk] เปรียบเทียบ MLBB vs ROV MLBB เมตาเปลี่ยนตลอด สนุกกว่า ROV นิ่งเกิน
+- `04:59:27` — [Talk] Estes (Support) ไม่เหมือน Toro ใน ROV ทำทุกอย่างไม่ได้ ต้องเลือกบทบาท
+- `05:06:00` — [Talk] YouTube เอาแอดกลับมา ขอบคุณผู้ชม พูดถึง P'Doi
+- `05:07:21` — [Talk] บ่น UI YouTube เอาชื่อแอดกลับมาอีกแล้ว
+- `05:08:18` — [Talk] ขอบคุณคนดู โดเนท วางแผนสตรีมครั้งหน้า Digimon Story Time Stranger
+- `05:10:00` — [Talk] อยากลองเล่น Digimon Story Time Stranger ราคา 1,800 แพงแต่สนใจ

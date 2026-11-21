@@ -1,0 +1,70 @@
+---
+title: "Stream n_cef5ui7Nk — หนูไฟ 🐭🔥 หรือจะสู้ Teo งดสัปดาห์นี้ ... + Watch Party - Tokusatsu - ประจำสัปดาห์ที่ 25 ตุลาคม 2026 | ANIBON"
+category: "source"
+updated: "2026-11-21"
+video_id: "n_cef5ui7Nk"
+upload_date: "2026-10-25"
+tags: ["anibon", "anime-manga-cinema", "gacha-business-and-endgame-philosophy", "stream", "tokusatsu-watch-party"]
+sources: []
+status: "active"
+---
+
+# Stream `n_cef5ui7Nk` — หนูไฟ 🐭🔥 หรือจะสู้ Teo งดสัปดาห์นี้ ... + Watch Party - Tokusatsu - ประจำสัปดาห์ที่ 25 ตุลาคม 2026 | ANIBON
+
+- **Upload Date**: `2026-10-25`
+- **YouTube URL**: `https://www.youtube.com/watch?v=n_cef5ui7Nk`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-n_cef5ui7nk.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_n_cef5ui7Nk.md)
+
+## Linked Categories & Entities
+- **Games**: —
+- **Entities**: —
+- **Topics**: [[gacha-business-and-endgame-philosophy]], [[tokusatsu-watch-party]], [[anime-manga-cinema]]
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: สรุปเหตุผลโทคุซัตสึ-Teo งดฉายติดวิ่งผลัดเอคิเดง ส่องฟอร์มใหม่ Gavv Final Stage และประกาศฉายหนัง 20 ปี Kabuto (⏱ เริ่ม: 00:05:27)
+- ส่วนที่ 2: ไว้อาลัยคุณ Hiroshi Tsuchida (Sasuke/Kakuranger) เจาะรายงานผู้ถือหุ้น Toei Group วิสัยทัศน์ New Wave 2033 (⏱ เริ่ม: 00:27:02)
+- ส่วนที่ 3: Watch Party รับชม นักล่าอสูรราชันผงาด: โอเมก้าฮอร์น ตอนที่ 2 (Armor Hero Omega Horn) พร้อมส่อง New Visual (⏱ เริ่ม: 00:59:43)
+- ส่วนที่ 4: Watch Party รับชม Kamen Rider My-Th ตอนที่ 8 เผชิญหน้าหนูไฟและแกะรอยปริศนาเข็มขัด (⏱ เริ่ม: 01:37:48)
+- ส่วนที่ 5: รีวิวหุ่นยนต์ไม้หนีบผ้า Bandai ดราม่าสัมภาษณ์ Shu Watanabe วิจารณ์โหมด Avengers ใน Marvel Rivals และปิดสตรีม (⏱ เริ่ม: 02:28:30)
+
+## Curated Timeline (40 timestamps)
+- `00:05:27` — [Talk] เปิดสตรีมไลฟ์โทคุซัตสึยามค่ำคืน ทักทายผู้ชมและสรุปตารางคอนเทนต์ประจำสัปดาห์
+- `00:09:11` — [Talk] เผยสาเหตุโทคุซัตสึและ Teo งดฉายสัปดาห์นี้ ติดถ่ายทอดสดวิ่งผลัดเอคิเดงมหาวิทยาลัยญี่ปุ่น (Ekiden ครั้งที่ 58)
+- `00:14:18` — [News] ส่องฟอร์มใหม่จาก Final Stage Show ของ Kamen Rider: Advance, Extra Shadow และ Chaos Drone ย้อมชิ้นส่วนโล่ซันเกตสึ
+- `00:19:00` — [News] เทศกาลภาพยนตร์ฉลอง 20 ปี Kamen Rider Kabuto: God Speed Love เตรียมเข้าฉายไทยในเครือเมเจอร์
+- `00:21:12` — [News] เผยบทสรุปตอนจบที่แท้จริงของ Kamen Rider Shinobi (ไรเดอร์ชิโนบิ) ฉายทาง TTFC หลังรอคอย 4 ปี
+- `00:27:02` — [Talk] ไว้อาลัยคุณ Hiroshi Tsuchida นักแสดง Kakuranger นินจาเรดและเจ้าของมีม Today is Friday in California
+- `00:30:00` — [News] ส่องภาพนักร้องเพลงธีม Kamen Rider Gavv ปรากฏตัวร้องสดในงาน Final Stage Show
+- `00:33:11` — [News] เจาะรายงานผู้ถือหุ้น Toei Group ประจำปี 2026 แผนขยายตลาดสากล
+- `00:36:00` — [News] วิสัยทัศน์ A New Wave 2033 และทิศทาง IP หลักของเครือ Toei
+- `00:39:33` — [News] ส่องบทสัมภาษณ์ Shinichiro Shirakura ปรับสมดุล Sentai และดันโปรเจกต์คู่ขนาน
+- `00:43:32` — [News] สำรวจสถานะแฟรนไชส์หลัก Toei: One Piece, Pretty Cure, Digimon Beat Break และ Girls Band Cry
+- `00:45:43` — [News] วางกลยุทธ์ขยายฐานแฟนคลับ Kamen Rider สู่ระดับ Global และวัฒนธรรมโอชิ
+- `00:47:55` — [News] จับตาโปรเจกต์ระยะยาว Project Red และแนวทางร่วมทุนสร้างระดับสากล
+- `00:50:25` — [News] รีวิวลูกเล่นการรวมร่างหุ่นยนต์ขบวนการ Boonboomger แข็งแรงและลงตัว
+- `00:54:14` — [News] อัปเดตข่าวนักแสดงและโปรเจกต์เสริมทัพจักรวาลโทคุซัตสึ
+- `00:59:43` — [WatchParty] รับชม นักล่าอสูรราชันผงาด: โอเมก้าฮอร์น ตอนที่ 2 (Armor Hero Omega Horn)
+- `01:08:45` — [Reaction] ลุ้นฉากต่อสู้และจังหวะเปิดตัวพลังใหม่ของอสูร
+- `01:14:12` — [Story] เจาะลึกปมหลังและแรงจูงใจของตัวละครหลัก
+- `01:22:40` — [Reaction] วิเคราะห์พัฒนาการเนื้อเรื่องและจุดหักมุมช่วงกลางตอน
+- `01:26:10` — [Reaction] ส่อง New Visual ใหม่ของโอเมก้าฮอร์น (เสือขาว ซาคุ) เทียบดีไซน์ระดับบอส
+- `01:33:18` — [Talk] สรุปความประทับใจและปมตัวละครหลังดูตอนที่ 2 จบ
+- `01:37:48` — [WatchParty] รับชม Kamen Rider My-Th ตอนที่ 8 การเผชิญหน้าหนูไฟ (Hinezumi)
+- `01:42:18` — [Reaction] ตื่นตากับฉากต่อสู้ในอุโมงค์และเอฟเฟกต์ดาบเปลวเพลิง
+- `01:44:50` — [Story] ไขปริศนาความสัมพันธ์ระหว่างตัวละครกับเข็มขัดและพันธสัญญาโบราณ
+- `01:51:32` — [Lore] เจาะลึกสายพันธุ์สัตว์ในตำนานและปูมหลังพลังของตัวละคร
+- `02:00:40` — [Story] สรุปจุดไคลแม็กซ์และทิ้งท้ายตอนที่ 8 ของ Kamen Rider My-Th
+- `02:03:03` — [Reaction] เปรียบเทียบพลังเพลิงของโซลกับงานดีไซน์พลังในโจโจ้
+- `02:08:22` — [Lore] กางทฤษฎีการสลับบทบาทการแปลงร่างระหว่างยูนะและโอโตซูมิ
+- `02:13:49` — [Reaction] วิเคราะห์เคมีตัวละครและความเข้มข้นของเส้นเรื่องหลัก
+- `02:22:34` — [Lore] แกะรอยความลับของไข่ปริศนาและขีดจำกัดพลังคามูริ
+- `02:28:30` — [Talk] ส่องไอเดียแปลกใหม่ หุ่นยนต์ไม้หนีบผ้าแปลงร่างได้จาก Bandai Candy Toy
+- `02:33:00` — [Talk] วิเคราะห์คุณภาพงานลูกเล่นและข้อต่อของ Bandai Candy เทียบกับตลาดทั่วไป
+- `02:38:52` — [Talk] สรุปคุณภาพงานภาพและเนื้อหา Kamen Rider My-Th ในภาพรวม
+- `02:43:50` — [Talk] ส่องประเด็นดราม่าบทสัมภาษณ์เก่าของ Shu Watanabe (เอจิ OOO) เรื่องสเปกผู้หญิง
+- `02:48:51` — [Talk] ถกเรื่องภาพลักษณ์และความรับผิดชอบของนักแสดงฮีโร่ต่อเยาวชน
+- `02:54:51` — [Talk] เปรียบเทียบมาตรฐานบทบาทนักแสดงฮีโร่ฝั่งญี่ปุ่นกับฝั่งตะวันตก
+- `03:04:30` — [Talk] วิจารณ์ความน่าผิดหวังของโหมดเรดบอส Avengers ในเกม Marvel Rivals
+- `03:10:34` — [Talk] เทียบฉากแอนิเมชัน Marvel Rivals กับมาตรฐานภาพยนตร์ MCU
+- `03:12:17` — [Talk] ส่องไลน์อัปของเล่น Ultraman และลูกข่าง Infinity Nado ของค่าย Alpha
+- `03:15:00` — [Ending] ปู่โบ๊ตขอบคุณผู้ชมและกล่าวปิดสตรีม

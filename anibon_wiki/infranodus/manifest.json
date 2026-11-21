@@ -1,0 +1,12 @@
+{
+  "scopes": {
+    "full-wiki-ontology.md": {
+      "file": "infranodus/full-wiki-ontology.md",
+      "policy": "curated",
+      "wikilinksMode": "wikilinksOnly",
+      "graphName": "wiki-anibon-full",
+      "url": "",
+      "updated": "2026-11-21"
+    }
+  }
+}

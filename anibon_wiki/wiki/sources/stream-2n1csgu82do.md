@@ -1,0 +1,72 @@
+---
+title: "Stream 2N1CSgu82Do — [ไลฟ์สด] เม้าท์มอยข่าวเกม & ลองเดโม Lost Soul Aside | ANIBON"
+category: "source"
+updated: "2026-11-21"
+video_id: "2N1CSgu82Do"
+upload_date: "2025-09-02"
+tags: ["anibon", "arknights", "azur-promilia", "fate-grand-order", "gacha-business-and-endgame-philosophy", "genshin-impact", "honkai-star-rail", "limbus-company", "nikke", "pokemon", "re9-marathon-mewgenics", "stream", "vlogs-hardware-and-personal-life", "wuthering-waves", "zenless-zone-zero"]
+sources: []
+status: "active"
+---
+
+# Stream `2N1CSgu82Do` — [ไลฟ์สด] เม้าท์มอยข่าวเกม & ลองเดโม Lost Soul Aside | ANIBON
+
+- **Upload Date**: `2025-09-02`
+- **YouTube URL**: `https://www.youtube.com/watch?v=2N1CSgu82Do`
+- **Files**: [Raw Snapshot](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/raw/streams/stream-2n1csgu82do.md) · [Original Timestamps](file:///Users/zenithth/timestamp_workspace/by_video_id/timestamp_2N1CSgu82Do.md)
+
+## Linked Categories & Entities
+- **Games**: [[fate-grand-order]], [[zenless-zone-zero]], [[honkai-star-rail]], [[genshin-impact]], [[wuthering-waves]], [[arknights]], [[limbus-company]], [[pokemon]], [[nikke]], [[re9-marathon-mewgenics]], [[azur-promilia]]
+- **Entities**: [[hoyoverse]]
+- **Topics**: [[gacha-business-and-endgame-philosophy]], [[vlogs-hardware-and-personal-life]]
+
+## Macro-Thematic Sections
+- ส่วนที่ 1: เม้าท์ข่าวเกม Nikke-ZZZ, ประเด็นภาพติดเรท และประสบการณ์เรียนภาษา (⏱ เริ่ม: 00:07:46)
+- ส่วนที่ 2: วิเคราะห์ภาพ AI Gen, รำลึกมาม่าโปรตีนไข่, เตือนภัยกินเผ็ด และข่าวสัปดาห์หนังสือ (⏱ เริ่ม: 01:01:14)
+- ส่วนที่ 3: ลองเดโม่ Lost Soul Aside สับกราฟิก-บ่นบอสแตกเกราะจืด ชี้ราคาแพงเกินคุณภาพ (⏱ เริ่ม: 02:20:38)
+- ส่วนที่ 4: วิเคราะห์ Nexus Anima, แซะ HoYoverse ย้อมดีไซน์ตัวละคร, อัปเดต Genshin Lv.100 ก่อนปิดไลฟ์ (⏱ เริ่ม: 04:01:17)
+
+## Curated Timeline (43 timestamps)
+- `00:07:46` — [Greeting] ทักทายเปิดไลฟ์ต้อนรับผู้ชมยามเย็น
+- `00:09:58` — [News] เม้าท์มอยข่าวเกม Lost Soul Aside กับประเด็นดราม่าทีมพัฒนาจีน
+- `00:12:28` — [News] เม้าท์มอยอัปเดต Nikke กิจกรรมชุดกระต่ายและเรติ้ง 12+ สุดดุเดือด
+- `00:18:12` — [Talk] เม้าท์มอยเกี่ยวกับเกม Path of Exile และ Hollow Knight Silksong
+- `00:21:50` — [Talk] พูดคุยประเด็นความเสี่ยงเพจโดนแบนจากภาพติดเรท 18+ ของเกม Azur Lane และ BrownDust 2
+- `00:28:10` — [Donation] ตอบซูเปอร์แชตเกี่ยวกับแผนการไลฟ์เล่นเนื้อเรื่อง Wuthering Waves
+- `00:29:52` — [News] วิเคราะห์กำหนดการอัปเดต ZZZ และผลกระทบจากวันหยุดยาวในจีน
+- `00:34:34` — [Donation] ตอบโดเนทแนะนำเทคนิคการท่องศัพท์และเรียนภาษาอังกฤษเพื่อเตรียมสอบ
+- `00:39:52` — [Chat] ตอบแชตแนะนำเทคนิคการรับมือบอส Master Wei ใน Limbus Company
+- `00:44:53` — [Chat] เม้าท์มอยเปิดตัวอัตลักษณ์ใหม่ Ryoshu ใน Limbus Company
+- `00:46:31` — [Talk] เม้าท์มอยประสบการณ์เรียนภาษาอังกฤษและระบบการสอนในไทย
+- `00:55:52` — [Talk] แซวเปรียบเทียบเกม Expedition 33 กับ Honkai: Star Rail
+- `01:01:14` — [News] วิเคราะห์กระแสภาพ AI Gen, AI Slop ในโซเชียล และลิขสิทธิ์ภาพปกคลิป
+- `01:16:36` — [News] อัปเดตข่าวมหกรรมสัปดาห์หนังสือแห่งชาติ ครั้งที่ 30 ยืนยันไปร่วมงาน
+- `01:22:04` — [Donation] ตอบโดเนทแนะนำหนังสือ White Nights คนช่างฝัน นิยายรักสุดบิดเบี้ยว
+- `01:25:18` — [Donation] ฮาลั่น! สตรีมเมอร์งงโดเนทถามหมี่โซเลง ก่อนเฉลยคือบะหมี่โกเรง
+- `01:29:10` — [Talk] รำลึกความหลังบะหมี่กึ่งสำเร็จรูป มาม่ารสโปรตีนไข่ และยำยำช้างน้อย
+- `01:49:20` — [Donation] ตอบโดเนทมาม่าพะแนงและเตือนภัยมาม่าเผ็ดมาเลเซีย
+- `01:52:31` — [Talk] เตือนภัยกินอาหารรสจัดและเผ็ดจัดทำลายสุขภาพไต พร้อมเม้าท์ส่วนไก่โปรดและเสี่ยงเก๊า
+- `02:04:14` — [News] เตือนภัยคดีตัดต่อรูป AI อนาจาร VTuber คอสเพลเยอร์ และสาวม้า
+- `02:11:23` — [News] วิจารณ์ราคาเกม Lost Soul Aside 2,000 บาท แพงเกินคุณภาพ
+- `02:14:48` — [News] สับเดฟเกมโทษ Unreal Engine 5 และดราม่ารายได้ผู้พัฒนาเกมอินดี้ vs สตรีมเมอร์
+- `02:20:16` — [News] แจ้งข่าวงานมหกรรมหนังสือระดับชาติ ครั้งที่ 30 จัดช่วง 9-19 ต.ค.
+- `02:20:38` — [Reaction] ลองโหลดเดโม่ Lost Soul Aside พร้อมแซวราคา 1,990 บาทสุดแพง
+- `02:29:51` — [Talk] ฮาลั่น! เดโม่ Lost Soul Aside ทำคอมค้าง OBS ดับกลางไลฟ์
+- `02:34:05` — [Gameplay] ลองเล่นเดโม่ Lost Soul Aside สับกราฟิกกินสเปคกระตุกยับ และแซวเสียงพากย์ AI
+- `02:50:20` — [Donation] ตอบซูเปอร์แชตแซว Lost Soul Aside หากออกเมื่อ 20 ปีก่อนคงสนุก
+- `02:56:54` — [Boss] ท้าชนบอสในเดโม Lost Soul Aside บ่นระบบแตกเกราะและแพทเทิร์นการโจมตีสุดน่าเบื่อ
+- `03:09:26` — [Reaction] แซวฉากคุย NPC ใน Lost Soul Aside ตัวเอกแหงนมองฟ้าสุดฮา
+- `03:11:59` — [Boss] เผชิญหน้าสู้บอสอัศวิน Victor ในเดโม Lost Soul Aside
+- `03:19:59` — [Talk] สรุปความรู้สึกเดโม Lost Soul Aside บ่นเกมจืดเกินราคา 1,990 บาท
+- `03:25:10` — [Donation] ตอบโดเนทเปรียบเทียบ First Impression เกม Lost Soul Aside vs Genshin vs WuWa
+- `03:34:38` — [Boss] หัวร้อน! สู้บอส Demon ในเดโม Lost Soul Aside แถมจอยดับกลางคอก
+- `03:42:25` — [News] สับยับเดโม Lost Soul Aside ก่อนกดลบทิ้ง และวิเคราะห์ Duet Night Abyss อ้างไร้กาชาแต่ให้ฟาร์มแบบ Elsword
+- `04:01:17` — [Talk] วิเคราะห์เกมใหม่ Nexus Anima ของ HoYoverse แนว TFT ผสมโปเกมอน และแซะระบบเดินกด F ซ้ำซาก
+- `04:21:08` — [Talk] เม้าท์มอยประเด็น HoYoverse รีไซเคิลย้อมดีไซน์ตัวละครซ้ำซากข้ามจักรวาล เปรียบเทียบกับ Fate/FGO
+- `04:40:28` — [News] สรุปข่าว Dead by Daylight เปิดตัวฆาตกรผีไทย "กระสือ"
+- `04:46:08` — [Donation] เปิดเพลงเมนูหลัก Cookie Run: Kingdom ให้ฟังตามโดเนทแฟนคลับ
+- `04:48:46` — [News] สรุปคอลแลบ Arknights x Ave Mujica ขนทัพ 5 สาวพร้อมสกินใหม่
+- `04:53:01` — [Talk] เม้าท์มอยเกมน่าเล่น Cronos: The New Dawn และ Silent Hill f
+- `04:56:21` — [News] สรุปดราม่า Genshin Impact ประกาศระบบปลดล็อก Level 100 สายวาฬ C9
+- `05:06:15` — [News] วิเคราะห์ Genshin Impact โหมด Creative เปรียบเทียบกับ Roblox
+- `05:13:21` — [Talk] สรุปปิดไลฟ์ นัดหมายแผนสตรีมคอนเทนต์ และชวนคุยเที่ยวงานสัปดาห์หนังสือ
