@@ -8,7 +8,7 @@ status: "active"
 
 # Anibon Stream & Engineering Wiki — Master Index
 
-- **Total Knowledge Base**: `210` Livestreams | `28` Games | `25` Entities | `6` Topics | `16` Engineering Docs | `1` Code Snapshots
+- **Total Knowledge Base**: `210` Livestreams | `30` Games | `25` Entities | `6` Topics | `16` Engineering Docs | `1` Code Snapshots
 - **High-Level Synthesis**: [[overview]]
 - **Operation Log**: [[log]]
 - **Schema & Rules**: [CLAUDE.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/CLAUDE.md) | [AGENTS.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/AGENTS.md)
@@ -23,7 +23,7 @@ status: "active"
 - [[tokusatsu-watch-party]] — Tokusatsu Watch Party: Kamen Rider, Ultraman, Project R.E.D. และตลาดของเล่น Bandai
 - [[vlogs-hardware-and-personal-life]] — Vlogs อีเวนต์ IRL ฮาร์ดแวร์ (Switch 2) คดีโดนโกง และชีวิตส่วนตัวของปู่โบ๊ต
 
-## 2. Games & Franchises (`wiki/games/` — 28)
+## 2. Games & Franchises (`wiki/games/` — 30)
 - [[arknights]] — Arknights & Arknights: Endfield
 - [[azur-promilia]] — Azur Promilia (อาซูร์ โพรมีเลีย)
 - [[blue-archive]] — Blue Archive (บลูอาร์ไคฟ์)
@@ -46,9 +46,11 @@ status: "active"
 - [[re9-marathon-mewgenics]] — Resident Evil Requiem (RE9), Marathon, Mewgenics & Indie/Console Showcase
 - [[resonance-solstice]] — Resonance Solstice
 - [[reverse-1999]] — Reverse: 1999
+- [[roblox]] — Roblox
 - [[sekiro]] — Sekiro: Shadows Die Twice (เซกิโร)
 - [[the-sims]] — The Sims (เดอะซิมส์)
 - [[uma-musume]] — Uma Musume: Pretty Derby (สาวม้า)
+- [[variety-and-indie-games]] — เกมจิปาถะ อินดี้ ทดลองเดโม และเกมนอกกระแส (Variety & One-Off Games)
 - [[wuthering-waves]] — Wuthering Waves (WuWa)
 - [[zelda]] — The Legend of Zelda (เซลด้า)
 - [[zenless-zone-zero]] — Zenless Zone Zero (ZZZ)

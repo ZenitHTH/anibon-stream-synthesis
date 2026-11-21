@@ -33,6 +33,7 @@ GAME_RULES: List[Tuple[str, Tuple[str, ...]]] = [
     ("heartopia", ("heartopia", "the lands")),
     ("chaotic-plartima", ("chaotic plartima", "plartima", "trickcal")),
     ("resonance-solstice", ("resonance solstice", "black souls")),
+    ("roblox", ("roblox", "โรบล็อก", "robux")),
 ]
 
 ENTITY_RULES: List[Tuple[str, Tuple[str, ...]]] = [

@@ -22,3 +22,11 @@
 - Ingested all 209 remaining streams into `wiki/sources/stream-*.md` via `ingest_streams_batch.py` (enforcing `masking-royal-news` safe metaphors and preserving `[[stream-cqll7dq35bw]]`).
 - Synthesized **28 Game pages** (`wiki/games/`), **25 Entity pages** (`wiki/entities/`), **6 Topic pages** (`wiki/topics/`), and **14 Python Script engineering pages** (`wiki/engineering/scripts/`).
 - Rebuilt `wiki/index.md` via `build_index.py`, updated `wiki/overview.md`, appended full ontology relations to `infranodus/full-wiki-ontology.md`, and verified 0 broken wikilinks, 0 orphan pages, and 0 unindexed pages.
+
+## [2026-11-22] query & file | Synthesized `wiki/games/roblox.md` from user query ("ROBLOX ?")
+- Searched 210 streams and filed dedicated game page [[roblox]] synthesizing 22 livestream discussions/gameplay sessions (including the 5-hour Roblox RP marathon in [[stream-vwu3sjkfx6g]], Tsuburaya Ultraman licensing [[stream-ymfjdsqwk6i]], TGA/copyright critiques, and safety/politics coverage).
+- Added `"roblox"` rule to `stream_taxonomy.py`, rebuilt `wiki/index.md`, and appended relations to `infranodus/full-wiki-ontology.md`.
+
+## [2026-11-22] query & file | Synthesized `wiki/games/variety-and-indie-games.md` ("เกมจิปาถะ ที่เล่น")
+- Cataloged all non-mainline variety, indie, Soulslike, survival, card, MOBA, and event-demo games played by `ปู่โบ๊ต` across 2025–2026 (*Burning Sword: Death Sun*, *Trees Hate You*, *Valor Mortis*, *Beast of Reincarnation*, *Echoes of Aincrad*, *Dinoblade*, *Lost Soul Aside Demo*, *Palworld 1.0*, *One in 8 Billion*, *The Lands*, *Heartopia*, *The Sims 1*, *Eternal Return*, *RoV*, *Arena Breakout: Infinite*, *Yu-Gi-Oh! Master Duel*, *CookieRun: OvenSmash*, *AniGuesser/AMQ*, *LEGO Fortnite*, and TGS 2026 Thai indie booths).
+- Rebuilt `wiki/index.md` and ran `wiki_tool.py lint`.
