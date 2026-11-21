@@ -9,10 +9,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from chunk.state import load_chunk_file
+from common import config as _cfg
 from common.config import WEBCAM_CORNER
 from common.log import format_progress, log_info, log_stage, log_warn
 from common.time import fmt_ts
 from process.chunk_storyboard_prep import prep_chunk_storyboard
+from process.multimodal_situations import collect_situational_candidates
 from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
 from video.audio_webcam_cues import AudioWebcamCue, select_audio_webcam_cues
 from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
@@ -93,12 +95,37 @@ def _load_chat_and_anchors(workspace: Path, cid: str) -> Tuple[Tuple[str, ...], 
         return chat_lines, []
 
 
-def _extract_cue_webcam_paths(chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig) -> List[str]:
-    """Crop webcam closeups at audio yell/silence timestamps and return relative paths."""
+def _expand_cue_target_secs(chunk: dict, cues: Tuple[AudioWebcamCue, ...]) -> Tuple[int, ...]:
+    """Expand audio peak/silence cues with onset/follow-through offsets and deictic speech cues."""
+    if not cues:
+        return ()
+    lo, hi = int(chunk.get("start_sec", 0) or 0), int(chunk.get("end_sec", 0) or 0)
+    cap = max(3, int(_cfg.PASS1_WEBCAM_FRAMES or 9))
+    chosen: List[int] = []
+    for c in cues:
+        for off in (0, -2, 2):
+            sec = max(lo, min(hi, int(c.sec) + off)) if hi > lo else max(0, int(c.sec) + off)
+            if all(abs(sec - prev) >= 2 for prev in chosen) and len(chosen) < cap:
+                chosen.append(sec)
+    items = chunk.get("items") or []
+    for _, sec in collect_situational_candidates(items, lo, hi if hi > lo else lo + 150, pinned_only=False):
+        if len(chosen) >= cap:
+            break
+        if all(abs(int(sec) - prev) >= 6 for prev in chosen):
+            chosen.append(int(sec))
+    return tuple(sorted(chosen[:cap]))
+
+
+def _extract_cue_webcam_entries(chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig) -> Tuple[List[str], List[dict]]:
+    """Crop webcam closeups at expanded audio/silence/deictic timestamps and return paths + sheet metadata."""
     if not cues or not cfg.video_source:
-        return []
-    req = ChunkWebcamRequest(cfg.workspace, cfg.video_source, chunk, tuple(c.sec for c in cues), cfg.webcam_corner)
-    return [str(f[1]) for f in sample_chunk_webcam_frames(req) if len(f) >= 2]
+        return [], []
+    secs = _expand_cue_target_secs(chunk, cues)
+    req = ChunkWebcamRequest(cfg.workspace, cfg.video_source, chunk, secs, cfg.webcam_corner, max_frames=max(len(secs), _cfg.PASS1_WEBCAM_FRAMES))
+    rendered = sample_chunk_webcam_frames(req)
+    paths = [str(f[1]) for f in rendered if len(f) >= 2]
+    sheets = [{"ts": str(f[0]), "path": str(f[1]), "label": str(f[3]) if len(f) > 3 else "WEBCAM CLOSEUP"} for f in rendered if len(f) >= 2]
+    return paths, sheets
 
 
 def _format_activity_block(cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional["SongRecoveryResult"]) -> str:
@@ -148,8 +175,22 @@ def _build_enrichment_payload(
     }
 
 
+def _maybe_recover_chunk_song(chunk: dict, cid: str, cfg: ChunkEnrichConfig) -> Optional["SongRecoveryResult"]:
+    """Scan and recover background song + speaker speech when audio source and triggers match."""
+    if not cfg.audio_source:
+        return None
+    from process.music.chunk_scanner import SongScanRequest, SongTriggerInput
+    chat_lines, anchors = _load_chat_and_anchors(cfg.workspace, cid)
+    scratch = cfg.workspace / "enrichment" / "scratch" / cid
+    if cfg.force:
+        (scratch / "vocals_16k.json").unlink(missing_ok=True)
+    if should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
+        return scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
+    return None
+
+
 def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
-    """Run audio yell/silence webcam extraction and Shazam+whisper recovery for one chunk."""
+    """Run storyboard prep, audio yell/silence webcam extraction, and Shazam+whisper recovery."""
     cid = chunk_path.stem
     cache_path = cfg.workspace / "enrichment" / f"{cid}.json"
     if not cfg.force and (cached := _read_cached_enrichment(cache_path)) is not None:
@@ -158,19 +199,13 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
         log_warn("enrich", f"{cid}: no audio/video/storyboard source resolved; skipping enrichment cache")
         return {}
     chunk = _load_chunk_meta(chunk_path)
+    sb_frames = prep_chunk_storyboard(chunk, cfg.slides_dir, cfg.workspace)
     cues = select_audio_webcam_cues(cfg.audio_source, WindowBounds(chunk["start_sec"], chunk["end_sec"]))
-    wc_paths = _extract_cue_webcam_paths(chunk, cues, cfg)
-    chat_lines, anchors = _load_chat_and_anchors(cfg.workspace, cid)
-    song: Optional["SongRecoveryResult"] = None
-    if cfg.audio_source:
-        from process.music.chunk_scanner import SongScanRequest, SongTriggerInput
-        scratch = cfg.workspace / "enrichment" / "scratch" / cid
-        if cfg.force:
-            (scratch / "vocals_16k.json").unlink(missing_ok=True)
-        if should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
-            song = scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
+    wc_paths, wc_sheets = _extract_cue_webcam_entries(chunk, cues, cfg)
+    song = _maybe_recover_chunk_song(chunk, cid, cfg)
     payload = _build_enrichment_payload(cues, wc_paths, song)
-    payload["storyboard_frames"] = prep_chunk_storyboard(chunk, cfg.slides_dir, cfg.workspace)
+    payload["webcam_sheets"] = wc_sheets
+    payload["storyboard_frames"] = sb_frames
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     _merge_activity_sidecar(cfg.workspace, cid, _format_activity_block(cues, wc_paths, song))

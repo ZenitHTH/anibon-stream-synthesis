@@ -204,6 +204,16 @@ def _load_cached_enrichment_webcam(workspace: Path, chunk: dict) -> list:
     """Load pre-extracted webcam sheets/frames from enrichment/chunk_NN.json."""
     cid = f"chunk_{int(chunk.get('_idx', 0) or 0):02d}"
     enr = load_chunk_enrichment(workspace, cid)
+    sheets = [s for s in (enr.get("webcam_sheets") or ()) if isinstance(s, dict)]
+    if sheets:
+        out = []
+        for s in sheets:
+            p = Path(str(s.get("path", "")))
+            if p.is_file():
+                b64 = base64.b64encode(p.read_bytes()).decode("ascii")
+                out.append((str(s.get("ts") or "00:00:00"), p, b64, str(s.get("label") or "WEBCAM CLOSEUP")))
+        if out:
+            return out
     cues = [c for c in (enr.get("audio_cues") or ()) if isinstance(c, dict)]
     cue_legend = ", ".join(f"{fmt_ts(int(c.get('sec', 0)))}:{c.get('event_type', 'cue')}" for c in cues)
     frames = []

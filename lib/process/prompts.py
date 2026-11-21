@@ -80,6 +80,11 @@ def load_world_identity_context(
         return ""
 
     limit = _cfg.WI_SNIPPET_LIMIT
+    cands = signal.get("candidates") or []
+    top_prob = max((float(c.get("prob", 0.0) or 0.0) for c in cands if isinstance(c, dict)), default=0.0)
+    conf = max(float(signal.get("confidence", 0.0) or 0.0), top_prob)
+    if limit <= 0 and 0.0 < conf < 0.65:
+        limit = 4000
     snippet = text[:limit] if limit > 0 else text
     if len(snippet) < len(text):
         snippet += "\n... (truncated)"
@@ -211,19 +216,18 @@ def build_chunk_entity_context(
             if len(matched_lines) >= max_count:
                 break
 
-    # Also resolve JIT domain entities (phonetic bridge + SQLite)
-    if allowed_sources is None or any(db_game in s.lower() for s in allowed_sources for db_game in ("fgo", "fate", "pokemon", "ygo", "yu-gi-oh")):
-        try:
-            from process.knowledge.domain_db import resolve_entities_for_chunk
-            jit_entities = resolve_entities_for_chunk(chunk_text, max_entities=10)
-            for entity_label in jit_entities:
-                if entity_label not in seen:
-                    seen.add(entity_label)
-                    matched_lines.append(f"- {entity_label}")
-                    if len(matched_lines) >= max_count:
-                        break
-        except Exception:
-            pass
+    # Always resolve JIT domain entities (phonetic bridge + SQLite) from actual chunk text
+    try:
+        from process.knowledge.domain_db import resolve_entities_for_chunk
+        jit_entities = resolve_entities_for_chunk(chunk_text, max_entities=15)
+        for entity_label in jit_entities:
+            if entity_label not in seen:
+                seen.add(entity_label)
+                matched_lines.append(f"- {entity_label}")
+                if len(matched_lines) >= max_count:
+                    break
+    except Exception:
+        pass
 
     if not matched_lines:
         return ""

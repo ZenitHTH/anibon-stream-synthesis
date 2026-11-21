@@ -24,13 +24,17 @@ def grid_dims(count: int) -> Tuple[int, int]:
 
 
 def _render_grid_jpeg(paths: Sequence[Path], out_path: Path, dims: Tuple[int, int]) -> bool:
-    """Assemble equal-sized image inputs into a black-padded JPEG grid via ffmpeg."""
+    """Assemble image inputs (normalizing mixed aspect ratios to 320x320) into a JPEG grid."""
     cols, rows = dims
     cmd = ["ffmpeg", "-v", "error", "-y"]
     for p in paths:
         cmd.extend(["-i", str(p)])
-    streams = "".join(f"[{i}:v]" for i in range(len(paths)))
-    vf = f"{streams}concat=n={len(paths)}:v=1:a=0,tile={cols}x{rows}:padding=6:margin=6:color=black"
+    norm = "".join(
+        f"[{i}:v]scale=320:320:force_original_aspect_ratio=decrease,pad=320:320:(ow-iw)/2:(oh-ih)/2:black[v{i}];"
+        for i in range(len(paths))
+    )
+    streams = "".join(f"[v{i}]" for i in range(len(paths)))
+    vf = f"{norm}{streams}concat=n={len(paths)}:v=1:a=0,tile={cols}x{rows}:padding=6:margin=6:color=black"
     cmd.extend(["-filter_complex", vf, "-frames:v", "1", "-q:v", "2", str(out_path)])
     res = subprocess.run(cmd, capture_output=True, timeout=30)
     return res.returncode == 0 and out_path.is_file() and out_path.stat().st_size > 100
