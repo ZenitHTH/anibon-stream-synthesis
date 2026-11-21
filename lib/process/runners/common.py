@@ -27,7 +27,7 @@ from process.multimodal import (
 )
 from process.multimodal_situations import collect_situational_candidates, select_spaced_seconds
 from process.reaction_io import resolve_reaction_source
-from process.runners.dynamic_chunk import _balance_dynamic_chunk_frames
+from process.runners.dynamic_chunk import _balance_dynamic_chunk_frames, _load_cached_storyboard
 from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
 
 

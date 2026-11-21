@@ -184,6 +184,22 @@ def _enrich_plan_with_peaks(
     return DynamicPlan(plan.tier, plan.sb_keep, plan.wc_frames, plan.mean_mad, eff), max_z
 
 
+def _load_cached_storyboard(workspace: Path, chunk: dict) -> list:
+    """Load pre-extracted storyboard screen tiles from enrichment/chunk_NN.json."""
+    cid = f"chunk_{int(chunk.get('_idx', 0) or 0):02d}"
+    enr = load_chunk_enrichment(workspace, cid)
+    frames = []
+    for item in enr.get("storyboard_frames") or ():
+        if not isinstance(item, dict):
+            continue
+        p = Path(str(item.get("path", "")))
+        if not p.is_file():
+            continue
+        b64 = base64.b64encode(p.read_bytes()).decode("ascii")
+        frames.append((str(item.get("ts") or "00:00:00"), p, b64, "STORYBOARD SCREEN"))
+    return frames
+
+
 def _load_cached_enrichment_webcam(workspace: Path, chunk: dict) -> list:
     """Load pre-extracted webcam sheets/frames from enrichment/chunk_NN.json."""
     cid = f"chunk_{int(chunk.get('_idx', 0) or 0):02d}"
@@ -209,10 +225,10 @@ def _balance_dynamic_chunk_frames(
     source: Optional[Path | str],
     args: Optional[argparse.Namespace],
 ) -> Tuple[list, list, str]:
-    """Dynamically allocate screen vs webcam storyboard frames from motion + audio bursts."""
+    """Send all storyboard and webcam frames untrimmed from enrichment cache or live motion."""
     cached_wc = _load_cached_enrichment_webcam(workspace, chunk)
     if cached_wc:
-        return trim_storyboard_frames(sb_frames, min(10, max(len(sb_frames), 1))), cached_wc, "cached-enrichment"
+        return sb_frames, cached_wc, "cached-enrichment"
     if not source:
         return sb_frames, [], "static"
     items = chunk.get("items", [])
@@ -224,9 +240,8 @@ def _balance_dynamic_chunk_frames(
     plan, max_z = _enrich_plan_with_peaks(workspace, items, sb_frames, (base_plan, _resolve_chunk_audio_source(workspace, source, args)), chunk_bounds=bounds)
     layout_fn = make_segment_layout_fn(sb_frames, _rank_active_corners, preferred_box=box) if len(sb_frames) >= 2 else None
     wc_frames = _extract_dynamic_webcam(workspace, chunk, source, (box, plan, layout_fn), args)
-    sb_balanced = trim_storyboard_frames(sb_frames, plan.sb_keep) if wc_frames else sb_frames
     suffix = f",peak_z={max_z:.1f}" if max_z >= 2.0 else ""
-    return sb_balanced, wc_frames, f"{plan.tier}(mad={plan.mean_mad:.3f}{suffix})"
+    return sb_frames, wc_frames, f"{plan.tier}(mad={plan.mean_mad:.3f}{suffix})"
 
 
-__all__ = ["_balance_dynamic_chunk_frames", "_expand_around_spikes", "_resolve_chunk_webcam_box"]
+__all__ = ["_balance_dynamic_chunk_frames", "_expand_around_spikes", "_load_cached_storyboard", "_resolve_chunk_webcam_box"]

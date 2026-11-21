@@ -34,6 +34,7 @@ from process.runners.common import (
     _get_runtime_hook,
     _init_multimodal_grounding,
     _init_webcam_source,
+    _load_cached_storyboard,
     _sample_chunk_multimodal_frames,
     _sample_chunk_webcam_grounding,
 )
@@ -471,9 +472,11 @@ def _process_single_recursive_chunk(
     if not chunk:
         return current_topic_title, rolling_summary
 
-    sb_raw = _sample_chunk_multimodal_frames(
-        chunk, ch_num, slides_dir if is_multimodal else None, tiles_dir, rolling_summary, args
-    )
+    sb_raw = _load_cached_storyboard(workspace, chunk) if is_multimodal else []
+    if not sb_raw:
+        sb_raw = _sample_chunk_multimodal_frames(
+            chunk, ch_num, slides_dir if is_multimodal else None, tiles_dir, rolling_summary, args
+        )
     sb_frames, wc_frames, tier = _balance_dynamic_chunk_frames(workspace, chunk, sb_raw, webcam_source, args)
     keyframes = sb_frames + wc_frames
     enrichment = load_chunk_enrichment(workspace, chunk_idx)
