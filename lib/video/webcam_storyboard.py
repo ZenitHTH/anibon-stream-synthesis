@@ -30,7 +30,7 @@ def _render_grid_jpeg(paths: Sequence[Path], out_path: Path, dims: Tuple[int, in
     for p in paths:
         cmd.extend(["-i", str(p)])
     norm = "".join(
-        f"[{i}:v]scale=320:320:force_original_aspect_ratio=decrease,pad=320:320:(ow-iw)/2:(oh-ih)/2:black[v{i}];"
+        f"[{i}:v]scale=320:320:force_original_aspect_ratio=decrease,pad=320:320:(ow-iw)/2:(oh-ih)/2:black,setsar=1[v{i}];"
         for i in range(len(paths))
     )
     streams = "".join(f"[v{i}]" for i in range(len(paths)))

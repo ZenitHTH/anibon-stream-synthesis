@@ -116,12 +116,24 @@ def _expand_cue_target_secs(chunk: dict, cues: Tuple[AudioWebcamCue, ...]) -> Tu
     return tuple(sorted(chosen[:cap]))
 
 
-def _extract_cue_webcam_entries(chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig) -> Tuple[List[str], List[dict]]:
+def _resolve_prep_webcam_box(chunk: dict, sb_frames: List[dict], cfg: ChunkEnrichConfig):
+    """Resolve consensus OBS webcam corner box across pre-extracted storyboard tiles."""
+    if not cfg.video_source:
+        return None
+    from process.runners.dynamic_chunk import _resolve_chunk_webcam_box
+    sb_tuples = [(str(f.get("ts") or ""), Path(str(f.get("path") or "")), "", "STORYBOARD SCREEN") for f in sb_frames if isinstance(f, dict) and f.get("path")]
+    lo, hi = int(chunk.get("start_sec", 0) or 0), int(chunk.get("end_sec", 0) or 0)
+    args = type("_Args", (), {"webcam_corner": cfg.webcam_corner})()
+    return _resolve_chunk_webcam_box(cfg.workspace, cfg.video_source, chunk.get("items") or [], args, sb_frames=sb_tuples, chunk_bounds=(lo, hi) if hi > lo else None)
+
+
+def _extract_cue_webcam_entries(chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig, sb_frames: List[dict] = ()) -> Tuple[List[str], List[dict]]:
     """Crop webcam closeups at expanded audio/silence/deictic timestamps and return paths + sheet metadata."""
     if not cues or not cfg.video_source:
         return [], []
     secs = _expand_cue_target_secs(chunk, cues)
-    req = ChunkWebcamRequest(cfg.workspace, cfg.video_source, chunk, secs, cfg.webcam_corner, max_frames=max(len(secs), _cfg.PASS1_WEBCAM_FRAMES))
+    box = _resolve_prep_webcam_box(chunk, list(sb_frames), cfg)
+    req = ChunkWebcamRequest(cfg.workspace, cfg.video_source, chunk, secs, cfg.webcam_corner, max_frames=max(len(secs), _cfg.PASS1_WEBCAM_FRAMES), webcam_box=box)
     rendered = sample_chunk_webcam_frames(req)
     paths = [str(f[1]) for f in rendered if len(f) >= 2]
     sheets = [{"ts": str(f[0]), "path": str(f[1]), "label": str(f[3]) if len(f) > 3 else "WEBCAM CLOSEUP"} for f in rendered if len(f) >= 2]
@@ -153,12 +165,14 @@ def _merge_activity_sidecar(workspace: Path, cid: str, block: str) -> None:
 
 
 def _read_cached_enrichment(cache_path: Path) -> Optional[dict]:
-    """Read enrichment JSON cache safely, returning None on missing or corrupt JSON."""
+    """Read enrichment JSON cache safely, returning None on missing, corrupt, or pre-sheet JSON."""
     if not cache_path.is_file():
         return None
     try:
         data = json.loads(cache_path.read_text(encoding="utf-8"))
-        return data if isinstance(data, dict) else None
+        if not isinstance(data, dict) or "storyboard_frames" not in data or "webcam_sheets" not in data:
+            return None
+        return data
     except (OSError, ValueError):
         return None
 
@@ -201,7 +215,7 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
     chunk = _load_chunk_meta(chunk_path)
     sb_frames = prep_chunk_storyboard(chunk, cfg.slides_dir, cfg.workspace)
     cues = select_audio_webcam_cues(cfg.audio_source, WindowBounds(chunk["start_sec"], chunk["end_sec"]))
-    wc_paths, wc_sheets = _extract_cue_webcam_entries(chunk, cues, cfg)
+    wc_paths, wc_sheets = _extract_cue_webcam_entries(chunk, cues, cfg, sb_frames=sb_frames)
     song = _maybe_recover_chunk_song(chunk, cid, cfg)
     payload = _build_enrichment_payload(cues, wc_paths, song)
     payload["webcam_sheets"] = wc_sheets

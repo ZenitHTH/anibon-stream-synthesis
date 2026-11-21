@@ -50,11 +50,17 @@ class TestScrutinizeFixes(unittest.TestCase):
         self.assertGreater(len(out_high), 25000)
 
     @unittest.skipIf(Image is None, "Pillow not installed")
-    def test_finding3_webcam_storyboard_packs_mixed_aspect_frames(self) -> None:
+    def test_finding3_webcam_storyboard_packs_mixed_aspect_and_sar_frames(self) -> None:
+        import subprocess
         f1 = self.ws / "wc_000737.jpg"
         f2 = self.ws / "wc_000770.jpg"
         Image.new("RGB", (320, 320), (80, 100, 120)).save(f1)
-        Image.new("RGB", (320, 220), (140, 90, 60)).save(f2)
+        raw = self.ws / "raw_non_square.jpg"
+        Image.new("RGB", (320, 220), (140, 90, 60)).save(raw)
+        subprocess.run(
+            ["ffmpeg", "-v", "error", "-y", "-i", str(raw), "-vf", "scale=320:320,setsar=539/540", str(f2)],
+            check=True,
+        )
         frames = [
             ("00:12:17", f1, "b64_1", "WEBCAM CLOSEUP"),
             ("00:12:50", f2, "b64_2", "WEBCAM CLOSEUP"),
@@ -101,6 +107,29 @@ class TestScrutinizeFixes(unittest.TestCase):
         self.assertEqual(len(loaded_wc), 1)
         self.assertEqual(loaded_wc[0][0], "00:12:15-00:12:52")
         self.assertIn("6 panels:", loaded_wc[0][3])
+
+    def test_finding5_stale_cache_without_webcam_sheets_is_recomputed_and_resolves_box(self) -> None:
+        (self.ws / "chunks").mkdir()
+        (self.ws / "enrichment").mkdir()
+        cp = self.ws / "chunks" / "chunk_05.txt"
+        cp.write_text("CHUNK 05 | 00:11:15–00:13:45 | cutoff=00:13:30\n(00:12:17) เฮ้ย\n", encoding="utf-8")
+        # Legacy pre-26c7466 cache missing webcam_sheets
+        (self.ws / "enrichment" / "chunk_05.json").write_text(
+            json.dumps({"audio_cues": [], "webcam_frames": ["old.jpg"], "storyboard_frames": []}),
+            encoding="utf-8",
+        )
+        cfg = ChunkEnrichConfig(workspace=self.ws, audio_source=Path("a.m4a"), video_source=Path("v.mp4"), force=False)
+        cues = (AudioWebcamCue(737, "loud_peak", 3.5, "loud_peak"),)
+        captured_reqs = []
+        with patch("process.chunk_enrichment.select_audio_webcam_cues", return_value=cues) as m_cues, \
+             patch("process.chunk_enrichment._resolve_prep_webcam_box", return_value="FAKE_BOX") as m_box, \
+             patch("process.chunk_enrichment.sample_chunk_webcam_frames", side_effect=lambda req: (captured_reqs.append(req), [])[1]), \
+             patch("process.chunk_enrichment.should_scan_chunk_for_song", return_value=False):
+            payload = enrich_single_chunk(cp, cfg)
+        m_cues.assert_called_once()
+        m_box.assert_called_once()
+        self.assertEqual(captured_reqs[0].webcam_box, "FAKE_BOX")
+        self.assertIn("webcam_sheets", payload)
 
 
 if __name__ == "__main__":
