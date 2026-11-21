@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Tuple, Set
 
 from common.time import fmt_ts, parse_ts
 from common.timestamps import TAGS
-from common.config import COMPACT_CHUNK_MAX_LINES, ENTITY_CONTEXT_MAX_TOKENS
+from common import config as _cfg
 from common.resources import plugin_root
 from process.enrichment_prompt import format_enrichment_context
 from process.signals import get_domain_guidance
@@ -25,7 +25,6 @@ _WI_CANDIDATES = [
     _ROOT / "references",
 ]
 WORLD_IDENTITY_DIR: Optional[Path] = next((p for p in _WI_CANDIDATES if p.is_dir()), None)
-_WI_SNIPPET_LIMIT = 1800
 
 
 def _chunk_range(items: list, chunk: Optional[dict] = None) -> Tuple[str, str]:
@@ -80,8 +79,9 @@ def load_world_identity_context(
     except Exception:
         return ""
 
-    snippet = text[:_WI_SNIPPET_LIMIT]
-    if len(text) > _WI_SNIPPET_LIMIT:
+    limit = _cfg.WI_SNIPPET_LIMIT
+    snippet = text[:limit] if limit > 0 else text
+    if len(snippet) < len(text):
         snippet += "\n... (truncated)"
 
     extra = ""
@@ -145,7 +145,7 @@ def build_candidate_weights_block(signal: Optional[dict]) -> str:
 def build_chunk_entity_context(
     chunk_text: str,
     glossary: Optional[dict] = None,
-    max_tokens: int = ENTITY_CONTEXT_MAX_TOKENS,
+    max_tokens: int = 0,
     allowed_sources: Optional[Set[str]] = None,
 ) -> str:
     """Filter entity glossary to entities relevant to the current chunk text.
@@ -156,6 +156,8 @@ def build_chunk_entity_context(
     """
     if not chunk_text or not glossary:
         return ""
+    max_tokens = max_tokens or _cfg.ENTITY_CONTEXT_MAX_TOKENS
+    max_count = _cfg.ENTITY_MAX_COUNT or 10**9
 
     text_lower = chunk_text.lower()
     matched_lines = []
@@ -206,7 +208,7 @@ def build_chunk_entity_context(
             extra = f" [{role}]" if role else (f" - {desc}" if desc else "")
             matched_lines.append(f"- {label}{extra}")
 
-            if len(matched_lines) >= 15:
+            if len(matched_lines) >= max_count:
                 break
 
     # Also resolve JIT domain entities (phonetic bridge + SQLite)
@@ -218,7 +220,7 @@ def build_chunk_entity_context(
                 if entity_label not in seen:
                     seen.add(entity_label)
                     matched_lines.append(f"- {entity_label}")
-                    if len(matched_lines) >= 15:
+                    if len(matched_lines) >= max_count:
                         break
         except Exception:
             pass
@@ -350,13 +352,14 @@ def _build_chunk_media_block(chunk: dict, livechat: str = "") -> str:
     )
 
 
-def coalesce_chunk_items(items: list, max_lines: int = COMPACT_CHUNK_MAX_LINES) -> List[str]:
+def coalesce_chunk_items(items: list, max_lines: Optional[int] = None) -> List[str]:
     """Merge adjacent ASR fragments to reduce line count without dropping spoken words."""
     clean = [
         (it.get("timestamp", fmt_ts(it.get("start", 0))), it.get("text", "").strip())
         for it in items if it.get("text", "").strip()
     ]
-    if not clean or len(clean) <= max(1, max_lines):
+    max_lines = _cfg.COMPACT_CHUNK_MAX_LINES if max_lines is None else max_lines
+    if not clean or max_lines <= 0 or len(clean) <= max_lines:
         return [f"({ts}) {txt}" for ts, txt in clean]
     per_line = max(2, (len(clean) + max_lines - 1) // max_lines)
     return [

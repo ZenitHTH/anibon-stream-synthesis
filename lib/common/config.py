@@ -214,7 +214,10 @@ TOKENS_PER_IMAGE: int = 260
 SCENE_DELTA_THRESHOLD: float = 0.12
 MAX_CHUNK_FRAMES: int = 16
 PASS1_WEBCAM_FRAMES: int = 6
-COMPACT_CHUNK_MAX_LINES: int = 65
+COMPACT_CHUNK_MAX_LINES: int = 0
+LIVECHAT_MAX_LINES: int = 0
+WI_SNIPPET_LIMIT: int = 0
+ENTITY_MAX_COUNT: int = 60
 
 REACTION_MIN_GAP_SEC: int = 45
 ONSET_SNAP_PRE_SEC: int = 20
@@ -259,6 +262,7 @@ def reload_config() -> None:
     global DEDUP_MIN_GAP_SEC, DEDUP_MAX_GAP_SEC, STAMP_COLLISION_SEC
     global DEFAULT_GROUP_SIZE, DEFAULT_BLOCK_SIZE, BYTE_CAP_LIMIT, LINE_CAP_LIMIT, LINE_WARN_LIMIT
     global DEFAULT_MULTIMODAL_CHUNKS, EVAL_BATCH_SIZE, TOKENS_PER_IMAGE, SCENE_DELTA_THRESHOLD, MAX_CHUNK_FRAMES, COMPACT_CHUNK_MAX_LINES
+    global LIVECHAT_MAX_LINES, WI_SNIPPET_LIMIT, ENTITY_MAX_COUNT
 
     PRIMARY_HOST = cfg_str("primary_host", "100.115.25.30")
     DEFAULT_PORT = cfg_int("port", 1234)
@@ -301,7 +305,10 @@ def reload_config() -> None:
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
     SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
     MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 16)
-    COMPACT_CHUNK_MAX_LINES = cfg_int("compact_chunk_max_lines", 65)
+    COMPACT_CHUNK_MAX_LINES = cfg_int("compact_chunk_max_lines", 0)
+    LIVECHAT_MAX_LINES = cfg_int("livechat_max_lines", 0)
+    WI_SNIPPET_LIMIT = cfg_int("wi_snippet_limit", 0)
+    ENTITY_MAX_COUNT = cfg_int("entity_max_count", 60)
     _reload_reaction_config()
 
 

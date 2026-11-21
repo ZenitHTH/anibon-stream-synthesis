@@ -39,8 +39,10 @@ def save_state(workspace: Path, state: dict) -> None:
         print(f"[warn] Failed to save state: {e}")
 
 
-def load_chunk_livechat(workspace: Path, chunk_idx: str, max_lines: int = 10) -> str:
-    """Return top chat snippet for this chunk, prioritizing donations and key viewer questions."""
+def load_chunk_livechat(workspace: Path, chunk_idx: str, max_lines: Optional[int] = None) -> str:
+    """Return chat for this chunk; when capped, prioritize donations and key viewer questions."""
+    from common import config as _cfg
+    max_lines = _cfg.LIVECHAT_MAX_LINES if max_lines is None else max_lines
     lc_file = workspace / "livechat" / f"livechat_{chunk_idx}.txt"
     if not lc_file.exists():
         return ""
@@ -48,7 +50,7 @@ def load_chunk_livechat(workspace: Path, chunk_idx: str, max_lines: int = 10) ->
         lines = [l.strip() for l in lc_file.read_text(encoding="utf-8").splitlines() if l.strip()]
         if not lines:
             return ""
-        if len(lines) <= max_lines:
+        if max_lines <= 0 or len(lines) <= max_lines:
             return "\n".join(lines)
 
         # Prioritize high-value lines: SuperChats, direct questions to Pu Boat, and reaction peaks

@@ -4,40 +4,36 @@
   "chat_path": "/v1/chat/completions",
   "default_model": "gemma-4-12b-it-qat@q4_k_xl",
   "probe_timeout_sec": 1.0,
-
   "chunk_max_tokens": 4096,
   "prune_max_tokens": 8192,
   "summarizer_max_tokens": 8192,
-  "entity_context_max_tokens": 300,
-
+  "entity_context_max_tokens": 2000,
   "chunk_timeout_sec": 180,
   "multimodal_timeout_sec": 180,
   "prune_timeout_sec": 600,
   "summarizer_timeout_sec": 600,
-
   "temperature": 0.1,
   "vision_temperature": 0.2,
   "max_retries": 2,
-
   "prune_min_input": 60,
   "prune_target_min": 40,
   "prune_target_max": 60,
-
   "dedup_min_gap_sec": 120,
   "dedup_max_gap_sec": 600,
   "stamp_collision_sec": 45,
-
   "group_size": 4,
   "block_size": 2400,
   "byte_cap_limit": 3500,
-
   "multimodal_chunks": true,
-  "eval_batch_size": 16384,
+  "eval_batch_size": 32768,
   "tokens_per_image": 260,
   "scene_delta_threshold": 0.12,
-  "max_chunk_frames": 16,
-  "pass1_webcam_frames": 6,
+  "max_chunk_frames": 24,
+  "pass1_webcam_frames": 9,
   "face_max_frames": 9,
   "reaction_storyboard_frames": 4,
-  "compact_chunk_max_lines": 65
+  "compact_chunk_max_lines": 0,
+  "livechat_max_lines": 0,
+  "wi_snippet_limit": 0,
+  "entity_max_count": 60
 }
