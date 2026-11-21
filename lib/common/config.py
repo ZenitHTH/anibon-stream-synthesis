@@ -209,11 +209,11 @@ LINE_CAP_LIMIT: int = 25
 LINE_WARN_LIMIT: int = 20
 
 DEFAULT_MULTIMODAL_CHUNKS: bool = True
-EVAL_BATCH_SIZE: int = 16384
+EVAL_BATCH_SIZE: int = 49152
 TOKENS_PER_IMAGE: int = 260
 SCENE_DELTA_THRESHOLD: float = 0.12
-MAX_CHUNK_FRAMES: int = 16
-PASS1_WEBCAM_FRAMES: int = 6
+MAX_CHUNK_FRAMES: int = 24
+PASS1_WEBCAM_FRAMES: int = 9
 COMPACT_CHUNK_MAX_LINES: int = 0
 LIVECHAT_MAX_LINES: int = 0
 WI_SNIPPET_LIMIT: int = 0
@@ -280,7 +280,7 @@ def reload_config() -> None:
     SUMMARIZER_MAX_TOKENS = cfg_int("summarizer_max_tokens", 8192)
     SUMMARIZER_TIMEOUT_SEC = cfg_int("summarizer_timeout_sec", 600)
 
-    ENTITY_CONTEXT_MAX_TOKENS = cfg_int("entity_context_max_tokens", 300)
+    ENTITY_CONTEXT_MAX_TOKENS = cfg_int("entity_context_max_tokens", 2000)
 
     DEFAULT_TEMPERATURE = cfg_float("temperature", 0.1)
     VISION_TEMPERATURE = cfg_float("vision_temperature", 0.2)
@@ -301,10 +301,10 @@ def reload_config() -> None:
     LINE_WARN_LIMIT = cfg_int("line_warn_limit", 20)
 
     DEFAULT_MULTIMODAL_CHUNKS = cfg_bool("multimodal_chunks", True)
-    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 16384)
+    EVAL_BATCH_SIZE = cfg_int("eval_batch_size", 49152)
     TOKENS_PER_IMAGE = cfg_int("tokens_per_image", 260)
     SCENE_DELTA_THRESHOLD = cfg_float("scene_delta_threshold", 0.12)
-    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 16)
+    MAX_CHUNK_FRAMES = cfg_int("max_chunk_frames", 24)
     COMPACT_CHUNK_MAX_LINES = cfg_int("compact_chunk_max_lines", 0)
     LIVECHAT_MAX_LINES = cfg_int("livechat_max_lines", 0)
     WI_SNIPPET_LIMIT = cfg_int("wi_snippet_limit", 0)

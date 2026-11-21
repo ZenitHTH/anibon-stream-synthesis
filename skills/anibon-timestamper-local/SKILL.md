@@ -58,7 +58,7 @@ Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
 curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
 ```
 
-- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 32768+`, `"eval_batch_size": 32768`). Full-context mode sends every transcript line, full livechat, full World Identity lore, and all storyboard + webcam peak/silence frames without artificial truncation. Smoke-test `--max-chunks 1` before launching 50+ chunks.
+- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 49152` — **2× headroom over peak ~24k tokens to prevent context-brim hallucination**, `"eval_batch_size": 49152`). Full-context mode sends every transcript line, full livechat, full World Identity lore, and all storyboard + webcam peak/silence frames without artificial truncation. Smoke-test `--max-chunks 1` before launching 50+ chunks.
 - **Ollama `*:cloud` Trap**: Never point `process_chunks_local.py` at local Ollama `*:cloud` tags (e.g. `gemma4:cloud`); `HTTP 402` triggers blackout-recovery loops. If LM Studio at `100.115.25.30:1234` is down, ask the user to start it. Load payloads, `12b` vs `26b` benchmark, and TokenMe setup → [`references/hardware-and-endpoints.md`](references/hardware-and-endpoints.md).
 
 ### 3. Run Timestamper / Detached Launch / Pause Control

@@ -16,17 +16,17 @@ Load payload (`POST http://100.115.25.30:1234/api/v1/models/load`):
 
 ```json
 {
-  "model": "google/gemma-4-12b-qat",
+  "model": "gemma-4-12b-it-qat@q4_k_xl",
   "parallel": 1,
-  "context_length": 24576,
+  "context_length": 49152,
   "eval_batch_size": 1024,
   "flash_attention": true,
   "offload_kv_cache_to_gpu": true
 }
 ```
 
-- **Shared-Host Memory Sizing (`"parallel": 1`)**: Do **not** blindly load `"context_length": 262144` when the LM Studio host shares `<= 32 GB` system RAM with heavy workloads (e.g. a 12 GB game server) or uses default `parallel: 4`. For sequential Pass 1 (`~5.3k–15k` tokens with frames + `4096` output) and Pass 2 summary (`< 16k` tokens), load with `"parallel": 1` and `"context_length": 16384` (or `24576` for 16-frame multimodal) to cut KV cache RAM 4×.
-- **Verified 16GB Tesla P100 16-Frame Profile**: `gemma-4-12b-it-qat@q4_k_xl`, `"parallel": 1`, `"context_checkpoints": 0`, `"eval_batch_size": 1024`, `"physical_batch_size": 1120`, `"offload_kv_cache_to_gpu": true` completed `93/93` chunks at `--eval-batch-size 12288 --max-chunk-frames 16` (`avg 14.73` frames/chunk) with 0 OOMs.
+- **2× Context Headroom Rule (`"context_length": 49152`, `"parallel": 1` — CRITICAL ANTI-HALLUCINATION)**: In Full-Context Prep-First mode (untrimmed transcript lines + full LiveChat + full World Identity + up to 24 storyboard frames + webcam peak/silence sheets + 4,096 output tokens), peak per-chunk token usage reaches `~20,000–24,500` tokens (average `~13,400`). Running at `24576` fills `81–98%` of the context window ("ปริ่มขอบ") and causes attention degradation and hallucinations. **Always double (`× 2`) the peak requirement to `"context_length": 49152` (48K, or `65536` / 64K)** with `"parallel": 1`, `"flash_attention": true`, and `"offload_kv_cache_to_gpu": true`. Because Gemma 4 12B uses Sliding Window Attention (SWA) on alternating layers, `49152` at `"parallel": 1` fits comfortably inside P100 16GB VRAM.
+- **Verified 16GB Tesla P100 Full-Context Profile**: `gemma-4-12b-it-qat@q4_k_xl`, `"parallel": 1`, `"context_length": 49152`, `"context_checkpoints": 0`, `"eval_batch_size": 1024`, `"physical_batch_size": 1120`, `"offload_kv_cache_to_gpu": true` with CLI `--eval-batch-size 49152 --max-chunk-frames 24`.
 - Always smoke-test with `--max-chunks 1` before launching a 50+ chunk run.
 
 ## 2. Model Selection Benchmark (Tesla P100 16GB)
