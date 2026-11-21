@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import re
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
@@ -12,6 +12,7 @@ from chunk.state import load_chunk_file
 from common.config import WEBCAM_CORNER
 from common.log import log_warn
 from common.time import fmt_ts
+from process.chunk_storyboard_prep import prep_chunk_storyboard
 from process.reaction_source import resolve_reaction_audio_source, resolve_reaction_source
 from video.audio_webcam_cues import AudioWebcamCue, select_audio_webcam_cues
 from video.chunk_webcam import ChunkWebcamRequest, sample_chunk_webcam_frames
@@ -34,6 +35,7 @@ class ChunkEnrichConfig:
     webcam_corner: str = WEBCAM_CORNER
     song_cfg: Optional["SongScanConfig"] = None
     force: bool = False
+    slides_dir: Optional[Path] = None
 
 
 def should_scan_chunk_for_song(inp: Any) -> bool:
@@ -63,10 +65,7 @@ def resolve_workspace_media(
 def _load_xml_chunk(chunk_path: Path) -> dict:
     """Parse an XML chunk file into {start_sec, end_sec, items}."""
     root = ET.parse(chunk_path).getroot()
-    items = [
-        {"start": float(el.attrib.get("start", 0.0)), "timestamp": el.attrib.get("timestamp", ""), "text": el.text or ""}
-        for el in root.findall("item")
-    ]
+    items = [{"start": float(el.attrib.get("start", 0.0)), "timestamp": el.attrib.get("timestamp", ""), "text": el.text or ""} for el in root.findall("item")]
     return {"start_sec": int(root.attrib.get("start_sec", 0)), "end_sec": int(root.attrib.get("end_sec", 0)), "items": items}
 
 
@@ -76,8 +75,7 @@ def _load_chunk_meta(chunk_path: Path) -> dict:
     m = re.search(r"chunk_(\d+)", chunk_path.stem)
     chunk["_idx"] = int(m.group(1)) if m else 0
     if int(chunk.get("end_sec", 0)) <= int(chunk.get("start_sec", 0)):
-        idx = chunk["_idx"]
-        chunk["start_sec"], chunk["end_sec"] = idx * 150, (idx + 1) * 150
+        chunk["start_sec"], chunk["end_sec"] = chunk["_idx"] * 150, (chunk["_idx"] + 1) * 150
     return chunk
 
 
@@ -95,28 +93,17 @@ def _load_chat_and_anchors(workspace: Path, cid: str) -> Tuple[Tuple[str, ...], 
         return chat_lines, []
 
 
-def _extract_cue_webcam_paths(
-    chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig
-) -> List[str]:
+def _extract_cue_webcam_paths(chunk: dict, cues: Tuple[AudioWebcamCue, ...], cfg: ChunkEnrichConfig) -> List[str]:
     """Crop webcam closeups at audio yell/silence timestamps and return relative paths."""
     if not cues or not cfg.video_source:
         return []
-    req = ChunkWebcamRequest(
-        workspace=cfg.workspace, source=cfg.video_source, chunk=chunk,
-        target_secs=tuple(c.sec for c in cues), preferred=cfg.webcam_corner,
-    )
-    frames = sample_chunk_webcam_frames(req)
-    return [str(f[1]) for f in frames if len(f) >= 2]
+    req = ChunkWebcamRequest(cfg.workspace, cfg.video_source, chunk, tuple(c.sec for c in cues), cfg.webcam_corner)
+    return [str(f[1]) for f in sample_chunk_webcam_frames(req) if len(f) >= 2]
 
 
-def _format_activity_block(
-    cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional["SongRecoveryResult"]
-) -> str:
+def _format_activity_block(cues: Tuple[AudioWebcamCue, ...], wc_paths: List[str], song: Optional["SongRecoveryResult"]) -> str:
     """Render pre-chunk audio, webcam, and Shazam signals for activity_chunk_NN.txt."""
-    lines: List[str] = []
-    for cue in cues:
-        tag = "[AUDIO_PEAK]" if cue.event_type == "loud_peak" else "[SILENCE_SHOCK]"
-        lines.append(f"- {tag} {fmt_ts(cue.sec)} ({cue.note}, score={cue.score})")
+    lines = [f"- {'[AUDIO_PEAK]' if c.event_type == 'loud_peak' else '[SILENCE_SHOCK]'} {fmt_ts(c.sec)} ({c.note}, score={c.score})" for c in cues]
     if wc_paths:
         lines.append(f"- [WEBCAM_FRAMES] {', '.join(wc_paths)}")
     if song:
@@ -167,8 +154,8 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
     cache_path = cfg.workspace / "enrichment" / f"{cid}.json"
     if not cfg.force and (cached := _read_cached_enrichment(cache_path)) is not None:
         return cached
-    if not cfg.audio_source and not cfg.video_source:
-        log_warn("enrich", f"{cid}: no audio/video source resolved; skipping enrichment cache")
+    if not cfg.audio_source and not cfg.video_source and not cfg.slides_dir:
+        log_warn("enrich", f"{cid}: no audio/video/storyboard source resolved; skipping enrichment cache")
         return {}
     chunk = _load_chunk_meta(chunk_path)
     cues = select_audio_webcam_cues(cfg.audio_source, WindowBounds(chunk["start_sec"], chunk["end_sec"]))
@@ -183,6 +170,7 @@ def enrich_single_chunk(chunk_path: Path, cfg: ChunkEnrichConfig) -> dict:
         if should_scan_chunk_for_song(SongTriggerInput(chunk, chat_lines, anchors, cfg.audio_source)):
             song = scan_and_recover_chunk_song(SongScanRequest(chunk, cfg.audio_source, scratch), cfg.song_cfg)
     payload = _build_enrichment_payload(cues, wc_paths, song)
+    payload["storyboard_frames"] = prep_chunk_storyboard(chunk, cfg.slides_dir, cfg.workspace)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     _merge_activity_sidecar(cfg.workspace, cid, _format_activity_block(cues, wc_paths, song))
@@ -204,6 +192,9 @@ def enrich_workspace_chunks(cfg: ChunkEnrichConfig) -> int:
     if not chunks_dir.is_dir():
         return 0
     chunk_files = _discover_chunk_files(chunks_dir)
+    if cfg.slides_dir is None:
+        from process.multimodal import prepare_storyboard_slides
+        cfg = replace(cfg, slides_dir=prepare_storyboard_slides(cfg.workspace))
     for cf in chunk_files:
         enrich_single_chunk(cf, cfg)
     return len(chunk_files)
