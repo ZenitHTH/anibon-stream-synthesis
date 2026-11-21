@@ -63,6 +63,9 @@ if [[ -z "$VIDEO_URL" && "$WORKSPACE" =~ youtube_([a-zA-Z0-9_-]{11})_workspace ]
 fi
 
 EXTRA_ARGS=()
+if [[ -f "${WORKSPACE}/video_360p.mp4" ]]; then
+    EXTRA_ARGS+=(--video-file "${WORKSPACE}/video_360p.mp4")
+fi
 if [[ -n "$VIDEO_URL" ]]; then
     EXTRA_ARGS+=(--video-url "$VIDEO_URL" --live-chat)
 fi

@@ -195,7 +195,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument("--vision-model", default=None)
     ap.add_argument("--no-knowledge-reader", action="store_true")
     ap.add_argument("--live-chat", action="store_true", help="Download and align live chat replay into livechat/ chunks")
-    ap.add_argument("--enrich", action="store_true", help="Run pre-chunk audio/webcam/Shazam enrichment before timestamping")
+    ap.add_argument("--enrich", dest="enrich", action="store_true", default=True, help="Run pre-chunk storyboard/audio/webcam/Shazam prep before timestamping (default: on)")
+    ap.add_argument("--no-enrich", dest="enrich", action="store_false", help="Skip pre-chunk enrichment prep stage")
     ap.add_argument("--api-key", default=os.environ.get("TOKENME_API_KEY") or os.environ.get("LM_API_KEY"))
     return ap
 
@@ -390,14 +391,17 @@ def _ensure_livechat_if_requested(workspace: Path, args: argparse.Namespace) -> 
         prepare_livechat(url, workspace)
 
 
-def _run_pre_enrichment_if_requested(workspace: Path, args: argparse.Namespace) -> None:
-    """Run pre-chunk audio yell/silence webcam and Shazam enrichment when --enrich is set."""
-    if not getattr(args, "enrich", False):
+def _run_prep_stage(workspace: Path, args: argparse.Namespace) -> None:
+    """Run pre-chunk storyboard, audio yell/silence webcam, and Shazam prep before Pass 1."""
+    if not getattr(args, "enrich", True):
         return
+    from process.audio_separator_engine import DEFAULT_AUDIOCPP_URL
     from process.chunk_enrichment import ChunkEnrichConfig, resolve_workspace_media
     from process.music.chunk_scanner import SongScanConfig
     audio_src, video_src = resolve_workspace_media(workspace, args)
+    audiocpp_url = os.environ.get("AUDIOCPP_URL") or DEFAULT_AUDIOCPP_URL
     song_cfg = SongScanConfig(
+        audiocpp_url=audiocpp_url,
         whisper_bin=getattr(args, "whisper_bin", None),
         whisper_model=getattr(args, "whisper_model", None),
     )
@@ -409,7 +413,19 @@ def _run_pre_enrichment_if_requested(workspace: Path, args: argparse.Namespace) 
         song_cfg=song_cfg,
     )
     count = enrich_workspace_chunks(cfg)
-    log_info("enrich", f"pre-enriched {count} chunks (audio/webcam/Shazam)")
+    log_info("enrich", f"pre-enriched {count} chunks (storyboard/audio/webcam/Shazam)")
+
+
+_run_pre_enrichment_if_requested = _run_prep_stage
+
+
+def _assert_prep_complete(workspace: Path, chunk_files: List[Path]) -> None:
+    """Warn on chunks missing pre-stage enrichment caches without aborting text-only runs."""
+    enr_dir = workspace / "enrichment"
+    missing = [cf.stem for cf in chunk_files if not (enr_dir / f"{cf.stem}.json").is_file()]
+    if missing:
+        preview = ", ".join(missing[:5]) + ("..." if len(missing) > 5 else "")
+        log_warn("enrich", f"prep cache missing for {len(missing)}/{len(chunk_files)} chunks ({preview}); continuing with fallback")
 
 
 @dataclass(frozen=True)
@@ -424,13 +440,16 @@ class _PipelineContext:
 
 
 def _run_active_pipeline(ctx: _PipelineContext) -> None:
-    """Prepare mappings, signals, glossary, and dispatch runner under PID tracking."""
+    """Execute pre-timestamp prep first, then mappings, signals, glossary, and Pass 1 runner."""
     configure_lm_think_logging(
         ctx.workspace / "lm_think_trace.jsonl",
         verbose=bool(getattr(ctx.args, "log_think", False)),
     )
     write_worker_pid(ctx.workspace)
     try:
+        _run_prep_stage(ctx.workspace, ctx.args)
+        if getattr(ctx.args, "enrich", True):
+            _assert_prep_complete(ctx.workspace, ctx.chunk_files)
         mappings, _, is_yt_auto = _prepare_transcript_mappings(ctx.workspace)
         if is_yt_auto:
             clean_workspace_chunks(ctx.workspace)
@@ -438,7 +457,6 @@ def _run_active_pipeline(ctx: _PipelineContext) -> None:
         glossary = _load_or_discover_glossary(
             ctx.workspace, signals_map, ctx.world_identity_dir, ctx.args.no_knowledge_reader
         )
-        _run_pre_enrichment_if_requested(ctx.workspace, ctx.args)
         _dispatch_pipeline_mode(
             ctx.args, ctx.workspace, ctx.model, ctx.chunk_files,
             signals_map, mappings, ctx.world_identity_dir, glossary,
