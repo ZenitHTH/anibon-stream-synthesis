@@ -28,12 +28,13 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 
 | Stage | Entrypoint / Modules | Role |
 |---|---|---|
-| **1. Prepare & Chunk** | `scripts/prepare_video.py`, `scripts/enrich_chunks.py` | Downloads subtitles, chunks transcript (`--keep-silent-chunks` preserves quiet gaps), aligns `--live-chat`, computes `mood_555.json`, optionally pre-enriches yell/silence webcam cues + Shazam -> `audio.cpp` -> `whisper.cpp`. |
-| **1.5 Clean & Glossary** | `lib/process/audit.py`, `lib/process/knowledge/` | Applies `garbled_replacements.json` + `default_mappings.json` on disk, writes `signals.json` + `entity_glossary.json`. |
-| **2. Pass 1 Segmentation** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py`, `control_chunks_local.py`, `scripts/validate_mood.py` | Runs rolling state-machine (`lib/chunk/state.py`, `lib/chunk/pause.py`) with multimodal keyframes + mood hints → `all_timestamps.txt`. |
-| **3. Garbled Collector** | `lib/process/garbled_collector.py`, `scripts/whisper_dispatcher.py` | Slices audio on-the-fly via local `whisper.cpp`, updates `garbled_replacements.json`, cleans `all_timestamps.txt` & `chunks/`. |
-| **4. Pass 2 Summary & Gates** | `lib/process/summarizer.py`, `lib/process/byte_cap.py`, `lib/process/parity_gates.py` | Prunes essential stamps (~40–60), assembles 4–6 macro parts (`<= 20` lines/part), audits glossary & runs gap/section gates → `anibon_timestamps.md`. |
-| **4.5 Edited VOD Shift** | `scripts/reconcile_edited_stream.py` | Detects post-broadcast YouTube Studio trims via 1000Hz FFT audio correlation and shifts timestamps. |
+| **1. Prepare & Chunk** | `scripts/prepare_video.py` | Downloads subtitles, storyboards, chunks transcript (`--keep-silent-chunks` preserves quiet gaps), aligns `--live-chat`, computes `mood_555.json`. |
+| **2. Prep-First Enrichment (MANDATORY BEFORE PASS 1)** | `scripts/enrich_chunks.py`, `lib/process/chunk_enrichment.py`, `lib/process/chunk_storyboard_prep.py` | Pre-prepares **all** chunk evidence into `enrichment/chunk_NN.json` before LM inference: storyboard screen tiles, webcam frame crops aligned with soundwave loud peaks & silence shock drops, and Shazam song detection -> `audio.cpp` vocal split -> `whisper.cpp` speech recovery. Runs automatically at the start of `process_chunks_local.py` (disable only via `--no-enrich`). |
+| **2.5 Clean & Glossary** | `lib/process/audit.py`, `lib/process/knowledge/` | Applies `garbled_replacements.json` + `default_mappings.json` on disk, writes `signals.json` + `entity_glossary.json`. |
+| **3. Pass 1 Full-Context Segmentation** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py`, `control_chunks_local.py`, `scripts/validate_mood.py` | Feeds **untrimmed** storyboard screen tiles + pre-cropped webcam peak/silence sheets + detected song/recovered speech + full chunk transcript lines + full livechat + full World Identity reference into rolling state-machine (`lib/chunk/state.py`, `lib/chunk/pause.py`) → `all_timestamps.txt`. |
+| **4. Garbled Collector** | `lib/process/garbled_collector.py`, `scripts/whisper_dispatcher.py` | Slices audio on-the-fly via local `whisper.cpp`, updates `garbled_replacements.json`, cleans `all_timestamps.txt` & `chunks/`. |
+| **5. Pass 2 Summary & Gates** | `lib/process/summarizer.py`, `lib/process/byte_cap.py`, `lib/process/parity_gates.py` | Prunes essential stamps (~40–60), assembles 4–6 macro parts (`<= 20` lines/part), audits glossary & runs gap/section gates → `anibon_timestamps.md`. (Post-Pass-1 webcam reaction verify is opt-in only via `--post-reaction-verify` because webcam crops are already fed into Pass 1). |
+| **5.5 Edited VOD Shift** | `scripts/reconcile_edited_stream.py` | Detects post-broadcast YouTube Studio trims via 1000Hz FFT audio correlation and shifts timestamps. |
 
 **Execution Modes**: `--mode recursive` (default; `SAME_TOPIC` merges unless a >8–10 min monologue needs a distinct sub-angle; `TOPIC_SHIFT` emits 1–2 stamps `>=45s` apart; Pass 2 groups into 4–6 macro parts) vs `--mode group` (fixed 4-chunk groups). Run `--help` on any script for full flags.
 
@@ -57,7 +58,7 @@ Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
 curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
 ```
 
-- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 16384–24576`). Smoke-test `--max-chunks 1` before launching 50+ chunks.
+- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 32768+`, `"eval_batch_size": 32768`). Full-context mode sends every transcript line, full livechat, full World Identity lore, and all storyboard + webcam peak/silence frames without artificial truncation. Smoke-test `--max-chunks 1` before launching 50+ chunks.
 - **Ollama `*:cloud` Trap**: Never point `process_chunks_local.py` at local Ollama `*:cloud` tags (e.g. `gemma4:cloud`); `HTTP 402` triggers blackout-recovery loops. If LM Studio at `100.115.25.30:1234` is down, ask the user to start it. Load payloads, `12b` vs `26b` benchmark, and TokenMe setup → [`references/hardware-and-endpoints.md`](references/hardware-and-endpoints.md).
 
 ### 3. Run Timestamper / Detached Launch / Pause Control
@@ -122,7 +123,7 @@ python3 scripts/check_sections.py ~/youtube_<VIDEO_ID>_workspace/anibon_timestam
 |---|---|---|
 | *"Single chunk is faster to run."* | Emits 35+ noisy micro-stamps. | Use `--mode recursive` with rolling summaries. |
 | *"I can invent tags like `[วิเคราะห์]`."* | Breaks comment parsers & benchmarks. | Normalizer remaps to whitelisted tags (`[Talk]`). |
-| *"Summarize the whole 3h transcript in 1 prompt."* | Exceeds context and degrades entity recall. | Keep rolling state-machine under 2k prompt tokens. |
+| *"Summarize the whole 3h transcript in 1 prompt."* | Exceeds single-pass output attention and degrades entity recall. | Process chunk-by-chunk with full chunk evidence (storyboard + webcam crops + audio/song + full transcript) and rolling state-machine. |
 | *"Write a custom Python script to go faster."* | Breaks state, resume logic, and UTF-8. | Use `process_chunks_local.py` flags only. |
 | *"Kill the worker PID to pause, relaunch later."* | Aborts active chunk and risks duplicate PIDs. | Run `control_chunks_local.py <ws> pause` / `continue` (pass `--timeout 0` if urgent). |
 | *"Output looks good without World Identity check."* | Hallucinates games or drops Thai Pokémon names. | Run `anibon-world-identity` + `stage5-audit-checklist.md`. |

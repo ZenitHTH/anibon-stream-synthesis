@@ -139,7 +139,10 @@ def _init_webcam_source(
     args: Optional[argparse.Namespace],
 ) -> Optional[Path | str]:
     """Resolve optional video source once for Pass 1 webcam closeup grounding."""
-    if not args or not getattr(args, "reaction_verify", False):
+    if not args:
+        return None
+    has_video_arg = bool(getattr(args, "video_file", None) or getattr(args, "reaction_verify", False) or getattr(args, "remote_snap", False))
+    if not has_video_arg and not any((workspace / f).is_file() for f in ("video_360p.mp4", "video.mp4", "stream.mp4")):
         return None
     src = resolve_reaction_source(workspace, args)
     if src:

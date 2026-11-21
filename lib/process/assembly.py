@@ -91,7 +91,7 @@ def _prune_and_verify_timestamps(
         deduped = apply_vision_verify(deduped, workspace, args, model)
     if not no_summarizer_pass:
         deduped = prune_essential(endpoint, model, deduped, temperature)
-    if args:
+    if args and getattr(args, "post_reaction_verify", False):
         deduped = apply_reaction_verify(deduped, workspace, ReactionRunConfig(args, model))
     return deduped
 

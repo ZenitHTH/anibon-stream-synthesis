@@ -176,7 +176,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
     ap.add_argument("--whisper-model", default=None)
     ap.add_argument("--no-garbled-collector", action="store_true")
     ap.add_argument("--vision-verify", action="store_true")
-    ap.add_argument("--reaction-verify", action="store_true", default=REACTION_VERIFY)
+    ap.add_argument("--reaction-verify", action="store_true", default=REACTION_VERIFY, help="Enable Pass 1 live webcam closeup fallback when video source exists")
+    ap.add_argument("--post-reaction-verify", action="store_true", help="Opt-in: run post-Pass-1 (Pass 2) webcam reaction onset verification")
     ap.add_argument(
         "--webcam-corner",
         default=WEBCAM_CORNER,
