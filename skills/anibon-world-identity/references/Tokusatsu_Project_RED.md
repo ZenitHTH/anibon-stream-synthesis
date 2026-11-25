@@ -86,6 +86,15 @@ Reference for Anibon Official streams discussing Tokusatsu news, Kamen Rider ser
 | **Kamen Rider Giraffa (มาสค์ไรเดอร์ กิราฟฟา)** | Kamen Rider Kabuto 20th | Masato Mishima ร่าง Worm เลียนแบบ |
 | **ZECT / Worms (เซ็คท์ / เวิร์ม)** | Kamen Rider Kabuto 20th | องค์กรลับและสิ่งมีชีวิตต่างดาวในจักรวาล Kabuto |
 | **Yukio Yamagata (ยูกิโอะ ยามากาตะ)** | *Hyakujuu Sentai Gaoranger* | นักร้องเพลงเปิด Gaoranger (เสียชีวิต พ.ย. 2026 อายุ 69 ปี; ASR: `ยูกิโอะ ยามาตะ`) |
+| **Luchisom (ลูคิซอม)** | Ultraman Teo (EP 19 *Alien Pandemic*) | เอเลี่ยน/ตัวร้ายในตอนที่ 19 *โรคระบาดมนุษย์ต่างดาว* (22 พ.ย. 2026; ASR: `ลุขี้ซุม`, `ลูกซอ`) |
+| **Ryusu (ริวสุ)** | Kamen Rider My-Th (EP 11) | ผู้เข้ารับการทดลองและผู้ถือครองบันทึกตรวจร่างกายภาษาเยอรมัน (ASR: `ริวสึ`) |
+| **Super Space Sheriff Gavan Infinity VS Raya** | V-Cinext Film | ภาคพิเศษใน Project R.E.D. (กำหนดฉาย 11 ธ.ค. 2026 / 12.11) |
+| **Kamen Rider Shinobi (มาสค์ไรเดอร์ ชิโนบิ)** | TTFC Original | ตอนอวสานกำหนดฉายบน Toei Tokusatsu Fan Club 27 ธ.ค. 2026 (ASR: `ชิโรบี`, `ชิรูบิ`) |
+| **CSM Mega Ulorder (ซีเอสเอ็ม เมกะอุลออเดอร์)** | Kamen Rider Ghost / Necrom | ของเล่นสาย CSM ของ Kamen Rider Necrom เปิดพรีออเดอร์ 20 พ.ย. 2026 (ASR: `Megader`, `เมกะอูer`) |
+| **SUPER BEST DX Gatack Zecter LIMITED CLEAR EDITION** | Kamen Rider Kabuto | ของเล่นสาย DX รุ่น Limited Clear Edition วางจำหน่าย 28 พ.ย. 2026 |
+| **Kamen Rider × Gavan Infinity: The Live in Taiwan 2027** | Live Stage Tour | ทัวร์การแสดงสดที่ไต้หวัน (8–24 ม.ค. 2027) |
+| **Local Hero Matsuri (ローカルヒーロー祭)** | Indie Tokusatsu Festival | มหกรรมรวมฮีโร่อินดี้ญี่ปุ่น (21–22 พ.ย. 2026; ASR: `Local Hero Masurina`, `มาซึรินะ`) |
+| **Joey Iwanaga (โจอี้ อิวานากะ)** | Kamen Rider My-Th (Vanken) | นักแสดงบท Vanken ที่ทวีตเสนอตัวเป็นตัวร้าย James Bond |
 
 ---
 

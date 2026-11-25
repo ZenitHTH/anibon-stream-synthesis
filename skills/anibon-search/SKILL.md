@@ -1,220 +1,138 @@
 ---
 name: anibon-search
-description: Search the ANIBON livestream archive for topics, games, news, or moments Boat discussed. Use when the user asks "ค้นหา พูดถึงเกี่ยวกับ...", "ปู่โบ๊ตเคยพูดเรื่อง... ในสตรีมไหน", "หาคลิปที่ปู่โบ๊ตวิจารณ์...", or similar archive search queries.
+description: Search the ANIBON livestream archive via anibon_wiki (LLM Wiki synthesis pages, curated stream timelines, and raw snapshots) for topics, games, news, or moments Boat discussed. Use when the user asks "ค้นหา พูดถึงเกี่ยวกับ...", "ปู่โบ๊ตเคยพูดเรื่อง... ในสตรีมไหน", "หาคลิปที่ปู่โบ๊ตวิจารณ์...", or similar archive search queries.
 ---
 
-# ANIBON Search Skill
+# ANIBON Search Skill (`anibon_wiki`-Backed)
 
 ## Overview & Principles
 
 ### Purpose
 
-This skill retrieves specific moments from the **ANIBON livestream archive** — a corpus of timestamped markdown files and compressed transcripts covering Boat's (ปู่โบ๊ต) livestreams. It answers questions like *"Which stream did Boat talk about X?"* or *"Find the clip where Boat criticized Y."*
+Retrieve verified moments, opinions, game sessions, and timestamped clips from the **ANIBON livestream archive** backed by the compiled **`anibon_wiki`** knowledge base (`anibon_wiki/`). Combines fast synthesized overview pages (`games/`, `entities/`, `topics/`) with exact per-stream timestamp lookup (`sources/stream-*.md`) and optional raw `all_timestamps.txt` fallback (`raw/streams/`).
 
-### Hybrid Retrieval Architecture
+### Source of Truth (`anibon_wiki/`)
 
-The search pipeline is **deterministic** and uses no LLM at retrieval time:
+All archive data lives inside `/Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/`:
 
-| Stage | Mechanism |
-|---|---|
-| Lexical / Fuzzy | SQLite **FTS5 trigram** index over tokenised terms (Thai + Latin). Handles partial matches, common misspellings, and CJK/Thai substring queries. |
-| Semantic | Pre-computed **vector embeddings** (sentence-level) compared via cosine similarity against the query's `semantic` field. |
-| Fusion | **Reciprocal Rank Fusion (RRF)** combines lexical and semantic rank lists into a single ordered result set. |
-| Moment Collapse | Results are collapsed to **600-second windows** so that multiple hits within the same 10-minute segment return as one moment entry rather than duplicate rows. |
+- **Synthesized Knowledge (`wiki/games/*.md`, `wiki/entities/*.md`, `wiki/topics/*.md`, `wiki/overview.md`)** — **Tier 1 (Preferred)**:
+  - Cross-stream thematic syntheses, `ปู่โบ๊ต`'s recurring opinions, milestones, and linked stream references (`[[stream-<vid>]]`).
+- **Master Index (`wiki/index.md`)**:
+  - Single-file directory of every game, entity, topic, stream source, and engineering page.
+- **Curated Stream Sources (`wiki/sources/stream-*.md`)** — **Tier 2**:
+  - One markdown page per canonical stream with YAML metadata (`video_id`, `upload_date`, `tags`), `Linked Categories & Entities`, macro-thematic sections, and `- \`HH:MM:SS\` — ...` timestamp bullets.
+- **Raw Stream Snapshots (`raw/streams/stream-*.md`)** — **Tier 3 (Optional Fallback)**:
+  - Original snapshots including exhaustive `all_timestamps.txt` blocks when granular sub-minute timestamps were condensed out of `wiki/sources/`. Searched **only** when `--include-raw` is explicitly enabled.
 
-### Source of Truth
+No external network calls or external workspace directories (`timestamp_workspace`) are required.
 
-All data lives under `timestamp_workspace/`:
+### Deterministic CLI Tool (`wiki_tool.py search`)
 
-- **Timestamp markdown files** — `by_video_id/*.md`
-  - One file per video, containing section headers with `[HH:MM:SS]` anchors, topic labels, and short summaries.
-- **Transcripts** — `transcripts/*.jsonl.gz`
-  - Gzip-compressed JSON Lines; each line is a timestamped utterance (`{"t": "00:12:34", "text": "...", ...}`).
-
-The CLI tool reads from these directories only. No external API, no live YouTube access.
-
-### CLI Tool
+Use the stdlib CLI wrapper inside the plugin directory (works from any working directory by passing its full path, or relative path from plugin root):
 
 ```bash
-python3 -m anibon_search search '<query_json>'
+python3 /Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py search --json --query-json '<query_json>'
 ```
 
-- **Working directory:** `/Users/zenithth/timestamp_workspace` (must be the CWD when invoking).
-- **Input:** A single JSON string passed as one shell argument.
-- **Output:** A JSON object on stdout containing `results[]`, `coverage{}`, and diagnostic fields.
-- **No LLM calls.** The tool is purely deterministic: index lookups, vector dot-products, RRF math, and window collapse.
+Equivalent flag-based forms:
 
-### Split of Labour
+```bash
+# Multi-term OR search returning structured JSON (synthesis + stream hits + t=SECs URLs)
+python3 anibon_wiki/scripts/wiki_tool.py search \
+  --terms "ริคิว" "Sen no Rikyu" "Rikyu" \
+  --tags fgo \
+  --limit 15 \
+  --json
 
-| Role | Responsibility |
-|---|---|
-| **AI (this skill)** | Interprets the user's natural-language query → builds the Query Contract JSON; inspects returned moments; filters false positives; formats the final answer for the user. |
-| **`search.py`** | Executes FTS5 + vector retrieval, RRF fusion, 600 s collapse, and returns raw candidate moments with `matched_by` provenance. Makes no editorial or semantic judgement. |
+# Simple human-readable search
+python3 anibon_wiki/scripts/wiki_tool.py search "Roblox"
 
----
+# Include raw/streams/ (all_timestamps.txt) as fallback
+python3 anibon_wiki/scripts/wiki_tool.py search --terms "Trees Hate You" --include-raw --json
+```
 
-## 2. Query Contract (JSON)
-
-Every search call passes a single JSON object to the CLI. The schema is:
+#### Query JSON Schema (`--query-json`)
 
 ```json
 {
-  "terms": ["..."],
-  "semantic": "...",
-  "tags": ["Talk"],
-  "date": { "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
-  "limit": 20
+  "terms": ["term1", "term2"],
+  "tags": ["optional-tag"],
+  "category": "optional: game | entity | topic | source | synthesis | stream | engineering | raw",
+  "date": {
+    "from": "YYYY-MM-DD",
+    "to": "YYYY-MM-DD"
+  },
+  "limit": 20,
+  "include_raw": false
 }
 ```
 
-### Field Reference
+#### JSON Output Highlights
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `terms` | `string[]` | Yes (≥ 1) | Proper-noun variants: Thai/English spellings, acronyms, common misspellings. Fed to FTS5 trigram index. |
-| `semantic` | `string` | Recommended | Free-text intent phrase for the vector embedding path. May include intent words (วิจารณ์, ดราม่า, สรุป). |
-| `tags` | `string[]` | No | Section-level tags from the markdown front-matter (e.g. `"Talk"`, `"Gameplay"`, `"News"`). Applied as a **soft score boost (+0.005)** per matching tag; never a hard filter. |
-| `date` | `{from, to}` | No | Inclusive date range (`YYYY-MM-DD`). Also a **soft score boost**, not a hard filter. Results outside the range are still returned but ranked lower. |
-| `limit` | `int` | No (default 20) | Maximum number of collapsed moments to return. |
-
-### Term Construction Rules
-
-- **Include** proper-noun variants: Thai and English spellings, acronyms, well-known misspellings.
-  - Example: `"WuWa"`, `"Wuthering Waves"` are both valid `terms` for the same game.
-- **Exclude** intent / action words from `terms`. Words like `วิจารณ์`, `ดราม่า`, `สรุป`, `พูดถึง`, `เกี่ยวกับ` belong in `semantic` or `tags`, **not** in `terms`. Placing them in `terms` pollutes the trigram index and degrades precision.
-
-### Tags & Date: Soft Boosts, Not Hard Filters
-
-- A matching tag adds **+0.005** to the fused RRF score for that moment.
-- A date within range adds a similar small boost.
-- Neither field removes results from the candidate set. This ensures recall is preserved even when the user's date or tag guess is slightly off.
-
-### Example Queries (Verbatim)
-
-**Example 1 — Thai topic search**
-
-User asks: *"ค้นหา พูดถึงเกี่ยวกับ เนเน่ นายแน่มาก"*
-
-```json
-{"terms": ["เนเน่", "นายแน่มาก"], "semantic": "เนเน่ นายแน่มาก"}
-```
-
-> `เนเน่` and `นายแน่มาก` are proper nouns (character / person names). No intent words needed; the semantic phrase mirrors the terms for vector coverage.
-
-**Example 2 — Game review search with tag hint**
-
-User asks: *"ค้นหาปู่โบ๊ตวิจารณ์ Wuwa"*
-
-```json
-{"terms": ["WuWa", "Wuthering Waves"], "tags": ["Talk"], "semantic": "วิจารณ์ Wuwa Wuthering Waves"}
-```
-
-> `WuWa` and its full name `Wuthering Waves` are both proper-noun variants. The intent word `วิจารณ์` lives in `semantic`. `"Talk"` is a soft tag boost for talk-style segments (as opposed to pure gameplay).
+- `coverage`: `{ "total_pages": N, "total_streams": M, "date_range": "YYYY-MM-DD..YYYY-MM-DD" }`
+- `results[]`: ranked by tier (`synthesis` > `stream` > `engineering` > `raw`), title/tag match, distinct term matches, and recency (`upload_date`):
+  - `tier`, `score`, `slug`, `path` (absolute path for `file:///` links), `rel_path`, `title`, `video_id`, `upload_date`, `youtube_url`
+  - `matches[]`: `{ "line", "section", "timestamp", "seconds", "youtube_url", "text" }` — `youtube_url` automatically appends `&t=<seconds>` whenever `HH:MM:SS` appears on that line!
 
 ---
 
-## 3. Step-by-Step Workflow
+## Search Workflow
 
-### Step 1 — Query Formulation
+### Step 1: Index Lookup & Query Formulation
 
-1. Parse the user's natural-language request (Thai, English, or mixed).
-2. Identify **proper nouns** → populate `terms[]` with all known variants (Thai/English, acronyms, common misspellings).
-3. Extract **intent / action words** (วิจารณ์, ดราม่า, สรุป, พูดถึง, เกี่ยวกับ) → place them in the `semantic` string only.
-4. If the user mentions a segment type (talk, gameplay, news) or an approximate date window, add to `tags[]` and/or `date{}` as soft boosts.
-5. Set `limit` (default 20; raise to 30–50 for broad exploratory queries).
-6. Produce the final Query Contract JSON.
+1. For known games, characters, or broad themes (e.g. `"Roblox"`, `"FGO"`, `"เกมจิปาถะ"`, `"อาโอโกะ"`), check `anibon_wiki/wiki/index.md` first or read the matching `wiki/games/<slug>.md`, `wiki/entities/<slug>.md`, or `wiki/topics/<slug>.md` page directly!
+2. Expand search queries with multilingual **Thai + English + phonetic/slang/alias variants**:
+   - **Titles / Games**: Thai + English + abbreviations (e.g., `["รางดาว", "Honkai", "Star Rail", "HSR"]`).
+   - **Entities / Characters**: official spelling + Thai phonetic + `ปู่โบ๊ต`'s nicknames (e.g., `["อาโอโกะ", "อาโกะ", "Aoko", "Aozaki"]`, `["ท่านอิมู", "แมรี่จัวส์", "กฎหมายแมรี่จัวส์"]` for sensitive political/royal metaphors).
+   - **Filters**: start broad without strict `--date-from` or `--tags` unless the user explicitly constrains dates/topics.
 
-### Step 2 — Retrieval Execution
+### Step 2: Execute Deterministic Search
 
-Run from `/Users/zenithth/timestamp_workspace`:
+Run `wiki_tool.py search` with `--json` (either `--terms ...` or `--query-json '<json>'`). Inspect:
+1. Top `tier == "synthesis"` hits (`wiki/games/`, `wiki/entities/`, `wiki/topics/`) for synthesized takeaways and cross-stream narrative.
+2. Top `tier == "stream"` hits (`wiki/sources/stream-*.md`) for exact dated streams, `video_id`, and timestamped YouTube URLs (`&t=SECs`).
 
-```bash
-python3 -m anibon_search search '<query_json>'
-```
+### Step 3: Verify Context Around Matches
 
-- The `<query_json>` is the single-quoted JSON string from Step 1.
-- Capture stdout as a JSON object. Expected top-level keys: `results`, `coverage`, and optional diagnostics (`elapsed_ms`, `fts_hits`, `vec_hits`).
-- If the command errors (non-zero exit), check that CWD is correct and the JSON is valid (no trailing commas, proper escaping of Thai characters in shell).
+Before quoting or stating what `ปู่โบ๊ต` said:
+- Use `read_file` around the matched `line` in `wiki/sources/stream-<vid>.md` (and/or the synthesized page in `wiki/games/` / `wiki/topics/`) to verify full narrative context, exact time span (`start–end`), and whether a remark was serious critique, sarcasm, or a viewer Q&A.
+- If a snippet links a `[[stream-<vid>]]`, read that stream's `wiki/sources/stream-<vid>.md` when exact timestamp precision is needed.
 
-### Step 3 — Result Verification & Filtering
+### Step 4: Iterative Refinement (Max 3 Rounds)
 
-For each entry in `results[]`:
+If initial search returns zero or thin hits:
+- **Round 2**: Broaden `terms` with alternative Thai spellings, phonetic approximations, or wider category terms, and remove `--tags` / `--category`.
+- **Round 3**: Re-run with `--include-raw` (`"include_raw": true`) to scan uncurated `all_timestamps.txt` lines inside `anibon_wiki/raw/streams/`.
+- If still empty after 3 rounds, clearly report the gap and state `coverage` (`total_pages`, `total_streams`, `date_range`). Never invent timestamps.
 
-1. **Inspect the moment:** review the returned section title, timestamp (`t`), video ID, and the `matched_by` field (e.g. `"fts"`, `"vector"`, `"both"`).
-2. **Cross-check context:** open or recall the surrounding transcript / markdown section to confirm the topic actually matches the user's intent.
-3. **Filter false positives:** discard moments where:
-   - The proper noun appears only in passing (e.g. a 1-second mention inside an unrelated segment).
-   - The `matched_by` is vector-only and the cosine score is low (< 0.75) with no lexical corroboration.
-   - The section title or transcript content clearly contradicts the query intent.
-4. **Rank survivors** by a combination of RRF score, `matched_by` provenance (prefer `"both"`), and contextual relevance you judge from the snippet.
+### Step 5: Answer Formatting & Citations
 
-### Step 4 — Iterative Refinement (Up to 3 Rounds)
+Present answers concisely in the user's language (default Thai when asked in Thai):
+- **Synthesized Summary First**: Lead with the direct answer across streams (`ปู่โบ๊ต` — never `ปู่บอท`/`ลุงบอท`).
+- **Timestamped Clips**: For each cited moment, include:
+  - Upload date & Stream title / ID
+  - Exact timestamp + clickable YouTube jump link: `https://www.youtube.com/watch?v=<video_id>&t=<secs>`
+  - Clickable local wiki citation link: `[stream-<vid>.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/wiki/sources/stream-<vid>.md#L...)` (and relevant `[game/topic page](file:///...)`).
+- **Coverage Footer**: Mention verified scope (e.g. number of matched streams/pages across the archive's `total_streams` and `date_range`).
 
-If Step 3 yields zero or insufficiently relevant moments:
+### Step 6: Optional Query Compounding (LLM Wiki Maintenance)
 
-| Round | Action |
-|---|---|
-| **1** | Expand `terms[]` with discovered alternate names, game titles, character aliases, or transliterations found in the first-pass results' metadata. Re-run. |
-| **2** | Broaden or adjust `semantic` (e.g. drop a restrictive intent word, add a synonym). Optionally widen `date{}` by ±7 days. Re-run. |
-| **3** | Try a minimal contract: single most-specific proper noun in `terms`, short `semantic`. If still empty, proceed to Step 6. |
-
-Do **not** exceed 3 refinement rounds. Each round must change at least one field of the Query Contract.
-
-### Step 5 — Answer Presentation
-
-For every verified moment, present:
-
-- **Clickable YouTube timestamp link:**
+Per `anibon_wiki/CLAUDE.md`, if a non-trivial search synthesizes a recurring game/entity/topic across multiple streams that lacks a dedicated `wiki/` page (e.g. a newly surfacing franchise or recurring theme):
+- Create/update the synthesized page in `anibon_wiki/wiki/games/`, `entities/`, or `topics/` (using `stream-cqll7dq35bw` / `roblox.md` conventions).
+- Rebuild the index & validate integrity:
+  ```bash
+  python3 anibon_wiki/scripts/build_index.py
+  python3 anibon_wiki/scripts/wiki_tool.py lint
   ```
-  https://www.youtube.com/watch?v=VIDEO_ID&t=SECs
-  ```
-  where `SECs` is the integer total seconds from the start of the video (e.g. `01:23:45` → `5025`).
-- **Video title** (from archive metadata).
-- **Upload date** (`YYYY-MM-DD`).
-- **Section title** (the markdown section header that contains the moment).
-- **Why it matched:** one sentence explaining which term(s) / tag / semantic phrase triggered the hit and what Boat was discussing at that timestamp.
-
-Format as a numbered or bulleted list. If multiple moments come from the same video, group them under one video heading with sub-bullets for each timestamp.
-
-### Step 6 — Fallback & Abstain
-
-If after up to 3 refinement rounds no relevant moment is found:
-
-1. **Abstain.** Do not guess, extrapolate, or fabricate a timestamp.
-2. State clearly that the archive does not contain a matching segment for the queried topic.
-3. Report coverage from the `coverage` JSON field returned by the CLI so the user understands the search boundary:
-   - `date_range`: earliest and latest video dates in the index.
-   - `total_videos`: number of videos indexed.
-   - `level2_transcripts`: count (or range) of transcripts at detail level 2 available for full-text search.
-4. Suggest a narrower or alternative phrasing if appropriate, but do not invent results.
+- Append a brief entry to `anibon_wiki/wiki/log.md`.
+- Skip this step for simple one-off timestamp lookups.
 
 ---
 
-## 4. Safety & Iron Rules
+## Mandatory Safety & Integrity Rules (Iron Rules)
 
-### R1 — No Hallucinated Timestamps
-
-- **Never** present a timestamp, video ID, or section title that is not directly returned by `search.py` in the current session.
-- If you are uncertain whether a moment was actually in the results, re-run the query before citing it.
-- Do not interpolate between two known timestamps to "estimate" when something else was said.
-
-### R2 — Royal News Masking
-
-- **Never** display raw transcript snippets that contain unmasked royal-news content (Thai royal family references, names, or events) in a public-facing answer.
-- If a matched moment's transcript section touches on such material:
-  - Cite the timestamp link and section title only.
-  - Summarise neutrally without quoting the raw text.
-  - Apply the `masking-royal-news` convention before including any verbatim snippet in the response.
-
-### R3 — Deterministic Retrieval Only
-
-- Do not call external LLM APIs, web search engines, or YouTube APIs as part of this skill. All evidence must come from the local `timestamp_workspace` index via `search.py`.
-- The AI's role is interpretation and presentation; retrieval is always delegated to the CLI.
-
-### R4 — CWD Discipline
-
-- Always execute the CLI from `/Users/zenithth/timestamp_workspace`. Running from a different directory will cause index-not-found errors or silent empty results.
-
-### R5 — Quote Fidelity
-
-- When quoting transcript text (after masking per R2), preserve the original Thai/Latin script exactly. Do not paraphrase, translate, or "clean up" the speaker's words unless explicitly asked by the user.
+- **R1 — Zero Fabricated Citations**: Never invent or extrapolate timestamps, `t=SECs`, video IDs, or upload dates. Compute `t=SECs` strictly from `HH:MM:SS` observed in `anibon_wiki/` (`HH * 3600 + MM * 60 + SS`) or directly from `wiki_tool.py search --json` output.
+- **R2 — Mandatory Royal News Masking (`masking-royal-news`)**: Read and strictly enforce [skills/masking-royal-news/SKILL.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/masking-royal-news/SKILL.md) before quoting or paraphrasing any sensitive historical/royal/legal stream moment. Keep all canonical metaphors (`ท่านอิมู รุ่นที่ 8/9/10`, `สถาบันแห่งแมรี่จัวส์`, `กฎหมายแมรี่จัวส์`, `มังกรฟ้า`). Even though `wiki_search.py` runs `sanitize_wiki_text` on matched lines, inspect `--include-raw` snippets carefully and mask any unmasked phrasing in prose.
+- **R3 — Streamer Identity Invariant**: Always write **`ปู่โบ๊ต`** — never `ปู่บอท`, `ลุงบอท`, or `ปู่โบต`.
+- **R4 — Deterministic Local Retrieval**: Do not scrape YouTube, run ad-hoc regex scripts, or query deprecated `~/timestamp_workspace` paths. Always use `anibon_wiki/` and `wiki_tool.py search`.
+- **R5 — Context Fidelity**: Read surrounding lines in `wiki/sources/` or `wiki/{games,entities,topics}/` before attributing a position or quote to `ปู่โบ๊ต`. If the archive has no coverage after 3 search rounds, state what is missing honestly.

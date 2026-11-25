@@ -17,10 +17,9 @@ Single-GPU local pipeline for generating YouTube timestamps and summaries from l
 
 ## Companion Skills
 
-- **`anibon-world-identity` (MANDATORY)**: Verify character, game, Pokémon (`ชื่อไทย (English Name)`), and pop-culture names against `references/*.md`, `atlas_fgo.db`, `pokemon.db`, and `garbled_replacements.json` before finalizing output.
-- **`anibon-livechat-analysis`**: Download/align LiveChat replays or extract burned-in chat via vision OCR fallback (`mood_555.json` pulses + viewer reaction peaks).
-- **`whisper-corruption-recovery`**: Re-render Whisper repetition loops or silence-stutter segments before timestamping.
-- **`anibon-local-transcription`**: Extract 16kHz audio and run local GPU `whisper.cpp` when YouTube has no subtitles.
+- **`anibon-world-identity` (MANDATORY)**: Verify names, Pokémon (`ชื่อไทย (English Name)`), and lore against `references/*.md`, `atlas_fgo.db`, `pokemon.db`, `garbled_replacements.json`.
+- **`anibon-livechat-analysis`**, **`whisper-corruption-recovery`**, **`anibon-local-transcription`**: LiveChat/OCR pulses (`mood_555.json`), Whisper loop re-render, local `whisper.cpp` ASR.
+- **`masking-royal-news` (ON TRIGGER)**: When royals/monarchy/112-royal context appears, mask timestamps & headers in `anibon_timestamps.md` and `all_timestamps.txt`.
 
 ## Pipeline Stages
 
@@ -28,15 +27,15 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 
 | Stage | Entrypoint / Modules | Role |
 |---|---|---|
-| **1. Prepare & Chunk** | `scripts/prepare_video.py` | Downloads subtitles, storyboards, chunks transcript (`--keep-silent-chunks` preserves quiet gaps), aligns `--live-chat`, computes `mood_555.json`. |
-| **2. Prep-First Enrichment (MANDATORY BEFORE PASS 1)** | `scripts/enrich_chunks.py`, `lib/process/chunk_enrichment.py`, `lib/process/chunk_storyboard_prep.py` | Pre-prepares **all** chunk evidence into `enrichment/chunk_NN.json` before LM inference: storyboard screen tiles, webcam frame crops aligned with soundwave loud peaks & silence shock drops, and Shazam song detection -> `audio.cpp` vocal split -> `whisper.cpp` speech recovery. Runs automatically at the start of `process_chunks_local.py` (disable only via `--no-enrich`). |
-| **2.5 Clean & Glossary** | `lib/process/audit.py`, `lib/process/knowledge/` | Applies `garbled_replacements.json` + `default_mappings.json` on disk, writes `signals.json` + `entity_glossary.json`. |
-| **3. Pass 1 Full-Context Segmentation** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py`, `control_chunks_local.py`, `scripts/validate_mood.py` | Feeds **untrimmed** storyboard screen tiles + pre-cropped webcam peak/silence sheets + detected song/recovered speech + full chunk transcript lines + full livechat + full World Identity reference into rolling state-machine (`lib/chunk/state.py`, `lib/chunk/pause.py`) → `all_timestamps.txt`. |
-| **4. Garbled Collector** | `lib/process/garbled_collector.py`, `scripts/whisper_dispatcher.py` | Slices audio on-the-fly via local `whisper.cpp`, updates `garbled_replacements.json`, cleans `all_timestamps.txt` & `chunks/`. |
-| **5. Pass 2 Summary & Gates** | `lib/process/summarizer.py`, `lib/process/byte_cap.py`, `lib/process/parity_gates.py` | Prunes essential stamps (~40–60), assembles 4–6 macro parts (`<= 20` lines/part), audits glossary & runs gap/section gates → `anibon_timestamps.md`. (Post-Pass-1 webcam reaction verify is opt-in only via `--post-reaction-verify` because webcam crops are already fed into Pass 1). |
-| **5.5 Edited VOD Shift** | `scripts/reconcile_edited_stream.py` | Detects post-broadcast YouTube Studio trims via 1000Hz FFT audio correlation and shifts timestamps. |
+| **1. Prepare & Chunk** | `scripts/prepare_video.py` | Downloads subtitles, storyboards, chunks (`--keep-silent-chunks`), aligns `--live-chat`, writes `mood_555.json`. |
+| **2. Prep-First Enrichment** | `scripts/enrich_chunks.py`, `lib/process/chunk_enrichment.py`, `chunk_storyboard_prep.py` | Pre-caches `enrichment/chunk_NN.json` (screen tiles, webcam peak/silence crops, Shazam -> `audio.cpp` -> `whisper.cpp`) before Pass 1 via `process_chunks_local.py` (`--no-enrich` to skip). |
+| **2.5 Clean & Glossary** | `lib/process/audit.py`, `lib/process/knowledge/` | Applies `garbled_replacements.json` + `default_mappings.json`, writes `signals.json` + `entity_glossary.json`. |
+| **3. Pass 1 Segmentation** | `skills/anibon-timestamper-local/scripts/process_chunks_local.py`, `control_chunks_local.py`, `scripts/validate_mood.py` | Feeds untrimmed screen tiles, webcam sheets, song speech, full transcript/livechat, and World Identity via `lib/chunk/state.py` / `pause.py` → `all_timestamps.txt`. |
+| **4. Garbled Collector** | `lib/process/garbled_collector.py`, `scripts/whisper_dispatcher.py` | Slices `garbled_notes_raw/` via `whisper.cpp`, updates `garbled_replacements.json`, cleans `all_timestamps.txt` & `chunks/`. |
+| **5. Pass 2 Summary & Gates** | `lib/process/summarizer.py`, `byte_cap.py`, `parity_gates.py` | Prunes essential stamps (~40–60), assembles 4–6 parts (`<= 20` lines/part), runs glossary/gap/section gates → `anibon_timestamps.md` (`--post-reaction-verify` opt-in). |
+| **5.5 Edited VOD Shift** | `scripts/reconcile_edited_stream.py` | Detects YouTube Studio trims via 1000Hz FFT and shifts timestamps. |
 
-**Execution Modes**: `--mode recursive` (default; `SAME_TOPIC` merges unless a >8–10 min monologue needs a distinct sub-angle; `TOPIC_SHIFT` emits 1–2 stamps `>=45s` apart; Pass 2 groups into 4–6 macro parts) vs `--mode group` (fixed 4-chunk groups). Run `--help` on any script for full flags.
+**Modes**: `--mode recursive` (default; `SAME_TOPIC` merges; `TOPIC_SHIFT` 1–2 stamps `>=45s` apart) vs `--mode group` (4-chunk groups). Run `--help` for flags.
 
 ## Golden-Path Commands
 
@@ -47,10 +46,10 @@ All commands run from plugin root (`anibon-stream-synthesis`). Shared utilities 
 ```bash
 python3 scripts/prepare_video.py "https://www.youtube.com/watch?v=<VIDEO_ID>" \
   --workspace ~/youtube_<VIDEO_ID>_workspace --format txt --block 150 --overlap 15 --live-chat
-yt-dlp -f 18 -o ~/youtube_<VIDEO_ID>_workspace/video_360p.mp4 "https://www.youtube.com/watch?v=<VIDEO_ID>"
+yt-dlp --extractor-args "youtube:player_client=android" -f 18 -o ~/youtube_<VIDEO_ID>_workspace/video_360p.mp4 "https://www.youtube.com/watch?v=<VIDEO_ID>"
 ```
 
-Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
+> **No `detect_signals.py` on `--format txt`**: It targets `.xml` and writes `chunks_processed: 0`, skipping detection. Let `process_chunks_local.py` generate `signals.json`. Use `--overlap 20` for walking vlogs.
 
 ### 2. Verify Model Resident in VRAM (MANDATORY)
 
@@ -58,8 +57,8 @@ Use `--overlap 20` for walking vlogs / convention tours (`2.5`-min blocks).
 curl -s --max-time 8 http://100.115.25.30:1234/api/v1/models | jq '.models[] | select(.loaded_instances | length > 0) | .key'
 ```
 
-- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 49152` — **2× headroom over peak ~24k tokens to prevent context-brim hallucination**, `"eval_batch_size": 49152`). Full-context mode sends every transcript line, full livechat, full World Identity lore, and all storyboard + webcam peak/silence frames without artificial truncation. Smoke-test `--max-chunks 1` before launching 50+ chunks.
-- **Ollama `*:cloud` Trap**: Never point `process_chunks_local.py` at local Ollama `*:cloud` tags (e.g. `gemma4:cloud`); `HTTP 402` triggers blackout-recovery loops. If LM Studio at `100.115.25.30:1234` is down, ask the user to start it. Load payloads, `12b` vs `26b` benchmark, and TokenMe setup → [`references/hardware-and-endpoints.md`](references/hardware-and-endpoints.md).
+- **Default model**: `gemma-4-12b-it-qat@q4_k_xl` (`"parallel": 1`, `"context_length": 49152` — 2× headroom over peak ~24k tokens, `"eval_batch_size": 49152`). Sends full transcript, livechat, World Identity, and storyboard + webcam frames untrimmed. Smoke-test `--max-chunks 1` first.
+- **Ollama `*:cloud` Trap**: Never use Ollama `*:cloud` tags (`HTTP 402` blackout loop). If LM Studio (`100.115.25.30:1234`) is down, ask user to start it. Load payloads, `12b` vs `26b`, TokenMe → [`references/hardware-and-endpoints.md`](references/hardware-and-endpoints.md).
 
 ### 3. Run Timestamper / Detached Launch / Pause Control
 
@@ -94,7 +93,7 @@ Runs `whisper.cpp` on `<workspace>/garbled_notes_raw/` automatically after Pass 
 
 ### 5. Mandatory Stage 5 Audit & Gate Re-Run
 
-1. Invoke `anibon-world-identity` AND read [`references/stage5-audit-checklist.md`](references/stage5-audit-checklist.md) before delivering any timestamp file.
+1. Invoke `anibon-world-identity` (plus `masking-royal-news` if royal/monarchy/112-royal signals appear) AND read [`references/stage5-audit-checklist.md`](references/stage5-audit-checklist.md) before delivering any timestamp file.
 2. After any manual Stage 5 edit, sync **both** `anibon_timestamps.md` and `all_timestamps.txt` and re-run plugin-root gates:
 
 ```bash

@@ -82,7 +82,7 @@ python3 skills/anibon-timestamper-local/scripts/process_chunks_local.py ~/youtub
 
 ## 5. Webcam Reaction Gating & Mid-Stream Switch (`--reaction-verify`)
 
-- **Verify-First Default**: Always run pre-chunk `scripts/enrich_chunks.py` + `--reaction-verify` first unless the user explicitly asks to skip verification. Download format `18` (`yt-dlp -f 18 -o <ws>/video_360p.mp4`) once up front so `enrich_chunks.py` and `--reaction-verify` seek locally instead of firing 199+ remote `--remote-snap` HTTP requests (`enrich_chunks.py` skips all chunks silently if neither local media nor `--remote-snap` is present).
+- **Verify-First Default**: Always run pre-chunk `scripts/enrich_chunks.py` + `--reaction-verify` first unless the user explicitly asks to skip verification. Download format `18` (`yt-dlp --extractor-args "youtube:player_client=android" -f 18 -o <ws>/video_360p.mp4`) once up front so `enrich_chunks.py` and `--reaction-verify` seek locally instead of firing 199+ remote `--remote-snap` HTTP requests (`enrich_chunks.py` skips all chunks silently if neither local media nor `--remote-snap` is present).
 - **Free-Talk Tradeoff**: Because `--reaction-verify` on Free-Talk streams still runs VLM rewrites, audit `reaction_verify_log.json` closely in Stage 5 to revert emotion-verb saturation (`"ตกใจ"`) and verdict flips.
 - **Built-in Dynamic Switching (when `--reaction-verify` is on)**:
   - **Pass 1 (`lib/video/dynamic_balance.py`, `lib/video/chunk_peak_select.py`)**: Calm chunks stay `tier="low"` (`webcam=0`). Switches to `medium`/`high` (`4–12` webcam frames) when `mean_mad >= 0.095` (`>= 0.135` high), `EMOTION_REACTION_CUES` match, or `max_audio_z >= 2.5` (`>= 2.0` with LiveChat echo).

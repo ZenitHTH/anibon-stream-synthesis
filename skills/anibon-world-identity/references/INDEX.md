@@ -3,6 +3,7 @@
 Game reference files live alongside this index in `references/`.
 
 - [1 in 8 Billion & Life Simulator Games Reference](One_in_8_Billion_Life_Sim.md)
+- [Annihilated Reference](Annihilated.md)
 - [Arknights Reference](Arknights.md)
 - [Arknights: Endfield Reference](Arknights_Endfield.md)
 - [Azur Promilia Reference](Azur_Promilia.md)
@@ -27,6 +28,7 @@ Game reference files live alongside this index in `references/`.
 - [Honkai: Star Rail Reference](Honkai_Star_Rail.md)
 - [Homura Hime Reference](Homura_Hime.md)
 - [Limbus Company Reference](Limbus_Company.md)
+- [Loop Hero Reference](Loop_Hero.md)
 - [Minecraft Vanilla & Mod Community (CurseForge) Reference](Minecraft.md)
 - [Minecraft: Cisco's Fantasy Medieval RPG Reference](Minecraft_Cisco.md)
 - [Phantom Blade Zero Reference](Phantom_Blade_Zero.md)

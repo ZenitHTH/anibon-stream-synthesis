@@ -66,6 +66,7 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 
 **Wildhunt Art Academy:**
 - **Tsumugi (ツムギ / สึมุกิ / ชิอินะ สึมุกิ)** — Occult Research Society, Wildhunt Art Academy (debut Oct 2026)
+- **Manami (雲類鷲マナミ / อุรุวาชิ มานามิ)** — Wildhunt Art Academy (debut Nov 2026, CV: Maaya Uchida; Boat/chat joke she looks like Thai VTuber นานะโฮชิ)
 
 **Shanhaijing:**
 - **Kisaki (キサキ / คิซากิ)** — president of Xuanwu Club, shadow mastermind, 3.5 Anniv EX skill amplifier meta
@@ -276,3 +277,4 @@ Reference for Anibon Official streams featuring Blue Archive discussion or gamep
 - "ความโลภ" — greed (Nexon's greed specifically)
 - "โดจิน" — doujin vs brand (gacha game biz model comparisons)
 - "โปรเจคมูน" — Project Moon reference (non-predatory model)
+- **Astrae Oratio (AO)** — Dynamis One RPG from ex-*Blue Archive* developers (ASR drifts: `อโซระ`, `asตraโอิชิโอ`; chat compares `"BAchill vs AObot"` / `"รร.นางฟ้า VS รร.จอมเวทย์"`)

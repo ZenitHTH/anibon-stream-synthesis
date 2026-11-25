@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-11-13",
+  "updated": "2026-11-22",
   "note": "Keyword → knowledge file mapping. Add new entries freely. detect_signals.py auto-discovers unknown words.",
   "entries": {
     "007 first light": {
@@ -3940,6 +3940,70 @@
     "balor": {
       "kind": "game",
       "file": "../anibon-world-identity/references/Fire_Emblem_Fortunes_Weave.md"
+    },
+    "band uprising": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "exclusion zone rebuilding": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "gypsosia": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "kay": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "meeting you in the world o'shrooms": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "mimino": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "mon3tr": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "old dam": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "rhodes island landship": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "shattered protocol": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "si's painting": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "warfarin": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "witch's darkjack": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "world o'shrooms": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "wuling dam": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
+    },
+    "เมืองเห็ด": {
+      "kind": "game",
+      "file": "../anibon-world-identity/references/Arknights_Endfield.md"
     }
   },
   "_discovered": {
