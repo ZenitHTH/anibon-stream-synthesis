@@ -39,24 +39,51 @@ def query_ygo_by_archetype(
         return []
 
 
+def _has_servant_np(cur: sqlite3.Cursor) -> bool:
+    """Return True if the optional servant_np table exists."""
+    cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='servant_np'")
+    return cur.fetchone() is not None
+
+
+def _build_fgo_query(num_names: int, with_np: bool) -> str:
+    """Build FGO servant lookup SQL with optional servant_np left join."""
+    placeholders = ",".join("?" for _ in range(num_names))
+    if not with_np:
+        return (
+            "SELECT name, className, rarity FROM basic_servant "
+            f"WHERE name COLLATE NOCASE IN ({placeholders})"
+        )
+    return (
+        "SELECT s.name, s.className, s.rarity, "
+        "COALESCE(n.np_name, ''), COALESCE(n.np_card, '') "
+        "FROM basic_servant s LEFT JOIN servant_np n ON s.id = n.servant_id "
+        f"WHERE s.name COLLATE NOCASE IN ({placeholders})"
+    )
+
+
+def _format_fgo_row(row: tuple, with_np: bool) -> Dict[str, Any]:
+    """Convert a SQLite servant row into a metadata dict."""
+    entry: Dict[str, Any] = {"name": row[0], "className": row[1], "rarity": row[2]}
+    if with_np:
+        entry["np_name"] = row[3]
+        entry["np_card"] = row[4]
+    return entry
+
+
 def query_fgo_servants(
     names: List[str],
     db_path: Optional[Path] = None,
 ) -> List[Dict[str, Any]]:
-    """Query FGO servant metadata (name, className, rarity) by list of names."""
+    """Query FGO servant metadata (name, className, rarity, optional NP) by names."""
     p = Path(db_path) if db_path else DEFAULT_FGO_DB
     if not p.is_file() or not names:
         return []
     try:
         with sqlite3.connect(p) as conn:
             cur = conn.cursor()
-            placeholders = ",".join("?" for _ in names)
-            query = f"SELECT name, className, rarity FROM basic_servant WHERE name IN ({placeholders})"
-            cur.execute(query, names)
-            return [
-                {"name": r[0], "className": r[1], "rarity": r[2]}
-                for r in cur.fetchall()
-            ]
+            with_np = _has_servant_np(cur)
+            cur.execute(_build_fgo_query(len(names), with_np), names)
+            return [_format_fgo_row(r, with_np) for r in cur.fetchall()]
     except Exception:
         return []
 

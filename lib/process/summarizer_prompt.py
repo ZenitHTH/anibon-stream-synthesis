@@ -10,8 +10,9 @@ from process.caveman import clean_caveman_text
 
 
 def _normalize_summary_connectors(summary: str) -> str:
-    """Replace literal ' + ' connectors and strip LLM self-evaluation artifacts."""
-    text = clean_caveman_text(" ".join(summary.split()))
+    """Replace literal ' + ' connectors and strip leaked timestamps or LLM self-eval artifacts."""
+    cleaned = re.sub(r"\d{2}:\d{2}:\d{2}\s*-\s*\[[^\]]+\]\s*", "", summary)
+    text = clean_caveman_text(" ".join(cleaned.split()))
     if " + " not in text:
         return text
     parts = [p.strip() for p in text.split(" + ") if p.strip()]

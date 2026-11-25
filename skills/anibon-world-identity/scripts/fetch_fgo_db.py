@@ -8,6 +8,7 @@ anibon-timestamper skill execution.
 
 Usage:
     python fetch_fgo_db.py                  # Download + build DB if missing
+    python fetch_fgo_db.py --with-np        # Include lightweight servant_np table (~66 MB extra download)
     python fetch_fgo_db.py --force          # Force re-download even if DB exists
     python fetch_fgo_db.py --check          # Just check if DB is valid, exit 0/1
     python fetch_fgo_db.py --db /path/db    # Custom DB output path
@@ -68,6 +69,7 @@ ENDPOINTS: list[tuple[str, str, list[tuple[str, str]] | None]] = [
             ("className", "TEXT"),
             ("rarity", "INTEGER"),
             ("type", "TEXT"),
+            ("attribute", "TEXT"),
         ],
     ),
     # --- Lightweight basic CE index (~750 KB) ---
@@ -107,6 +109,8 @@ ENDPOINTS: list[tuple[str, str, list[tuple[str, str]] | None]] = [
             ("name", "TEXT"),
             ("originalName", "TEXT"),
             ("type", "TEXT"),
+            ("startedAt", "INTEGER"),
+            ("endedAt", "INTEGER"),
         ],
     ),
     # --- Basic war/chapter index (~59 KB) ---
@@ -261,7 +265,10 @@ def _build_table_from_list(
     rows: list[dict],
 ) -> None:
     """Create table and INSERT rows, extracting specified columns."""
-    col_defs = ", ".join(f"[{name}] {dtype}" for name, dtype in columns)
+    col_defs = ", ".join(
+        f"[{name}] {dtype} PRIMARY KEY" if (i == 0 and name in ("id", "servant_id") and dtype == "INTEGER") else f"[{name}] {dtype}"
+        for i, (name, dtype) in enumerate(columns)
+    )
     con.execute(f"DROP TABLE IF EXISTS [{table}]")
     con.execute(f"CREATE TABLE [{table}] ({col_defs})")
     placeholders = ", ".join("?" for _ in columns)
@@ -273,7 +280,7 @@ def _build_table_from_list(
         )
         for row in rows
     ]
-    con.executemany(f"INSERT INTO [{table}] VALUES ({placeholders})", data)
+    con.executemany(f"INSERT OR REPLACE INTO [{table}] VALUES ({placeholders})", data)
     log.info("    ✓ table [%s]: %d rows", table, len(data))
 
 
@@ -286,7 +293,7 @@ def _build_blob_table(con: sqlite3.Connection, table: str, blob: Any) -> None:
 
 
 def _create_indexes(con: sqlite3.Connection) -> None:
-    """Create FTS and B-tree indexes for fast LLM queries."""
+    """Create B-tree indexes (case-insensitive on name) for fast LLM queries."""
     indexes = [
         ("basic_servant", "name"),
         ("basic_servant", "originalName"),
@@ -300,6 +307,7 @@ def _create_indexes(con: sqlite3.Connection) -> None:
         ("basic_svt", "type"),
         ("basic_event", "name"),
         ("basic_event", "originalName"),
+        ("basic_event", "startedAt"),
         ("basic_war", "name"),
         ("basic_war", "originalName"),
         ("nice_item", "name"),
@@ -310,76 +318,130 @@ def _create_indexes(con: sqlite3.Connection) -> None:
     ]
     for table, col in indexes:
         idx_name = f"idx_{table}_{col}"
-        con.execute(f"CREATE INDEX IF NOT EXISTS [{idx_name}] ON [{table}] ([{col}])")
+        collate = " COLLATE NOCASE" if col == "name" else ""
+        con.execute(f"CREATE INDEX IF NOT EXISTS [{idx_name}] ON [{table}] ([{col}]{collate})")
     log.info("  ✓ indexes created")
+
+
+SERVANT_NP_ENDPOINT = "nice_servant_lang_en.json"
+SERVANT_NP_COLUMNS = [("servant_id", "INTEGER"), ("np_name", "TEXT"), ("np_card", "TEXT")]
+
+
+def extract_servant_np_rows(servants: list[dict]) -> list[dict]:
+    """Project primary Noble Phantasm name and card type for each servant."""
+    rows: list[dict] = []
+    for servant in servants:
+        servant_id = servant.get("id")
+        nps = servant.get("noblePhantasms")
+        if servant_id is None or not isinstance(nps, list) or not nps:
+            continue
+        np0 = nps[0] if isinstance(nps[0], dict) else {}
+        rows.append({
+            "servant_id": servant_id,
+            "np_name": str(np0.get("name") or ""),
+            "np_card": str(np0.get("card") or ""),
+        })
+    return rows
+
+
+def _has_table(db_path: Path, table: str) -> bool:
+    """Return True if the SQLite database at db_path contains table."""
+    if not db_path.exists():
+        return False
+    try:
+        con = sqlite3.connect(db_path)
+        row = con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        con.close()
+        return row is not None
+    except Exception:
+        return False
+
+
+def _is_up_to_date(db_path: Path, with_np: bool, remote_ver: str) -> bool:
+    """Return True if existing DB matches remote_ver and requested tables."""
+    if not db_path.exists():
+        return False
+    local_ver = _db_version(db_path)
+    if not local_ver:
+        log.info("→ Existing DB has no version metadata. Rebuilding...")
+        return False
+    if local_ver != remote_ver:
+        log.info("→ Remote version changed (%s → %s). Rebuilding...", local_ver, remote_ver)
+        return False
+    if with_np and not _has_table(db_path, "servant_np"):
+        log.info("→ Existing DB missing [servant_np]. Rebuilding with --with-np...")
+        return False
+    log.info("✓ DB already up-to-date (version: %s). Use --force to rebuild.", local_ver)
+    return True
+
+
+def _download_endpoints(endpoints: list[str]) -> dict[str, Any]:
+    """Download JSON payloads concurrently for the given endpoint suffixes."""
+    downloaded: dict[str, Any] = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_ep = {executor.submit(_download_json, f"{BASE_URL}/{ep}"): ep for ep in endpoints}
+        for future in concurrent.futures.as_completed(future_to_ep):
+            downloaded[future_to_ep[future]] = future.result()
+    return downloaded
+
+
+def _init_db(db_path: Path, remote_ver: str) -> sqlite3.Connection:
+    """Open a fresh SQLite database with pragmas and _meta rows."""
+    if db_path.exists():
+        db_path.unlink()
+    con = sqlite3.connect(db_path)
+    con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA synchronous=NORMAL")
+    con.execute("PRAGMA cache_size=-64000")  # 64 MB cache
+    con.execute("CREATE TABLE _meta (key TEXT PRIMARY KEY, value TEXT)")
+    con.execute("INSERT INTO _meta VALUES ('version', ?)", (remote_ver,))
+    con.execute("INSERT INTO _meta VALUES ('built_at', ?)", (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),))
+    con.execute("INSERT INTO _meta VALUES ('source', 'https://api.atlasacademy.io/export/JP')")
+    return con
+
+
+def _populate_tables(con: sqlite3.Connection, downloaded: dict[str, Any], with_np: bool) -> None:
+    """Populate core Atlas Academy tables and optional servant_np table."""
+    for endpoint, table, columns in ENDPOINTS:
+        log.info("Processing %s → [%s]", endpoint, table)
+        data = downloaded[endpoint]
+        if columns is None:
+            _build_blob_table(con, table, data)
+            continue
+        if not isinstance(data, list):
+            log.warning("  Unexpected non-list JSON for %s, wrapping in list", endpoint)
+            data = [data]
+        _build_table_from_list(con, table, columns, data)
+    if not with_np:
+        return
+    raw_servants = downloaded[SERVANT_NP_ENDPOINT]
+    servants = raw_servants if isinstance(raw_servants, list) else []
+    _build_table_from_list(con, "servant_np", SERVANT_NP_COLUMNS, extract_servant_np_rows(servants))
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
-def build_db(db_path: Path, force: bool = False) -> None:
+def build_db(db_path: Path, force: bool = False, with_np: bool = False) -> None:
     """Download JSON exports and build the SQLite database."""
     db_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Check if DB already up-to-date
-    if not force and db_path.exists():
-        local_ver = _db_version(db_path)
-        if local_ver:
-            remote_ver = _get_remote_version()
-            if local_ver == remote_ver:
-                log.info("✓ DB already up-to-date (version: %s). Use --force to rebuild.", local_ver)
-                return
-            log.info("→ Remote version changed (%s → %s). Rebuilding...", local_ver, remote_ver)
-        else:
-            log.info("→ Existing DB has no version metadata. Rebuilding...")
-
     remote_ver = _get_remote_version()
+    if not force and _is_up_to_date(db_path, with_np, remote_ver):
+        return
     log.info("Building DB for JP game version: %s", remote_ver)
-
-    # Download all JSON files
-    downloaded: dict[str, Any] = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_endpoint = {executor.submit(_download_json, f"{BASE_URL}/{endpoint}"): endpoint for endpoint, _, _ in ENDPOINTS}
-        for future in concurrent.futures.as_completed(future_to_endpoint):
-            endpoint = future_to_endpoint[future]
-            downloaded[endpoint] = future.result()
-
-    # Build DB
+    endpoints = [ep for ep, _, _ in ENDPOINTS] + ([SERVANT_NP_ENDPOINT] if with_np else [])
+    downloaded = _download_endpoints(endpoints)
     log.info("Writing SQLite DB to: %s", db_path)
-    if db_path.exists():
-        db_path.unlink()
-
-    con = sqlite3.connect(db_path)
-    con.execute("PRAGMA journal_mode=WAL")
-    con.execute("PRAGMA synchronous=NORMAL")
-    con.execute("PRAGMA cache_size=-64000")  # 64 MB cache
-
-    # Meta table
-    con.execute("CREATE TABLE _meta (key TEXT PRIMARY KEY, value TEXT)")
-    con.execute("INSERT INTO _meta VALUES ('version', ?)", (remote_ver,))
-    con.execute("INSERT INTO _meta VALUES ('built_at', ?)", (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),))
-    con.execute("INSERT INTO _meta VALUES ('source', 'https://api.atlasacademy.io/export/JP')")
-
-    # Build each table
-    for endpoint, table, columns in ENDPOINTS:
-        log.info("Processing %s → [%s]", endpoint, table)
-        data = downloaded[endpoint]
-
-        if columns is None:
-            _build_blob_table(con, table, data)
-        else:
-            if not isinstance(data, list):
-                log.warning("  Unexpected non-list JSON for %s, wrapping in list", endpoint)
-                data = [data]
-            _build_table_from_list(con, table, columns, data)
-
+    con = _init_db(db_path, remote_ver)
+    _populate_tables(con, downloaded, with_np)
     _create_indexes(con)
     con.commit()
     con.close()
-
-    size_mb = db_path.stat().st_size / 1024 / 1024
-    log.info("✓ Done! atlas_fgo.db built: %.1f MB", size_mb)
+    log.info("✓ Done! atlas_fgo.db built: %.1f MB", db_path.stat().st_size / 1024 / 1024)
 
 
 def check_db(db_path: Path) -> bool:
@@ -417,6 +479,7 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--db", type=Path, default=DEFAULT_DB_PATH, help="Output SQLite DB path")
     p.add_argument("--force", action="store_true", help="Re-download even if DB exists")
     p.add_argument("--check", action="store_true", help="Only check if DB is valid (exit 0/1)")
+    p.add_argument("--with-np", action="store_true", help="Download nice_servant_lang_en.json (~66 MB) to populate servant_np")
     return p.parse_args()
 
 
@@ -429,7 +492,7 @@ def main() -> None:
         sys.exit(0 if ok else 1)
 
     try:
-        build_db(db_path, force=args.force)
+        build_db(db_path, force=args.force, with_np=args.with_np)
     except Exception as exc:
         log.error("✗ Build failed: %s", exc)
         sys.exit(2)

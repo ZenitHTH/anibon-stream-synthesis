@@ -169,13 +169,19 @@ def main():
         else:
             print("✅ No ASR garbled patterns found.")
 
-    # ── Header truncation scan ─────────────────────────────────────────
+    # ── Header truncation & leaked timestamp scan ─────────────────────
     header_warnings = []
     header_re = re.compile(r"ส่วนที่\s*\d+:\s*(.*?)(?:\s*\(⏱.*?\))?$", re.MULTILINE)
     for m in header_re.finditer(text):
         title = m.group(1).strip()
         if re.search(r"(\s(และ|หรือ|กับ|เรื่อง|ใน|ที่)|[เแโใไ็]|และ[ก-ฮ]|แล)$", title):
             header_warnings.append(f"  ⚠️  Header appears truncated/cut-off: '{title}'")
+        if re.search(r"\d{2}:\d{2}:\d{2}", title):
+            header_warnings.append(f"  ⚠️  Header contains leaked timestamp: '{title}'")
+    for m in re.finditer(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[([^\]]+)\]", text, re.M):
+        tag = m.group(1).strip()
+        if not tag.isascii():
+            header_warnings.append(f"  ⚠️  Non-ASCII / non-whitelisted tag '[{tag}]'")
     if header_warnings:
         print("\n⚠️  Truncated Section Headers Detected:")
         for hw in header_warnings:

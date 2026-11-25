@@ -338,6 +338,45 @@ def _format_previous_topic_section(
 
 
 
+_DONOR_MENTION_RE = re.compile(
+    r"(?:ขอบคุณ|แต๊งกิ้ว|thank\s*you|donate|โดเนท|ซุปเปอร์แชท|ซุป)[^()\n]{0,90}?คุณ\s*([A-Za-z][A-Za-z0-9_\- ]{1,25})",
+    re.IGNORECASE,
+)
+
+
+def _extract_donor_mentions(transcript_block: str) -> str:
+    """Detect English donor/viewer handles after thank-you/donate cues to prevent lore confusion."""
+    names = []
+    for m in _DONOR_MENTION_RE.finditer(transcript_block):
+        cand = " ".join(m.group(1).strip().split()[:3])
+        if len(cand) >= 3 and cand not in names:
+            names.append(cand)
+    if not names:
+        return ""
+    return (
+        "Detected Viewer/Donor Names (DO NOT treat as game characters, bosses, or lore factions): "
+        + ", ".join(names)
+    )
+
+
+def _build_game_switch_hint(signal: Optional[dict], current_topic: str, rolling_summary: str) -> str:
+    """Emit a domain-switch warning when high-confidence chunk signal differs from previous topic."""
+    if not signal or not current_topic:
+        return ""
+    primary = (signal.get("primary_topic") or "").strip()
+    conf = float(signal.get("confidence", 0.0) or 0.0)
+    if not primary or conf < 0.65 or "Knowledge" in primary:
+        return ""
+    prev_text = f"{current_topic} {rolling_summary}".lower()
+    if primary.lower() in prev_text:
+        return ""
+    return (
+        f"⚠️ DOMAIN SWITCH CHECK: Current chunk signals point strongly to '{primary}'. "
+        f"If the streamer switched games/topics from '{current_topic}', set is_continuation=false "
+        f"and use '{primary}' (do NOT carry over the previous game title)."
+    )
+
+
 def _build_chunk_media_block(chunk: dict, livechat: str = "") -> str:
     """Build automated media separation ground-truth block for a chunk."""
     from process.media.separator import build_media_separation_prompt_block
@@ -471,6 +510,12 @@ def build_recursive_prompt(
     enr_block = format_enrichment_context(enrichment)
     if enr_block:
         context_extras.append(enr_block)
+    donor_block = _extract_donor_mentions(transcript_block)
+    if donor_block:
+        context_extras.append(donor_block)
+    switch_hint = _build_game_switch_hint(signal, current_topic, rolling_summary)
+    if switch_hint:
+        context_extras.append(switch_hint)
 
     context_block = ("\n## CONTEXT METRICS\n" + "\n".join(context_extras) + "\n") if context_extras else ""
 
@@ -510,7 +555,7 @@ Analyze Chunk {chunk.get('_idx', 0):02d} ({start_ts} - {end_ts}) against the Pre
    - FULL LIST REVEAL: describe multi-item reveals accurately across chunks; don't truncate counts.
    - ACTIVE GAME & WATCHPARTY GROUND TRUTH (CRITICAL): the active game/show comes from Active Topic, CANDIDATE DOMAIN WEIGHTS, and WORLD IDENTITY REFERENCE. A passing comparison or joke about another title (Sekiro, Where Winds Meet, Ultraman) is NOT a switch — keep the active title as subject.
    - BROADCAST HIATUS VS. STREAMER SCHEDULE GUARD: 'งดฉาย'/'งดออกอากาศ' = show broadcast break -> 'แจ้งข่าวการงดฉาย...'. Only 'งดไลฟ์'/'งดสตรีม' = Pu Boat's schedule.
-   - GROUNDING: every name, chapter/Canto number, and entity must appear in the transcript or WORLD IDENTITY REFERENCE (watch ASR phonetic ghosts/homophones — e.g. `"MP"/"MP4"` when discussing skill charge in combat games = `NP`/`NP4`, truncated names/words must never be emitted half-cut, and phonetic noise must never become unrelated names). Attribute quotes to the named speaker. Unsure -> [Talk] + plain description.
+   - GROUNDING: every name, chapter/Canto number, and entity must appear in the transcript or WORLD IDENTITY REFERENCE (watch ASR phonetic ghosts/homophones — e.g. `"MP"/"MP4"` when discussing skill charge in combat games = `NP`/`NP4`, truncated names/words must never be emitted half-cut, and phonetic noise must never become unrelated names). Attribute quotes to the named speaker. Names after 'ขอบคุณ / donate / ซุป ... คุณ <Name>' (e.g. คุณ The Foundation) are viewer/donor handles — NEVER treat them as game factions or characters. Unsure -> [Talk] + plain description.
    - STREAMER IDENTITY: 'ปู่โบ๊ต' only — ห้ามสะกดว่า 'ปู่บอท', 'บอท', 'โบต'. Don't start a line with 'ปู่โบ๊ต'.
    - NO HALLUCINATED SUBTITLES CONSTRAINT: ห้ามแปลคำทับศัพท์ภาษาไทยเป็นภาษาอังกฤษโดยพลการ, ห้าม auto-correct (เช่น 'Trickcal' -> 'Critical'), ห้ามเติมสร้อยชื่อ (เช่น ': Rise of a Legend'), ห้ามแทรกคำประเภทในชื่อทางการ, ห้ามตัดคำแหว่ง. ไม่อยู่ใน VERIFIED DOMAIN ENTITIES -> เขียนทับศัพท์ไทย.
    - Pokémon: 'ชื่อไทย (English Name)'.

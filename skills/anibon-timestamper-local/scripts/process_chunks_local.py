@@ -467,7 +467,9 @@ def _run_active_pipeline(ctx: _PipelineContext) -> None:
         if stats.get("calls"):
             log_info(
                 "lm-think",
-                f"summary: calls={stats['calls']}, comp={stats['completion_tokens']} tok ({stats['tok_per_sec']} tok/s), "
+                f"summary: calls={stats['calls']}, prompt={stats.get('prompt_tokens', 0)} tok, "
+                f"comp={stats['completion_tokens']} tok (gen={stats['tok_per_sec']} tok/s, "
+                f"total={stats.get('total_tok_per_sec', 0)} tok/s), "
                 f"think={stats['reasoning_tokens']} tok, errs={stats['errors'] or 'none'}",
             )
         remove_worker_pid(ctx.workspace)

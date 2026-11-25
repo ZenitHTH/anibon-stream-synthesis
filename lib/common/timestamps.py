@@ -19,10 +19,13 @@ from common.config import (
 )
 
 TAGS = (
-    "[Greeting]", "[Ending]", "[Talk]", "[News]", "[Chat]", "[Donation]",
+    "[Intro]", "[Greeting]", "[Ending]", "[Talk]", "[News]", "[Chat]", "[Donation]",
     "[Gameplay]", "[Gacha]", "[Boss]", "[Death]", "[Victory]",
-    "[WatchParty]", "[Reaction]", "[Story]", "[Lore]", "[Review]",
+    "[WatchParty]", "[Reaction]", "[Story]", "[Lore]", "[Review]", "[Tierlist]",
 )
+
+_ALLOWED_TAGS = {t.strip("[]") for t in TAGS} | {"Highlight"}
+_REACTION_TAG_HINTS = ("โวย", "ตกใจ", "อึ้ง", "เหวอ", "กรี๊ด", "ช็อก", "ฮา", "ขำ", "เดือด", "หัวร้อน", "ตื่นเต้น", "เฮลั่น")
 
 TAG_REMAP = {
     "Viktory": "Victory",
@@ -35,6 +38,10 @@ TAG_REMAP = {
     "ชำแหละ": "Talk",
     "บ่น": "Talk",
     "บ่นอุบ": "Talk",
+    "บ่นยับ": "Talk",
+    "สับแหลก": "Talk",
+    "สับเละ": "Talk",
+    "จวกยับ": "Talk",
     "คุย": "Talk",
     "เม้าท์": "Talk",
     "เม้าท์มอย": "Talk",
@@ -42,6 +49,11 @@ TAG_REMAP = {
     "ฮา": "Reaction",
     "เหวอ": "Reaction",
     "อึ้ง": "Reaction",
+    "โวย": "Reaction",
+    "โวยวาย": "Reaction",
+    "ตื่นเต้น": "Reaction",
+    "ตกใจ": "Reaction",
+    "หัวร้อน": "Reaction",
     "เปิดตัว": "News",
     "อัปเดต": "News",
     "ข่าว": "News",
@@ -59,11 +71,15 @@ TAG_REMAP = {
 
 
 def normalize_tag(match: re.Match) -> str:
-    """Normalize non-standard tags into canonical tags using TAG_REMAP."""
+    """Normalize non-standard tags into canonical whitelisted tags."""
     tag = match.group(1).strip()
     if tag in TAG_REMAP:
         return f"[{TAG_REMAP[tag]}]"
-    return f"[{tag}]"
+    if tag in _ALLOWED_TAGS:
+        return f"[{tag}]"
+    if any(h in tag for h in _REACTION_TAG_HINTS):
+        return "[Reaction]"
+    return "[Talk]"
 
 
 def sanitize_timestamp_line(line: str) -> str:
@@ -241,8 +257,8 @@ def deduplicate_consecutive_timestamps(
         if gap < STAMP_COLLISION_SEC:
             continue
 
-        prev_desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", prev_stamp).strip()
-        curr_desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", curr_stamp).strip()
+        prev_desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[[^\]]+\]\s*", "", prev_stamp).strip()
+        curr_desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[[^\]]+\]\s*", "", curr_stamp).strip()
 
         # Check if same game entity or substantial topic overlap
         prev_game = _extract_game_entity(prev_desc)

@@ -10,7 +10,7 @@ _DUAL_TRACK_PREFIX_RE = re.compile(
     r"^เฝ้า(?:สำรวจ|ด่าน|ฟาร์ม|หน้าจอ|สู้บอส|โลก|เกม)[^,]+?พร้อม(?:กับ)?\s*"
 )
 _LEADING_SPEAKER_RE = re.compile(r"^(?:ปู่โบ๊ต|ปู่บอร์ด)\s*")
-_STAMP_PREFIX_RE = re.compile(r"^(\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*)(.*)$")
+_STAMP_PREFIX_RE = re.compile(r"^(\d{2}:\d{2}:\d{2}\s*-\s*\[[^\]]+\]\s*)(.*)$")
 _SELF_EVAL_SUFFIX_RE = re.compile(
     r"(?:\s*\((?:Analyze|Summary|Discuss|Review|Compare|Watch|Update|Part\s*\d+)[^)]*\))?\s*(?:-\s*(?:Good|OK|Pass|Valid|Done)\.?)\s*$"
     r"|\s*\((?:Analyze|Summary|Discuss|Review|Compare|Watch|Update)\s+[A-Za-z0-9\s,.'\"-]+\)\s*$",

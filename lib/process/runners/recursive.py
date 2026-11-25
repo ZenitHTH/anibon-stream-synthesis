@@ -15,7 +15,7 @@ from typing import Any, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from process.assembly import finalize_and_assemble_timestamps
-from common.config import PRIMARY_HOST, STAMP_COLLISION_SEC
+from common.config import PRIMARY_HOST, STAMP_COLLISION_SEC, TOKENS_PER_IMAGE
 from common.lmstudio import is_host_reachable
 from common.log import (
     format_duration,
@@ -438,6 +438,55 @@ def _execute_and_persist_chunk(
     return current_topic_title, rolling_summary
 
 
+_THAI_CHAR_RE = re.compile(r"[\u0E00-\u0E7F]")
+
+
+def _is_non_thai_bgm_chunk(chunk: dict, enrichment: Optional[dict]) -> bool:
+    """Return True when a song/foreign-text chunk has < 5 Thai chars in ASR and Whisper."""
+    items = chunk.get("items", [])
+    text = " ".join(str(it.get("text") or it.get("raw_text") or "") for it in items)
+    rec = (enrichment or {}).get("recovered_items") or []
+    rec_text = " ".join(str(it.get("text") or "") for it in rec if isinstance(it, dict))
+    combined = (text + " " + rec_text).strip()
+    has_song = bool((enrichment or {}).get("song"))
+    if not has_song and len(combined) < 8:
+        return False
+    return len(_THAI_CHAR_RE.findall(combined)) < 5
+
+
+def _short_circuit_bgm_chunk(
+    ch_num: int,
+    chunk_idx: str,
+    prog: str,
+    out_path: Path,
+    all_timestamps: List[str],
+    current_topic_title: str,
+    rolling_summary: str,
+) -> Tuple[str, str]:
+    """Bypass LLM inference on pure non-Thai BGM/AFK chunks to prevent hallucinated topics."""
+    if ch_num == 0 and not all_timestamps:
+        intro_ts = "00:00:00 - [Intro] เปิดไลฟ์รอผู้ชมพร้อมเพลงประกอบช่วง Pre-Roll"
+        all_timestamps.append(intro_ts)
+        topic = "ช่วงเปิดเพลงรอผู้ชม (Pre-Roll)"
+        summary = "เปิดไลฟ์รอผู้ชมพร้อมเพลงประกอบช่วง Pre-Roll"
+        _persist_chunk_output(out_path, chunk_idx, False, [intro_ts], {"chunk_summary": summary}, summary, topic, [])
+        log_ok("chunk", f"{prog} {chunk_idx} | BGM/Pre-Roll -> {intro_ts}")
+        return topic, summary
+    _persist_chunk_output(
+        out_path, chunk_idx, True, [], {"chunk_summary": "ช่วงพักเบรกเปิดเพลงคั่น"},
+        rolling_summary, current_topic_title, [],
+    )
+    log_ok("chunk", f"{prog} {chunk_idx} | BGM/AFK (no Thai speech) | CONTINUATION (0 stamps)")
+    return current_topic_title, rolling_summary
+
+
+def _estimate_prompt_tokens(prompt: str, keyframes: list) -> int:
+    """Estimate multimodal prompt tokens accounting for Thai UTF-8 density and image frames."""
+    thai_chars = len(_THAI_CHAR_RE.findall(prompt))
+    other_chars = len(prompt) - thai_chars
+    return (thai_chars // 2) + (other_chars // 4) + (len(keyframes) * TOKENS_PER_IMAGE)
+
+
 def _process_single_recursive_chunk(
     chunk_path: Path,
     ch_num: int,
@@ -472,6 +521,13 @@ def _process_single_recursive_chunk(
     if not chunk:
         return current_topic_title, rolling_summary
 
+    prog = format_progress(ch_num + 1, total_chunks)
+    enrichment = load_chunk_enrichment(workspace, chunk_idx)
+    if lang == "th" and _is_non_thai_bgm_chunk(chunk, enrichment):
+        return _short_circuit_bgm_chunk(
+            ch_num, chunk_idx, prog, out_path, all_timestamps, current_topic_title, rolling_summary
+        )
+
     sb_raw = _load_cached_storyboard(workspace, chunk) if is_multimodal else []
     if not sb_raw:
         sb_raw = _sample_chunk_multimodal_frames(
@@ -479,7 +535,6 @@ def _process_single_recursive_chunk(
         )
     sb_frames, wc_frames, tier = _balance_dynamic_chunk_frames(workspace, chunk, sb_raw, webcam_source, args)
     keyframes = sb_frames + wc_frames
-    enrichment = load_chunk_enrichment(workspace, chunk_idx)
     prompt = build_recursive_prompt(
         chunk=chunk, current_topic=current_topic_title, rolling_summary=rolling_summary,
         lang=lang, signal=sig, livechat=lc, activity=act, mood=mood,
@@ -487,8 +542,7 @@ def _process_single_recursive_chunk(
         recent_timestamps=all_timestamps[-3:], enrichment=enrichment,
     )
 
-    prompt_tokens = len(prompt) // 4
-    prog = format_progress(ch_num + 1, total_chunks)
+    prompt_tokens = _estimate_prompt_tokens(prompt, keyframes)
     chunk["_log_header"] = f"{prog} {chunk_idx}"
     tier_prefix = f"{tier} | " if tier != "static" else ""
     log_info(

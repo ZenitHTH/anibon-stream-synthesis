@@ -183,11 +183,15 @@ def summarize_lm_trace(trace_path: Path) -> Dict[str, Any]:
         for err in row.get("errors", ()):
             err_counts[err] = err_counts.get(err, 0) + 1
     tot_s = sum(float(r.get("elapsed_s", 0.0)) for r in rows)
+    tot_p = sum(int(r.get("prompt_tokens", 0)) for r in rows)
     tot_c = sum(int(r.get("completion_tokens", 0)) for r in rows)
     return {
-        "calls": len(rows), "total_elapsed_s": round(tot_s, 2), "completion_tokens": tot_c,
+        "calls": len(rows), "total_elapsed_s": round(tot_s, 2),
+        "prompt_tokens": tot_p, "completion_tokens": tot_c,
         "reasoning_tokens": sum(int(r.get("reasoning_tokens", 0)) for r in rows),
-        "tok_per_sec": round(tot_c / max(tot_s, 0.001), 2), "errors": err_counts,
+        "tok_per_sec": round(tot_c / max(tot_s, 0.001), 2),
+        "total_tok_per_sec": round((tot_p + tot_c) / max(tot_s, 0.001), 2),
+        "errors": err_counts,
     }
 
 __all__ = ["LmThinkAnalysis", "analyze_lm_response", "configure_lm_think_logging", "record_lm_response", "summarize_lm_trace"]

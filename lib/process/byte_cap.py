@@ -68,7 +68,7 @@ def generate_part_summary(stamps: List[str]) -> str:
     """Generate a clean 2-3 topic summary phrase from stamps in this part (heuristic fallback)."""
     topics = []
     for s in stamps:
-        desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[\w+\]\s*", "", s).strip()
+        desc = re.sub(r"^\d{2}:\d{2}:\d{2}\s*-\s*\[[^\]]+\]\s*", "", s).strip()
         clean = _compact_topic_clause(clean_caveman_text(desc).strip(". "))
         if clean and clean not in topics:
             topics.append(clean)
