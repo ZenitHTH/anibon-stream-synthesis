@@ -1,9 +1,9 @@
 ---
 title: "Blue Archive (บลูอาร์ไคฟ์)"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "nexon", "yostar", "blue-archive", "gacha", "tactical-rpg"]
-sources: ["[[stream-y3b5i2uqbqg]]", "[[stream-7-4jzpb0nok]]", "[[stream-2curilieeng]]", "[[stream-vhsf4ov5mnm]]", "[[stream-hcyqx3l3dk0]]", "[[stream-00z94nk_7ok]]", "[[stream-ymfjdsqwk6i]]", "[[stream-kcfkhrhqfva]]", "[[stream-vforj0ybxfw]]", "[[stream-dchunu4fbxq]]", "[[stream-ppmkimyqeye]]", "[[stream-ox-pnz84mc8]]", "[[stream-uzr_uziyh84]]", "[[stream-nb5ddz5xfse]]", "[[stream-w0bmqwlx4z4]]", "[[stream-ccx7sw0dnmm]]", "[[stream-jjlklxm2mwq]]", "[[stream-wsonitq1iqm]]", "[[stream-mjgd2xw8tlg]]", "[[stream-usszvrlzbxu]]", "[[stream-pmfdxsv7zca]]", "[[stream-fc1vgf4l-q0]]", "[[stream-2ydpc5g-dpy]]", "[[stream-o8d4bpcva9s]]", "[[stream-ujgtmzls7vy]]"]
+sources: ["[[stream-y3b5i2uqbqg]]", "[[stream-7-4jzpb0nok]]", "[[stream-2curilieeng]]", "[[stream-vhsf4ov5mnm]]", "[[stream-hcyqx3l3dk0]]", "[[stream-00z94nk_7ok]]", "[[stream-ymfjdsqwk6i]]", "[[stream-kcfkhrhqfva]]", "[[stream-vforj0ybxfw]]", "[[stream-dchunu4fbxq]]", "[[stream-ppmkimyqeye]]", "[[stream-ox-pnz84mc8]]", "[[stream-uzr_uziyh84]]", "[[stream-nb5ddz5xfse]]", "[[stream-w0bmqwlx4z4]]", "[[stream-ccx7sw0dnmm]]", "[[stream-jjlklxm2mwq]]", "[[stream-wsonitq1iqm]]", "[[stream-mjgd2xw8tlg]]", "[[stream-usszvrlzbxu]]", "[[stream-pmfdxsv7zca]]", "[[stream-fc1vgf4l-q0]]", "[[stream-2ydpc5g-dpy]]", "[[stream-o8d4bpcva9s]]", "[[stream-ujgtmzls7vy]]", "[[stream-soc6jzfd_j8]]"]
 status: "active"
 ---
 
@@ -77,3 +77,5 @@ status: "active"
 - **2026-10-25** — [[stream-ujgtmzls7vy]] (`ไปเรื่อย ไม่มีแผน Ver. แอบดู อัพเดทใหม่ Blue Archive , เมาท์มอย PV ใหม่ WuWa`) — *ส่วนที่ 1, 4, 5*
   - `00:06:39`, `00:36:02`–`01:06:23` — สรุปอัปเดต *Blue Archive* ฉลองครบรอบปี, ส่องคอสตูมใหม่และ Asuka ธีมเรซซิ่ง, ชำแหละผลกระทบระบบกาชาใหม่, เทียบเมต้าตัวละครพิการระหว่าง [[wuthering-waves]] กับ *Blue Archive*, ข้อจำกัดคอลแลบข้ามค่าย, และฟีเจอร์อุ้มตัวละครใหม่.
   - `02:42:39`, `03:50:08` — ชำแหละดราม่าการแยกทางระหว่าง Yostar และ Nexon ผู้ดูแล *Blue Archive*, เปรียบเทียบแนวทางธุรกิจกับ [[project-moon]], และเจาะลึกอนาคต *Blue Archive* ใต้เงา Nexon.
+- **2026-11-22** — [[stream-soc6jzfd_j8]]:
+  - `02:24:04`, `04:17:04` — สับดราม่าเปลี่ยนระบบกาชา *Blue Archive* กับการมาของคู่แข่ง *Astraea: Oratio (AO)* และอัปเดตตัวละครใหม่ *มานามิ (Manami)*.

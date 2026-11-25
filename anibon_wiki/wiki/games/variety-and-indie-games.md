@@ -1,9 +1,9 @@
 ---
 title: "เกมจิปาถะ อินดี้ ทดลองเดโม และเกมนอกกระแส (Variety & One-Off Games)"
 category: "game"
-updated: "2026-11-22"
+updated: "2026-11-24"
 tags: ["game", "variety", "indie", "demo", "sandbox", "tgs-2026", "one-off"]
-sources: ["[[stream-j7wp7eexlv4]]", "[[stream-o_h8stlw-g0]]", "[[stream-tarxqe-d4ui]]", "[[stream-leevgshuxek]]", "[[stream-aukf6rlyt04]]", "[[stream-swtn-x-raz4]]"]
+sources: ["[[stream-j7wp7eexlv4]]", "[[stream-o_h8stlw-g0]]", "[[stream-tarxqe-d4ui]]", "[[stream-leevgshuxek]]", "[[stream-aukf6rlyt04]]", "[[stream-swtn-x-raz4]]", "[[stream-f_p0qclmfzi]]", "[[stream-soc6jzfd_j8]]"]
 status: "active"
 ---
 
@@ -22,6 +22,8 @@ status: "active"
 - ***Dinoblade*** (`2026-07-28` [[stream-dchunu4fbxq]]): ลองเล่นเกมแอ็กชันไดโนเสาร์ถือดาบใหญ่.
 - ***DragonSword: Awakening*** (`2026-10-04` [[stream-swtn-x-raz4]]): ลองเล่นเกมแอ็กชัน RPG ใหม่.
 - ***Lost Soul Aside (Demo)*** (`2025-09-02` [[stream-2n1csgu82do]] `02:20:38`–`03:34:38`): โหลดเดโมมาลองปะทะบอส *Victor* และ *Demon* พร้อมแซวราคา `1,990` บาท, กราฟิกกินสเปคจน OBS ดับ, เสียงพากย์, และระบบแตกเกราะ.
+- ***Loop Hero*** (`2026-11-21` [[stream-f_p0qclmfzi]] `05:08:12`–`09:08:26`): เล่นยาวต่อเนื่องกว่า 4 ชั่วโมง (`ส่วนที่ 5–7`) เช็กราคา Switch 2 เทียบ PC, ลองวางการ์ด *Battlefield*, *Vampire Mansion*, *Blood Grove*, *Road Lantern*, เจอปัญหาเมาส์พังกลางเกม (`06:47:21`), จนโค่นบอส *The Lich* สำเร็จ (`08:36:25`) และปลดล็อก *Gymnasium* / *Village* ก่อนโดนแวมไพร์บุกหมู่บ้านผีสิง (`09:01:12`).
+- ***Annihilated*** (`2026-11-21` [[stream-f_p0qclmfzi]] `03:47:36`) · ***Where Winds Meet (WWM)*** (`2026-11-22` [[stream-soc6jzfd_j8]] `01:25:32`): แนะนำ *Annihilated* เกม RPG โร้กไลต์ผจญภัยดันเจี้ยน และเจาะโมเดลขายคอสเมติกของ *WWM*.
 
 ---
 
@@ -38,7 +40,8 @@ status: "active"
 - ***Deadlock*** (`18` สตรีมหลัก — ดู [[deadlock]]) & ***LEGO Fortnite / Fortnite*** (`2026-08-21` [[stream-qmbnyszoeku]] `02:20:39` โหมดโซน Sonic, `2026-10-16` [[stream-o8d4bpcva9s]]).
 - ***RoV (Arena of Valor)*** (`2025-10-13` [[stream-3_-zytbrnj8]] `01:48:00`–`03:36:01`): เล่น Tel'Annas เจอเพื่อน AFK 4v5 และฟาร์มเงินในร้านค้าซื้อฮีโร่ *Marja*.
 - ***Arena Breakout: Infinite*** (`2025-11-13` [[stream-7-4jzpb0nok]] `05:55:40`–`06:33:05`, `2025-11-14` [[stream-uc2g_ceenca]] `08:29:40`–`09:10:14`): แต่งปืนลง Dark Zone แมพ Farm เล่นสไตล์หนูรอรวยคู่กับผู้ชม.
-- ***Yu-Gi-Oh! Master Duel*** (`2026-07-03` [[stream-2scoaderiu4]] `08:22:52`, `2026-07-10` [[stream-pchy1_k4eku]] `03:25:27`, `2026-08-19` [[stream-p4rjb3403jw]] `03:14:24`, `2026-08-23` [[stream-jjlklxm2mwq]] `02:13:41`): เล่นเด็ค *Branded*, *D/D/D*, และแฮนด์แทรปในแรงก์ทั้งบน PC และ Nintendo Switch 2.
+- ***Yu-Gi-Oh! Master Duel*** (`2026-07-03` [[stream-2scoaderiu4]] `08:22:52`, `2026-07-10` [[stream-pchy1_k4eku]] `03:25:27`, `2026-08-19` [[stream-p4rjb3403jw]] `03:14:24`, `2026-08-23` [[stream-jjlklxm2mwq]] `02:13:41`, `2026-11-21` [[stream-f_p0qclmfzi]] `04:01:13`–`04:06:17`): เล่นเด็ค *Branded*, *D/D/D* (เผลอคลิกขวาแคนเซิลเอฟเฟกต์ปะทะ *DPE* จนแพ้), และแฮนด์แทรปในแรงก์ทั้งบน PC และ Nintendo Switch 2.
+- ***Wixoss TCG*** (`2026-11-22` [[stream-soc6jzfd_j8]] `04:19:04`): เล่าข่าวการปิดตัวลงของการ์ดเกม *Wixoss TCG*.
 - ***CookieRun: OvenSmash*** (`2026-07-19` [[stream-7sdukdnlwj0]] `00:22:36`–`00:30:47`): ลองเล่นผ่าน LDPlayer โหมด Battle Royale พร้อมวิจารณ์โมเดลตัวละครฟรีในเกม PvP.
 
 ---

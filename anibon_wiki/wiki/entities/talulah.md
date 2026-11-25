@@ -1,9 +1,9 @@
 ---
 title: "ทาลูลาห์ (Talulah)"
 category: "entity"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["entity", "character", "arknights", "reunion"]
-sources: ["[[stream-9r1buaxxkh4]]", "[[stream-yunseoldciw]]"]
+sources: ["[[stream-9r1buaxxkh4]]", "[[stream-yunseoldciw]]", "[[stream-f_p0qclmfzi]]"]
 status: "active"
 ---
 
@@ -19,3 +19,4 @@ status: "active"
 ## Chronological Appearances (`ปู่โบ๊ต`)
 - **2026-11-01 — [[stream-9r1buaxxkh4]] (`06:21:33`–`07:23:26`)**: เปิดเกม [[arknights]] เตรียมเปิดตู้ทาลูลาห์ อ่านรีวิวความเก่งจากคอมมูนิตี้ที่มองว่าทรงโบราณ สุ่มได้ Vanilla แทนพร้อมแซวว่าใช้ง่ายกว่า กัดฟันเปิดเพลงปลุกใจสู้ต่อก่อนโดนเกลือยับเยินต้องพักไปฟาร์มด่าน.
 - **2026-11-11 — [[stream-yunseoldciw]] (`10:34:41`)**: ปิดท้ายสตรีมด้วยการฉลองสุ่มได้ทาลูลาห์ใน [[arknights]] สำเร็จพร้อมโชว์หน้าจอความสำเร็จ.
+- **2026-11-21 — [[stream-f_p0qclmfzi]] (`01:05:19`)**: เม้าท์มอยมีม "Talulah ท้อง" และที่มาของมีมจากคอมมูนิตี้จีน (ต่อยอดใน [[stream-soc6jzfd_j8]] `03:15:51`).

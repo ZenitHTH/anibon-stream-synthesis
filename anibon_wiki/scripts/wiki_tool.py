@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
-import shutil
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
+
+from wiki_search import SearchSpec, search_wiki, spec_from_json
 
 WIKI_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = WIKI_ROOT.parent
@@ -42,16 +44,36 @@ def cmd_stats(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _build_search_spec(args: argparse.Namespace) -> SearchSpec:
+    if args.query_json:
+        return spec_from_json(args.query_json)
+    terms = tuple(args.terms) if args.terms else ((args.query,) if args.query else ())
+    return SearchSpec(
+        terms=terms,
+        tags=tuple(args.tags),
+        category=args.category,
+        date_from=args.date_from,
+        date_to=args.date_to,
+        limit=args.limit,
+        include_raw=args.include_raw,
+    )
+
+
+def _format_text(report: dict) -> str:
+    lines = []
+    for item in report["results"]:
+        lines.append(f"[{item['tier']}] {item['rel_path']} ({item['upload_date'] or item['category']}) score={item['score']}")
+        for m in item["matches"][:4]:
+            ts = f" [{m['youtube_url']}]" if m["youtube_url"] else ""
+            lines.append(f"  L{m['line']}: {m['text']}{ts}")
+    cov = report["coverage"]
+    lines.append(f"--- {len(report['results'])} shown / {report['total_hits']} doc(s) across {cov['total_pages']} pages ({cov['total_streams']} streams, {cov['date_range']}) ---")
+    return "\n".join(lines)
+
+
 def cmd_search(args: argparse.Namespace) -> int:
-    q = args.query.lower()
-    hits = 0
-    for stem, p in _all_wiki_pages().items():
-        for lineno, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-            if q in line.lower():
-                rel = p.relative_to(WIKI_ROOT)
-                print(f"{rel}:{lineno}: {line.strip()}")
-                hits += 1
-    print(f"--- {hits} match(es) for '{args.query}' ---")
+    report = search_wiki(WIKI_ROOT, _build_search_spec(args))
+    print(json.dumps(report, ensure_ascii=False, indent=2) if (args.json or args.query_json) else _format_text(report))
     return 0
 
 
@@ -139,7 +161,16 @@ def main() -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("stats")
     p_s = sub.add_parser("search")
-    p_s.add_argument("query")
+    p_s.add_argument("query", nargs="?", default="")
+    p_s.add_argument("--terms", nargs="+", default=[])
+    p_s.add_argument("--tags", nargs="+", default=[])
+    p_s.add_argument("--category", default="")
+    p_s.add_argument("--date-from", default="")
+    p_s.add_argument("--date-to", default="")
+    p_s.add_argument("--limit", type=int, default=20)
+    p_s.add_argument("--include-raw", action="store_true")
+    p_s.add_argument("--json", action="store_true")
+    p_s.add_argument("--query-json", default="")
     sub.add_parser("lint")
     p_st = sub.add_parser("acquire-stream")
     p_st.add_argument("workspace")

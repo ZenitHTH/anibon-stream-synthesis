@@ -1,7 +1,7 @@
 ---
 title: "โมเดลธุรกิจเกมกาชา ระบบหอ Endgame ตลาด Red Ocean และปรัชญาการยอมรับความจริง"
 category: "topic"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["topic", "gacha", "business-model", "philosophy", "mgs3", "endgame", "ai-slop", "red-ocean"]
 sources:
   - "[[stream-cqll7dq35bw]]"
@@ -56,6 +56,9 @@ sources:
   - "[[stream-b6dg3jk6yjg]]"
   - "[[stream-0otxy2_ti5u]]"
   - "[[stream-j7wp7eexlv4]]"
+  - "[[stream-f_p0qclmfzi]]"
+  - "[[stream-soc6jzfd_j8]]"
+  - "[[stream-uql-sexvuve]]"
 status: "active"
 ---
 
@@ -105,8 +108,8 @@ status: "active"
 | **[[honkai-star-rail]] & [[zenless-zone-zero]]** | ปัญหาความจำเป็นของอาวุธประจำตัว/ทีมสมบูรณ์, หอคอยและ "ทีมแหว่ง", การตั้งราคาสกินและคอสเมติกแพงเกินมูลค่า, และโหมด TFT / Paywall ใน HSR 4.7 | [[stream-brkwd55okik]] (`02:37:30`), [[stream-vhsf4ov5mnm]] (`00:57:59`, `05:24:03`), [[stream-pmfdxsv7zca]] (`01:08:00`–`01:34:30`), [[stream-d0bhzy-ze2o]] (`01:58:11`, `02:45:31`, `03:09:48`) |
 | **[[limbus-company]] ([[project-moon]])** | ระบบฟาร์ม Battle Pass & Shard ที่ไม่กดดันและไม่เกลือ เทียบกับ DPS Check ของเกมอื่น แม้กังวลเรื่องฐานผู้เล่นโตเร็วและป๊อปอัพสโตร์ Hyundai | [[stream-biowg1rscku]] (`02:29:17`), [[stream-a3inbyms-jq]] (`02:49:39`, `03:08:49`), [[stream-urppsve-cd0]] (`00:46:29`), [[stream-b6dg3jk6yjg]] (`00:45:29`) |
 | **[[chaos-zero-nightmare]] (CZN)** | ตู้ตัวละคร Limited น้อย ไม่กดดันผู้เล่น (No FOMO), ระบบแรงค์ที่ล็อคเมต้าให้เล่นชิลล์ไม่ต้องแข่งกัน และกล้าสร้างอัตลักษณ์เฉพาะตัว | [[stream-f5fi3an-fjm]] (`00:43:20`), [[stream-hcygeyr2imk]] (`00:34:31`), [[stream-2ydpc5g-dpy]] (`00:21:00`–`00:32:57`) |
-| **[[arknights]] & Endfield** | ชื่นชมปรัชญาเล่นตามใจไม่กดดันเมต้า ระบบกาชาไม่ได้โหดอย่างที่ลือ แต่ติงการปรับเกมเพลย์ Endfield ให้ Casual และยัด FOMO ในโลก 3D | [[stream-cgf29jergnu]] (`03:36:15`), [[stream-aayd6tu9puy]] (`02:08:45`), [[stream-pchy1_k4eku]] (`00:52:08`), [[stream-xbtocdurz_y]] (`08:24:40`) |
-| **Buy-to-Play / Non-Gacha** | ชูทางเลือกเกมอย่าง *DragonSword: Awakening* ที่ลดความเป็นกาชาและขายตัวละครตรงๆ หรือเกมอย่าง *Heartopia* ที่เน้นคอสเมติกและชีวิตสโลว์ไลฟ์ | [[stream-aayd6tu9puy]] (`00:35:39`), [[stream-swtn-x-raz4]] (`00:09:33`–`02:11:05`) |
+| **[[arknights]] & Endfield** | ชื่นชมปรัชญาเล่นตามใจไม่กดดันเมต้า ระบบกาชาไม่ได้โหดอย่างที่ลือ แต่ติงการปรับเกมเพลย์ Endfield ให้ Casual และยัด FOMO ในโลก 3D รวมถึงสับวิกฤต *Identity Crisis* "จับปลาสองมือ" กับดีไซน์หน้าซ้ำ (Slop) | [[stream-cgf29jergnu]] (`03:36:15`), [[stream-aayd6tu9puy]] (`02:08:45`), [[stream-pchy1_k4eku]] (`00:52:08`), [[stream-xbtocdurz_y]] (`08:24:40`), [[stream-f_p0qclmfzi]] (`02:14:47`), [[stream-soc6jzfd_j8]] (`00:06:17`–`02:47:31`) |
+| **Buy-to-Play / Non-Gacha & โมเดลของเล่น** | ชูทางเลือกเกมอย่าง *DragonSword: Awakening*, *Heartopia*, และ *Where Winds Meet* (ขายคอสเมติก/MMO), รวมถึงวิเคราะห์โมเดลธุรกิจ *Kamen Rider* (ขาย CSM/ของเล่นเก่าต่อเนื่อง) เทียบ *Super Sentai* (รีเซตทุกปี) | [[stream-aayd6tu9puy]] (`00:35:39`), [[stream-swtn-x-raz4]] (`00:09:33`–`02:11:05`), [[stream-soc6jzfd_j8]] (`01:19:59`–`01:25:32`), [[stream-uql-sexvuve]] (`02:51:02`–`02:56:29`) |
 
 ---
 
@@ -127,7 +130,7 @@ status: "active"
 1. **เส้นแบ่งระหว่าง AI ช่วยงานเทคนิค vs AI แย่งงานศิลปะ**: `ปู่โบ๊ต` ยอมรับการใช้ AI เป็นเครื่องมือช่วยเขียนโค้ด (เช่น โปรเจกต์ *Minecraft Rust* หรือเครื่องมือทุ่นแรงทางคณิตศาสตร์/ฟิสิกส์) แต่คัดค้านการใช้ Gen AI สร้างภาพอาร์ต 3D และสื่อโฆษณาเพื่อลดต้นทุนจนขาดจิตวิญญาณ (`2026-02-25` [[stream-wijzq6dhgte]] `01:49:01`, `2026-10-06` [[stream-0gzbszpmmia]] `02:19:33`, `2026-10-11` [[stream-uxcorugvkbe]] `03:47:25`–`03:54:16`, `2026-11-08` [[stream-u-wnhjsc4yc]] `05:11:45`)
 2. **จับโป๊ะ AI Slop ในค่ายเกมและภาพยนตร์**:
    - คดี **Sora AI** ละเมิดลิขสิทธิ์ญี่ปุ่น (`2025-10-20` [[stream-chdc68bjnno]] `05:52:03`) และฟองสบู่ AI (`2026-02-17` [[stream-goji7k_j8ci]] `00:18:45`)
-   - **Shift Up (*Stellar Blade* / *NIKKE*)**: จับผิดบั๊กตัวละคร 3 ขาใน MV AI ของ *Stellar Blade* (`2026-07-31` [[stream-rtpds5w1_xo]] `02:52:23`–`03:23:31`), วิจารณ์แถลงการณ์แก้ตัว (`2026-08-06` [[stream-jvmsti2xqre]] `02:09:42`) และตำหนิ Shift Up ที่มัวแต่ลง AI จนละเลยการพัฒนา *NIKKE* ปีที่ 4 (`2026-09-22` [[stream-hcygeyr2imk]] `00:45:07`)
+   - **Shift Up (*Stellar Blade* / *NIKKE*)**: จับผิดบั๊กตัวละคร 3 ขาใน MV AI ของ *Stellar Blade* (`2026-07-31` [[stream-rtpds5w1_xo]] `02:52:23`–`03:23:31`), วิจารณ์แถลงการณ์แก้ตัว (`2026-08-06` [[stream-jvmsti2xqre]] `02:09:42`) และตำหนิ Shift Up ที่มัวแต่ลง AI จนละเลยการพัฒนา *NIKKE* ปีที่ 4 (`2026-09-22` [[stream-hcygeyr2imk]] `00:45:07`) ก่อนสรุปบทเรียนหลังดราม่า MV ที่ค่ายยอมเลิกใช้ AI ปิดงาน (`2026-11-22` [[stream-soc6jzfd_j8]] `04:58:38`)
    - **เคสอื่นๆ**: ดราม่าเกม *Neverness to Everness (NTE)* หลุดลายน้ำ AI (`2026-08-23` [[stream-jjlklxm2mwq]] `03:47:20`), เกม AI Slop เกลื่อน Nintendo eShop (`2026-08-19` [[stream-p4rjb3403jw]] `02:47:52`), หนัง AI *The Odyssey* และ *คลองยักษ์ปะทะโคตรอสูร (Omega)* (`2026-10-26` [[stream-jccaqz_inr0]] `03:30:10`, `2026-11-01` [[stream-9r1buaxxkh4]] `02:39:30`), และโปรโมท *Malfoy AI* ของ HBO/Warner (`2026-10-13` [[stream-ujgxpryomxe]] `00:12:22`, `2026-11-17` [[stream-b6dg3jk6yjg]] `02:34:00`, `03:44:31`)
 3. **ผลกระทบเชิงโครงสร้างต่อผู้บริโภคและนักพัฒนา**:
    - **วิกฤตฮาร์ดแวร์และราคา RAM**: กระแสดาต้าเซ็นเตอร์ AI และแนวคิดของ OpenAI (Sam Altman) ถูกเปรียบว่าเหมือน "นายทุนกว้านซื้อที่นาชาวบ้าน" ทำให้ราคาหน่วยความจำและฮาร์ดแวร์พุ่งสูง กระทบการเข้าถึงเกมของคนทั่วไป (`2026-07-02` [[stream-uhfbfc3ds54]] `01:56:47`, `2026-11-01` [[stream-9r1buaxxkh4]] `02:51:00`–`03:11:30`, `2026-11-11` [[stream-yunseoldciw]] `09:20:19`)

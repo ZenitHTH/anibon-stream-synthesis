@@ -1,9 +1,9 @@
 ---
 title: "Arknights & Arknights: Endfield"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "hypergryph", "yostar", "arknights", "endfield", "gacha", "tower-defense"]
-sources: ["[[stream-2n1csgu82do]]", "[[stream-tj0phpf8o58]]", "[[stream-y3b5i2uqbqg]]", "[[stream-uc2g_ceenca]]", "[[stream-xe0ojsyun2a]]", "[[stream-cgf29jergnu]]", "[[stream-aayd6tu9puy]]", "[[stream-2curilieeng]]", "[[stream-vhsf4ov5mnm]]", "[[stream-hcyqx3l3dk0]]", "[[stream-00z94nk_7ok]]", "[[stream-_qk87e-2rbo]]", "[[stream-2scoaderiu4]]", "[[stream-pchy1_k4eku]]", "[[stream-o_h8stlw-g0]]", "[[stream-g5vuwyr8qw4]]", "[[stream-eks7vrlwyyw]]", "[[stream-kcfkhrhqfva]]", "[[stream-p5ma0a_ees0]]", "[[stream-nb5ddz5xfse]]", "[[stream-fxv2zfvlut8]]", "[[stream-5p4kccqxigc]]", "[[stream-ccx7sw0dnmm]]", "[[stream-f5fi3an-fjm]]", "[[stream-mjgd2xw8tlg]]", "[[stream-a3inbyms-jq]]", "[[stream-0gzbszpmmia]]", "[[stream-2ydpc5g-dpy]]", "[[stream-l-ibfdrobqq]]", "[[stream-xbtocdurz_y]]", "[[stream-ujgtmzls7vy]]", "[[stream-bewj0zh-kty]]", "[[stream-9r1buaxxkh4]]", "[[stream-ab1nvwdsoq0]]", "[[stream-yunseoldciw]]", "[[stream-cqll7dq35bw]]"]
+sources: ["[[stream-2n1csgu82do]]", "[[stream-tj0phpf8o58]]", "[[stream-y3b5i2uqbqg]]", "[[stream-uc2g_ceenca]]", "[[stream-xe0ojsyun2a]]", "[[stream-cgf29jergnu]]", "[[stream-aayd6tu9puy]]", "[[stream-2curilieeng]]", "[[stream-vhsf4ov5mnm]]", "[[stream-hcyqx3l3dk0]]", "[[stream-00z94nk_7ok]]", "[[stream-_qk87e-2rbo]]", "[[stream-2scoaderiu4]]", "[[stream-pchy1_k4eku]]", "[[stream-o_h8stlw-g0]]", "[[stream-g5vuwyr8qw4]]", "[[stream-eks7vrlwyyw]]", "[[stream-kcfkhrhqfva]]", "[[stream-p5ma0a_ees0]]", "[[stream-nb5ddz5xfse]]", "[[stream-fxv2zfvlut8]]", "[[stream-5p4kccqxigc]]", "[[stream-ccx7sw0dnmm]]", "[[stream-f5fi3an-fjm]]", "[[stream-mjgd2xw8tlg]]", "[[stream-a3inbyms-jq]]", "[[stream-0gzbszpmmia]]", "[[stream-2ydpc5g-dpy]]", "[[stream-l-ibfdrobqq]]", "[[stream-xbtocdurz_y]]", "[[stream-ujgtmzls7vy]]", "[[stream-bewj0zh-kty]]", "[[stream-9r1buaxxkh4]]", "[[stream-ab1nvwdsoq0]]", "[[stream-yunseoldciw]]", "[[stream-cqll7dq35bw]]", "[[stream-f_p0qclmfzi]]", "[[stream-soc6jzfd_j8]]"]
 status: "active"
 ---
 
@@ -89,3 +89,8 @@ status: "active"
   - `10:34:41` (`11-11`) — ปิดท้ายสตรีมด้วยความสำเร็จ: **ฉลองสุ่มได้ [[talulah]] ใน Arknights สำเร็จ**.
 - **ไม่ระบุวันที่ (นำเข้า 2026-11-21)** — [[stream-cqll7dq35bw]] (`Stream cQlL7DQ35bw`) ([anibon_timestamps.md](file:///Users/zenithth/youtube_cQlL7DQ35bw_workspace/anibon_timestamps.md#L87))
   - `07:09:45`–`07:12:15` — ตกใจและชำแหละระบบ **กล่องสุ่มสกินเสื้อผ้าใน Arknights** ราคาไม่เกิน 18 OP ที่ใช้เพชรในเกมสุ่มได้ (ไม่รวมสกินพรีเมียม) และสุ่มได้สกิน *Gravel*, เชื่อมโยงสู่วิเคราะห์โมเดลธุรกิจขายคอสเมติกของเกมกาชา ([[gacha-business-and-endgame-philosophy]]).
+- **2026-11-21** — [[stream-f_p0qclmfzi]] (`ไปเรื่อย ไม่มีแผน Ver. อะไรก็ได้ ที่ไม่ใช่ GTA VI - วันที่ 3` — *ส่วนที่ 1–3*)
+  - `00:45:38`–`01:19:15` — ชำแหละระบบโรงงานใน *Endfield* ที่มีจุดอิ่มตัว, เจาะสกิล *Kay* & *มิมิโน่ (Mimino)* ใน *Endfield 1.7*, เม้าท์มีม [[talulah]] ท้องในคอมมูนิตี้จีน, และชี้ว่าโหมดคล้าย TFT ใน *Arknights* ภาคหลักดึงคนจาก *Endfield*.
+  - `01:25:39`–`02:14:47` — รีแอคพรีวิว **Arknights: Endfield 2.0**: ฮือฮาหมอ *Warfarin*, ยาน *Rhodes Island Landship*, ดินแดน *Golden Branch*, *M3 (Mon3tr)*, กลุ่ม *Order of Steel Oath*, ก่อนล็อกอินเล่นทดสอบ *Zhuang Fangyi* (`03:10:28`–`03:39:42`).
+- **2026-11-22** — [[stream-soc6jzfd_j8]] (`ประเด็น ดีไซน์ ตลค. ใน Endfield และ กาชาอื่นๆ` — *ส่วนที่ 1–4*)
+  - `00:06:17`–`02:47:31`, `03:50:44`–`04:10:46` — ถกดราม่าดีไซน์ตัวละครใหม่ *Endfield* ที่ใช้หน้าซ้ำ/Play Safe และเน้นเซอร์วิสจนเข้าข่าย Slop, สับปัญหา *Identity Crisis* "จับปลาสองมือ" ระหว่างฐานผู้เล่นเก่ากับตลาดแมส, ติจุดอ่อนระบบโรงงานและเกมเพลย์จนวางแผนดองเนื้อเรื่องรอแพตช์ 2.0 (`03:56:45`), พร้อมชมโหมด *Reclamation Algorithm (RA)* และ *Stronghold* ใน *Arknights OG*.

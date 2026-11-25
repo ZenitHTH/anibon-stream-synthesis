@@ -1,9 +1,9 @@
 ---
 title: "Prep-First & Full-Context 48K Pipeline Architecture"
 category: "engineering-pipeline"
-updated: "2026-11-21"
-tags: ["engineering", "pipeline", "lm-studio", "p100", "vlm", "prep-first"]
-sources: ["[[code-change-prep-first-48k]]", "[[stream-cqll7dq35bw]]"]
+updated: "2026-11-25"
+tags: ["engineering", "pipeline", "lm-studio", "p100", "vlm", "prep-first", "stage5"]
+sources: ["[[code-change-prep-first-48k]]", "[[code-change-stage5-guards-fgo-np-2026-11-25]]", "[[stream-cqll7dq35bw]]"]
 status: "active"
 ---
 
@@ -14,7 +14,7 @@ status: "active"
 - **Launcher**: [launch_local.sh](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/skills/anibon-timestamper-local/scripts/launch_local.sh)
 - **Stage 1 Acquisition & Dictionary Scripts**: [[prepare-video-py]], [[update-garbled-dictionary-py]]
 - **Stage 2 Prep-First Enrichment & Media Scripts**: [[chunk-enrichment-py]], [[chunk-storyboard-prep-py]], [[audio-webcam-cues-py]], [[obs-layout-py]], [[webcam-storyboard-py]], [[chunk-scanner-py]]
-- **Stage 3–5 Inference, Assembly & QA Gates**: [[process-chunks-local-py]], [[dynamic-chunk-py]], [[prompts-py]], [[assembly-py]], [[audit-gaps-and-check-sections]]
+- **Stage 3–5 Inference, Assembly & QA Gates**: [[process-chunks-local-py]], [[dynamic-chunk-py]], [[prompts-py]], [[domain-db-and-fgo-py]], [[assembly-py]], [[audit-gaps-and-check-sections]]
 - **Wiki Knowledge Automation**: [[anibon-wiki-tools]]
 - **Post-Mortem Verification**: [[post-mortem-scrutinize-cqll7dq35bw]]
 
@@ -37,3 +37,9 @@ flowchart LR
     D --> E["assembly.py<br/>Stage 3 Garbled Whisper + Pass 2 Pruning"]
     E --> F["anibon_timestamps.md<br/>+ all_timestamps.txt"]
 ```
+
+## 3. Stage 5 Hardening & Optional FGO NP Enrichment (`2026-11-25`)
+See [[code-change-stage5-guards-fgo-np-2026-11-25]]:
+- **Pipeline Guards & Telemetry**: Non-Thai BGM chunk short-circuit (`_is_non_thai_bgm_chunk`, `_short_circuit_bgm_chunk` in `lib/process/runners/recursive.py`), donor handle & domain-switch guards in [[prompts-py]], Thai `[Tag]` normalization (`normalize_tag` in `lib/common/timestamps.py`), leaked-timestamp header checks in [[audit-gaps-and-check-sections]], and `prompt_tokens` / `total_tok_per_sec` reporting in [[process-chunks-local-py]].
+- **Optional FGO NP Lookup**: `--with-np` / `servant_np` SQLite table in [[domain-db-and-fgo-py]] (`fetch_fgo_db.py`, `domain_db.py`).
+- **World Identity & Skill Hardening**: Updated `skills/anibon-timestamper-local/{SKILL.md, references/hardware-and-endpoints.md, references/stage5-audit-checklist.md}` and World Identity references (`Annihilated.md`, `Loop_Hero.md`, `Bleach.md`, `Arknights_Endfield.md`, `Blue_Archive.md`, `Tokusatsu_Project_RED.md`, `INDEX.md`, `thai_phonetic_bridge.json`).

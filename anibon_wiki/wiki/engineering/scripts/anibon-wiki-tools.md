@@ -1,9 +1,9 @@
 ---
 title: "Anibon Wiki CLI & Batch Ingestion Tools (anibon_wiki/scripts/)"
 category: "engineering-script"
-updated: "2026-11-21"
+updated: "2026-11-22"
 script_path: "anibon_wiki/scripts/wiki_tool.py"
-tags: ["python", "script", "wiki", "cli", "ingestion", "lint", "taxonomy"]
+tags: ["python", "script", "wiki", "cli", "ingestion", "lint", "taxonomy", "search"]
 sources: []
 status: "active"
 ---
@@ -11,6 +11,7 @@ status: "active"
 # Anibon Wiki CLI & Batch Ingestion Tools
 
 - **Core Wiki CLI**: [anibon_wiki/scripts/wiki_tool.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py)
+- **Structured Wiki Search Engine**: [anibon_wiki/scripts/wiki_search.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_search.py)
 - **Bulk Stream Acquirer**: [anibon_wiki/scripts/acquire_streams.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/acquire_streams.py)
 - **Batch Stream Ingestor**: [anibon_wiki/scripts/ingest_streams_batch.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/ingest_streams_batch.py)
 - **Taxonomy & Safety Sanitizer**: [anibon_wiki/scripts/stream_taxonomy.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/stream_taxonomy.py)
@@ -26,7 +27,7 @@ Provides the maintenance, search, linting, raw snapshot acquisition, taxonomy cl
 ### `anibon_wiki/scripts/wiki_tool.py`
 - **Subcommands** ([wiki_tool.py:137-159](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L137-L159)):
   - `stats` (`cmd_stats`, [L29-L42](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L29-L42)): Counts `raw/` files, `wiki/` pages (excluding `_templates/` via `_all_wiki_pages()`, [L20-L26](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L20-L26)), total words, and per-subfolder counts.
-  - `search QUERY` (`cmd_search`, [L45-L55](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L45-L55)): Case-insensitive line search across all `wiki/` markdown pages.
+  - `search [QUERY] [--terms ...] [--tags ...] [--category ...] [--date-from ...] [--date-to ...] [--limit N] [--include-raw] [--json] [--query-json JSON]` (`cmd_search`): Delegates to `wiki_search.search_wiki()` / `spec_from_json()` for structured multi-term search across `anibon_wiki/wiki/` (`synthesis` > `stream` > `engineering` > optional `raw`), emitting YouTube `&t=SECs` jump links and enforcing `sanitize_wiki_text()` masking. Supports the `/anibon-search` skill.
   - `lint` (`cmd_lint`, [L58-L82](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L58-L82)): Parses Obsidian wikilinks via `_WIKILINK_RE` ([L17](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L17)) and reports: (1) broken wikilinks, (2) orphan pages with 0 inbound links (excluding `{"index", "overview", "log"}`), and (3) unindexed pages absent from `wiki/index.md`. Returns exit code `1` if any issue is found.
   - `acquire-stream WORKSPACE [--video-id VID]` (`cmd_acquire_stream`, [L85-L112](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L85-L112)): Snapshots `anibon_timestamps.md` (and `all_timestamps.txt` if present) into `raw/streams/stream-<vid>.md`.
   - `acquire-git REV_RANGE SLUG [--plan PATH]` (`cmd_acquire_git`, [L115-L134](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/scripts/wiki_tool.py#L115-L134)): Runs `git log --stat -p` (diff capped at `60000` chars) and writes `raw/code-changes/<slug>.md` with an optional implementation plan.

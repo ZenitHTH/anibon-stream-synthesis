@@ -1,9 +1,9 @@
 ---
 title: "Reverse: 1999"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "bluepoch", "reverse-1999", "gacha", "turn-based"]
-sources: ["[[stream-3_-zytbrnj8]]", "[[stream-cgf29jergnu]]", "[[stream-g5vuwyr8qw4]]", "[[stream-kcfkhrhqfva]]", "[[stream-vforj0ybxfw]]", "[[stream-njn2zwndkeu]]", "[[stream-k1qauv35gv8]]"]
+sources: ["[[stream-3_-zytbrnj8]]", "[[stream-cgf29jergnu]]", "[[stream-g5vuwyr8qw4]]", "[[stream-kcfkhrhqfva]]", "[[stream-vforj0ybxfw]]", "[[stream-njn2zwndkeu]]", "[[stream-k1qauv35gv8]]", "[[stream-soc6jzfd_j8]]"]
 status: "active"
 ---
 
@@ -40,3 +40,5 @@ status: "active"
   - `03:55:30` — วิเคราะห์เมต้าตัวละครและระบบอัปเกรดเกม *Reverse: 1999*.
 - **2026-08-30** — [[stream-k1qauv35gv8]] (`พักมาฟาร์ม FGO เพื่อเตรียม (เจือก) ศึกใหญ่`)
   - `02:08:51` — วิเคราะห์เมต้า *Reverse: 1999* ที่ปรับถี่จนทรัพยากรไม่พอ พร้อมเตือนสติผู้เล่นเรื่องการเงิน.
+- **2026-11-22** — [[stream-soc6jzfd_j8]]:
+  - `03:36:50`, `04:17:04` — ประกาศข่าวหนังสือ *Artbook Vol. 1* ฉบับจีนของ *Reverse: 1999*.

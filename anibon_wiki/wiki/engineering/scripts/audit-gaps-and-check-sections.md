@@ -1,10 +1,10 @@
 ---
 title: "audit_gaps.py & check_sections.py (scripts/audit_gaps.py, scripts/check_sections.py)"
 category: "engineering-script"
-updated: "2026-11-21"
+updated: "2026-11-25"
 script_path: "scripts/audit_gaps.py"
-tags: ["python", "script", "qa", "audit", "timestamps", "sections", "asr-garbles"]
-sources: []
+tags: ["python", "script", "qa", "audit", "timestamps", "sections", "asr-garbles", "tags"]
+sources: ["[[code-change-stage5-guards-fgo-np-2026-11-25]]"]
 status: "active"
 ---
 
@@ -42,8 +42,11 @@ Post-generation QA validators that enforce Anibon timestamp invariants:
   - `_full_blocks(text)` ([check_sections.py:45-52](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L45-L52)) parses `═══` + `ส่วนที่` blocks via `BLOCK_RE` ([check_sections.py:42](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L42)); `_evaluate_section_status(line_count)` flags `> 20` (`⚠️ WARN`) or `> 25` (`❌ OVER`) and calls `suggest_split()` ([check_sections.py:60-69](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L60-L69)) to suggest the line-midpoint timestamp.
 - **Quality & Diversity Scans** ([check_sections.py:81-106](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L81-L106), [L162-L194](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L162-L194)):
   - `_scan_asr_garbles(text)`: Scans for compiled regexes from `asr_garbled_patterns.json`.
-  - Header truncation check ([check_sections.py:173-185](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L173-L185)): Flags `ส่วนที่ N:` titles ending in dangling Thai conjunctions/prepositions or leading vowels (`[เแโใไ็]`).
+  - Header truncation, leaked timestamp & tag scan ([check_sections.py:173-185](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L173-L185)): Flags `ส่วนที่ N:` titles ending in dangling Thai conjunctions/prepositions or leading vowels (`[เแโใไ็]`), flags leaked `HH:MM:SS` inside section headers, and warns on non-ASCII / non-whitelisted `[tag]` prefixes.
   - `check_verb_diversity(text)` ([check_sections.py:84-96](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/check_sections.py#L84-L96)): When `>= 5` timestamp descriptions exist, warns if any opening verb in `_OPENING_VERBS` exceeds `20%` of lines or repeats `3×` consecutively.
+- **Stage 5 Tag & Summary Sanitizers (`2026-11-25`)**:
+  - `lib/common/timestamps.py` ([timestamps.py:21-98](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/lib/common/timestamps.py#L21-L98)): Added `[Intro]` and `[Tierlist]` to `TAGS` (`_ALLOWED_TAGS` includes `Highlight`), expanded `TAG_REMAP` & `_REACTION_TAG_HINTS`, added `normalize_tag()`, and updated bracket-tag regexes across `timestamps.py`, `lib/process/byte_cap.py`, and `lib/process/caveman.py` to match multi-word/non-ASCII `[tag]` values cleanly.
+  - `lib/process/summarizer_prompt.py` ([summarizer_prompt.py:12](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/lib/process/summarizer_prompt.py#L12)): `_normalize_summary_connectors()` strips leaked `HH:MM:SS - [Tag]` prefixes. Verified by [test_stage5_pipeline_guards.py](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/tests/test_stage5_pipeline_guards.py).
 
 ## Error Handling & Invariants
 - **`audit_gaps.py` Exit Codes**: Returns `0` when `< 2` timestamps exist or zero non-AFK gaps exceed `--max-gap`, and `1` when one or more gaps are found ([audit_gaps.py:72-87](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/scripts/audit_gaps.py#L72-L87)).

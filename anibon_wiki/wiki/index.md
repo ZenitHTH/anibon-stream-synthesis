@@ -8,7 +8,7 @@ status: "active"
 
 # Anibon Stream & Engineering Wiki — Master Index
 
-- **Total Knowledge Base**: `210` Livestreams | `30` Games | `25` Entities | `6` Topics | `16` Engineering Docs | `1` Code Snapshots
+- **Total Knowledge Base**: `215` Livestreams | `30` Games | `25` Entities | `6` Topics | `17` Engineering Docs | `2` Code Snapshots
 - **High-Level Synthesis**: [[overview]]
 - **Operation Log**: [[log]]
 - **Schema & Rules**: [CLAUDE.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/CLAUDE.md) | [AGENTS.md](file:///Users/zenithth/.gemini/config/plugins/anibon-stream-synthesis/anibon_wiki/AGENTS.md)
@@ -82,7 +82,7 @@ status: "active"
 - [[talulah]] — ทาลูลาห์ (Talulah)
 - [[yi-sang]] — อี้ซัง (Yi Sang)
 
-## 4. Python Scripts, Pipelines & Post-Mortems (`wiki/engineering/` — 16)
+## 4. Python Scripts, Pipelines & Post-Mortems (`wiki/engineering/` — 17)
 ### Pipelines
 - [[prep-first-full-context-48k]] — Prep-First & Full-Context 48K Pipeline Architecture
 ### Post-Mortems
@@ -95,6 +95,7 @@ status: "active"
 - [[chunk-enrichment-py]] — chunk_enrichment.py (lib/process/chunk_enrichment.py)
 - [[chunk-scanner-py]] — chunk_scanner.py (lib/process/music/chunk_scanner.py)
 - [[chunk-storyboard-prep-py]] — chunk_storyboard_prep.py (lib/process/chunk_storyboard_prep.py)
+- [[domain-db-and-fgo-py]] — fetch_fgo_db.py & domain_db.py (FGO DB --with-np & JIT Entity Queries)
 - [[dynamic-chunk-py]] — dynamic_chunk.py (lib/process/runners/dynamic_chunk.py)
 - [[obs-layout-py]] — obs_layout.py (lib/video/obs_layout.py)
 - [[prepare-video-py]] — prepare_video.py & lib/chunk/ (scripts/prepare_video.py)
@@ -103,13 +104,18 @@ status: "active"
 - [[update-garbled-dictionary-py]] — update_garbled_dictionary.py (skills/cleaning-auto-transcripts/scripts/update_garbled_dictionary.py)
 - [[webcam-storyboard-py]] — webcam_storyboard.py (lib/video/webcam_storyboard.py)
 
-## 5. Engineering Source Snapshots (`wiki/sources/` — 1)
+## 5. Engineering Source Snapshots (`wiki/sources/` — 2)
 - [[code-change-prep-first-48k]] — Code Change: Prep-First & Full-Context 48K Pipeline Overhaul (3a5a039..2dce04d)
+- [[code-change-stage5-guards-fgo-np-2026-11-25]] — Code Change: Stage 5 Guards, FGO --with-np & Wiki Search (dev vs origin/main 532fdee)
 
-## 6. ANIBON Livestream Catalog (`wiki/sources/stream-*.md` — 210, Newest First)
+## 6. ANIBON Livestream Catalog (`wiki/sources/stream-*.md` — 215, Newest First)
 
 | Upload Date | Wiki Page | Stream Title |
 | :---: | :--- | :--- |
+| `2026-11-23` | [[stream-7tpofoiphog]] | Stream 7TPOFoipHog — ไปเรื่อย ไม่มีแผน Ver. Black Magic 🪄 + เมาท์มอย การเมืองไทยช่วงนี้ |
+| `2026-11-22` | [[stream-uql-sexvuve]] | Stream uQl-SEXvUVE — วายร้ายใหม่ ภัยอันตรายที่ซ่อนอยู่ ของ 3 โทคุ + Watch Party - Tokusatsu - สัปดาห์ที่ 22 พฤศจิกา 2026 |
+| `2026-11-22` | [[stream-soc6jzfd_j8]] | Stream soc6jzFD_j8 — ไปเรื่อย ไม่มีแผน Ver. ประเด็น ดีไซน์ ตลค. ใน Endfield และ กาชาอื่นๆ , อัพเดท วาไรตี้ เรื่อยเปื่อย |
+| `2026-11-21` | [[stream-f_p0qclmfzi]] | Stream F_P0QCLMFZI — ไปเรื่อย ไม่มีแผน Ver. อะไรก็ได้ ที่ไม่ใช่ GTA VI - วันที่ 3 |
 | `2026-11-21` | [[stream-cqll7dq35bw]] | Stream cQlL7DQ35bw — การเมือง ม็อบ Gen Z, GTA 6, ZZZ 3.4 x HSR Collab, Azur Promilia, Limbus, FGO อาโอโกะ & NP5 ริคิว |
 | `2026-11-19` | [[stream-j7wp7eexlv4]] | Stream J7wP7EExLV4 — ไปเรื่อย ไม่มีแผน Ver. อะไรก็ได้ ที่ไม่ใช่ GTA VI |
 | `2026-11-18` | [[stream-0otxy2_ti5u]] | Stream 0oTxY2_ti5U — ทำนา เพื่อ ยาย 👵🏻 \| ANIBON |
@@ -198,6 +204,7 @@ status: "active"
 | `2026-09-09` | [[stream-w854zl46pla]] | Stream W854zl46plA — ไปเรื่อย ไม่มีแผน Ver. วันแห่ง Nintendo \| ANIBON |
 | `2026-09-08` | [[stream-s27pvllgbww]] | Stream S27PVLlgBww — ไปเรื่อย ไม่มีแผน Ver. วันแห่ง Zelda \| ANIBON |
 | `2026-09-07` | [[stream-xyrvnsz0sdu]] | Stream xyRvNSZ0SDU — เปิดฉาก สงครามระหว่างไรเดอร์หนู 🐭 กับเหล่า 12 นักษัตร 😼 + Watch Party - Kamen Rider My-Th ตอนที่ 1 \| ANIBON |
+| `2026-09-05` | [[stream-wzeajupt7xw]] | Stream WZeAJUPt7xw — LIVE 🔴 Reaction - ตอนที่ 7 ของ Bleach: TYBW - The Calamity รายงานอนิเมะ Summer 2026 Ver. สิ้นหวัง 👁️ \| ANIBON |
 | `2026-09-05` | [[stream-i_kqiypmtey]] | Stream i_kqiypMtEY — โบ๊ตไปโรงพัก ตอน 4 ทุ่ม \| ANIBON |
 | `2026-09-05` | [[stream-azu7s_30afu]] | Stream AZu7s_30afU — ไปเรื่อย ไม่มีแผน Ver. เสาร์ 5 \| ANIBON |
 | `2026-09-05` | [[stream--9tzwgn1g8g]] | Stream -9tZWGn1g8g — โบ๊ตโดนโกง \| ANIBON |

@@ -1,7 +1,7 @@
 ---
 title: "อุตสาหกรรมอนิเมะ มังงะ ภาพยนตร์ และการวิเคราะห์สื่อบันเทิงญี่ปุ่น-เอเชีย"
 category: "topic"
-updated: "2026-11-21"
+updated: "2026-11-25"
 tags: ["topic", "anime", "manga", "cinema", "bleach", "one-piece", "mappa", "godzilla", "ramayana"]
 sources:
   - "[[stream-cqll7dq35bw]]"
@@ -85,6 +85,9 @@ sources:
   - "[[stream-jj2j51qi0ow]]"
   - "[[stream-b6dg3jk6yjg]]"
   - "[[stream-0otxy2_ti5u]]"
+  - "[[stream-soc6jzfd_j8]]"
+  - "[[stream-7tpofoiphog]]"
+  - "[[stream-wzeajupt7xw]]"
 status: "active"
 ---
 
@@ -115,6 +118,7 @@ status: "active"
 - **ช่วงเปิดตัวและบทบาทผู้กำกับ Tomohisa Taguchi / Pierrot Films**: จากไลฟ์วิเคราะห์ *The Calamity* (`2026-07-25` [[stream-d3xger7adea]], `2026-08-01` [[stream-5krg43lxj20]], `2026-08-16` [[stream-pi_skceq2rc]]) ชมการขยายฉากต่อสู้จากมังงะของอุราฮาระ (บังไค), เคนปาจิ และอิจิโกะ พร้อมความหวังต่อโปรเจกต์นิยาย *Can't Fear Your Own World (CFYOW)* และ *Hell Arc*
 - **วิกฤตตอนหลุดและโดนแบนสตรีมมิ่งทั่วเอเชีย (ส.ค.–ก.ย. 2026)**:
   - `2026-08-22` ([[stream-bv5ywlad1nc]] `00:45:52`–`02:11:17` และ [[stream-_i66r2bk5pa]] `00:04:48`–`00:24:06`): เกิดเหตุแอปสตรีมมิ่งในไทยทำไฟล์ตอนที่ 45 หลุด จน **Medialink** สั่งระงับฉายทั่วเอเชียชั่วคราว ก่อนที่ Netflix จะล่มในตอนที่ 46 จนต้องย้ายไปดูทาง Bilibili (`2026-08-29` [[stream-zbau5jp6km4]] `01:07:11`)
+  - `2026-09-05` ([[stream-wzeajupt7xw]] `00:13:35`, `00:34:10`, `00:37:22`, `00:54:26`, `01:28:56`): ตอนที่ 47 ดีเลย์ซ้ำบน Netflix, Disney+, Ani-One และ Prime Video เหลือเพียง Bilibili ทำให้เปิด WatchParty ช้า 8 นาที; ชมฉากใหม่ที่อุริวใช้ *The Antithesis* สลับจูฮาบัชลงปราสาท, คู่ฮาริเบล–เนล, ฉากจบไอเซ็น *"Yokoso Watashi no Soul Society"*, วิเคราะห์หนังโรง *CFYOW* 3 ภาค, ร่างอิจิโกะ Sonído, ดาบ *Shinken Hakkyoken*, และข่าว *Bleach OST III* วางขาย 16 ธ.ค.
   - `2026-09-12` ([[stream-n4tqpxyta-m]] `00:03:53`, `00:38:52`, `01:44:08`): หลังชมตอนที่ 48 (ไอเซ็นร่ายฮาโดะ 99) มีประกาศเลื่อนฉาย 2 ตอนสุดท้าย (EP 49–50) นาน 1 เดือน
 - **บทสรุปตอนที่ 49–50 และข้อสังเกตเชิงโครงสร้าง (ต.ค.–พ.ย. 2026)**:
   - รีแอคตอนที่ 49 (`2026-10-19` [[stream-9uqjewruadw]]) และตอนอวสาน EP 50 *"Dead and Strawberry"* (`2026-10-26` [[stream-1-hkcjk6-2y]]) พร้อมเจาะแผนซ้อนแผนของฮัชวาลต์, การกระจายบทตอนจบ และอนาคตของ **Pierrot Films** กับ *Naruto* และ *Kingdom*
@@ -149,3 +153,6 @@ status: "active"
   - วิพากษ์โปรเจกต์ภาพยนตร์ไทย *2122 Armageddon War* ของทรนง ศรีเชื้อ (`2026-08-26` [[stream-wsonitq1iqm]] `03:45:00`–`04:46:15`) และความน่าเบื่อของหนัง AI (`2026-11-05` [[stream-ab1nvwdsoq0]] `02:34:19`)
 - **มหากาพย์ *Ramayana* (2026)**: ตามติดภาพยนตร์อินเดียทุนสร้างสูงสุดของ T-Series ที่ฉายชน *Godzilla Minus Zero* ตั้งแต่ข่าวรายได้ $55 ล้าน จนถึงการจัดไลฟ์เจาะลึก [[live-mai-lap-documentary]] ใน [[stream-ydfva1njrjc]] (`2026-11-10`, `01:07:32`, `01:53:38`, `04:33:43`)
 - **เกมทายอนิเมะ & คลังรสนิยมส่วนตัว**: ทดสอบความรู้ผ่าน *AniGuesser*, *Anime Music Quiz (AMQ)* และ *Anime Aura* (`2026-09-01` [[stream-ayykwvskysi]] `04:59:11`–`05:45:28`, `2026-09-02` [[stream-mjgd2xw8tlg]] `05:24:27`–`06:01:25`) พร้อมยกย่องผลงานในดวงใจอย่าง *Disappearance of Haruhi*, *Your Name*, *Medalist*, *Frieren* และ *Mushoku Tensei* (`2026-02-17` [[stream-goji7k_j8ci]] `02:36:00`, `2026-07-08` [[stream-8x6hbiqqs3i]] `05:53:30`, `2026-08-03` [[stream-njn2zwndkeu]] `03:00:02`, `2026-09-25` [[stream-ovo_g6o0vsc]] `00:33:06`)
+- **ชาเลนจ์มาราธอน 72 ชม. & ซีรีส์ *Harry Potter* HBO (`2026-11-22`–`2026-11-23`)**:
+  - ส่องกติกา *Major x Birdy Trollywood Movie Marathon 72 ชม.* (หนังไทย 34 เรื่อง ห้ามหลับ) แล้วคิดโปรเจกต์ **"Shit Anime Marathon"** จัดลิสต์อนิเมะคะแนนต่ำอย่าง *Gibiate*, *Regalia*, *Caligula*, *Isuca*, *Shoumetsu Toshi*, *Yosuga no Sora*, *Otome Dori*, และ *Euphoria* (`2026-11-22` [[stream-soc6jzfd_j8]] `05:10:49`–`06:18:24`).
+  - วิจารณ์ซีรีส์ *Harry Potter* ทาง HBO (แคสต์สเนป, ไม้ดัมเบิลดอร์เทียบดาบปู่ยามะใน *Bleach*, โปรดักชันดูงบต่ำกว่าหนัง, และตำหนิคนบูลลี่นักแสดงเด็ก) (`2026-11-23` [[stream-7tpofoiphog]] `01:38:16`–`01:49:58`, `02:46:43`).

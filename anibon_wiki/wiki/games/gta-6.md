@@ -1,7 +1,7 @@
 ---
 title: "Grand Theft Auto VI (GTA 6)"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "rockstar", "gta-6", "aaa", "open-world", "goty"]
 sources:
   [
@@ -26,6 +26,9 @@ sources:
     "[[stream-0otxy2_ti5u]]",
     "[[stream-j7wp7eexlv4]]",
     "[[stream-cqll7dq35bw]]",
+    "[[stream-f_p0qclmfzi]]",
+    "[[stream-soc6jzfd_j8]]",
+    "[[stream-7tpofoiphog]]",
   ]
 status: "active"
 ---
@@ -77,3 +80,6 @@ status: "active"
     - รายงานข่าวกลุ่มแฮกเกอร์ Cyberleak อ้างว่าปล่อยไฟล์เกม GTA 6 ขนาด 200 GB (ขาดเพียงไฟล์ `.exe` เข้าเกม) ลงอินเทอร์เน็ต พร้อมเตือนผู้ชมห้ามดาวน์โหลดไฟล์เถื่อนเด็ดขาดเพราะเสี่ยงโดนมัลแวร์แฮกเครื่อง.
   - **`05:08:54`–`05:10:40` — สปีดรัน GTA 6 ของ IShowSpeed**:
     - ชื่นชมความอึดของสตรีมเมอร์ IShowSpeed ที่ไลฟ์เล่น GTA 6 มาราธอน 2 วันติดโดยไม่นอนจนถึง Final Mission (99%).
+- **2026-11-21** — [[stream-f_p0qclmfzi]]: ถกกระแสคะแนนรีวิว GTA 6 ที่แตกเป็นสองฝั่งและกระแสความนิยมตัวละคร *Mandy* (`00:10:48`, `03:02:25`).
+- **2026-11-22** — [[stream-soc6jzfd_j8]]: ถกสงครามรีวิวบอมระหว่าง GTA 6 กับ *Zelda: Ocarina of Time* ([[zelda]]), ตีแผ่ประเด็น 30 FPS เทียบ [[cyberpunk]], และเทียบกระแส *Ananta* (`04:27:53`–`04:39:14`).
+- **2026-11-23** — [[stream-7tpofoiphog]]: เฉยเมยการปั่นคะแนนรีวิวบอมบน Metacritic พร้อมเตือนภัยลิขสิทธิ์เพลงและไวรัสจากไฟล์หลุด PC (`02:06:34`, `02:34:45`).

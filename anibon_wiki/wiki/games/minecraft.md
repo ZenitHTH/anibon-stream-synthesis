@@ -1,7 +1,7 @@
 ---
 title: "Minecraft (มายคราฟต์)"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "mojang", "minecraft", "sandbox", "modpack", "cisco-rpg", "pc"]
 sources:
   [
@@ -26,6 +26,7 @@ sources:
     "[[stream-l00khggzmig]]",
     "[[stream-xeopuvprw60]]",
     "[[stream-u-wnhjsc4yc]]",
+    "[[stream-7tpofoiphog]]",
   ]
 status: "active"
 ---
@@ -70,3 +71,4 @@ status: "active"
 - **2026-10-27** — [[stream-lp_30fw8yhw]]: เสพติด *Cisco Fantasy Medieval RPG* หนักจนลังเลการเล่น [[phantom-blade-zero]] วันเปิดตัว คราฟชุดเกราะสายสปีด-หลบหลีก ขุดเจอ Ancient Debris และได้ขวานดูดเลือด (`00:08:40`–`02:10:13`).
 - **2026-10-28** — [[stream-l00khggzmig]]: เปิดตัวเป็น "Minecraft VTuber" ลุย RPG Mod Pack ย่อยดาบ-แหวน เหยียบลาวาสำรวจโลก บ่นเสียงบล็อกตีกับเพลง ชมม็อด Easy Villager และเทียบความรู้สึกกับมีมใน [[deadlock]] (`00:06:30`–`04:56:09`).
 - **2026-11-08** — [[stream-xeopuvprw60]], [[stream-u-wnhjsc4yc]]: ถกประเด็นโปรเจกต์ *Minecraft Rust* และการใช้ AI แปลงโค้ด Java เป็น Rust เพื่อรีดประสิทธิภาพ (`02:16:36`, `02:24:45`; `05:11:45`).
+- **2026-11-23** — [[stream-7tpofoiphog]]: เช็กอาวุธใหม่ *Throwing Disc* ใน Minecraft ที่ให้ความรู้สึกคล้ายม็อด (`01:56:25`).

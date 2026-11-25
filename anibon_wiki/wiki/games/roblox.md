@@ -1,9 +1,9 @@
 ---
 title: "Roblox"
 category: "game"
-updated: "2026-11-21"
+updated: "2026-11-24"
 tags: ["game", "roblox", "ugc", "roleplay", "copyright", "politics"]
-sources: ["[[stream-vwu3sjkfx6g]]", "[[stream-_qk87e-2rbo]]", "[[stream-ymfjdsqwk6i]]", "[[stream-b6dg3jk6yjg]]", "[[stream-eqck2ptuht0]]"]
+sources: ["[[stream-vwu3sjkfx6g]]", "[[stream-_qk87e-2rbo]]", "[[stream-ymfjdsqwk6i]]", "[[stream-b6dg3jk6yjg]]", "[[stream-eqck2ptuht0]]", "[[stream-7tpofoiphog]]"]
 status: "active"
 ---
 
@@ -13,7 +13,7 @@ status: "active"
 - **Related Topics**: [[gacha-business-and-endgame-philosophy]], [[thai-politics-and-economy]], [[tokusatsu-watch-party]], [[live-mai-lap-documentary]], [[vlogs-hardware-and-personal-life]]
 
 ## ภาพรวมและทัศนคติของ `ปู่โบ๊ต`
-**Roblox** ปรากฏในคลังสตรีมของ `ปู่โบ๊ต` **22 ไลฟ์สตรีมหลัก** (บวกอีก 1 ช่วงย่อยใน `all_timestamps.txt` ของ [[stream-cqll7dq35bw]] รวม **23 ครั้ง**, ตั้งแต่ `2025-01` ถึง `2026-11`) ทั้งในฐานะเกมที่เจ้าตัวเข้าไปเล่น Roleplay ร่วมกับผู้ชมจนติดลม (`[[stream-vwu3sjkfx6g]]` — ชวนแฟนคลับแอดไอดีเล่นตั้งแต่สภาจำลองไทย รถไฟไทย ยันขับรถล่าพายุและโดนแบนไมค์), กรณีศึกษาเรื่องเศรษฐกิจ/ลิขสิทธิ์ IP/เกมเถื่อนบนแพลตฟอร์ม, การเปรียบเทียบกับเกมยุคใหม่อย่าง [[genshin-impact]] โหมด Creative และ FiveM, ไปจนถึงดราม่าความปลอดภัยเด็ก การเมือง และคดีสวมบทบาทบนเซิร์ฟเวอร์ไทย
+**Roblox** ปรากฏในคลังสตรีมของ `ปู่โบ๊ต` **23 ไลฟ์สตรีมหลัก** (บวกอีก 1 ช่วงย่อยใน `all_timestamps.txt` ของ [[stream-cqll7dq35bw]] รวม **24 ครั้ง**, ตั้งแต่ `2025-01` ถึง `2026-11`) ทั้งในฐานะเกมที่เจ้าตัวเข้าไปเล่น Roleplay ร่วมกับผู้ชมจนติดลม (`[[stream-vwu3sjkfx6g]]` — ชวนแฟนคลับแอดไอดีเล่นตั้งแต่สภาจำลองไทย รถไฟไทย ยันขับรถล่าพายุและโดนแบนไมค์), กรณีศึกษาเรื่องเศรษฐกิจ/ลิขสิทธิ์ IP/เกมเถื่อนบนแพลตฟอร์ม, การเปรียบเทียบกับเกมยุคใหม่อย่าง [[genshin-impact]] โหมด Creative และ FiveM, ไปจนถึงดราม่าความปลอดภัยเด็ก การเมือง และคดีสวมบทบาทบนเซิร์ฟเวอร์ไทย
 
 ---
 
@@ -38,7 +38,7 @@ status: "active"
 
 ---
 
-## ไทม์ไลน์สตรีมที่พูดถึง Roblox (23 ครั้ง)
+## ไทม์ไลน์สตรีมที่พูดถึง Roblox (24 ครั้ง)
 - **`2025-01-30` [[stream-wbgsq9r5ueg]]** (`02:04:10`): เทียบความสมจริงของสังคม Roleplay ระหว่าง FiveM กับ Roblox.
 - **`2025-09-02` [[stream-2n1csgu82do]]** (`05:06:15`): วิเคราะห์โหมด Creative ของ [[genshin-impact]] เทียบกับโมเดล UGC ของ Roblox.
 - **`2025-11-13` [[stream-7-4jzpb0nok]]** (`02:03:05`): ข่าว Roblox สั่งรีเซตชื่อที่มีเลข 69 และมาตรการความปลอดภัยเด็ก.
@@ -62,3 +62,4 @@ status: "active"
 - **`2026-11-14` [[stream-eqck2ptuht0]]** (`01:56:40`, `02:36:41`): กระแส Roblox จับมือ The Game Awards และผลกระทบจากเกมเถื่อน.
 - **`2026-11-17` [[stream-b6dg3jk6yjg]]** (`01:48:01`–`01:52:30`, `07:58:34`): ดราม่า Roblox เข้าชิงรางวัล TGA, ความปลอดภัยเด็ก, ปัญหาแมพละเมิดลิขสิทธิ์, และแมพเซียนพระ.
 - **`2026-11-20` [[stream-cqll7dq35bw]]** (`00:11:03` ใน [all_timestamps.txt](file:///Users/zenithth/youtube_cQlL7DQ35bw_workspace/all_timestamps.txt#L7)): ชวนผู้ชมไปลอยกระทงใน Roblox แทนการลอยจริง.
+- **`2026-11-23` [[stream-7tpofoiphog]]** (`02:23:32`): ฮือฮาคอนเสิร์ต *Ado* คอลแลบในแมพ *Sol's RNG* บน Roblox.
